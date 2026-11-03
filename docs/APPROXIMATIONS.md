@@ -358,7 +358,7 @@ todos los patrones renales. No se trasladan esos coeficientes a una VCI humana c
 si estuvieran calibrados. La formulación, protocolo, negativos y frontera están en
 [el informe del ensayo](fidelity/ivc-wall-frontier.md); no sustituye la decisión 73.
 
-### s0028: candidato offline B y dominio de fidelidad (317 provisional)
+### s0028: paquete B y candidato experimental (317/318)
 
 Una persona, registro rígido único, sin HU→brillo ni etiquetas exteriores→histología. La piel
 se deriva del componente corporal mayor >−400 HU por corte, con huecos rellenos y brazos
@@ -374,4 +374,33 @@ El clamp EDT más distancia a caja conserva continuidad, no acredita referencia 
 exactitud de tejido sin TAC. Contacto, pared y cobertura de consumidores se revalidan en P1.
 Gas conserva ocupación/etiqueta nearest, no SDF continuo. La capacidad de anotación vacía
 (5.671.296 B RAW, ~7 KB gzip) es U: cada llenado mide descarga real de nuevo frente a 19.510.002 B.
-No hay runtime/activos nuevos ni validación clínica. [Evidencia y puertas](anatomia/migracion-s0028.md).
+P0 no tenía runtime/activos nuevos. El ensayo local P1 y su parada se describen a continuación. [Evidencia y puertas](anatomia/migracion-s0028.md).
+
+P1 r4c (318) conserva el lector especializado y la anatomía paralela explícita. Las mallas
+offline indexadas Float32 expanden exactamente los 19 campos fuente (cota 0 mm): orden,
+orientación, normal plana e iluminación intactos, sin extracción al arrancar. El contrato fija
+hashes/procedencia/marco y se reextraen las fuentes en una prueba lenta. Dos copias CPU
+permanecen; el Worker sólo clasifica el corte. Poses/pared, clasificación mínima, categorías B
+y gas nearest sin SDF continuo siguen provisionales P2–P8; psoas/discos desconocidos sin alias.
+
+Paridad muestreada CPU/GPU/Worker y consumidores de profundidad/contacto documentados en
+[migración](anatomia/migracion-s0028.md). Siete etiquetas del lector real (+1 lung crudo)
+difieren exactamente en empates nearest double/Float32; índices y perturbaciones ±0,001 mm
+explican los casos, conservados como negativos. No se afirma igualdad exacta ni exactitud
+anatómica fuera del TAC. Las diez láminas se abrieron con bundle/mallas visibles y rótulo
+provisional; no acreditan ventanas P2–P8 aceptadas.
+
+El propietario retiró antes de r4 el techo 1 GB/objetivo 800 MB: Metal exige Σ app ≤2 GB
+y Swift arranque/contexto sin techo de memoria. Tres pares dan Σ1,447–1,460 GB actual y
+1,710–1,772 GB B, incremento 0,250–0,325 GB; picos muestreados, no continuos. La dieta
+global es posterior. Descarga **24.484.081 B**, sobre preferencia 19.510.002 B, dentro
+de 25.000.000 B autorizados; margen **515.919 B**. JS deja **42.939 B**.
+[Evidencia/negativos](evidence/s0028-p1/README.md), sin cambio de default ni validación clínica.
+
+Historial anterior a A17: el cuarto par Metal repitió por carga externa el segundo, conservado: actual 1,548 s/Σ1,461 GB,
+B 1,279 s/Σ1,712 GB, incremento 0,252 GB; también cumple los límites. Las tres pasadas
+principales anteriores no se sustituyen por esta repetición.
+
+A17 evita el falso timeout del Worker durante los ticks de presentación mientras la GPU
+está pendiente; no cambia sus 3 s por cuadros activos ni el control de Worker colgado.
+El humo x64 fallido y la regresión roja se conservan; el escenario original pasa corregido.

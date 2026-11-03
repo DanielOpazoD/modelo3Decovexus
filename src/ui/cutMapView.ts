@@ -474,6 +474,7 @@ export class CutMapView {
     this.lastUpdate = -Infinity;
     const init: CutMapInit = {
       type: first ? 'init' : 'patient',
+      identity: sim.scene.identity,
       // Reservar su id ahora invalida respuestas anteriores aunque la GPU
       // retrase la primera adquisición de esta escena.
       id: ++this.requestId,
@@ -527,14 +528,15 @@ export class CutMapView {
   }
 
   /** Sigue el movimiento adquirido; `hz` limita solo el refresco fisiológico con la sonda quieta. */
-  draw(sim: Simulator, nowMs: number, hz = 8): void {
+  draw(sim: Simulator, nowMs: number, hz = 8, advanceWatchdog = true): void {
     this.shownSim = sim;
     const shown = sim.renderer.displayedFrame;
     if (!shown) return;
     // Discard the previous scene before checking its outstanding request.
     const worker = this.ensureWorker(sim, nowMs);
-    // Three active seconds without completed rows still detect a stalled worker.
-    if (this.pendingInputs && this.watchdog.expired(nowMs)) this.fail(new Error('corte sin avance durante 3 s'), nowMs);
+    // CPU presentation ticks while the GPU is busy are not acquired loop frames.
+    // Continue servicing the Worker there without charging its active-frame clock.
+    if (advanceWatchdog && this.pendingInputs && this.watchdog.expired(nowMs)) this.fail(new Error('corte sin avance durante 3 s'), nowMs);
     const previous = this.mapInputs;
     const geometryChanged =
       previous &&

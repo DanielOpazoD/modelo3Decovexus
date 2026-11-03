@@ -670,18 +670,45 @@ Corregida `color-absorption-linear-scaling` (174→176): A2 integra α_t(fD) por
 - `probe-contact-plane-estimated` (184): el marco rígido de una sonda sobre el perfil registrado usa cuerdas de la misma piel a ±medio espesor elevacional (6,5 mm para el convexo actual), en vez de la normal puntual discontinua de la tabla. La distancia de presión usa un gradiente estimado a ±1 mm sobre esa misma piel para evitar otro salto al cruzar celdas; se conserva la tolerancia de 0,05 mm del solver. No es un ajuste biomecánico de toda la huella ni una superficie cutánea nueva. Piel, espesor y gradientes físicos permanecen compartidos. Se verifican nudos y barridos finos; no se certifica cualquier maniobra ni una frecuencia universal de cuadros. La apposición hepática inferomedial conserva huecos estimados de hasta 9,01 mm en el dominio ampliado auditado; no se declara resuelta por el cambio de marco. Véase `anatomy/vexus-window-acceptance.md`.
 - `hepatobiliary-connectors-estimated` (285): relación del pedículo y conexión cística estimadas sobre un adulto registrado; sin variantes completas, distensión o ayuno vesicular por caso. La pared de 1,8 mm no es una medición individual. Suavidad de compresión y transición parietal verificadas en poses muestreadas, sin certificación de todas las maniobras ni nueva biomecánica. Véase también `APPROXIMATIONS.md`, decisión 285.
 
-## Candidato s0028 offline (317 provisional)
+## Candidato experimental s0028 (317/318)
 
-P0 prepara herramientas, no instala una segunda anatomía en el simulador. Los identificadores
-de limitación del producto permanecen vigentes. [Migración s0028](anatomia/migracion-s0028.md)
-distingue lo observado, derivado, estimado y desconocido: cámaras cardíacas, fascias, capas y
-ramas no anotadas no se aprueban por disponer de reserva de bytes. Piel verificada sólo en D
-(Z −210…+60 mm y φ completo) con ombligo local aproximado (3,140913 mm frente a 3 mm);
-pelvis/ingle aproximadas. Profundidad fuera de CT a ≥12 mm fuera de piel en aire sin consumidor
-es desconocida, no aprobada; cualquier falta de cobertura de un consumidor sigue pendiente.
+P0 prepara herramientas; P1 r4c carga un candidato local sólo por `?abdomen=s0028`.
+Los identificadores de limitación del producto permanecen vigentes. [Migración](anatomia/migracion-s0028.md)
+distingue observado, derivado, estimado y desconocido: cámaras cardíacas, fascias, capas y
+ramas no anotadas no quedan aceptadas por disponer de bytes. Poses/pared son las actuales,
+provisionales P2–P8; renal focal poco demostrativa, sombras costales y apoyo lateral parcial
+permanecen visibles en las diez láminas abiertas. Piel verificada sólo en D (Z −210…+60 mm,
+φ completo), ombligo aproximado 3,140913 mm frente a 3 mm; pelvis/ingle aproximadas.
+La cobertura runtime de profundidad/contacto no acredita exactitud fuera del TAC.
 
-B exige texturas 189×256×685 y 193×139×552, por encima del mínimo 256. El nuevo techo autorizado
-139.921.010/60.413.664 B no modifica el cargador en P0. P1 mide pico real y primer cuadro completo
-en navegador/SwiftShader y se detiene si no caben. El microshader y los ocho costes estáticos
-no prueban esa capacidad ni paridad del clasificador. La descarga de cada fase, incluidas
-anotaciones gzip reales, debe mantenerse ≤19.510.002 B. No es validación clínica.
+B necesita texturas 189×256×685 y 193×139×552, por encima del mínimo WebGL 256.
+Techos exclusivos 139.921.010/60.413.664 B intactos, tórax con 0 B de margen. Ocho
+programas por variante dentro de techo; clasificación e interiores completos siguen P2–P8.
+Gas nearest no es SDF continuo; psoas/discos sin fuente siguen desconocidos, sin alias.
+Siete empates nearest del lector real (+1 lung crudo) conservan diferencia categórica
+CPU double/GPU Float32 en mitad de celda; están explicados, no borrados ni igualados
+artificialmente. Nodos y CPU/Worker exactos, distancias dentro de las cotas muestreadas.
+
+El criterio anterior ≤1 GB/objetivo 800 MB se retiró por decisión del propietario antes de r4;
+la base r3 Σ ya daba 1,449–1,607 GB. Nuevo criterio Metal ≤2 GB para toda la app: actual
+Σ1,447–1,460 GB y B 1,710–1,772 GB en tres pares (incremento 0,250–0,325 GB). No es
+pico continuo ni certificación de PC de 8–16 GB. Dos copias CPU siguen necesarias;
+sin dependencia de SAB ni promesa de ahorro nominal. Dieta global posterior, fuera de P1.
+SwiftShader x64/Rosetta: 46,042/33,760 s actual/B dentro de BOOT_MS, sin pérdida de contexto;
+Σ3,084/3,121 GB observados, sin techo de memoria. Heap Worker Swift no medido en el par
+limpio: el observador con autoAttach produjo detach/timeouts, conservados como negativos.
+
+Mallas precalculadas exactas (sin recortar triángulos/resolución), hash y normal conservados:
+9.672.026 B gzip; paquete HTTP **24.484.081 B**, excede preferencia 19.510.002 B en
+4.974.079 B, dentro de autorización 25.000.000 B, margen **515.919 B**. JS 1.027.141 B,
+margen **42.939 B**. Anotaciones futuras miden otra vez gzip real.
+[Evidencia, negativos y cierre local](evidence/s0028-p1/README.md). Sin cambio de default,
+CI remota ni validación clínica.
+
+Historial anterior a A17: el cuarto par Metal repitió por carga externa el segundo, conservado: actual 1,548 s/Σ1,461 GB,
+B 1,279 s/Σ1,712 GB, incremento 0,252 GB; también cumple los límites. Las tres pasadas
+principales anteriores no se sustituyen por esta repetición.
+
+A17 evita el falso timeout del Worker durante los ticks de presentación mientras la GPU
+está pendiente; no cambia sus 3 s por cuadros activos ni el control de Worker colgado.
+El humo x64 fallido y la regresión roja se conservan; el escenario original pasa corregido.
