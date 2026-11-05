@@ -1,0 +1,218 @@
+{
+  "annotationId": "s0028-P2-R1C-surface-v1",
+  "geometryRevision": "logical-surface-v2",
+  "ownerReview": "pending",
+  "runtimeInstalledByThisRound": false,
+  "runtimeOwnership": "preexisting/concurrent work preserved; these changes are tools/docs only",
+  "clinicalValidation": false,
+  "source": {
+    "ctSha256": "d11b8acbf137277d157930f7d0cb3a5f259364a5e5af18dafcd3cac0ecf4168c",
+    "poseBlockSha256": "0f3131ca373676fcbfd24bf5228792df7840cc1c23f949721a5593c7f19c02b1",
+    "normalSupportMm": 13,
+    "masks": 117
+  },
+  "grid": {
+    "dimensions": [512, 181],
+    "zMm": [-210, 60],
+    "regionPhiRad": [-0.35, 3.55],
+    "regionZMm": [-180, 0],
+    "profileStepMm": 0.5,
+    "profiles": 92672,
+    "regionCells": 38478,
+    "D": 34446,
+    "E": 562,
+    "U": 3470,
+    "coveragePercent": 90.982,
+    "maxEHoleSpanMm": 5.782
+  },
+  "windows": {
+    "columns": [
+      "id",
+      "cells",
+      "D",
+      "E",
+      "U",
+      "coveragePercent",
+      "jumpMedianMm",
+      "jumpP95Mm",
+      "jumpMaxMm",
+      "sourceCostalEdgesOver3",
+      "bandMedianMm",
+      "centerMm",
+      "designCenterMm"
+    ],
+    "rows": [
+      ["subxiphoid", 815, 740, 8, 67, 91.779, 0.422, 1.304, 2.875, 0, 4.953, 5.016, 6.0],
+      ["epigastric", 804, 780, 7, 17, 97.886, 0.516, 1.328, 2.875, 0, 6.516, 3.672, 3.75],
+      ["intercostal", 652, 611, 13, 28, 95.706, 0.781, 2.969, 5.641, 56, 9.242, 8.484, 3.0],
+      ["subcostal", 801, 724, 28, 49, 93.883, 0.438, 1.625, 2.891, 0, 9.648, 10.812, 11.25],
+      ["flank", 669, 656, 4, 9, 98.655, 0.609, 2.109, 4.328, 9, 9.211, 10.766, 9.75],
+      ["portal", 597, 552, 2, 43, 92.797, 0.719, 4.216, 11.375, 87, 6.469, 3.188, 9.75],
+      ["portalTrunk", 662, 634, 18, 10, 98.489, 0.594, 2.094, 3.531, 4, 9.742, 10.422, 9.75],
+      ["renal", 725, 725, 0, 0, 100.0, 0.438, 1.0, 2.094, 0, 10.484, 10.094, 10.5],
+      ["hepatorenal", 694, 668, 14, 12, 98.271, 0.469, 1.634, 5.516, 11, 10.828, 10.031, 9.75],
+      ["portalSubcostal", 699, 646, 21, 32, 95.422, 0.5, 2.219, 6.891, 26, 11.031, 12.859, 12.0]
+    ]
+  },
+  "continuity": {
+    "medianMm": 0.516,
+    "p95Mm": 2.531,
+    "maxMm": 12.0,
+    "ordinaryMaxMm": 3.0,
+    "edges": 67231,
+    "sourceCostalEdgesOver3": 1600,
+    "unexplainedEdgesOver3": 0
+  },
+  "native": {
+    "nativeBodyVoxelsTested": 387455,
+    "visceralConflictVoxels": 0,
+    "oneVoxelEnvelopeConflictVoxels": 0,
+    "muscleBoneConflictVoxels": 0,
+    "posteriorGrossBandVoxels": 0,
+    "grossEmbeddedBoneVoxels": 9831,
+    "grossEmbeddedCartilageVoxels": 9240,
+    "ownMidpointRecoveryPercent": 100.0,
+    "geometricSuperset": "all normal-chart patches, analytic convex bounds; no organ priority"
+  },
+  "contactCells": 4618,
+  "thinByOrganContactCells": 428,
+  "budget": {
+    "baselineDownloadBytes": 20152271,
+    "candidateDownloadBytes": 20318825,
+    "incrementBytes": 166554,
+    "metadataBytes": 2459,
+    "payloadBytes": 757844,
+    "atlasIncrementBytes": 0,
+    "rawReservationIncrementBytes": 0,
+    "thoracicIncrementBytes": 0
+  },
+  "payloadSha256": "92091898ad47a9ecf3435f2abea34b40a54d7c60cdce5dd363a4a7dff5aa3107",
+  "shaderEstimateAllPass": true,
+  "evidenceRoot": "/Users/daniel/.t3/scratch/vexus-owner-evidence-20261031/migration-p2-r1c/logical-surface-v2",
+  "files": [
+    "review.html",
+    "reviewed-images.json",
+    "native-audit.json",
+    "costal-provenance.json",
+    "contacts.json",
+    "negatives.json",
+    "checks.json",
+    "report.md"
+  ],
+  "r2b": {
+    "rule": "direct EDT projection p − τ∇τ/|∇τ|², polar seed, bilinear chart; CPU = Worker = GPU",
+    "readsPerQuery": 17,
+    "ownerReview": "pending (decision 320)",
+    "parityInteriorDisagreementMax": 2.494387627837366e-5,
+    "workerAgreementMin": 1,
+    "bandFoldedFraction": {
+      "subxiphoid": 0.0588,
+      "epigastric": 0.0077,
+      "intercostal": 0.0178,
+      "subcostal": 0.0216,
+      "flank": 0.0317,
+      "portal": 0.0148,
+      "portalTrunk": 0.0118,
+      "renal": 0.0153,
+      "hepatorenal": 0.0035,
+      "portalSubcostal": 0.0154
+    },
+    "stillVertexFraction": {
+      "liver": 0.3828,
+      "spleen": 0.5959,
+      "pancreas": 0.4135,
+      "kidneyRight": 0.8629,
+      "kidneyLeft": 0.9622,
+      "gallbladder": 0.3982,
+      "inferior_vena_cava": 0.8537,
+      "portal_vein_and_splenic_vein": 0.3356
+    },
+    "jsBytes": 1052043,
+    "downloadBytes": 20318825,
+    "metalPeakBytes": [1683001640, 1767837872, 1765626056],
+    "swiftshaderSpecsPassed": "7/7",
+    "coupledLinesTotal": {
+      "main": 1558,
+      "r2a-59f27ff": 1061,
+      "r2b": 1060,
+      "exp-u-skin": 1717,
+      "of": 1920
+    },
+    "evidence": "/Users/daniel/.t3/scratch/vexus-owner-evidence-20261031/migration-p2-r2b/report.md"
+  },
+  "r2bU": {
+    "rule": "skin coupling everywhere; U node face = nearest known interface within 12 mm (E) or skin only; U respiration smoothstep(p10, p90, -tau) per chart row",
+    "ownerReview": "pending (decision 320)",
+    "derivedBlock": {
+      "tool": "tools/anatomy/s0028-wall-derived.py",
+      "bytes": 371412,
+      "uNodesWithE": 9280,
+      "uNodesWithoutE": 48384,
+      "eDistanceMm": {
+        "p50": 3.92,
+        "p90": 10.32,
+        "max": 12
+      },
+      "rampMm": {
+        "p10": [23.22, 43.16],
+        "p90": [34.41, 73.31]
+      },
+      "wallReserveUsedBytes": 1129256
+    },
+    "readsPerQuery": {
+      "wall": 17,
+      "respiratoryWeight": 18
+    },
+    "coupledLines": {
+      "subxiphoid": 165,
+      "epigastric": 192,
+      "intercostal": 139,
+      "subcostal": 149,
+      "flank": 144,
+      "portal": 142,
+      "portalTrunk": 174,
+      "renal": 180,
+      "hepatorenal": 148,
+      "portalSubcostal": 174
+    },
+    "coupledLinesTotal": {
+      "main": 1558,
+      "r2b": 1060,
+      "r2bU": 1607,
+      "of": 1920
+    },
+    "stillVertices": {
+      "liver": [8, 59130],
+      "spleen": [4, 8450],
+      "kidneyRight": [0, 10354],
+      "kidneyLeft": [0, 10590],
+      "inferior_vena_cava": [0, 9256],
+      "pancreas": [0, 10144],
+      "gallbladder": [0, 1104],
+      "portal_vein_and_splenic_vein": [0, 5106]
+    },
+    "seamsZeroToHalfInOrgansPx": 0,
+    "weightJumpsAtLeastHalfPerPlane": [70, 398],
+    "parityBreathingInteriorDisagreementMax": 0.00043,
+    "parityBreathingUInteriorDisagreementMax": 0.00036,
+    "workerAgreementMin": 1,
+    "metalPeakBytes": {
+      "apnea": [1681051872, 1696698640],
+      "breathing": 1731924192,
+      "mainApnea": 1809043704,
+      "mainBreathing": 1856606552
+    },
+    "jsBytes": 1058034,
+    "downloadBytes": 20393770,
+    "manifestBytes": 37502,
+    "evidence": "/Users/daniel/.t3/scratch/vexus-owner-evidence-20261031/migration-p2-r2b/u-round/report.md",
+    "swiftshaderSpecsPassed": "7/7 (third run; first two lost 15 s cut-map waits under load)",
+    "respirationGpuCpuMaxAbsDiff": {
+      "known": 5.06e-5,
+      "u": 2.69e-5,
+      "gradient": 2.38e-5,
+      "points": 3264,
+      "uPoints": 2108
+    }
+  }
+}

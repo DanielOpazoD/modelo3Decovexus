@@ -360,6 +360,27 @@ si estuvieran calibrados. La formulación, protocolo, negativos y frontera está
 
 ### s0028: paquete B y candidato experimental (317/318)
 
+P2 r2b (320) lleva la pared regional r1c a CPU, Worker del corte, 3D y GPU con una sola regla: proyección EDT
+directa `p − τ·∇τ/|∇τ|²`, semilla polar y carta bilineal; la inversa S−dN sólo existe offline. La banda blanda
+D/E no identifica músculo; piel E1,5 mm, fascias/peritoneo e identidad muscular U. Con celda D/E la consulta vale
+a cualquier profundidad (más allá de la cara interna es interior del cuerpo); U sólo si algún soporte de la celda es
+U o fuera de z. La proyección directa no es la inversa: en los testigos |Δ| ≤0,484 mm de frontera y ≤0,433 mm de
+profundidad. Pliegues: el 0,35–5,88 % de los píxeles de banda por ventana cae en triángulos de orientación negativa
+de la inversa, casi todos a más de 20 mm; en el interior sólo importa el signo de inside y sólo ≤86 píxeles
+plegados por ventana tienen una celda vecina que lo invertiría. Normal de cara analítica −∇τ − P(∂B/∂c·∇c + ∂B/∂f·∇f),
+sin curvatura de la proyección ni pendiente del centro de fila: frente a diferencias finitas de la propia consulta,
+p50 8,3°/p90 25,5° en la fascia, mejor que la normal cutánea sola (21,4°/51,2°). La GPU lee carta y centros por
+texelFetch e interpola como la CPU; sus normales coinciden (p05 = 1,0). Una celda U no tiene cara para la
+clasificación (tejido no segmentado, sin interfaces), pero sí, como estimación rotulada, para la sonda y la respiración
+(r2b-U): la sonda acopla donde toca piel; el nodo cuya entrada cae en U comprime contra la cara interna E del nodo
+conocido más cercano a ≤12 mm (bloque derivado offline) y, sin él, sólo por la piel, sin resistencia de pared. El peso
+respiratorio de una celda U es smoothstep(p10, p90, −τ) con la cara interna conocida de su fila, no la cara local: la
+pared U puede moverse algo al respirar y, en la frontera con una celda D/E, el peso salta (|Δw| ≥ 0,5 en 70–398 pares
+de píxeles por plano, sin costuras 0↔≥0,5 dentro de órganos). [ESTIMADO] La cúpula E/P7 se conserva
+fuera de las máscaras fuente, sin recorte hepático. Es una política conservadora explícita, no una segmentación
+completa. El perfil se prolonga como aproximado fuera del soporte EDT. No se relajan las cotas 1,5/3 mm ni se añaden
+excepciones a la umbilical de 317; [migración](anatomia/migracion-s0028.md).
+
 Una persona, registro rígido único, sin HU→brillo ni etiquetas exteriores→histología. La piel
 se deriva del componente corporal mayor >−400 HU por corte, con huecos rellenos y brazos
 conectados conservados. B almacena XY RG16F en 1.024 rayos cada 0,75 mm. Exactitud sólo bajo

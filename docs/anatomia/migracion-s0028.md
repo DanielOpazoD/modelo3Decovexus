@@ -1,13 +1,189 @@
-# Migración a s0028: P1 y compactación de mallas
+# Migración a s0028: P1, compactación y P2 offline
 
 Objetivos 3, 7 y 8: una persona coherente, capacidad medida y procedencia explícita.
-**Estado vigente (03-11-2026): P0 fusionada/B aceptado (317); P1 fusionada (318, #328); compactación local verificada entre P1 y P2 (319).**
+**Estado vigente (04-11-2026): P0 fusionada/B aceptado (317); P1 fusionada (318, #328); compactación local verificada entre P1 y P2 (319); P2 r1c offline, r2a CPU, r2b GPU/Worker/3D con la regla directa y r2b-U contacto por piel, cara E de nodos U y respiración U por rampa (320, aceptada por el propietario el 04-11-2026).**
 Criterio autorizado antes de medir r4: pico Σ renderer + GPU Metal de la app completa
 ≤2.000.000.000 B; SwiftShader debe arrancar en BOOT_MS, sin pérdida de contexto y sin techo
 de memoria. Se retira el objetivo anterior 800 MB/techo 1 GB; su rechazo r3 se conserva.
 La dieta de toda la app es posterior. Activación sólo `?abdomen=s0028`, default conservado.
 Los TAC originales permanecen fuera de Git. Las menciones históricas «316 provisional»
 no sustituyen la decisión 316 vigente de la pared cava.
+
+## P2 r2b-U: contacto por piel, cara E de los nodos U y respiración U por rampa, aceptada (320)
+
+Decisiones del propietario (04-11-2026) sobre el hallazgo de las láminas r2b. La clasificación no cambia: una celda U
+sigue sin identidad ni interfaces.
+
+1. La sonda acopla donde toca piel (la EDT se conoce en todo el dominio), sea cual sea la celda de la carta.
+2. Un nodo cuya entrada de piel cae en celda U comprime contra la cara interna E (estimada, rotulada) del nodo conocido
+   más cercano a ≤12 mm; sin él, sólo piel y sin resistencia de pared (nodo [s₀, 0, 0], paralelismo 1, sin hundimiento
+   propio). El cruce hasta la cara interna atraviesa los huecos U que tienen E; sin E aborta y el nodo queda sólo piel.
+3. Respiración de la celda U por profundidad: smoothstep(p10, p90, −τ) con la cara interna conocida de su fila. La
+   celda D/E sigue con smoothstep(0, 25, profundidad bajo su cara interna). El reposo exacto de mallas (318) no cambia.
+
+Bloque derivado OFFLINE (`tools/anatomy/s0028-wall-derived.py`, contrato sintético `s0028-wall-derived_test.py`) en la
+reserva de pared tras el payload r1c, que no cambia (mismo SHA). Mapa E por nodo 512×181 RG16F: cara interna del nodo
+conocido más cercano por distancia euclídea entre semillas de piel y su código de desplazamiento (9.280 nodos U con E,
+p50/p90/máx 3,9/10,3/12 mm; 48.384 U sin E). Rampa por fila 181 RG16F: p10 23,2–43,2 mm y p90 34,4–73,3 mm; las filas
+sin anotar toman las anotadas más cercanas. La carga verifica cada E contra su nodo fuente y rechaza una cara sin
+fuente, una fuente U u otra cara. Sólo el contacto (CPU) usa el mapa E; la GPU lee la rampa con una lectura filtrada
+en la columna [0,0,653] del atlas, cuyo halo es relleno finito (sin NaN·0 de las teselas). Lecturas por consulta: pared
+17; peso respiratorio y su gradiente 18 (negativo con dos texelFetch: 19). Reserva de pared 1.129.256/2.113.536 B;
+atlas, RAW de reserva y tórax +0 B; descarga 20.393.770/25.000.000 B (+74.945); JS 1.058.034/1.070.080 B; manifiesto
+37.502/38.617 B; ocho techos especializados dentro, samplers ≤16, ranuras ≤138 (steered 139–140, límite 179).
+
+Resultado en esta máquina (Low Power Mode, carga ajena registrada en la evidencia):
+
+- Líneas acopladas (≥0,5 de 192, pose de inicio), main / r2b / r2b-U: subxifoidea 142/94/165 · epigástrica
+  192/192/192 · intercostal 185/67/139 · subcostal 155/70/149 · flanco 84/119/144 · portal 131/11/142 · tronco portal
+  178/92/174 · renal 142/155/180 · hepatorrenal 182/118/148 · portal subcostal 167/142/174; total 1.558/1.060/1.607 de
+  1.920. Las cuatro ventanas por debajo de main lo están por la pared regional D/E doblada en un borde de la cara con
+  la presión en su tope (nodos D/E de borde, exceso 1,5–51 mm), no por U.
+- Vértices quietos al respirar: hígado 8/59.130, bazo 4/8.450; riñones, VCI, páncreas, vesícula y porta 0. Todos en
+  celda D/E dentro de su banda (0,1–3,7 mm bajo cero), ninguno U.
+- Planos de las láminas: costuras w 0↔≥0,5 dentro de órganos 0 px (r2b 286–1.183). Quedan saltos |Δw| ≥ 0,5 entre
+  vecinos del mismo tejido, 70–398 por plano, todos en la frontera D/E↔E: la rampa de la fila no es la de la cara
+  local. Medido y no instalado: con la cara E también en la respiración bajan a 0–68 por plano (decisión de r2c).
+- Paridad Metal, rejilla 192×256: en apnea con compresión, desacuerdo interior 0,000–0,002 % y 0,000 % en los píxeles
+  U; con respiración profunda (D 24–30 mm), 0,000–0,043 % y 0,000–0,036 % en U; Worker = CPU 100 %. La paridad viva de
+  r2b corrió en apnea (la app arranca en apnea espiratoria): esta es la primera con respiración.
+- Pico Metal (renderer + GPU): 1,681/1,697 GB en apnea y 1,732 GB respirando (main 8ee9fbd 1,809/1,857).
+- SwiftShader x64 con `?abdomen=s0028`: s0028Load, s0028WallGpu (normales sin caras distintas; peso respiratorio GPU/CPU
+  |Δw| ≤5,1e-5 en 3.264 puntos, 2.108 de ellos U), cutMapRafStall y aortaPulse ×4: 7/7 en 11,2 min, gpu-ready 53–61 s.
+  Las dos corridas anteriores vencieron esperas de 15 s del corte bajo carga ajena (Metal 6/6 en 34 s).
+
+[Evidencia r2b-U](../evidence/s0028-p2/README.md).
+
+## P2 r2b: GPU, Worker y 3D con la regla directa, aceptada (320)
+
+Sólo `?abdomen=s0028`; default conservado (hash GLSL por variante y 82.251 puntos idénticos a main 8ee9fbd).
+Regla de runtime idéntica en CPU, Worker del corte y GPU: superficie `p − τ·∇τ/|∇τ|²` sobre la EDT común,
+semilla polar respecto del centro de fila y carta bilineal; profundidad −τ. La inversa S−dN con Newton queda
+offline (anotación r1c): en GPU hacía estallar SwiftShader x64 (bisección 59f27ff ✓ / a26fe4a ✘) y se retira,
+junto con la carta auxiliar S/N que sólo él leía. Los cuatro testigos se regeneran con la regla directa:
+|Δ| máximo frente a la inversa 0,484 mm en frontera, 0,433 mm en profundidad y 3,76 columnas.
+
+Con celda D/E la consulta vale a cualquier profundidad: `inside = profundidad − cara interna` positivo es
+interior del cuerpo más allá de la pared, que necesitan contacto, peso respiratorio, cruce y clasificación.
+U sólo cuando la celda es U (algún soporte de las cuatro esquinas sin identidad geométrica) o fuera del dominio
+z. Contrato: celda conocida válida a 0, 20 y 60 mm; celda U inválida a todas. El corte por profundidad que se
+ensayó antes dejaba el cruce sin nodos válidos y se descarta.
+
+Normal de cara analítica, igual en CPU y GPU: −∇τ − P(∂B/∂c·∇c + ∂B/∂f·∇f), P = I − ∇τ∇τᵀ/|∇τ|², con la
+pendiente exacta de la celda bilineal desde sus cuatro esquinas. `wallFaceGradient`, `respWeightGradient` y la
+piel E (−∇τ) hacen una sola consulta; el contacto usa la huella rígida de cinco puntos del cero y una búsqueda
+1D del cruce, sin normales de pared. Lecturas por consulta: 7 EDT + 2 centros + 8 esquinas = 17, también con
+gradiente (≤20). Aproximación medida: sin curvatura de la proyección ni dcy/dz.
+
+SwiftShader destapó un defecto propio de la GPU: la lectura trilineal de la interfaz (página 1) entraba en el
+corte z siguiente, la página 0 de otra tesela con huecos U en NaN, y NaN·0 = NaN convertía un punto interior en
+banda. Carta y centros se leen por texelFetch y se interpolan en el orden de la CPU; prueba de datos del
+peligro (10.108 texeles D/E con el corte z siguiente U en NaN) y guarda «sin textureLod en la carta».
+
+Puertas r2b con el HEAD final (Low Power Mode activo; cifras de esta máquina, no de CI):
+
+- SwiftShader x64: s0028Load, s0028WallGpu (10/20/60 mm y normales epigástrica/subcostal, 0 caras distintas),
+  cutMapRafStall y aortaPulse ×4 con `?abdomen=s0028`: 7/7, gpu-ready 55–79 s, BOOT_MS y techos intactos.
+- Estática: ocho programas especializados bajo techo, samplers ≤16, ranuras ≤138 (steered 139–140, límite 179); JS 1.052.043/1.070.080 B;
+  descarga 20.318.825/25.000.000 B; atlas, reserva y tórax +0 B.
+- Paridad viva Metal: desacuerdo interior 0,000 % (0,002 % = 1 px de frontera U en subcostal y portal);
+  Worker = CPU 100 %; mismo muro en Worker y 3D. Bordes: grasa/banda, piel/grasa, cápsulas, U/D-E.
+- Pico Metal: 1,683 GB en apnea, 1,768/1,766 GB con respiración (main 1,789/1,851).
+- Pliegues por ventana (píxeles de banda en triángulos negativos): subxifoidea 5,88 %, epigástrica 0,77 %,
+  intercostal 1,78 %, subcostal 2,16 %, flanco 3,17 %, portal 1,48 %, tronco portal 1,18 %, renal 1,53 %,
+  hepatorrenal 0,35 %, portal subcostal 1,54 %; no bloquean.
+- Láminas: las ecografías r2b salen negras donde la línea no acopla. Es el contacto regional de r2a (cara
+  desconocida ⇒ sin compresión ni acoplamiento; el cruce no atraviesa huecos U), no la proyección: líneas
+  acopladas main 1.558, r2a 1.061, r2b 1.060 de 1.920; portal 11/192, subcostal 70, intercostal 67.
+  Decisión del propietario en r2c.
+
+[Evidencia r2b](../evidence/s0028-p2/README.md).
+
+## P2 r2a: cero y consumidores CPU, aceptada (320)
+
+Sólo `?abdomen=s0028`; default conservado.
+Se instala la revisión `logical-surface-v2` exportada por r1c, conservando el ID
+`s0028-P2-R1C-surface-v1` y el formato RG16F. Snapshot y hashes en `inputs-v2/source.json`
+de la evidencia externa. Cero EDT a φ/z fijos, cinco apoyos y huella rígida de 13 mm;
+ningún parámetro de pose cambia. `hepaticCostalBody` desactivado sólo para s0028.
+
+La carta invierte S−dN con normal EDT de soporte 13 mm y residual≤0,1 mm.
+Semillas espaciales de centro de banda, plano medio y piel; las semillas no deciden material.
+Cache derivado CPU 3.665.664 B, separado de atlas/reserva RAW/tórax+0 B.
+Reexportar el paquete no edita runtime ni geometría de mallas: dos instalaciones
+idénticas y marco P1 ajeno rechazado antes de escribir. Las mallas siguen compartiendo
+su Float32Array fuente y `respiratoryMotion.release()` conserva reposo exacto.
+
+Clasificación, contacto/compresión, caras y respiración usan pared regional.
+La piel E mide 1,5 mm; banda D/E no equivale a músculo identificado. Identidad muscular,
+fascias y peritoneo siguen U; interfaz interna E offset 0. Esqueleto/cartílago/pulmón O
+y músculos posteriores fuente permanecen. Se conserva cúpula E/P7 detrás de los órganos,
+sin usarla para recortar el hígado. Se corrige el signo renal: −25,5 mm histórico es
+interior; la cara de main mide −17,129599 mm EDT en otra base, sin mover la pose.
+
+Política U: sólo se interpola con cuatro soportes geométricos conocidos. Sin soporte
+no hay cara ni cruce a través de U, compresión del nodo o respiración local.
+Si el stencil del gradiente toca U, no se inventa una normal: NaN/null explícitos.
+El interior no identificado queda tejido blando no segmentado rotulado U, nunca
+se deduce aire, órgano, anillo uniforme o músculo de la ausencia de datos.
+Las máscaras fuente conservan identidad propia, incluso donde la pared es U.
+Un paquete enteramente U no tiene semillas: devuelve coverage U con profundidad finita,
+sin banda NaN ni cara interna; prueba roja y mutante de guarda ausente rechazado.
+
+Diez planos de 75.027 píxeles físicos: dependencia U efectiva = consulta de celda U
+que termina en clasificación U, dividida por todos los píxeles del plano.
+Por ventana (%): subxiphoid 12,89; epigastric 7,79; intercostal 11,94; subcostal 8,75; flank 12,22; portal 16,98; portalTrunk 9,55; renal 11,17; hepatorenal 16,87; portalSubcostal 10,91.
+También se publica la consulta U conservadora aunque gane una máscara fuente;
+geometría no acreditada total (incluye proyección/dominio/profundidad)=27,29–49,55%.
+Pared geométrica sobre máscara visceral:0 en cada plano, antes de precedencia material;
+no prueba todo el volumen. O puede estar incrustado en el complejo. Hay170 píxeles
+de borde nativo (0–37/ventana), fuera del SDF óseo/cartílago entre+0,0035 y+0,7255 mm;
+ninguno dentro del campo fuente. Se listan aparte, sin borrar máscaras.
+
+Auditoría independiente de 32.108 parches frente a inversa offline: 4 diferencias
+de soporte y 7 ramas de coordenadas alternativas; 0 cambios grasa/banda/interior donde
+ambas soluciones son conocidas. Se declara el límite, sin afirmar paridad global.
+Diez láminas TAC/main/CPU abiertas, seis casillas del propietario vacías y hashes.
+Cobertura offline r1c 90,98%; decisión 320 aceptada por el propietario el 04-11-2026 (r2c).
+Intercostal/P8 y posterior U/P3 permanecen fuera de esta ronda.
+
+Descarga 20.318.825/25.000.000 B; JS 1.041.773/1.070.080 B,
+margen 28.307 B. Cache derivado separado; techo torácico 60.413.664 B,
+margen 0 y+1 B rechazado. Ocho GLSL actual/s0028 idénticos a main; techos intactos.
+Pruebas rojas de cero/perfil corporal, cúpula e inversa13 mm→verdes; once mutantes
+rechazados. Default idéntico a main 8ee9fbd en 82.251 puntos y diez marcos.
+GPU, distribución Worker/mapa/3D, paridad, JIT/primer cuadro y pico Metal≤2 GB quedan
+para r2b. No ecografía, validación clínica, PR, push ni CI remota.
+[Informe y códigos del cierre serial r2a](/Users/daniel/.t3/scratch/vexus-owner-evidence-20261031/migration-p2-r2a/report.md).
+
+## P2 r1c: superficie continua offline, aceptada (320)
+
+**Pendiente de revisión del propietario.** `logical-surface-v2` del mismo ID
+`s0028-P2-R1C-surface-v1` resuelve las alternancias entre tabique superficial y
+complejo profundo. D=34446, E=562, U=3470 de 38.478 celdas: cobertura 90.98%,
+y las diez huellas superan 90%. Rejilla 512×181, D=[−210,+60] mm, paso 0,5 mm;
+misma piel/EDT, soporte normal 13 mm y poses intactas.
+
+Saltos globales mediana/p95/máximo=0.516/2.531/12 mm. Aristas
+ordinarias≤3 mm;1600 excepciones del reborde fuente enumeradas, con ambos
+extremos≤6 mm de costilla/esternón/cartílago observados. No hay excepción sin fuente.
+E interpola sólo huecos físicos≤5.782 mm. Identidades y capas finas U/E;
+esqueleto O independiente, material intercostal U/P8 y posterior U/P3.
+
+Paquete reabierto, inversa que recupera 100% de 35,008 centros propios y envolvente
+geométrica de todos los parches: invasión visceral 0, shell de separación de un
+vóxel 0, músculo sobre O0 y relleno posterior 0 en 387,455 vóxeles candidatos
+nativos. Las 117 máscaras fuente permanecen intactas. Diez planos tienen los mismos
+puntos físicos y casillas vacías. Portal e intercostal conservan explicación de las
+diferencias>3 mm frente al diseño en perfiles y máscaras, sin cambiar la pose.
+
+Descarga offline 20,318,825 B, incremento 166,554 B; metadatos 2,459 B.
+Payload 757.844 B, atlas/reserva RAW/tórax+0 B. Formato RG16F intacto; ocho costes
+estáticos dentro de los techos. No acredita GPU/contacto/JIT/Metal de la nueva geometría.
+El trabajo CPU r2a preexistente/concurrente se conserva por separado; esta ronda
+no instala el candidato ni cambia sus consumidores. R1 y r1c anterior, incluidos sus fallos, se conservan como historia.
+[Tabla, láminas abiertas, contactos, negativos y cierre](../evidence/s0028-p2/README.md).
+No es validación clínica; la revisión humana no reemplaza las medidas.
 
 ## Compactación de descarga tras P1 (319)
 

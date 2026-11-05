@@ -672,6 +672,17 @@ Corregida `color-absorption-linear-scaling` (174→176): A2 integra α_t(fD) por
 
 ## Candidato experimental s0028 (317/318)
 
+`s0028-wall-direct`: P2 r2b integra la pared regional en CPU, Worker del corte, 3D y GPU con la regla directa; se
+usa logical-surface-v2, cobertura offline 90,98 %, aceptada por el propietario el 04-11-2026 (decisión 320); no es pared ni
+adquisición aprobada. Los huecos quedan como tejido no segmentado U, sin cara interna para la clasificación. Para la
+sonda (r2b-U), un nodo U toma la cara E estimada del nodo conocido más cercano a ≤12 mm o acopla sólo por la piel, sin
+compresión; la respiración U es una rampa por fila (p10/p90 de la cara interna conocida), no la cara local, y salta en
+la frontera con la celda D/E. Con la presión en su tope, la pared regional D/E doblada en un borde de la cara deja sin
+acoplar parte de cuatro ventanas por debajo de main (1.607 líneas acopladas de 1.920 en las diez poses; main 1.558).
+La fracción U de celdas, los pliegues
+y las proyecciones sin prueba se registran por ventana en la [migración](anatomia/migracion-s0028.md). Intercostal
+sigue bloqueada/P8; posterior U/P3. No es validación clínica.
+
 P0 prepara herramientas; P1 r4c carga un candidato local sólo por `?abdomen=s0028`.
 Los identificadores de limitación del producto permanecen vigentes. [Migración](anatomia/migracion-s0028.md)
 distingue observado, derivado, estimado y desconocido: cámaras cardíacas, fascias, capas y

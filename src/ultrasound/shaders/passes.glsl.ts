@@ -1807,6 +1807,20 @@ void main() {
 `;
 
 /**
+ * Consulta del peso respiratorio (solo pruebas, r2b-U): `respWeight` y `respWeightGradient` en puntos MATERIALES de
+ * `uPoints`, con el GLSL especializado de la persona. La e2e los compara con el gemelo CPU en celdas D/E y U.
+ */
+export const FRAG_RESP_QUERY = /* glsl */ `${INTEGER_SHADER_HEADER_GLSL}
+${ANATOMY_GLSL}
+uniform sampler2D uPoints;
+out vec4 o0;
+void main() {
+  vec3 m = texelFetch(uPoints, ivec2(gl_FragCoord.xy), 0).xyz;
+  o0 = vec4(respWeight(m), respWeightGradient(m));
+}
+`;
+
+/**
  * Consulta de las tríadas portales (solo pruebas, decisión 78): el factor de `portalTriad` en puntos MATERIALES de
  * `uPoints`, con el mismo GLSL que la pasada B. La e2e lo compara punto a punto con el gemelo TS (`triadParity`): el
  * hash entero da las mismas tríadas en cualquier GPU y en TS.
