@@ -37,6 +37,7 @@ export const BONE_STEP_RATIO = Math.pow(10, -BONE_STEP_DB / 20);
  * en un hueso (`BONE_STEP_RATIO`), donde la fila de arriba llega sin mezclar hasta el centro de la de abajo (decisión
  * 88). `row(k)` es el valor de la fila k de las `n` (fila k centrada en (k + ½)·profundidad/n). Gemelo de `transLerp`
  * (`TRANSMISSION_LERP_GLSL`).
+ * @twin transmision-a0
  */
 export function transmissionLerp(row: (k: number) => number, n: number, depthMm: number, r: number): number {
   const x = Math.min(n - 1, Math.max(0, (r / depthMm) * n - 0.5));
@@ -49,6 +50,7 @@ export function transmissionLerp(row: (k: number) => number, n: number, depthMm:
 /**
  * `transmissionLerp` en GLSL para la pasada B (necesita uDepth): el canal `ch` de la textura `t` de la pasada A en la
  * columna `line` a la profundidad r.
+ * @twin transmision-a0
  */
 export const TRANSMISSION_LERP_GLSL = /* glsl */ `
 float transLerp(sampler2D t, int ch, int line, float r) {
@@ -120,14 +122,14 @@ export function rayFixedAttenuationDb(tissues: Iterable<Tissue>, stepMm: number)
  */
 export const MIRROR_BISECTION_STEPS = 6;
 
-/** Dirección reflejada en una interfaz material transportada al mundo. */
+/** Dirección reflejada en una interfaz material transportada al mundo. @twin espejo-pleural */
 export function mirrorDirection(dir: Vec3, normal: Vec3, warp?: Warp): Vec3 {
   const n = warp ? normalize(warpNormal(warp, normal)) : normal;
   const d = 2 * dot(dir, n);
   return [dir[0] - d * n[0], dir[1] - d * n[1], dir[2] - d * n[2]];
 }
 
-/** Núcleo de A0; se aplica solo en el impacto, no en cada muestra del rayo. */
+/** Núcleo de A0; se aplica solo en el impacto, no en cada muestra del rayo. @twin espejo-pleural */
 export const MIRROR_DIRECTION_GLSL = /* glsl */ `
 vec3 mirrorDirection(vec3 dir, vec3 normal, Warp w) {
   return reflect(dir, normalize(warpNormal(w, normal)));
@@ -138,6 +140,7 @@ vec3 mirrorDirection(vec3 dir, vec3 normal, Warp w) {
  * Gemelo de A0 (`FRAG_TRANS_HITS`): profundidad del espejo sobre la línea recta. `rLung` es el centro del
  * primer segmento grueso cuyo punto medio es pulmón y `step` el paso grueso; la bisección busca el cruce
  * entre la muestra gruesa anterior (que no lo es) y esa, y devuelve el punto medio del último intervalo.
+ * @twin transmision-a0
  */
 export function mirrorCrossing(isLung: (r: number) => boolean, rLung: number, step: number, steps = MIRROR_BISECTION_STEPS): number {
   let lo = Math.max(rLung - step, 0);
@@ -153,6 +156,7 @@ export function mirrorCrossing(isLung: (r: number) => boolean, rLung: number, st
 /**
  * Lo que A0 consulta en un punto del camino (gemelo de `classify` en el punto MATERIAL; la deformación
  * respiratoria va aparte, en el llamador).
+ * @twin transmision-a0
  */
 export interface HitsLineQuery {
   /** Transporte material→mundo de la normal, evaluado una vez en el impacto. */
@@ -231,6 +235,7 @@ export function pleuraCrossingLine(
  * cortina, con las reglas de A1 (`dbOf`). El pulmón de la cortina no es espejo ni impacto de gas, y el del
  * tórax que sigue pegado a la lámina tampoco (aire con aire: no hay pleura del diafragma entre los dos; si
  * no, el rayo se reflejaba dentro del pulmón a 3 mm de la pared).
+ * @twin transmision-a0
  */
 export function transmissionHitsLine(
   q: HitsLineQuery,
@@ -312,7 +317,7 @@ export function transmissionHitsLine(
   return { mirrorSeg, gasSeg, boneSeg, gasKind, mirrorR: hitR, dir, pleura };
 }
 
-/** Pérdida ida y vuelta (dB) de un segmento con las reglas de A1 (gas 60 dB/cm; el resto 2·α(f)·paso). */
+/** Pérdida ida y vuelta (dB) de un segmento con las reglas de A1 (gas 60 dB/cm; el resto 2·α(f)·paso). @twin prefijo-a2 */
 export function segmentDb(t: Tissue, stepMm: number, fMHz: number): number {
   return TISSUES[t].gas ? GAS_DB_PER_CM * (stepMm / 10) : 2 * attenuationDbPerCm(t, fMHz) * (stepMm / 10);
 }
@@ -341,12 +346,14 @@ export function rayTransmission(tissues: Iterable<Tissue>, stepMm: number, fMHz:
 }
 
 // ——— Gemelos de A2 sobre la rejilla de segmentos (decisión 54) y su versión dirigida (decisión 58) ———
+// @twin prefijo-a2
 
 /**
  * Salidas de A0 y A1 en TS, la rejilla sobre la que suman A2 y su gemelo dirigido. Índice de segmento
  * `línea·rows + fila`; las filas son las de la pasada A (profundidad/COARSE_DEPTH): la fila s cubre
  * [s, s + 1)·step y su centro está en (s + ½)·step. Tras el espejo de una línea, sus segmentos siguen el
  * camino reflejado (A1), no la línea radial.
+ * @twin prefijo-a2
  */
 export interface SegmentGrid {
   lines: number;
@@ -372,6 +379,7 @@ export interface SegmentGrid {
   /**
    * A0 h0.y/h0.z: segmento del primer gas y del primer hueso de cada línea (−1 sin ellos), los que busca la penumbra de
    * la mirada 0. Solo en la rejilla leída de la GPU (`readSegments`); sin ellos, los gemelos los derivan de A1 (`lineHits`).
+   * @twin prefijo-a2
    */
   hitGasSeg?: Int32Array;
   hitBoneSeg?: Int32Array;
@@ -382,6 +390,7 @@ export interface SegmentGrid {
  * aire; camino de más en .y; gas en .w), uHits0 (espejo en .x), uHits1 (su r exacta en .w), uCoarseN, uDepth,
  * uCurvR, uHalfSector, uLinesF, uSteer (θ, R·sin θ, R·cos θ, k2) y `STEERING_GLSL`. Devuelve (dB, sGas, sBone,
  * sMirror) y, aparte, (tipo de gas, línea del espejo, Ψ̃ del camino y su pendiente: decisión 86).
+ * @twin prefijo-a2
  */
 export const STEERED_PREFIX_GLSL = /* glsl */ `
 vec4 steeredPrefix(int line, int k, out vec4 extra) {

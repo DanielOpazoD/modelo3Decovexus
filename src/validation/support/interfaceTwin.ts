@@ -22,6 +22,7 @@
  * la cápsula difusa (decisión 64) compara 192 con 768. Las escenas de incidencia constante
  * (`spiralCapsule`), de pliegue (`kinkCapsule`), la traza a lo largo de la cara (`faceTrace`) y σ_L
  * (`sigmaL`) son las del PR 0 de las decisiones 60 y 64 (`capsuleTwin.test.ts`).
+ * @twin gemelo-interfaz
  */
 import { INTERFACES, Interface, LAST_TUBE_INTERFACE } from '../../anatomy/interfaces';
 import { CLUTTER, applyComplexKernel, clutterParams, lateralKernel } from '../../ultrasound/clutter';
@@ -170,6 +171,7 @@ function echoAt(c: Cls, cosI: number, cosF: number, r: number, o: SimOpts, focus
   ];
 }
 
+/** Lado TS de un par TS/GLSL (`tools/twins/registry.ts`). @twin gemelo-interfaz */
 export function simulate(scene: Scene, o: SimOpts): SimOut {
   const depth = o.depth ?? 180;
   const focus = o.focus ?? FOCUS;
@@ -394,6 +396,7 @@ export function calibrateBeta(depth: number, rFace = 80, twoSided = true): { bet
  * la decisión 62 bajó el músculo de la pared a 0,35, pero aquí es solo el tejido de encima de la cápsula, que
  * se mide contra el hígado de debajo). La de la cápsula es la de producción (`T_CAPSULE`): si cambia
  * (decisión 64), el gemelo la sigue.
+ * @twin gemelo-interfaz
  */
 export const BACK = {
   liver: 1.0,

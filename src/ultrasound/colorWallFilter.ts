@@ -1,7 +1,9 @@
 import { effectiveWallFilterCutoff, WALL_FILTER_MAX_PRF_FRACTION } from '../core/highPass';
 
 /** Steady-state power response of the same two Butterworth high-pass
- * biquads as PW. This does not turn the analytic Color estimator into IQ. */
+ * biquads as PW. This does not turn the analytic Color estimator into IQ.
+ * @twin filtro-pared-color
+ */
 export function colorWallResponseHz(frequencyHz: number, cutoffHz: number, prfHz: number): number {
   const fc = effectiveWallFilterCutoff(cutoffHz, prfHz);
   if (!Number.isFinite(frequencyHz)) throw new RangeError('Invalid wall-filter frequency');
@@ -15,6 +17,7 @@ export function colorWallResponseHz(frequencyHz: number, cutoffHz: number, prfHz
   return stage * stage;
 }
 
+/** Lado GLSL de un par TS/GLSL (`tools/twins/registry.ts`). @twin filtro-pared-color */
 export const COLOR_WALL_FILTER_GLSL = /* glsl */ `
 // Some highp drivers approximate built-in sin/cos too coarsely for R1.
 // Reduce to [-pi/2, pi/2]; degree-11 sine has remainder < 6e-8 there.

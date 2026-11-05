@@ -5,6 +5,7 @@ import type { Vec3 } from '../../core/vec3';
  * geometría, su SDF en TypeScript y su gemelo GLSL viven juntos, y las constantes que el shader
  * necesita se generan desde aquí (antes el GLSL copiaba a mano el redondeo 3,0 y el semiespesor
  * 1,2). El shader usa los uniforms `uFissure`, `uLigVen` y `uLigVenBox` del esquema único.
+ * @twin organo-ligamentos
  */
 
 /** Fisura umbilical: lámina sagital excavada en el lóbulo izquierdo, rellena de ligamento redondo. */
@@ -18,7 +19,7 @@ export interface UmbilicalFissure {
 
 export const UMBILICAL_FISSURE: UmbilicalFissure = { x: 15, halfWidth: 4, depthMm: 14, zMax: -30, roundMm: 3 };
 
-/** Región de la fisura (negativa dentro): |x − xF| < hw, a < `depthMm` de la superficie, anterior y bajo zMax. */
+/** Región de la fisura (negativa dentro): |x − xF| < hw, a < `depthMm` de la superficie, anterior y bajo zMax. @twin organo-ligamentos */
 export function umbilicalFissureSdf(m: Vec3, dBase: number, f: UmbilicalFissure = UMBILICAL_FISSURE): number {
   return Math.max(Math.abs(m[0] - f.x) - f.halfWidth, -(dBase + f.depthMm), m[2] - f.zMax, -m[1]);
 }
@@ -64,7 +65,7 @@ export function ligamentumVenosumSdf(m: Vec3, l: LigamentumVenosum = LIGAMENTUM_
   return Math.max(Math.abs(d) - l.halfMm, l.xMin - m[0], m[0] - l.xMax, l.zMin - m[2], m[2] - l.zMax);
 }
 
-/** Gemelo GLSL de las dos funciones anteriores (mismas fórmulas; constantes generadas). */
+/** Gemelo GLSL de las dos funciones anteriores (mismas fórmulas; constantes generadas). @twin organo-ligamentos */
 export const LIVER_LIGAMENTS_GLSL = /* glsl */ `
 const float FISSURE_ROUND_MM = ${UMBILICAL_FISSURE.roundMm.toFixed(3)};
 const float LIG_VEN_HALF_MM = ${LIGAMENTUM_VENOSUM.halfMm.toFixed(3)};

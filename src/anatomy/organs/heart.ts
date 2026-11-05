@@ -100,7 +100,7 @@ export const MEDIASTINUM = {
  * [EXTRAPOLACIÓN PROPIA] / NEEDS_CALIBRATION: no hay máscara de AD separada.
  */
 export const HEART_ATLAS_SHIFT: Vec3 = [0, 2, -25];
-/** Misma traslación estática que heartShift en GLSL, según el atlas cargado. */
+/** Misma traslación estática que heartShift en GLSL, según el atlas cargado. @twin organo-corazon */
 export function heartShift(): Vec3 {
   return abdominalAtlas ? HEART_ATLAS_SHIFT : [0, 0, 0];
 }
@@ -286,6 +286,7 @@ const V4 = [
  * la cúpula donde el saco apoya en ella), y en el pulmón cuya frontera más cercana es la del mediastino, la de esa frontera
  * (el espejo de la pasada A). Una sola llamada a `epiNormal`. La matriz lleva los ejes en columnas: (m − O)·B da las
  * coordenadas del marco.
+ * @twin organo-corazon
  */
 export const HEART_GLSL = /* glsl */ `
 const vec3 HV[${V3.length}] = vec3[${V3.length}](${V3.map(vec).join(',')});

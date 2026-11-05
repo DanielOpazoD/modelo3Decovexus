@@ -21,6 +21,7 @@ export const LUNG_CURTAIN = { z0: 18, thicknessMm: 3, xMax: -45, yMax: 40, pleur
 /**
  * Distancia a la frontera si el punto está dentro de la cortina, `null` si no. `insideWallMm` es
  * la profundidad bajo la cara interna de la pared; `caudalMm`, el descenso diafragmático.
+ * @twin organo-cortina
  */
 export function lungCurtainDistance(m: Vec3, insideWallMm: number, caudalMm: number): number | null {
   const c = LUNG_CURTAIN;
@@ -65,7 +66,7 @@ export function lungCurtainEdgeMm(m: Vec3, caudalMm: number, domeZ: number): num
   return m[2] - Math.min(c.z0 - caudalMm, domeZ);
 }
 
-/** Gemelo GLSL: devuelve la distancia a la frontera (≥ 0) o −1 fuera de la cortina. */
+/** Gemelo GLSL: devuelve la distancia a la frontera (≥ 0) o −1 fuera de la cortina. @twin organo-cortina @twin cortina-receso */
 export const LUNG_CURTAIN_GLSL = /* glsl */ `
 float lungCurtainDistance(vec3 m, float insideWall) {
   if (insideWall < uCurtain.y && m.x <= uCurtain.z && m.y <= uCurtain.w && m.z >= uCurtain.x)

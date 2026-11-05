@@ -20,6 +20,7 @@
  * El modelo `base` es la pared de antes de la decisión 62: retrodispersión 0,55 / 0,5 / 0,6 (grasa, músculo,
  * cartílago), sin grasa preperitoneal (músculo hasta la cara interna), sin caras de pared ni de costilla y
  * sin textura. Sin respiración (el marco material es el del mundo: apnea espiratoria).
+ * @twin gemelo-pared
  */
 import { INTERFACES, Interface, hasCurvatureCoherence, isRibInterface, isWallLayerInterface } from '../../anatomy/interfaces';
 import { torsoDepth } from '../../anatomy/primitives';
@@ -171,7 +172,7 @@ export function normalFrame(
   return { center: [face[0] - axial[0] * R, face[1] - axial[1] * R, face[2] - axial[2] * R], axial, lateral, elevation, face };
 }
 
-/** Envolvente de la mirada 0 en un parche de la imagen (B → C → D con la transmisión de A). */
+/** Envolvente de la mirada 0 en un parche de la imagen (B → C → D con la transmisión de A). @twin gemelo-pared */
 export function wallTwin(
   scene: AnatomyScene,
   caliber: VesselCaliber,

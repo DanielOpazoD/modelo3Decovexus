@@ -96,7 +96,7 @@ export const RETRO_FAT = {
 
 const smooth01 = (x: number): number => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
-/** Distancia con signo al psoas más cercano (mm; negativa dentro). */
+/** Distancia con signo al psoas más cercano (mm; negativa dentro). @twin organo-retroperitoneo */
 export function psoasSdf(m: Vec3): number {
   if (abdominalAtlas) return abdominalAtlasSdf(m, 9);
   const q: Vec3 = [Math.abs(m[0]), m[1], m[2]];
@@ -223,6 +223,7 @@ const R = RETRO_FAT;
 /**
  * Gemelo GLSL (usa `sdRoundCone` del riñón): `retroperitoneum` devuelve el tejido (T_PSOAS, T_QUADRATUS, T_RETROFAT o
  * T_BOWEL) y su distancia a la frontera en `bd`.
+ * @twin organo-retroperitoneo
  */
 export const RETROPERITONEUM_GLSL = /* glsl */ `
 const vec4 PSOAS[${PSOAS_NODES.length}] = vec4[${PSOAS_NODES.length}](${PSOAS_NODES.map((n) => `vec4(${n.map(f4).join(', ')})`).join(', ')});

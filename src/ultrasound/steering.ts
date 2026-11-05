@@ -27,6 +27,7 @@ import { PLEURA_STEER_GUESS_MM, PLEURA_STEER_ITERATIONS, aLineOrder, pleuraCapMm
  *
  * Gemelos: estas funciones (TS, pruebas y anillo del compuesto) y `STEERING_GLSL` (pasadas A2, A, B y K;
  * la GPU las incluye en la etapa 2 de la decisión 58), misma fórmula.
+ * @twin miradas-direccion
  */
 
 /** Número de onda de ida y vuelta de la fase de mirada, k2 = 2·k_rx = 4π/λ_rx (rad/mm): 28,56 a 3,5 MHz. */
@@ -204,6 +205,7 @@ export interface SteeredSample {
  * espejo, desde su cruce: decisión 91), la incidencia de la pleura, dónde se lee la transmisión de la reverberación y el alcance
  * fuera del arreglo. Mismas expresiones que el GLSL (`steeredSample.test.ts` las fija línea a línea); con
  * θ = 0 da la geometría de la mirada 0 de `FRAG_RAWFIELD`.
+ * @twin miradas-direccion
  */
 export function steeredSample(
   frame: SteeredSampleFrame,
@@ -301,6 +303,7 @@ export function steeredSample(
 /**
  * Las mismas funciones en GLSL (a = R·sin θ, rCos = R·cos θ; θ ≠ 0: la mirada 0 sigue la rama de hoy y no
  * las llama). Funciones puras, sin uniforms: las incluyen A2, A, B y K (etapa 2 de la decisión 58).
+ * @twin miradas-direccion
  */
 export const STEERING_GLSL = /* glsl */ `
 float steerBeta(float rho, float a) { return asin(a / rho); }

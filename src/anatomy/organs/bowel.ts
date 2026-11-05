@@ -87,7 +87,9 @@ export const BOWEL_BOUNDS = Array.from({ length: BOWEL_GROUPS }, (_, k): [number
 });
 export const BOWEL_TEXELS = BOWEL_GROUPS + 2 * BOWEL_NODES.length;
 /** Campos de serosa y luz, uniones independientes; gradientes analíticos en el segmento ganador.
- * Los campos no son distancias euclídeas: su norma se conserva para el eco de interfaz. */
+ * Los campos no son distancias euclídeas: su norma se conserva para el eco de interfaz.
+ * @twin organo-intestino
+ */
 export function bowelQuery(m: Vec3, radii: ArrayLike<number> = BOWEL_REST_RADII) {
   let d = BOWEL_FIELD_REACH_MM,
     lumen = BOWEL_FIELD_REACH_MM + BOWEL_WALL_MM;
@@ -149,7 +151,7 @@ export function bowelGasSdf(m: Vec3, lumen: number): number {
   return Math.max(lumen, d);
 }
 const f = (x: number) => x.toFixed(3);
-/** Gemelo: BOWEL_BASE apunta a las esferas de descarte y después a los nodos en uSceneTex. */
+/** Gemelo: BOWEL_BASE apunta a las esferas de descarte y después a los nodos en uSceneTex. @twin organo-intestino */
 export const BOWEL_GLSL = /* glsl */ `
 #define BOWEL_REACH ${f(BOWEL_FIELD_REACH_MM)}
 #define BOWEL_RADIUS ${f(BOWEL_RADIUS_MM)}

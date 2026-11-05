@@ -17,6 +17,7 @@ import { wallOrientation } from './wallTexture';
  * plano de elevación, como el de la pared (decisión 62); desde la decisión 87 también los lóbulos del seno renal (grasa
  * retroperitoneal que sigue en la perirrenal por el hilio, `sinusLobules`); desde la decisión 107 también los lóbulos de la grasa mesentérica/retroperitoneal; 1 en el resto de tejidos. Gemelos: estas
  * funciones (TS) y `RETRO_TEXTURE_GLSL`.
+ * @twin textura-retro
  */
 export const RETRO_TEXTURE = {
   /** Célula de la sección (mm): haces de fascículos de 2–5 mm (a 8–15 cm se ven los septos gruesos, no el perimisio fino). */
@@ -68,7 +69,7 @@ const norm3 = (v: Vec3): Vec3 => {
 /** Cuerda del psoas en (|x|, y, z): del primer al último nodo. */
 const PSOAS_CHORD: Vec3 = [0, 1, 2].map((i) => PSOAS_NODES[PSOAS_NODES.length - 1][i] - PSOAS_NODES[0][i]) as Vec3;
 
-/** Eje de las fibras del músculo retroperitoneal `tissue` en el lado del punto (unitario, marco del mundo). */
+/** Eje de las fibras del músculo retroperitoneal `tissue` en el lado del punto (unitario, marco del mundo). @twin textura-retro */
 export function retroMuscleAxis(m: Vec3, tissue: Tissue): Vec3 {
   const sx = m[0] < 0 ? -1 : 1;
   if (tissue === Tissue.Psoas) return norm3([sx * PSOAS_CHORD[0], PSOAS_CHORD[1], PSOAS_CHORD[2]]);
@@ -151,6 +152,7 @@ const chord = norm3(PSOAS_CHORD);
  * tissueBack). `retroTexture` se aplica en la muestra del medio y en sus planos de elevación (`fieldFor` y `fieldForPh`),
  * no en la pared que copia la serie de la pleura (decisión 61, `fieldForBase`), que va en un bucle: allí no hay músculos
  * retroperitoneales.
+ * @twin textura-retro
  */
 export const RETRO_TEXTURE_GLSL = /* glsl */ `
 const vec4 RT_F = vec4(${f4(VISCERAL_FAT_TEXTURE.cellMm)}, ${f4(VISCERAL_FAT_TEXTURE.gain)}, ${f4(VISCERAL_FAT_TEXTURE.salt)}, ${f4(VISCERAL_FAT_TEXTURE.norm)});

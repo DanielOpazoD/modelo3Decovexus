@@ -4,6 +4,7 @@
  * `steeredApertureTransmission`). Lo usan `aperture.test.ts` y `transmission.test.ts` (decisión 58). La
  * escena se clasifica en el plano de imagen con x lateral y z = profundidad bajo el centro de la cara
  * (z = ρ·cos α − R), como los diseños de la decisión 58 (`design-thi/psf-diversity/shadow.ts`).
+ * @twin rejilla-segmentos
  */
 import { TISSUES, Tissue, attenuationDbPerCm } from '../../anatomy/tissues';
 import { type ApertureGeometry } from '../../ultrasound/aperture';
@@ -45,6 +46,7 @@ export function emptyGrid(g: GridGeometry = GRID_GEOMETRY): SegmentGrid {
 /**
  * A1 sobre una escena sin espejo: cada segmento radial se clasifica en su centro con las reglas de
  * `FRAG_TRANS_SEGMENTS` (gas 60 dB/cm, resto 2·α(f)·paso) y sus marcas (aire, hueso, tipo de gas).
+ * @twin rejilla-segmentos
  */
 export function segmentGridFromScene(
   classify: (x: number, z: number) => Tissue,

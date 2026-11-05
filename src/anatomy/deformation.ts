@@ -19,6 +19,7 @@ import type { AnatomyScene } from './scene';
  * respiración ha llevado bajo ella, así que mundo → material deshace primero la compresión y después la
  * respiración (el mismo orden que `toMaterial` en la GLSL). `compression` es el estado del contacto del cuadro
  * (null: sin sonda, el tronco rígido); lo pone el simulador con cada pose.
+ * @twin deformacion
  */
 /** Cota del intervalo normalizado tras resolver la inversa; no es precisión clínica. */
 export const RESPIRATORY_INVERSE_STEPS = 14;
@@ -39,6 +40,7 @@ export class RespiratoryDeformation {
     return recompress([m[0] + d[0], m[1] + d[1], m[2] + d[2]], this.compression);
   }
 
+  /** Lado TS de un par TS/GLSL (`tools/twins/registry.ts`). @twin deformacion */
   toMaterial(p: Vec3, resp: RespiratorySample): Vec3 {
     // Primero deshacer compresión; después resolver a = w(q − D·a·dir), a ∈ [0,1].
     const q = uncompress(p, this.compression);

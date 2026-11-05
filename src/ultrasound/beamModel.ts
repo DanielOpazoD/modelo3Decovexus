@@ -101,6 +101,8 @@ export const CONVEX_BEAM: BeamParams = {
  * dentro del ≤ 0,9 mm de la AAPM para sondas de < 4 MHz y del ≤ 1,19 mm de 23 convexos en maniquí, Cilia y Camilleri
  * 2023): la gaussiana de `FRAG_AXIAL` tiene σ = max(0,6; axialSigmaMm(r)/dr) muestras. La comparten el renderizador,
  * los gemelos B→C→D y la anchura del perfil de la cápsula difusa (decisión 64).
+ * @twin haz-psf
+ * @twin gemelo-interfaz
  */
 export const AXIAL_SIGMA_MM = CONVEX_BEAM.axialSigma0Mm;
 
@@ -166,7 +168,7 @@ export function lateralFwhmMm(rMm: number, focusMm: number, p: BeamParams = CONV
   return 1 / Math.sqrt(1 / (tx * tx) + 1 / (rx * rx));
 }
 
-/** σ lateral (mm) de la PSF de dos vías (gaussiana equivalente: FWHM / 2,355). */
+/** σ lateral (mm) de la PSF de dos vías (gaussiana equivalente: FWHM / 2,355). @twin haz-psf */
 export function lateralSigmaMm(rMm: number, focusMm: number, p: BeamParams = CONVEX_BEAM): number {
   return lateralFwhmMm(rMm, focusMm, p) / 2.3548;
 }
