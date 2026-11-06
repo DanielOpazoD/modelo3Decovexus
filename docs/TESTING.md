@@ -44,6 +44,43 @@ Ver [criterios de selección, costes observados y recibo CI](engineering/iterati
 - **Fronteras**: cerca de un umbral clínico (PF 30/50 %, S/D renal 0,3) una prueba acepta la
   clase vecina y lo dice; lejos de él exige igualdad.
 
+## Mutantes reproducibles (decisión 322, punto 8)
+
+`npm run mutants` repite los mutantes que antes vivían en un script de cada ronda. Cada módulo tiene un manifiesto en
+`tools/mutants/manifests/`: nombre, reemplazo exacto `from` → `to` (una sola aparición), qué comportamiento rompe, la
+ronda donde se midió y las pruebas focales que deben detectarlo. El ejecutor corre primero esas focales sobre el árbol
+original (deben pasar), después aplica cada mutante solo, corre sus focales con un trabajador y restaura el módulo byte
+a byte. Escribe `mutants.json` (resultado, tiempo, pruebas rojas y su primer mensaje por mutante) y un log por mutante.
+
+- **Muerto** es una aserción roja. Si todas las pruebas rojas caen por excepciones de ejecución (`TypeError`,
+  `ReferenceError`…), el mutante rompe la ejecución sin probar ningún comportamiento: cuenta como error, no como muerto.
+- **Restauración**: un diario en `.cache/mutants/` guarda el original mientras el módulo está mutado; ante una señal
+  (`SIGINT`, `SIGTERM`, `SIGHUP` al cerrar la terminal) se detiene el Vitest hijo y se restaura, y ante una caída lo
+  restaura el manejador de salida o, si el proceso murió sin él, la ejecución siguiente. Un informe de Vitest ausente o
+  truncado es un error del ejecutor, no una caída.
+- **Una ejecución a la vez** por checkout (cerrojo `.cache/mutants/lock.json` con el pid); `--list` sólo lee y no toca
+  el diario de otra corrida en curso.
+- **Una edición durante un mutante no se pisa**: si el módulo deja de ser el mutante aplicado, la edición se guarda en
+  `.cache/mutants/rescued/`, el diario conserva el original sin mutante y la corrida se detiene.
+- **Salida**: 0 todos muertos; 1 alguno sobrevive; 2 error, interrupción o caída (línea base roja, manifiesto inválido,
+  cerrojo ocupado, mutante con error, sin correr, árbol cambiado).
+
+```bash
+npm run mutants -- --list
+npm run mutants -- --module s0028Solids
+npm run mutants -- --only grasa-solo-sin-dueno,cajas-sin-OR --out .cache/mutants/prueba
+```
+
+Cubre 29 mutantes en siete módulos: pared, contacto y gemelo GLSL de P2 (los que detectan pruebas CPU o
+estáticas), sólidos, escena, Worker del corte y rótulos de P3, los siete de la revisión de #331 y dos de la de #334
+(`hueso-duplicado`, con su prueba focal, y `fuera-de-cajas-false`). `banda-desde-0mm` es equivalente y queda fuera,
+documentado en su manifiesto. El conjunto completo tardó 483 s aquí con carga media 11 (línea base 34 s; cada mutante
+1–61 s; con 27 mutantes y carga 10–13, 507 s). La capa rápida comprueba que cada `from` sigue apareciendo una vez y que
+cada focal existe: un PR que mueve el texto bajo un mutante actualiza su manifiesto en el mismo PR y demuestra que sigue
+muerto; no se borra un mutante para obtener verde. Correr los mutantes no entra en el veredicto protegido (25 min de
+techo): `.github/workflows/mutants.yml` corre a mano o cuando cambian esos módulos, sus focales, el ejecutor,
+`vite.config.ts` o `package.json`, y su rojo no bloquea la fusión (en CI tardó 404 s el paso y 462 s el trabajo).
+
 ## Coste del cuadro
 
 `window.__vexusTest.frameCostMs(n, opts?)` (`src/app/testHooks.ts`) mide el coste medio de `n` cuadros
