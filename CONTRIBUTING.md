@@ -143,7 +143,10 @@ cuando son términos técnicos de programación; comentarios en español.
 
 ## Herramientas locales
 
-- `npm ci` activa el hook `.githooks/pre-push` (tipos + pruebas rápidas antes de empujar).
+- `npm ci` activa el hook `.githooks/pre-push`: `npm run feedback -- --all-fast` antes de empujar (formato y lint de lo
+  cambiado, tipos y todas las pruebas rápidas; ≤3 min sin carga; qué corre dónde en `docs/TESTING.md`).
+- `npm run closure -- --evidence <carpeta>`: cierre serial de una ronda con etapas, reanudación (`--resume`), espera y
+  muestreo de carga, logs y `closure.json` (decisión 322).
 - Dependabot abre cada lunes una PR agrupada por ecosistema; entra si CI (check + e2e) está verde.
 - ESLint usa las reglas con información de tipos (`recommendedTypeChecked`).
 

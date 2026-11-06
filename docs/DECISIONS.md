@@ -10578,6 +10578,27 @@ sustitución s0028). Sin cambio de producto: 38 programas × 2 variantes y 85 co
 del build idénticos salvo su procedencia (commit y hora; 1.061.770 B); en `src/validation` el registro costaba +4.657 B
 porque `glslMinify` no renombra lo que aparece en cadenas. No es validación clínica.
 
+**Punto 7** (dieta de tiempo y cierre). El gancho de push corre la capa rápida mediante `npm run feedback -- --all-fast`:
+formato/lint de lo cambiado frente a `origin/main` (incluidos nuevos sin seguimiento), tipos y todas las pruebas rápidas.
+Lentas, matrices, cobertura, build y E2E siguen en `check` y en la CI con recibo; ninguna prueba cambia de capa. Un push
+que sólo borra ramas no ejecuta la capa rápida (0,02 s). Si falta `origin/main`, bloquea con instrucciones para traer la referencia.
+El ABBA inicial había medido 120–122 s frente a 113–119 s del gancho anterior, pero no acreditaba estabilidad: los cierres
+posteriores fallaron en una prueba de `s0028SolidsClassify` a los 62,8/63,4 s, con plazo 60 s; el de `d580cac` duró 230,2 s
+con carga 7,32 al empezar. Tras la revisión independiente, se limita el pool a la mitad de las plazas disponibles,
+con mínimo uno y máximo cuatro (`VITEST_MAX_WORKERS`; cuatro en este equipo). Se conservan el plazo de 60 s y el archivo
+`s0028SolidsClassify.test.ts`, que modifica otra PR.
+
+Capas con presupuesto (`tools/ci/testTiers.ts`, regla única del marcador en la primera línea): gancho ≤ 180 s y cada
+archivo rápido ≤ 49 s con un trabajador (2 × 24,5 s de `equivalenceSweep`). No se elevan. La capa rápida serial midió
+395 s con carga 4,9 y 541 s con carga 12; la mediana de cocientes entre los 274 archivos emparejados es ×1,16 (×1,06 en
+los 48 cuya base supera 2 s). Con carga > 5 el presupuesto es no evaluable: estado `budget-unavailable`, nunca aprobado.
+`npm run closure` ejecuta las etapas en serie, con `nice` y un trabajador salvo el gancho real, y guarda carga, energía,
+logs y los quince archivos más lentos por capa. `--resume` exige el mismo checkout, HEAD, contenido y definición;
+excluir una etapa fallida conserva el fallo. HEAD y contenido se comprueban antes del veredicto final. Los artefactos
+`.validation/` se copian sólo si se modificaron durante el intento. SIGINT/SIGTERM/SIGHUP cierran el recibo incluso
+durante `--wait-load` y terminan el grupo del hijo. `--checkout` permite acreditar otro checkout sin reutilizar el suyo.
+`check` conserva su composición y la CI protegida sigue siendo la puerta. No cambia el producto ni hay validación clínica.
+
 **Punto 8** (mutantes reproducibles). `tools/mutants/` tiene un manifiesto por módulo (nombre, `from`/`to` exactos con una
 sola aparición, comportamiento que rompe, ronda de origen y pruebas focales) y un ejecutor, `npm run mutants`: corre las
 focales sobre el árbol original, aplica cada mutante solo con un trabajador, lo restaura byte a byte y escribe

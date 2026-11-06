@@ -1,14 +1,36 @@
 #!/bin/sh
-# Antes de empujar: tipos y pruebas rápidas (~40 s). El check completo lo hace CI.
+# Antes de empujar, sólo la capa rápida (decisión 322, punto 7): `npm run feedback -- --all-fast` comprueba formato y
+# lint de lo que cambia frente a origin/main, tipos y todas las pruebas rápidas; presupuesto 180 s sin carga ajena
+# (docs/TESTING.md). Lentas, matrices, cobertura, build y E2E quedan en `npm run check` y en la CI protegida, cuyo
+# recibo es la puerta de fusión.
 set -e
+# Git da una línea por referencia: «<ref local> <sha local> <ref remota> <sha remoto>». Un push que sólo borra ramas
+# (todas las sha locales en ceros) no publica código: no hay nada que comprobar. Sin líneas, se comprueba como siempre.
+hook_deletes_only=
+while read -r hook_local_ref hook_local_sha hook_remote_ref hook_remote_sha; do
+  case "$hook_local_sha" in
+    '' | *[!0]*) hook_deletes_only=no ;;
+    *) if [ -z "$hook_deletes_only" ]; then hook_deletes_only=yes; fi ;;
+  esac
+done
+if [ "$hook_deletes_only" = yes ]; then
+  echo 'El push sólo borra ramas remotas: no hay código que comprobar.'
+  exit 0
+fi
 hook_head=$(git rev-parse HEAD)
 hook_index=$(git write-tree)
 hook_config=$(git hash-object "$(git rev-parse --git-common-dir)/config")
-npm run typecheck --silent
-npm test --silent
+hook_start=$(date +%s)
+# Acota la contención del pool: la mitad de las plazas disponibles, como máximo cuatro. No cambia plazos ni capas.
+# Un límite explícito menor (p. ej. VITEST_MAX_WORKERS=3) se conserva.
+VITEST_MAX_WORKERS=$(node -p 'const requested = Number(process.env.VITEST_MAX_WORKERS); Math.max(1, Math.min(4, Math.floor(require("node:os").availableParallelism() / 2), Number.isInteger(requested) && requested > 0 ? requested : 4))')
+export VITEST_MAX_WORKERS
+echo "Gancho: VITEST_MAX_WORKERS=$VITEST_MAX_WORKERS."
+npm run feedback --silent -- --all-fast
 if [ "$(git rev-parse HEAD)" != "$hook_head" ] ||
   [ "$(git write-tree)" != "$hook_index" ] ||
   [ "$(git hash-object "$(git rev-parse --git-common-dir)/config")" != "$hook_config" ]; then
   echo 'El hook modificó HEAD, índice o configuración Git; publicación detenida.' >&2
   exit 1
 fi
+echo "Capa rápida del gancho: $(($(date +%s) - hook_start)) s (presupuesto 180 s sin carga ajena)."

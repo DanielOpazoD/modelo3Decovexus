@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { availableParallelism, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { feedbackFiles, feedbackFingerprint, feedbackGitEnvironment, feedbackPlan } from '../../tools/workspace/feedbackPlan';
 
@@ -27,6 +27,7 @@ describe('Feedback focalizado sin confundirse con aceptación', () => {
       git('add', '.');
       git('commit', '-m', 'baseline');
       const base = git('rev-parse', 'HEAD').toString().trim();
+      expect(() => feedbackFiles(root, 'origin/main', [])).toThrow('Falta la base Git origin/main');
       writeFileSync(join(root, 'src/a.ts'), 'committed');
       git('add', '.');
       git('commit', '-m', 'change');
@@ -88,6 +89,68 @@ describe('Feedback focalizado sin confundirse con aceptación', () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+  const ZERO = '0'.repeat(40),
+    SHA = 'a'.repeat(40);
+  it.each([
+    ['sólo borrados', `(delete) ${ZERO} refs/heads/x ${SHA}\n(delete) ${ZERO} refs/heads/y ${SHA}\n`, false, '999'],
+    ['borrado y publicación', `(delete) ${ZERO} refs/heads/x ${SHA}\nrefs/heads/feat ${SHA} refs/heads/feat ${ZERO}\n`, true, '999'],
+    ['publicación y borrado', `refs/heads/feat ${SHA} refs/heads/feat ${ZERO}\n(delete) ${ZERO} refs/heads/x ${SHA}\n`, true, '999'],
+    ['publicación', `refs/heads/feat ${SHA} refs/heads/feat ${ZERO}\n`, true, '999'],
+    ['publicación con tres trabajadores', `refs/heads/feat ${SHA} refs/heads/feat ${ZERO}\n`, true, '3'],
+    ['sin líneas', '', true, '999'],
+  ])('el gancho real con un push de %s corre la capa rápida: %s', (_case, stdin, runs, requestedWorkers) => {
+    // `git push --delete` no publica código: con todas las sha locales en ceros el gancho no corre las ~1.900 pruebas.
+    const root = mkdtempSync(join(tmpdir(), 'vexus-hook-delete-'));
+    const env = feedbackGitEnvironment();
+    const git = (...args: string[]) => execFileSync('git', args, { cwd: root, stdio: 'pipe', env });
+    try {
+      git('init');
+      git('config', 'user.name', 'Hook fixture');
+      git('config', 'user.email', 'fixture@example.invalid');
+      writeFileSync(join(root, 'seed'), 'one');
+      git('add', '.');
+      git('commit', '-m', 'one');
+      mkdirSync(join(root, 'bin'));
+      writeFileSync(
+        join(root, 'bin/npm'),
+        '#!/bin/sh\necho "$@" >> "$FIXTURE_CALLS"\necho "$VITEST_MAX_WORKERS" >> "$FIXTURE_CALLS"\nexit 0\n',
+        { mode: 0o755 },
+      );
+      const calls = join(root, 'calls');
+      const result = spawnSync('sh', [join(import.meta.dirname, '../../.githooks/pre-push'), 'origin', 'https://example.invalid/x.git'], {
+        cwd: root,
+        encoding: 'utf8',
+        input: stdin,
+        env: { ...env, PATH: join(root, 'bin') + ':' + (env.PATH ?? ''), FIXTURE_CALLS: calls, VITEST_MAX_WORKERS: requestedWorkers },
+      });
+      expect(result.status, result.stderr).toBe(0);
+      expect(existsSync(calls)).toBe(runs);
+      if (!runs) expect(result.stdout).toContain('sólo borra ramas');
+      else {
+        const workers = Number(readFileSync(calls, 'utf8').trim().split('\n')[1]);
+        expect(workers).toBeGreaterThanOrEqual(1);
+        expect(workers).toBeLessThanOrEqual(Math.max(1, Math.floor(availableParallelism() / 2)));
+        expect(workers).toBeLessThanOrEqual(4);
+        expect(workers).toBeLessThanOrEqual(Number(requestedWorkers));
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+  it('el gancho de push corre sólo la capa rápida (decisión 322): el feedback completo de la capa rápida', () => {
+    const root = join(import.meta.dirname, '../..');
+    const code = readFileSync(join(root, '.githooks/pre-push'), 'utf8')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'));
+    expect(code.filter((l) => /^npm /.test(l))).toEqual(['npm run feedback --silent -- --all-fast']);
+    for (const heavy of ['test:slow', 'test:all', 'test:coverage', 'npm run check', 'npm run build', 'e2e', 'calibrate', 'VITEST_TIER'])
+      expect(code.join('\n'), heavy).not.toContain(heavy);
+    // --all-fast: formato y lint de lo cambiado, tipos y toda la capa rápida, sin la lenta.
+    expect(feedbackPlan(root, [], true)).toMatchObject({ mode: 'fast', slow: false });
+    const scripts = (JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { scripts: Record<string, string> }).scripts;
+    expect(scripts['feedback']).toBe('node --import tsx tools/workspace/feedback.ts');
   });
   it('elige feedback proporcionado y no declara el navegador ni las matrices como aprobados', () => {
     const root = join(import.meta.dirname, '../..');
