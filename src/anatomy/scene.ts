@@ -1,7 +1,7 @@
 import { anatomyBundle } from './anatomyBundle';
 import { s0028InsideWall, s0028RespiratoryWall, s0028WallAt } from './s0028Wall';
 import { s0028SourceValue } from './s0028Source';
-import { s0028Owners, type S0028Ownership } from './s0028Solids';
+import { S0028_RENAL_FACE_MM, s0028KidneyGradient, s0028Owners, type S0028Ownership } from './s0028Solids';
 import { buildTubeGrid, TUBE_GRID_PITCH_MM, type TubeGrid } from './gpu/tubeGrid';
 import { hepaticCostalBody } from './hepaticCostalWall';
 import { thoracicAtlas, thoracicValue, thoracicMaterial, thoracicSdf, thoracicFrame } from './thoracicAtlas';
@@ -203,8 +203,8 @@ export function faceGeometryOf(i: Interface): FaceGeometry | null {
 }
 
 /**
- * Gradiente de la distancia de la cara que dibuja un punto (`AnatomyScene.faceGradient`, gemelo de
- * `faceGradient` en la GLSL; decisión 57).
+ * Gradiente de la distancia de la cara que dibuja un punto (`AnatomyScene.faceGradient`, par TS/GLSL de
+ * `faceGradient`; decisión 57). @twin cara-gradiente
  */
 export interface FaceGradient {
   /** Dirección del gradiente: la normal de la cara que usa el eco. */
@@ -549,7 +549,8 @@ export class AnatomyScene {
 
   /**
    * Profundidad (mm) de un punto MATERIAL bajo la cara interna de la pared: negativa en la pared, 0 en la
-   * pleura parietal (gemelo GLSL `insideWallMm`). A0 busca en ella el cruce exacto de la pleura (decisión 61).
+   * pleura parietal (en la GLSL, `insideWallMm`). A0 busca en ella el cruce exacto de la pleura (decisión 61).
+   * @twin pared-interna
    */
   insideWallMm(m: Vec3): number {
     // U no tiene cara interna: centinela negativo finito, sin afirmar una frontera a cero.
@@ -559,7 +560,9 @@ export class AnatomyScene {
 
   /**
    * El punto MATERIAL es pulmón de la cortina (la lámina bajo la pared), no del tórax bajo la cúpula
-   * (decisión 61; gemelo GLSL `inLungCurtain`). Solo tiene sentido donde `classify` da pulmón.
+   * (decisión 61). En la GPU no hay función propia: `classifyInside` mira `lungCurtainDistance`. Solo tiene sentido
+   * donde `classify` da pulmón.
+   * @twin cortina-receso
    */
   inLungCurtain(m: Vec3, caliber: VesselCaliber): boolean {
     if (this.identity.person === 's0028') return s0028SourceValue(m, 'lung').d < 0;
@@ -568,7 +571,8 @@ export class AnatomyScene {
 
   /**
    * El punto MATERIAL, si `classify` da pulmón, toca la pared en el receso (la cortina o el tórax por encima de
-   * la inserción del diafragma): ahí empieza la pleura parietal (decisión 61; gemelo GLSL `inLungRecess`).
+   * la inserción del diafragma): ahí empieza la pleura parietal (decisión 61; en la GLSL, `inLungRecess`).
+   * @twin cortina-receso
    */
   inLungRecess(m: Vec3): boolean {
     if (this.identity.person === 's0028') return s0028SourceValue(m, 'lung').d < 0;
@@ -577,8 +581,8 @@ export class AnatomyScene {
 
   /**
    * Distancia (mm) de un punto MATERIAL de la cara interna de la pared al borde del pulmón que la toca en el
-   * receso: z − min(borde de la cortina, inserción del diafragma); null fuera de la huella (gemelo GLSL
-   * `lungCurtainEdgeMm`, decisión 61).
+   * receso: z − min(borde de la cortina, inserción del diafragma); null fuera de la huella (en la GLSL,
+   * `lungCurtainEdgeMm`, decisión 61). @twin cortina-receso
    */
   lungEdgeMm(m: Vec3, caliber: VesselCaliber): number | null {
     if (this.identity.person === 's0028') return null;
@@ -588,6 +592,7 @@ export class AnatomyScene {
   /**
    * Peso del campo de desplazamiento respiratorio en un punto material: 1 en
    * las vísceras, 0 en pared, costillas y columna (B.4, [EXTRAPOLACIÓN PROPIA]).
+   * @twin deformacion
    */
   respiratoryWeight(m: Vec3): number {
     // s0028: celda D/E como la cara interna regional; U, la rampa por profundidad de su fila (s0028RespiratoryWall).
@@ -607,14 +612,16 @@ export class AnatomyScene {
    *
    * `withCurtain = false` es la variante sin la cortina pulmonar (decisión 61): lo que hay detrás de la
    * lámina de pulmón, igual que `classify` en todos los demás puntos. La usan el tejido que se ve en
-   * parte a través del borde blando de la cortina y su transmisión (gemelo GLSL `classifyWith(m, false)`).
+   * parte a través del borde blando de la cortina y su transmisión (en la GLSL, `classifyWith(m, false)`).
    * La clasificación sigue siendo binaria: la fracción de aire del haz es de la imagen, no de la anatomía.
    * Fuera del hueso, la frontera cuenta hueso y disco. Los dueños corticales de PR139 y el disco de PR119 pueden
    * dibujar la cortical más cercana; las interfaces de órganos y sus caras suprimidas se conservan (`withSpineFace`).
    *
    * s0028 (P3, decisión 321): tras la piel E se reúnen todos los dueños independientes (`s0028Owners`) antes de
    * cualquier orden; dos o más son conflicto, U y conservados en `solids`. Un dueño único da su material, salvo el
-   * riñón (borde D, interior U) y la grasa compatible D; sin dueño, U. Sólo CPU y Worker: la GPU sigue en r3.
+   * riñón (interior U; su borde O es la cara acústica de la cápsula, r3) y la grasa compatible D; sin dueño, U. La GPU
+   * hace lo mismo con los mismos dueños (`s0028Solids.glsl.ts`).
+   * @twin clasificacion
    */
   classify(m: Vec3, caliber: VesselCaliber, withCurtain = true): Classification {
     const torso = this.torso;
@@ -722,11 +729,14 @@ export class AnatomyScene {
       };
     // El quiste izquierdo, líquido de un quiste simple (E rotulada en su dueño).
     if (renal)
-      return {
-        ...NONE,
-        tissue: owner === 'kidney_cyst_left' ? Tissue.Fluid : Tissue.UnsegmentedSoftTissue,
-        boundaryDistance: -solids!.owners[0].d,
-      };
+      return renalFace(
+        {
+          ...NONE,
+          tissue: owner === 'kidney_cyst_left' ? Tissue.Fluid : Tissue.UnsegmentedSoftTissue,
+          boundaryDistance: -solids!.owners[0].d,
+        },
+        solids!,
+      );
     const kidney = isS0028 ? NO_KIDNEY : this.classifyKidneys(m);
     if (kidney.cls) return kidney.cls;
     if (this.hasAbdominalAtlas) {
@@ -748,12 +758,13 @@ export class AnatomyScene {
       if (muscle.d < 0 && muscle.label > 0)
         return { ...NONE, tissue: muscle.label <= 2 ? Tissue.Psoas : Tissue.Muscle, boundaryDistance: -muscle.d };
       // Grasa compatible D por vóxel (HU, ≤30 mm del riñón, sin máscara): composición, no compartimento.
-      if (owner === 'compatible_fat') return { ...NONE, tissue: Tissue.Fat, boundaryDistance: 0 };
+      if (owner === 'compatible_fat') return renalFace({ ...NONE, tissue: Tissue.Fat, boundaryDistance: 0 }, solids!);
       // Conservar la cúpula E; la máscara de cada órgano ya ganó antes.
       // No usar esta estimación P7 para cortar el hígado de la persona.
       const dome = sdDiaphragm(m, this.diaphragm, this.torso);
-      if (dome >= 0 && dome < DIAPHRAGM_THICKNESS_MM) return this.classifyDiaphragm(dome, s0028InsideWall(m) ?? Infinity);
-      return { ...NONE, tissue: Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' };
+      if (dome >= 0 && dome < DIAPHRAGM_THICKNESS_MM)
+        return renalFace(this.classifyDiaphragm(dome, s0028InsideWall(m) ?? Infinity), solids!);
+      return renalFace({ ...NONE, tissue: Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' }, solids!);
     }
     const retroPoint: Vec3 = [m[0], m[1] - this.spineReferenceOffset, m[2]];
     const [tissue, dRetro] = retroperitoneum(retroPoint, -depth - wallMm, kidney.dPeriMm, this.hasAbdominalAtlas ? m : retroPoint);
@@ -825,6 +836,7 @@ export class AnatomyScene {
         }
         return sdDiaphragm(m, this.diaphragm, this.torso);
       case 'kidneyOuter':
+        if (this.identity.person === 's0028') return Math.min(s0028SourceValue(m, 'kidneyRight').d, s0028SourceValue(m, 'kidneyLeft').d);
         return Math.min(
           kidneyOuterSdf(kidneyLocal(m, this.kidneyRight), this.kidneyRight),
           kidneyOuterSdf(kidneyLocal(m, this.kidneyLeft), this.kidneyLeft),
@@ -854,8 +866,8 @@ export class AnatomyScene {
   }
 
   /**
-   * Gradiente de la distancia de la cara que dibuja un punto MATERIAL (gemelo de `faceGradient` en la
-   * GLSL, decisión 57), o null si el punto no dibuja ninguna. En los tubos es el analítico de su sección
+   * Gradiente de la distancia de la cara que dibuja un punto MATERIAL (par TS/GLSL de `faceGradient`,
+   * decisión 57; @twin cara-gradiente), o null si el punto no dibuja ninguna. En los tubos es el analítico de su sección
    * (`tubeFaceGradient`, con su curvatura circunferencial); en el resto, diferencias centrales de paso
    * `FACE_GRADIENT_EPS_MM` de la distancia de su cara (`faceSdf`), como la GPU. El eco de interfaz
    * divide `interfaceDistance` por su norma: así el perfil, muestreado a lo largo del rayo, integra 1
@@ -926,6 +938,12 @@ export class AnatomyScene {
     if (geometry === 'spine') {
       const frame = spineFaceFrame(m, this.spine);
       return { ...this.numericGradient(m, (p) => spineBodySd(p, this.spine), frame.curvature), axis: frame.axis };
+    }
+    if (this.identity.person === 's0028' && geometry === 'kidneyOuter') {
+      // El borde O de la máscara renal: gradiente analítico de su trilineal, como la GPU (s28PGrad).
+      const g = s0028KidneyGradient(m),
+        norm = g ? Math.hypot(...g) : 0;
+      return norm > 0 ? { normal: scale(g!, 1 / norm), norm, curvature: 0 } : { normal: [0, 1, 0], norm: 1, curvature: 0 };
     }
     if (this.hasAbdominalAtlas && (geometry === 'kidneyOuter' || geometry === 'perirenalOuter')) {
       // Como la GPU: el gradiente del término que manda, y la grasa con el contorno en primer orden (decisión 309)
@@ -1351,6 +1369,16 @@ const KIDNEY_TISSUE: Readonly<Record<KidneyRegion, Tissue>> = {
   cortex: Tissue.RenalCortex,
 };
 
+/**
+ * s0028 P3 (r3): el borde O de la máscara renal es la cara de la cápsula para las muestras a menos de
+ * `S0028_RENAL_FACE_MM` de él (dentro del riñón U, en el quiste, en la grasa D o en U), si no hay otra más cerca; el
+ * tejido no cambia. En la GLSL: el final de `classifyInside` s0028 (@twin clasificacion).
+ */
+function renalFace(c: Classification, solids: S0028Ownership): Classification {
+  const d = Math.abs(solids.kidneyMm);
+  return d < S0028_RENAL_FACE_MM && d < c.interfaceDistance ? { ...c, interface: Interface.RenalCapsule, interfaceDistance: d } : c;
+}
+
 /** s0028 P3: sin arquitectura ni grasa perirrenal analíticas (Morison sin grasa inventada). */
 const NO_KIDNEY = { cls: null, dPeriMm: 1e3, periThin: false } as const;
 
@@ -1369,7 +1397,7 @@ const NONE: Classification = Object.freeze({
 /**
  * Recuperación PR119: la frontera cuenta cuerpos y discos. Conserva los dueños de PR139 y admite el disco
  * intervertebral junto a sus platillos; nunca sustituye la cara de un órgano ni ilumina el arco provisional.
- * Gemelo del final de classifyWith (GLSL), con el alcance conservador de la decisión103.
+ * Par TS/GLSL del final de `classifyWith`, con el alcance conservador de la decisión 103 (@twin clasificacion).
  */
 function withSpineFace(c: Classification, dSpine: number, dBody: number, dDisc: number): Classification {
   // Conserva los dueños de PR139, también cuando una cápsula tiene su cara suprimida.

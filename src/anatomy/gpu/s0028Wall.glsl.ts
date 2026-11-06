@@ -1,9 +1,10 @@
 import { S0028_BUNDLE as B } from '../anatomyBundle';
+import { s0028SolidsShader } from './s0028Solids.glsl';
 
 const offsets = (rows: readonly (readonly number[])[]) => rows.map((v) => `ivec3(${v.join(',')})`).join(',');
 
 /**
- * Regla directa P2 (gemela de `s0028Wall.ts`): proyección EDT `p − τ·∇τ/|∇τ|²`, semilla polar y carta bilineal en la
+ * Regla directa P2 (par GLSL de `s0028Wall.ts`, @twin s0028-pared): proyección EDT `p − τ·∇τ/|∇τ|²`, semilla polar y carta bilineal en la
  * reserva P1; identidad nearest independiente de la geometría D/E. La carta y los centros se leen con texelFetch y se
  * interpolan aquí, en el orden de la CPU: los huecos U son NaN y el filtro del hardware mezcla el corte z vecino (otra
  * tesela) aun con peso 0 (NaN·0 = NaN). Consulta: 7 EDT + 2 centros + 8 esquinas = 17 lecturas; el gradiente analítico
@@ -93,6 +94,18 @@ float s28RespWall(vec3 m){
 `;
 
 type Replace = (source: string, type: string, name: string, replacement: string) => string;
+/**
+ * Especializa la fuente por defecto para s0028: pared P2 (regla directa, rampas U), su clasificación ligera, la cortina
+ * pulmonar retirada, la pleura y el hígado sobre los lectores P1, y los sólidos P3 (`s0028SolidsShader`, r3).
+ * @twin clasificacion
+ * @twin pared-interna
+ * @twin deformacion
+ * @twin organo-pared
+ * @twin organo-cortina
+ * @twin organo-higado
+ * @twin s0028-pared
+ * @twin textura-pared
+ */
 export function s0028WallShader(source: string, replace: Replace): string {
   let changed = replace(
     source,
@@ -162,9 +175,9 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
  if(bone.x<0.0){c.tissue=thoracicMaterial(bone.y)==2?T_VERTEBRA:T_BONE;c.bd=-bone.x;return true;}
  bone=abdominalAtlasValue(m,8);
  if(bone.x<0.0){c.tissue=bone.y<=5.0?T_VERTEBRA:T_BONE;c.bd=-bone.x;return true;}
- bone=s28_sacrum(m);if(bone.x<0.0){c.tissue=T_BONE;c.bd=-bone.x;return true;}
- vec2 cart=s28_cartilage(m);
- if(cart.x<0.0){c.tissue=T_CARTILAGE;c.bd=-cart.x;c.iface=IF_PERICHONDRIUM;c.ifd=-cart.x;return true;}
+ float s=s28PA(m,10);if(s<0.0){c.tissue=T_BONE;c.bd=-s;return true;}
+ s=s28PT(m,1);
+ if(s<0.0){c.tissue=T_CARTILAGE;c.bd=-s;c.iface=IF_PERICHONDRIUM;c.ifd=-s;return true;}
  bool valid;vec4 q=s28WallAt(m,valid);
  if(!valid||q.w>=q.z)return false;
  bool fat=q.w<q.x;float outer=fat?1.5:q.x,inner=fat?q.x:q.y;
@@ -172,56 +185,9 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
  c.iface=fat?IF_DEEP_FASCIA:IF_PERITONEUM;c.ifd=abs(inner-q.w);return true;
 }`,
   );
-  const start = changed.search(/void\s+classifyInside\s*\(/);
-  const body = changed.indexOf('{', start),
-    tailRelative = changed.slice(body).search(/float\s+bdBowel\s*=/);
-  if (start < 0 || body < 0 || tailRelative < 0) throw new Error('Falta clasificación interior s0028');
-  const tail = body + tailRelative;
-  let end = body + 1,
-    depth = 1;
-  for (; depth && end < changed.length; end++) depth += changed[end] === '{' ? 1 : changed[end] === '}' ? -1 : 0;
-  if (depth || tail >= end) throw new Error('Clasificación interior s0028 incompleta');
-  end--;
-  changed =
-    changed.slice(0, tail) +
-    `
-  vec2 muscle=s28_posteriorMuscle(m);
-  if(muscle.x<0.0&&muscle.y>0.0){c.tissue=muscle.y<=2.0?T_PSOAS:T_MUSCLE;c.bd=-muscle.x;return;}
-  float dome=sdDome(m,dn);
-  if(dome>=0.0&&dome<DIAPHRAGM_MM){c.tissue=T_DIAPHRAGM;c.bd=min(dome,DIAPHRAGM_MM-dome);c.n=dn;
-    if(dome>0.5*DIAPHRAGM_MM){c.iface=IF_DIAPHRAGM_LIVER;c.ifd=DIAPHRAGM_MM-dome;}return;}
-  c.tissue=T_UNSEGMENTED;c.bd=0.0;return;
-` +
-    changed.slice(end);
-  // Sin cortina ni tórax/cúpula procedurales (dDome=1000) nada vivo de classifyInside lee `wall`: sin segunda
-  // consulta de pared; −depth−wall=1000 es el «sin límite» de la CPU (wallMm de U).
-  changed = changed.replace(
-    /float\s+wall\s*=\s*uWall\.x\s*\+\s*uWall\.y\s*\+\s*uWall\.z\s*;/,
-    `
-  vec2 lung=s28_lung(m);if(lung.x<0.0){c.tissue=T_LUNG;c.bd=-lung.x;return;}
-  if(s28_heart(m).x<0.0){float dome=sdDome(m,c.n),ifd;c.tissue=thorax(m,dome,c.bd,ifd,c.n);return;}
-  float wall=-depth-1000.0;`,
-  );
-  changed = changed.replace(
-    /if\s*\(withCurtain\)\s*\{\s*float\s+dCurtain\s*=\s*lungCurtainDistance\(m,\s*-depth\s*-\s*wall\);\s*if\s*\(dCurtain\s*>=\s*0\.0\)\s*\{[^}]+\}\s*\}/,
-    '',
-  );
-  changed = changed.replace(/float\s+dDome\s*=\s*sdDome\(m,\s*dn\);/, 'dn=vec3(0.0,0.0,-0.5);float dDome=1000.0;');
-  changed = changed.replace(/float\s+inner\s*=\s*min\(-dLiver,\s*min\(dDia,\s*-depth\s*-\s*wall\)\);/, 'float inner = -dLiver;');
-  changed = replace(
-    changed,
-    'Cls',
-    'classifyWith',
-    `
-Cls classifyWith(vec3 m,bool withCurtain){
- Cls c;float depth;vec3 tn;if(classifyWall(m,c,depth,tn))return c;
- classifyInside(m,withCurtain,depth,tn,1000.0,c);
- vec2 q=thoracicValue(m);
- if(thoracicMaterial(q.y)==0&&q.x>=0.0&&q.x<1.3&&q.x<c.ifd&&c.tissue!=T_LUNG&&c.tissue!=T_FLUID&&c.tissue!=T_BLOOD){
-   c.bd=min(c.bd,q.x);c.iface=IF_RIB;c.ifd=q.x;thoracicFrame(m,c.tangent,c.kc);}
- return c;
-}`,
-  );
+  // P3 (decisión 321, r3): dueños independientes, conflicto U, riñón U con su contorno O, grasa D y tubos; sin cortina
+  // ni tórax/cúpula procedurales (dDome = 1000) y sin segunda consulta de pared.
+  changed = s0028SolidsShader(changed, replace);
   changed = replace(changed, 'float', 'liverInner', 'float liverInner(vec3 m){return -abdominalAtlasSdf(m,4);}');
   changed = replace(changed, 'vec3', 'visceralHeight', 'vec3 visceralHeight(vec2 p){return vec3(0.0);}');
   changed = replace(
@@ -233,12 +199,13 @@ Cls classifyWith(vec3 m,bool withCurtain){
   // Sin capas procedurales en s0028: ningún consumidor encuentra una frontera. Antes NaN: la estriación del músculo
   // posterior lo llevaba al eco del paso B y los filtros de la imagen apagaban bloques enteros (láminas r2b).
   changed = replace(changed, 'vec4', 'wallDepths', 'vec4 wallDepths(float u,float z){return vec4(1000.0);}');
-  // Gemelo de la CPU s0028 (r2a): sin cortina pulmonar procedural. lungEdgeMm es null y el receso es el pulmón fuente;
-  // con el modelo por defecto A0 tomaba el cruce de la pared regional por pleura y B ponía aire bajo ella (láminas r2b).
+  // Como la CPU s0028 (r2a, @twin organo-cortina): sin cortina pulmonar procedural. lungEdgeMm es null y el receso es el
+  // pulmón fuente; con el modelo por defecto A0 tomaba el cruce de la pared regional por pleura y B ponía aire bajo
+  // ella (láminas r2b).
   if (/float\s+lungCurtainEdgeMm\s*\(/.test(changed))
     changed = replace(changed, 'float', 'lungCurtainEdgeMm', 'float lungCurtainEdgeMm(vec3 m){return -1000.0;}');
   if (/bool\s+inLungRecess\s*\(/.test(changed))
-    changed = replace(changed, 'bool', 'inLungRecess', 'bool inLungRecess(vec3 m,float insideWall){return s28_lung(m).x<0.0;}');
+    changed = replace(changed, 'bool', 'inLungRecess', 'bool inLungRecess(vec3 m,float insideWall){return s28PT(m,2)<0.0;}');
   // Reverberación tras gas: pow con base negativa (r < k·gasHit) no está definido en GLSL ES y Metal devuelve NaN desde
   // el gas hasta el final de la línea. El pulmón y el gas fuente de s0028 lo disparan en casi todas las ventanas; el
   // cuadrado explícito es la misma gaussiana. El default no se toca (sus programas siguen idénticos a main).
@@ -261,7 +228,7 @@ Cls classifyWith(vec3 m,bool withCurtain){
   changed = changed.replace(
     /}\s*else\s+if\s*\(c\.iface\s*==\s*IF_RIB\s*\|\|\s*c\.iface\s*==\s*IF_PERICHONDRIUM\)\s*\{/,
     `} else if(c.iface==IF_PERICHONDRIUM){
-    g=vec3(s28_cartilage(m+h.xyy).x-s28_cartilage(m-h.xyy).x,s28_cartilage(m+h.yxy).x-s28_cartilage(m-h.yxy).x,s28_cartilage(m+h.yyx).x-s28_cartilage(m-h.yyx).x);
+    g=vec3(s28PT(m+h.xyy,1)-s28PT(m-h.xyy,1),s28PT(m+h.yxy,1)-s28PT(m-h.yxy,1),s28PT(m+h.yyx,1)-s28PT(m-h.yyx,1));
   } else if(c.iface==IF_RIB){`,
   );
   changed = changed.replace(/float\s+lg\s*=\s*length\(g\);/, 'if(any(isnan(g)))return vec4(0.0);\n  float lg = length(g);');
