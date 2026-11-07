@@ -373,6 +373,8 @@ export class AnatomyScene {
       // Internal analytic renal architecture remains estimated; it is not source segmentation.
       this.kidneyRight.center = [-58.6862655, -32.3988, -145.5475];
       this.kidneyLeft.center = [61.9266845, -40.78815, -127.1065];
+      // El marco renal derecho propio de la persona, si lo tiene (decisión 329: el riñón del atlas por defecto, movido)
+      Object.assign(this.kidneyRight, person.cpu.kidneyRightFrame?.());
     }
     this.ribs = [];
     // Pares costales 5–10: el 7.º cartílago llega al esternón a la altura del xifoides (z 0).

@@ -17,6 +17,7 @@ import {
   type KidneyRegion,
 } from '../../organs/kidney';
 import { retroperitoneum } from '../../organs/retroperitoneum';
+import { withParavertebral } from './paravertebral';
 import { STERNUM, sternumSd } from '../../organs/sternum';
 import { ribSearchDepth, wallArc, wallDepths, wallFace, type WallDepths } from '../../organs/wall';
 import { kidneyQuery } from '../../people/default/kidneyInterior';
@@ -172,17 +173,14 @@ export function classifyInside(
   // al diafragma que float32 clasificaba al otro lado (CI de #39: Bowel→Diaphragm, 1 de 44 826).
   let bd = Math.min(BOWEL_BD_CAP_MM, dDome - DIAPHRAGM_THICKNESS_MM, dGb - scene.gallbladderWallMm, scene.liverBaseSdf(m), -depth - wallMm);
   for (const k of [scene.kidneyRight, scene.kidneyLeft]) bd = Math.min(bd, perirenalOuterSdf(kidneyLocal(m, k), k));
-  // detrás del peritoneo parietal posterior, el retroperitoneo (decisión 81): psoas, cuadrado lumbar y grasa; delante, el
+  // detrás del peritoneo parietal posterior, el retroperitoneo (decisión 81): psoas, cuadrado lumbar, masa paravertebral y grasa; delante, el
   // intestino. Su distancia a la frontera cuenta también la columna, que se clasifica antes (el psoas la bordea)
 
   const retroPoint: Vec3 = [m[0], m[1] - scene.spineReferenceOffset, m[2]];
-  const [tissue, dRetro] = retroperitoneum(
-    retroPoint,
-    -depth - wallMm,
-    kidney.dPeriMm,
-    scene.hasAbdominalAtlas ? m : retroPoint,
-    scene.person?.cpu,
-  );
+  const insideWall = -depth - wallMm;
+  const retro = retroperitoneum(retroPoint, insideWall, kidney.dPeriMm, scene.hasAbdominalAtlas ? m : retroPoint, scene.person?.cpu);
+  // la masa paravertebral (decisión 328), solo con el atlas
+  const [tissue, dRetro] = scene.hasAbdominalAtlas ? withParavertebral(retro, m, insideWall, kidney.dPeriMm, scene.person?.cpu) : retro;
   bd = Math.max(0, Math.min(bd, dRetro, spineDistance));
   if (tissue !== Tissue.Bowel) return { ...NONE, tissue, boundaryDistance: bd };
   if (scene.hasAbdominalAtlas) {

@@ -663,7 +663,10 @@
     ["wallHash", "qY"],
     ["wallNoise", "qZ"],
     ["WALL_DIFFUSE_Q", "q2"],
-    ["wallRegion", "q3"]
+    ["wallRegion", "q3"],
+    ["dPsoas", "rD"],
+    ["dQuadratus", "rE"],
+    ["paravertebralSdf", "rF"]
   ],
   "afterDot": [
     "COMP_NODES",

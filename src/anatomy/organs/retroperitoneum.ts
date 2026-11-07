@@ -269,6 +269,11 @@ float quadratusSdf(vec3 m, float insideWall, float dPeri) {
   float d = max(max((insideWall - t) / QL_L.x, QL_X.x - ax), max((ax - (QL_X.y + (QL_X.z - QL_X.y) * f)) / QL_L.z, m.z - QL_Z.x));
   return max(max(max(d, -insideWall / QL_L.x), QL_Z.y - m.z), max(m.y - QL_Z.w, -dPeri / QL_L.y));
 }
+float paravertebralSdf(vec3 m, float insideWall, float dPeri, float dPsoas, float dQuadratus) {
+  vec2 c = vec2(abs(m.x) - 38.0, abs(m.y + 86.0) - 12.0);
+  return max(max(min(max(c.x, c.y), 0.0) + length(max(c, 0.0)) - 12.0, max(1.0 - abs(m.x), max(-insideWall, -dPeri) / 1.25)),
+    max(max(1.0 - dPsoas, 1.5 - dQuadratus), max(m.z, -260.0 - m.z)));
+}
 float retroFrontY(float ax, float z) {
   float y = RF_A.x + (RF_A.w - RF_A.x) * smoothstep(0.0, 1.0, (ax - RF_A.y) / (RF_A.z - RF_A.y));
   return y + (min(y, RF_B.z) - y) * smoothstep(0.0, 1.0, ((uAbdominalAtlasEnabled!=0?-210.0:RF_B.x) - z) / RF_B.y);
@@ -284,8 +289,11 @@ int retroperitoneum(vec3 m, vec3 compartmentPoint, float insideWall, float dPeri
   float dQ = quadratusSdf(uAbdominalAtlasEnabled!=0?compartmentPoint:m, insideWall, dPeri);
   bd = min(-dQ, dP);
   if (dQ < 0.0) return T_QUADRATUS;
+  float dV = uAbdominalAtlasEnabled != 0 ? paravertebralSdf(compartmentPoint, insideWall, dPeri, dP, dQ) : 1e3;
+  bd = min(-dV, dP);
+  if (dV < 0.0) return T_QUADRATUS;
   float dF = retroFatSdf(compartmentPoint);
-  bd = min(abs(dF), min(dP, dQ));
+  bd = min(abs(dF), min(dP, min(dQ, dV)));
   return dF < 0.0 ? T_RETROFAT : T_BOWEL;
 }
 `;
