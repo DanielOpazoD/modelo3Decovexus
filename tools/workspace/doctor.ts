@@ -6,9 +6,19 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
 const read = (name: string) => readFileSync(resolve(root, name), 'utf8');
+const gitTimeoutMs = 2_000;
 const git = (...args: string[]) => {
-  const result = spawnSync('git', ['--no-optional-locks', ...args], { cwd: root, encoding: 'utf8' });
-  if (result.status !== 0) throw new Error(result.error?.message ?? result.stderr.trim());
+  const result = spawnSync('git', ['--no-optional-locks', ...args], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: gitTimeoutMs,
+    killSignal: 'SIGKILL',
+    maxBuffer: 8 * 1024 * 1024,
+  });
+  if (result.error && 'code' in result.error && result.error.code === 'ETIMEDOUT')
+    throw new Error(`lectura Git excedió ${gitTimeoutMs} ms; el estado no está verificado`);
+  if (result.status !== 0 || result.stderr.trim())
+    throw new Error(result.error?.message ?? (result.stderr.trim() || `Git terminó con estado ${result.status}`));
   return result.stdout.trim();
 };
 let failed = false;
@@ -29,6 +39,16 @@ check('Node', () => {
 });
 check('Git', () => `${git('branch', '--show-current') || 'HEAD separado'} · ${git('rev-parse', '--short', 'HEAD')}`);
 check('árbol de trabajo', () => git('status', '--short') || 'limpio');
+check('referencias Git', () => {
+  const refs = git('for-each-ref', '--format=%(refname) %(objectname)');
+  return `${refs ? refs.split('\n').length : 0} referencias legibles`;
+});
+check('objetos alcanzables de HEAD', () => {
+  const objects = git('rev-list', '--objects', '--no-object-names', '--missing=print', 'HEAD').split('\n');
+  const missing = objects.filter((object) => object.startsWith('?'));
+  if (missing.length) throw new Error(`${missing.length} objetos ausentes: ${missing.slice(0, 5).join(', ')}`);
+  return `${objects.length} objetos presentes; no sustituye un fsck completo`;
+});
 check('main local / origin/main', () => {
   const counts = git('rev-list', '--left-right', '--count', 'main...origin/main').split(/\s+/);
   return `main tiene ${counts[0]} commits propios y ${counts[1]} pendientes; origin/main es una referencia local, no una consulta remota`;

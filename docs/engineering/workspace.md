@@ -20,6 +20,12 @@ entre equipos. `engines >=22` es permisivo; solo Node 24 está validado actualme
 
 `workspace:doctor` comprueba Node, Git, hooks, dependencias directas contra el lockfile y el Chromium
 instalado de Playwright. No abre el navegador, instala paquetes, inicia procesos ni consulta la red.
+También exige referencias legibles y presencia de los objetos alcanzables desde HEAD: un `status`
+limpio no detecta por sí solo objetos ausentes. Cada lectura Git termina con un fallo explícito si
+supera 2 s; este límite pertenece al diagnóstico, no a las pruebas del simulador. Se conservan los
+avisos de referencias rotas como fallos. No repara, descarga, borra ramas ni sustituye `git fsck`.
+Estos controles solo se ejecutan al invocar `workspace:doctor`, no en cada prueba focalizada.
+
 Un árbol con cambios se muestra para revisión; no es un error por sí solo. `origin/main` es una
 referencia local: necesita `git fetch origin` para refrescarse.
 
