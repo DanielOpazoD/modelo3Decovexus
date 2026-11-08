@@ -11217,3 +11217,30 @@ No es validación clínica.
 - Fixtures de programas y huella semántica default regeneradas con el cálculo de sus pruebas, sin cambio en la fuente de
   s0028. Pasa `shaderLimits.test.ts`.
 - Informe externo con perfiles, láminas y negativos: `default-stomach-20261107/report.md`.
+
+## 333. El diagnóstico del entorno no confunde un árbol limpio con objetos Git disponibles
+
+**Contexto.** En la copia de trabajo sincronizada, `status` estaba limpio y `workspace:doctor` aprobaba,
+pero Git no podía leer el blob de `HEAD:README.md`. El archivo de trabajo conservaba el hash esperado.
+Otras lecturas se bloqueaban en referencias gestionadas por FileProvider. Recuperar el pack publicado
+no resolvió esas esperas. La copia aislada se verificó por separado; no se borraron referencias del original.
+
+**Decisión.** Solo al invocar `workspace:doctor`, exigir que se puedan enumerar las referencias y que
+estén presentes los objetos alcanzables desde HEAD. Los avisos de referencias rotas también fallan.
+Cada comando Git tiene un límite de 2 s y termina con error explícito al agotarlo; no se amplía ningún
+plazo de las pruebas. No se descarga ni repara el repositorio automáticamente. La presencia de objetos
+no sustituye a `git fsck` ni garantiza la lectura de todos los historiales locales no alcanzables desde HEAD.
+
+**Consecuencias.** Los nuevos controles no se añaden a `feedback`, al hook ni a cada prueba focalizada.
+Siete pares alternados en la copia aislada midieron la invocación completa del doctor, con wrapper y npm:
+medianas 504,12 ms antes y 537,39 ms después, diferencia 33,27 ms. Es una observación de ese entorno,
+no una mejora de rendimiento del simulador. No cambia anatomía, física, resolución, imagen ni recepción.
+
+**Verificación.** Cuatro regresiones usan repositorios Git temporales: caso sano sin mutaciones,
+blob eliminado con `status` limpio y archivo intacto, referencia rota que Git ignora con un aviso,
+y un ejecutable de prueba que bloquea exclusivamente la enumeración de referencias. El último caso
+verifica la terminación del comando y que continúan las comprobaciones posteriores. El testigo del
+blob falla usando el doctor original de `1b77636` y pasa con el candidato; se conserva ese negativo.
+La capa rápida pasa 2058 pruebas y cinco fallos esperados. Check completo y CI del head final son
+requisitos separados de aceptación; no se atribuye a estas comprobaciones validación de imagen o clínica.
+Evidencia: `fidelity-next15-evidence/environment/git-isolation-20261108/guard`.

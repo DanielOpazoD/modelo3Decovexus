@@ -336,3 +336,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [330](DECISIONS.md#L11034) | Los dos riñones por defecto, subidos bajo el hígado y el bazo | vigente |
 | [331](DECISIONS.md#L11098) | Las dos ventanas de la VCI como imagen completa: subxifoidea centrada en la unión, aorta sobre la vértebra y estómago distendido | vigente |
 | [332](DECISIONS.md#L11160) | El estómago de la epigástrica como víscera hueca: muscular propia gruesa y contenido líquido con ecos puntuales | vigente |
+| [333](DECISIONS.md#L11221) | El diagnóstico del entorno no confunde un árbol limpio con objetos Git disponibles | vigente |
