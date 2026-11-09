@@ -82,6 +82,25 @@
    ]
   },
   {
+   "id": "image-views-66-paired",
+   "path": "image-views-66/paired",
+   "kind": "dir",
+   "bytes": 13704659,
+   "sha256": "127b674a0339b8d336b2f857cad17d12784e5c2be43ab38f393dc463bc799358",
+   "files": 34,
+   "round": "image-views-66",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 336
+    },
+    {
+     "doc": "docs/estado/imagen.md",
+     "decision": null
+    }
+   ]
+  },
+  {
    "id": "image-visible-65-paired",
    "path": "image-visible-65/paired",
    "kind": "dir",

@@ -81,3 +81,11 @@ con el riñón longitudinal. Cambia la adquisición, no el tamaño o la forma de
 la anatomía y toda la cadena de imagen. La prueba de visibilidad protege ahora también el hígado;
 antes sólo protegía el riñón. [Comparaciones registradas](../evidence/INDEX.md#image-visible-65-paired);
 negativos en la ronda manual `image-visible-65`.
+
+## Revisión de ventanas (decisión 336)
+
+Ocho tarjetas revisadas, dos casos: tres poses nuevas (VCI transversal, suprahepática derecha
+intercostal y media subcostal). Cinco conservadas tras comparar candidatos; la hepatorrenal de
+335 sigue vigente. [16 pares registrados](../evidence/INDEX.md#image-views-66-paired). Sólo cambia
+la adquisición; no hay remodelación anatómica ni tareas programadas. Aceptación remota pendiente
+del último commit del PR352; los resultados anteriores no se reutilizan como CI del nuevo head.

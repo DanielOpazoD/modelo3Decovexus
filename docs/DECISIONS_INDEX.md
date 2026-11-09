@@ -339,3 +339,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [333](DECISIONS.md#L11221) | El diagnóstico del entorno no confunde un árbol limpio con objetos Git disponibles | vigente |
 | [334](DECISIONS.md#L11248) | RM conserva la interpolación axial de amplitud sin cambiar el filtro lateral | vigente |
 | [335](DECISIONS.md#L11287) | El inicio hepatorrenal muestra hígado y riñón entre costillas | vigente |
+| [336](DECISIONS.md#L11320) | Revisar las ocho ventanas y guardar encuadres vasculares más completos | vigente |

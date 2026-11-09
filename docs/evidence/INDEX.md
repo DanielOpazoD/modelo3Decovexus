@@ -8,7 +8,7 @@ Generado por `tools/docs/evidence-index.ts` desde `index.json`, que guarda adem�
 presente, `node --import tsx tools/docs/evidence-index.ts --check` verifica tipo, bytes y hash de cada entrada; sin
 ella solo avisa. Una carpeta se resume por el SHA-256 de las líneas `sha256  ruta` de sus archivos, ordenadas.
 
-108 artefactos; 1.595.473.212 bytes.
+109 artefactos; 1.609.177.871 bytes.
 
 | Id | Ruta en la raíz | Tipo | Archivos | Bytes | SHA-256 | Citado en (decisión) |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -17,6 +17,7 @@ ella solo avisa. Una carpeta se resume por el SHA-256 de las líneas `sha256  ru
 | <a id="default-wall-b2-20261107-report-md"></a>`default-wall-b2-20261107-report-md` | `default-wall-b2-20261107/report.md` | archivo | 1 | 13.436 | `a872955e7a2b` | DECISIONS.md (326), DECISIONS.md (327) |
 | <a id="default-wall-figures-bfinal"></a>`default-wall-figures-bfinal` | `default-wall/figures/bfinal` | carpeta | 9 | 4.930.727 | `300a459f0dac` | DECISIONS.md (326) |
 | <a id="default-wall-report-b-md"></a>`default-wall-report-b-md` | `default-wall/report-b.md` | archivo | 1 | 4773 | `462ae4504c5e` | DECISIONS.md (326) |
+| <a id="image-views-66-paired"></a>`image-views-66-paired` | `image-views-66/paired` | carpeta | 34 | 13.704.659 | `127b674a0339` | DECISIONS.md (336), estado/imagen.md |
 | <a id="image-visible-65-paired"></a>`image-visible-65-paired` | `image-visible-65/paired` | carpeta | 17 | 6.804.335 | `e6d21145053d` | DECISIONS.md (335), estado/imagen.md |
 | <a id="ivc-atrium"></a>`ivc-atrium` | `ivc-atrium` | carpeta | 2755 | 643.426.112 | `9013f3287ccf` | anatomia/relaciones-tac.md |
 | <a id="ivc-wall"></a>`ivc-wall` | `ivc-wall` | carpeta | 1474 | 295.397.275 | `24c336129e5f` | fidelity/ivc-wall-frontier.md |

@@ -11316,3 +11316,46 @@ dos casos. No se interpreta la diferencia de píxeles como una corrección de te
 [Comparaciones registradas](evidence/INDEX.md#image-visible-65-paired). El protocolo, la rejilla completa,
 los candidatos descartados y los resultados se conservan en la misma ronda manual `image-visible-65`. Check completo y CI del head final son requisitos separados de aceptación. Sin tareas
 programadas.
+
+## 336. Revisar las ocho ventanas y guardar encuadres vasculares más completos
+
+**Petición.** Revisar y mejorar las posiciones de sonda de todas las vistas. Se revisan las ocho
+tarjetas actuales en ambos casos y las dos referencias históricas fuera del menú. Se guardan tres
+poses nuevas sólo para la persona actual: epigástrica, intercostal y subcostal suprahepática.
+Las otras cinco conservan su posición, incluida la hepatorrenal de la decisión 335. No se cambian
+órganos, vasos, materiales, ganancia, física ni resolución. Legacy, referencia y s0028 conservan poses.
+
+**Resultado visible.** La epigástrica conserva cava y aorta transversales sobre la vértebra y reduce
+el protagonismo del contenido gástrico lateral. La intercostal sigue la suprahepática derecha:
+arco visible muestreado normal 5,9→49,6 mm; grave 17,9→49,7 mm. La subcostal sigue la media:
+35,1→64,9 mm y 45,8→65,2 mm. Son medidas CPU en una rejilla declarada, no medidas clínicas
+ni prueba de paridad GPU universal. La inspección visual decide junto con anatomía y acceso PW.
+
+**Selección y descartes.** Se conservan búsquedas acotadas, ampliación de tres ventanas y selección
+visual de alternativas del mismo inventario. El filtro exploratorio de contacto global ≥0,95
+excluía buenas ventanas intercostales; la selección secundaria exige no perder contacto respecto
+a la base y no se declara aprobada por aquel filtro. La alternativa renal desplaza parte del riñón
+fuera de la ROI original y falla sus controles; la portal subcostal abandona su territorio previsto.
+Ambas se descartan, sin modificar esos controles. La alternativa de cava larga pierde continuidad
+y la portal lateral añade sombra: se conservan sus poses. No se fuerza un cambio en cada tarjeta.
+
+**Captura registrada.** [16 pares, las ocho vistas en ambos casos](evidence/INDEX.md#image-views-66-paired):
+apnea espiratoria a 30 s, THI, RM0, semilla/fisiología/equipo y serial134 iguales. Cada par cambia
+sólo pose. Se verifica la igualdad entre pose solicitada, medida y adquisición mostrada. La captura
+exploratoria anterior permitía terminar una animación entre imagen y lectura de pose; se conserva
+y no acredita esta igualdad. Los pares finales esperan alineación antes de congelar y reúnen
+los registros en una única evaluación. No se interpreta el tiempo de cuadro como ahorro.
+
+**Pruebas.** Las 23 pruebas previas de ocho suites pasan. Una regresión nueva compara luz visible,
+arco, contacto y coseno Doppler de ambas suprahepáticas contra sus poses previas, ambos casos.
+Su primera versión exigía +50 % de arco también en congestión: falla (67,16 frente a 68,87 mm
+requeridos). Se conserva el negativo y se corrige esa afirmación: la dilatación ya alarga la
+intersección anterior. Se exige ganancia estricta en ambos, +50 % en normal, +25 % de superficie,
+
+> 90 % de luz accesible y coseno >0,5; volver a la pose antigua sigue fallando. No es una norma clínica.
+> La prueba de contenido colónico conserva explícitamente su antiguo plano y todos sus controles;
+> su espera por la tarjeta usa la pose vigente. La CI anterior falló sólo por esperar z −123,9.
+> Check completo y E2E del head final se documentan aparte; sin tareas programadas.
+
+**Presupuesto.** El primer build supera s0028 por 69 B porque los inicios están en la clausura común.
+Se abrevian dos ayudas redundantes, conservando técnica y valores; no se amplía el techo.
