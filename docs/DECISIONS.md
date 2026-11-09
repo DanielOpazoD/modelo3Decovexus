@@ -11371,3 +11371,77 @@ Pasan ambos casos SwiftShader y siete pruebas Metal, sin reintentos. Los cambios
 la CI negativa no se rehabilita ni esto acredita reparar bloqueos ajenos.
 [Fuentes y auditoría de aserciones conservadas](evidence/INDEX.md#image-ci-67-source-audit).
 El head corregido requiere check y CI protegida propios antes de fusionar.
+
+## 337. Curvar los trayectos vasculares entre hitos y hacia su desembocadura
+
+**Contexto.** La revisión visual pide modificar vasos y paredes, no otro filtro ni mover la sonda.
+Los ramales hepáticos y portales estimados unían sus hitos con pocas rectas. La unión mostraba
+cambios de dirección rígidos. La ronda 69 descartó sus alternativas de procesamiento.
+
+**Opciones.** No se cambia la nitidez, ganancia, moteado, PSF ni posición de inicio. Un fillet
+implícito de toda la confluencia requeriría cambiar conjuntamente el dominio sanguíneo, normales,
+clasificación, pared y muestreo Doppler; este cambio no pretende resolverlo. Tampoco se mueven
+hitos ni se inventan diámetros para acentuar la captura.
+
+**Decisión.** La persona current prepara doce trayectos hepáticos/portales con interpolación
+Hermite entre los mismos hitos, orientando el extremo de desembocadura según el padre.
+`vascularBranches.ts` conserva cada posición y radio original, identidad, espesor/material de
+pared y fisiología. Distribuye un máximo de ocho segmentos por tubo hacia los intervalos que
+más cambian de dirección. Los nodos resultantes alimentan la clasificación CPU, la GPU, la pared
+y el recorrido Doppler. No se añade otra geometría de imagen. La construcción queda en la
+clausura de current; legacy y s0028 no llaman a este preparador.
+
+**Consecuencias.** La bifurcación superior de la ventana subcostal muestra un recorrido curvo y
+su contorno cambia con él. Es una mejora local, no una remodelación de órganos ni una unión
+implícita redondeada de todos los vasos. Las curvas entre hitos son **[EXTRAPOLACIÓN PROPIA]**;
+conservar hitos segmentados no convierte su interpolación en segmentación independiente.
+La memoria y el trabajo por consulta pueden crecer con los segmentos; no se infiere coste de
+las capturas ni se afirma ahorro.
+
+**Verificación.** Siete pruebas nuevas protegen hitos, radios, dirección, degenerados, límites,
+no-aliasing e identidades. La prueba sintética de desembocadura rechaza el recorrido recto.
+Setenta comprobaciones geométricas focales pasan. La prueba nativa compara tejido, interfaz,
+distancia y normal en ambos pacientes; comprueba que los puntos fuera del hígado están dentro
+de la cava por consulta independiente de sus tubos. Clasificar un punto como vena hepática no
+implica que esté fuera de la cava cuando ambos tubos se solapan. Se conserva el negativo de ese
+primer criterio incorrecto, así como el fallo de exportación que intentó serializar el atlas
+completo del helper; la corrección exporta sólo las filas medidas. No se cambian las tolerancias
+de paridad. Los controles originales de acceso PW, contacto hepático y seguimiento renal siguen
+intactos. La aceptación completa y la CI del head final se documentan en la entrega.
+
+**Presupuesto.** El preparador inicialmente común aumentaba también s0028, superando su techo.
+La implementación final se carga únicamente con current. Se abrevian dos mensajes diagnósticos
+sin cambiar sus guardias. No se eleva ningún presupuesto.
+
+**Coste observado.** Ocho estados, siete pares alternados de cinco cuadros 192×1024 en Metal.
+La razón de sumas de medianas GPU es 0,98394, pero por estado va de 0,78672 a 1,25458.
+La portal normal aumenta 25,46 % y la subcostal grave 19,40 %; se conservan máximos y todos
+los pares. No acredita no-regresión por estado, FPS ni ahorro. Dos contextos residentes,
+consulta GPU envolvente; preparación y envío CPU separados, sin 3D/Worker/compositor ni
+compilación fría o memoria total. Es un candidato visual para revisión; no está integrado.
+[Comparaciones registradas](evidence/INDEX.md#image-junctions-70-paired).
+
+**Alcance de la ramificación.** Las doce curvas se preparan antes del generador periférico existente.
+Sus 75 plazas se regeneran a partir de esos padres: cambian posiciones, calibres locales y reparto
+entre familias según dirección, longitud y contención, con la misma semilla y reglas. No hay una
+correspondencia estable por índice ni un id único de cada ramita. Las propiedades fisiológicas,
+radios de referencia y materiales de los troncos principales permanecen iguales; no se afirma
+igualdad de radios de cada descendiente regenerado.
+
+**Evolución de pruebas.** El primer check completo falla tres pruebas y se conserva. La prueba
+de encuadre ahora fija la geometría anterior junto con la pose anterior, conservando los factores
+originales (1,5 de arco normal, 1,25 de área) y todos los mínimos de acceso. La referencia y la
+escena actual deben superarlos; volver a la pose antigua actual no cumple el contrato completo.
+La vista subcostal normal guardada pasa de 65,136 a 64,992 mm de arco visible, mientras la pose
+antigua pasa de 38,294 a 57,734 mm: no era una referencia estable al cambiar el vaso.
+La capacidad conserva el recuento histórico 367 en la referencia y exige a la escena actual los
+límites centrales intactos (640 nodos, 128 tubos y ocho segmentos), además de todas las guardas
+cavoauriculares. La escena actual tiene 431 nodos.
+La regresión de default conserva su SHA histórico de 82.251 puntos en la referencia sin curvas.
+Exige que las diferencias actuales estén en la luz/pared anterior o nueva de las doce familias
+permitidas, con las demás definiciones y conductos intactos. Un contrafactual que convierte aire
+en sangre fuera de ese dominio debe rechazarse. Se observan 72 diferencias semánticas dentro del
+dominio, ninguna fuera; incluye índices de segmento, no sólo cambios de tejido.
+El primer auditor confundió ids repetidos con troncos únicos; el siguiente supuesto de índice
+estable también falló. Ambos se conservan. La unión final compara definiciones completas de
+ambas escenas. No se modifica el SHA histórico ni se cambia un límite para aprobar.

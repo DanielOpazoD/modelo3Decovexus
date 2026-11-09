@@ -3,6 +3,7 @@ import { fixturePerson } from './support/legacyPerson/state';
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
+import { MAX_NODES, MAX_TUBES, MAX_TUBE_SEGMENTS } from '../anatomy/gpu/anatomy.glsl';
 import { domeFloor, heartChambers, heartOuterSdf } from '../anatomy/organs/heart';
 import { heartChamber } from '../anatomy/organs/heartChamber';
 import { AnatomyQuery } from '../anatomy/query';
@@ -100,7 +101,15 @@ for (const blocker of [Tissue.Lung, Tissue.BowelGas])
 it('conserva capacidad, raíces suprahepáticas y luz sin pared en el eje cavoauricular', () => {
   const scene = new AnatomyScene(NORMAL_ADULT);
   expect(scene.vessels.length + scene.ducts.length).toBe(128);
-  expect([...scene.vessels, ...scene.ducts].reduce((n, v) => n + v.tube.nodes.length, 0)).toBe(367);
+  const reference = new AnatomyScene(NORMAL_ADULT, undefined, {
+    ...fixturePerson(),
+    cpu: { ...fixturePerson().cpu, curveVessels: undefined },
+  });
+  expect([...reference.vessels, ...reference.ducts].reduce((n, v) => n + v.tube.nodes.length, 0)).toBe(367);
+  const tubes = [...scene.vessels, ...scene.ducts];
+  expect(tubes.length).toBeLessThanOrEqual(MAX_TUBES);
+  expect(tubes.reduce((n, v) => n + v.tube.nodes.length, 0)).toBeLessThanOrEqual(MAX_NODES);
+  for (const v of tubes) expect(v.tube.nodes.length - 1).toBeLessThanOrEqual(MAX_TUBE_SEGMENTS);
   const infra = scene.vesselById.get('ivcInfra')!.tube,
     supra = scene.vesselById.get('ivcSupra')!.tube;
   expect(infra.nodes).toHaveLength(9);

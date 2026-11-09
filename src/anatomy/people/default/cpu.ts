@@ -8,6 +8,7 @@ import { orthonormalBasis } from '../../primitives';
 import { installDefaultAssets } from './assets';
 import { KIDNEY_FRAMES } from './kidneyFrames';
 import { classifyInside, classifyWall } from './classifier';
+import { curveVascularBranches } from './vascularBranches';
 
 const KIDNEY_BASES = KIDNEY_FRAMES.map((f) => [orthonormalBasis(f.source.long, f.source.hilumHint), orthonormalBasis(f.long, f.hilumHint)]);
 /** El punto del riñón movido (campos 5 y 6) que corresponde a p con el riñón en su marco fuente; los demás campos, p. */
@@ -32,6 +33,7 @@ export function createDefaultCpu(assets: PersonAssets): InstalledCpuPerson {
     assets,
     atlas: Object.freeze({ ...createAbdominalQueries(assets), ...createThoracicQueries(assets) }),
     skinMm: 2,
+    curveVessels: assets.buffers.abdominal ? curveVascularBranches : undefined,
     // Decisión 330: el ajuste parietal (183, 222) se calibró sobre los riñones del atlas en su posición fuente; moverlos no
     // mueve la piel (con la 329 la piel del flanco posterior derecho salía hasta 9 mm)
     fitBody: (profile, wallMm, skinMm) => hepaticCostalBody(profile, wallMm, skinMm, cpu, kidneyAtSource),

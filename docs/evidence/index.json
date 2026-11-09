@@ -97,6 +97,25 @@
    ]
   },
   {
+   "id": "image-junctions-70-paired",
+   "path": "image-junctions-70/paired",
+   "kind": "dir",
+   "bytes": 7090410,
+   "sha256": "5f0c2195487658e054e57a07ee9bb275d7cbb64172c9589dd39bfd90adf55937",
+   "files": 22,
+   "round": "image-junctions-70",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 337
+    },
+    {
+     "doc": "docs/estado/anatomia.md",
+     "decision": null
+    }
+   ]
+  },
+  {
    "id": "image-views-66-paired",
    "path": "image-views-66/paired",
    "kind": "dir",
