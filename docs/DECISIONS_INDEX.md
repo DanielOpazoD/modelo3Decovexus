@@ -341,3 +341,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [335](DECISIONS.md#L11287) | El inicio hepatorrenal muestra hígado y riñón entre costillas | vigente |
 | [336](DECISIONS.md#L11320) | Revisar las ocho ventanas y guardar encuadres vasculares más completos | vigente |
 | [337](DECISIONS.md#L11375) | Curvar los trayectos vasculares entre hitos y hacia su desembocadura | vigente |
+| [338](DECISIONS.md#L11449) | Rejilla conservadora vascular también en Metal | vigente |

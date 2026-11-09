@@ -64,9 +64,21 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
           nodes: t.nodes.map((n) => ({ p: n.p, r: n.r * cal.radiusScale(id) })),
         };
       });
-      return { counts, outsideLiver, cava, points, rows: window.__vexusTest!.corticalSamples(points).rows, gl: sim.renderer.gl.getError() };
+      const grid = (sim.renderer as unknown as { tubeGrid: { pitch: number; data: Float32Array } | null }).tubeGrid;
+      return {
+        grid: grid ? { pitch: grid.pitch, bytes: grid.data.byteLength } : null,
+        counts,
+        outsideLiver,
+        cava,
+        points,
+        rows: window.__vexusTest!.corticalSamples(points).rows,
+        gl: sim.renderer.gl.getError(),
+      };
     });
     await info.attach('curved-walls.json', { body: JSON.stringify(result), contentType: 'application/json' });
+    expect(result.grid).not.toBeNull();
+    expect(result.grid!.pitch).toBeLessThanOrEqual(32);
+    expect(result.grid!.bytes).toBeLessThanOrEqual(256 * 2048 * 8);
     expect(Object.keys(result.counts)).toHaveLength(12);
     expect(Object.values(result.counts).every((n) => n === 9)).toBe(true);
     // In a junction the deepest winning tube may be hepatic even when it overlaps the cava.

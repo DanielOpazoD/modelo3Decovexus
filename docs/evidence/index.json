@@ -97,6 +97,21 @@
    ]
   },
   {
+   "id": "image-gpu-71-measured",
+   "path": "image-gpu-71/measured",
+   "kind": "dir",
+   "bytes": 3693572,
+   "sha256": "8a9ac2eb65f2a2baf96802b10b32e0c1b5833393a0c09312762273751d233046",
+   "files": 25,
+   "round": "image-gpu-71",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 338
+    }
+   ]
+  },
+  {
    "id": "image-junctions-70-paired",
    "path": "image-junctions-70/paired",
    "kind": "dir",

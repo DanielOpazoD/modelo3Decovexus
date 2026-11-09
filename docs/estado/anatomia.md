@@ -96,3 +96,8 @@ sin mover la sonda ni filtrar la imagen. [Pares registrados](../evidence/INDEX.m
 Es una aproximación de geometría, no segmentación externa ni fillets completos. Paridad y
 contención focales aprobadas en Metal y SwiftShader, ambos casos; coste por estado no acredita
 no-regresión. Aún no integrado ni aprobado por CI del head final.
+
+La decisión338 conserva exactamente las curvas/paredes337 y resuelve su coste nativo mediante
+la rejilla conservadora existente. Ocho capturas idénticas; coste GPU agregado−42,78% frente
+a curvas sin optimizar y−45,54% frente a main98280b5, sin regresión de mediana/p95 en los ocho estados.
+La estimación entre hitos sigue siendo una aproximación, no segmentación independiente.

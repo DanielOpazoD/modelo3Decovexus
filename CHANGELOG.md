@@ -5,6 +5,7 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Metal usa la rejilla vascular conservadora: conserva las curvas y paredes con ocho capturas idénticas y reduce el coste GPU medido (decisión338).
 - Anatomía: doce trayectos hepáticos y portales se curvan entre sus hitos originales; sus paredes siguen la misma geometría que la luz y el Doppler. Sin filtros ni cambios de sonda (337).
 
 - Imagen: la pared abdominal sale algo menos oscura: +3 dB de compensación nominal en el campo cercano, lo que admite la meta de la grasa. Sigue por debajo de lo real en cuatro de cinco ventanas (306).

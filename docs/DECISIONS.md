@@ -11445,3 +11445,41 @@ dominio, ninguna fuera; incluye índices de segmento, no sólo cambios de tejido
 El primer auditor confundió ids repetidos con troncos únicos; el siguiente supuesto de índice
 estable también falló. Ambos se conservan. La unión final compara definiciones completas de
 ambas escenas. No se modifica el SHA histórico ni se cambia un límite para aprobar.
+
+## 338. Rejilla conservadora vascular también en Metal
+
+**Contexto.** Las curvas de la decisión337 mejoran la bifurcación visible, pero su banco
+original no acredita no-regresión: portal normal+25,46% y subcostal grave+19,40%.
+La ruta Metal (`line`) no preparaba la rejilla de candidatos que ya utilizaba `staged-atlas`.
+
+**Opciones.** Reducir segmentos o adelgazar paredes perdería la mejora. Afinar otra rejilla
+no procede: la existente estaba deshabilitada en esta ruta. Se conserva su pitch16mm,
+fallback32mm y recorrido completo si el índice no es válido.
+
+**Decisión.** `updateSceneDynamic` prepara el mismo índice para toda escena con atlas abdominal,
+independientemente del reparto de pasadas. Se conservan nodos/radios/material/orden de tubos,
+los alcances redondeados hacia arriba, invalidación por ids/alcances y limpieza al cambiar escena.
+No cambian shaders, resolución192×1024, PSF, filtros ni posiciones de sonda.
+
+**Consecuencias.** Ocho imágenes son idénticas píxel por píxel a las curvas337. En Metal, dos
+bancos completos de ocho estados, siete pares alternados de cinco cuadros, dan razón agregada
+GPU0,572199 frente a curvas sin optimizar (−42,78%) y0,544633 frente a main98280b5 (−45,54%).
+Frente a main, las razones por estado son0,494749–0,692682 en mediana y0,500630–0,618104 en p95
+nearest-rank. Pasan las puertas fijadas antes: ahorro≥5% frente a curvas y no-regresión de mediana
+ni p95 por estado frente a main. Son intervalos GPU, no FPS ni coste total del producto.
+Preparación/envío CPU se guardan aparte. No se repiten bancos para seleccionar resultados.
+
+Las tablas observadas ocupan149.504–184.320B CPU y una carga nominal RG32F equivalente GPU;
+el techo existente es4MiB. Esto no mide RSS/VRAM total. No se añaden programas ni samplers;
+las fuentes de shaders son idénticas a337. Build default1.035.494B y s00281.070.016B,
+sin elevar presupuestos. La extrapolación geométrica337 y sus negativos permanecen documentados.
+
+**Verificación.** Paridad nativa de tejido/interfaz/distancia/normal en ambos casos, seguimiento
+renal y ventanas originales; la prueba ahora exige rejilla activa y tamaño acotado (en el
+original Metal era null). Los controles existentes cubren calibre, anisotropía, ruido, extremos,
+fronteras de celda, orden y fallback inválido. Ocho capturas conservan todos sus píxeles.
+Un verificador separado reconstruye1120cuadros/pares/puertas y coteja fuentes. Su primer intento
+incluyó frameMs/padding previo entre las entradas y falló; se conservan fuente/log y la corrección
+excluye únicamente esos dos metadatos de ejecución, validando los restantes incluida historia/serial.
+No se repite ninguna captura. Aceptación completa y CI sobre head final exigidas antes de fusión.
+[Datos y protocolo](evidence/INDEX.md#image-gpu-71-measured).
