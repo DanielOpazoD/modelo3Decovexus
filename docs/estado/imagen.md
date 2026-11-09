@@ -65,9 +65,11 @@ Medido en el candidato basado en main `8ed26cf` el 2026-11-07 con `tools/docs/es
 
 Valores exactos y márgenes de todos los techos: `docs/estado/presupuestos.md`.
 
-## Candidato manual de interpolación axial (334)
+## Corrección manual de interpolación axial (334)
 
 En la rama de trabajo, G conserva la interpolación lateral de RM y mezcla amplitudes en profundidad.
 Corrige el oscurecimiento axial espurio; no cambia la recepción ni resuelve la textura alargada del tejido.
 Las siete E2E Metal de RM pasan. La no-regresión estricta por estado no pasa en seis de ocho estados
-(mayor mediana +0,4325 %, p95 +0,5577 %): candidato no integrado, sin repetir rendimiento.
+(mayor mediana +0,4325 %, p95 +0,5577 %). El usuario acepta ese coste conocido para integrar
+la corrección, condicionado a check y CI del commit final. La puerta original sigue fallida;
+no se repite rendimiento ni se presenta como una mejora visible del aspecto general.

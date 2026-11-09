@@ -11247,7 +11247,7 @@ Evidencia: `fidelity-next15-evidence/environment/git-isolation-20261108/guard`.
 
 ## 334. RM conserva la interpolación axial de amplitud sin cambiar el filtro lateral
 
-**Estado: candidato no integrado; no-regresión de coste por estado pendiente.**
+**Estado: integración autorizada por el usuario; pendiente de CI del commit final.**
 
 **Problema.** Sin RM, G interpola la envolvente antes de convertirla a dB. Con RM, G interpolaba el
 logaritmo filtrado en ambos ejes. Aunque R sólo toca líneas de una misma profundidad, activar RM
@@ -11274,8 +11274,10 @@ Build: default 1.033.617 B; s0028 1.069.963 B, margen 117 B, sin ampliar el tech
 consulta GPU envolvente, preparación/envío separados, sin capturas dentro. Suma de medianas:
 razón 0,99937654; suma de p95 nearest-rank: 0,99866445. Seis estados incumplen al menos una razón
 individual ≤1; mayor incremento de mediana +0,4325 %, de p95 +0,5577 %. No se repite el banco
-para conseguir verde ni se infiere ahorro. Es una corrección funcional conservada en rama; no está
-aceptada para main. El banco sustituye únicamente G por fuentes enlazadas antes del intervalo;
+para conseguir verde ni se infiere ahorro. El usuario autoriza integrar esta corrección funcional
+con ese pequeño coste conocido, tras revisar las comparaciones; esto no convierte la puerta original
+en aprobada. La integración sigue condicionada al check completo y a la CI del commit final.
+El banco sustituye únicamente G por fuentes enlazadas antes del intervalo;
 G candidato externo produce la misma imagen que el del build. Excluye Worker, 3D, compositor,
 compilación fría y memoria total; no es una medición de FPS ni de desfase.
 
