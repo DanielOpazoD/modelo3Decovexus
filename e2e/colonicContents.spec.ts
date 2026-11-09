@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { bootWithoutErrors, budget } from './support';
+import { bootWithoutErrors, budget, windowAcquired } from './support';
 import { Tissue } from '../src/anatomy/tissues';
 
 for (const caseId of ['normal-adult', 'severe-congestion'])
@@ -9,7 +9,15 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
     await page.selectOption('#case-select', caseId);
     await page.getByRole('button', { name: 'Apnea espiratoria', exact: true }).click();
     await page.locator('[data-window="hepatorenal"]').click();
-    await page.waitForFunction(() => Math.abs(window.__vexusTest!.sim().pose.z + 123.9) < 1e-8);
+    await windowAcquired(page, 'hepatorenal');
+    // Preserve the fixed colonic-content witness plane independently of the renal card's framing.
+    await page.evaluate(() => {
+      const s = window.__vexusTest!.sim();
+      s.setPose({ phi: 2.9, z: -123.9, yaw: 0.08, rock: 0.037, tilt: -0.431, lift: 0 });
+      s.advance(s.physiology.clock.dt);
+      s.advance(s.physiology.clock.dt);
+      s.render();
+    });
     const inspect = () =>
       page.evaluate(() => {
         const s = window.__vexusTest!.sim();

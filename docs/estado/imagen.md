@@ -73,3 +73,19 @@ Las siete E2E Metal de RM pasan. La no-regresión estricta por estado no pasa en
 (mayor mediana +0,4325 %, p95 +0,5577 %). El usuario acepta ese coste conocido para integrar
 la corrección, condicionado a check y CI del commit final. La puerta original sigue fallida;
 no se repite rendimiento ni se presenta como una mejora visible del aspecto general.
+
+## Ventana hepatorrenal visible (decisión 335)
+
+Candidato manual: el inicio de la persona actual entra entre costillas y muestra juntos el hígado
+con el riñón longitudinal. Cambia la adquisición, no el tamaño o la forma de los órganos. Se conserva
+la anatomía y toda la cadena de imagen. La prueba de visibilidad protege ahora también el hígado;
+antes sólo protegía el riñón. [Comparaciones registradas](../evidence/INDEX.md#image-visible-65-paired);
+negativos en la ronda manual `image-visible-65`.
+
+## Revisión de ventanas (decisión 336)
+
+Ocho tarjetas revisadas, dos casos: tres poses nuevas (VCI transversal, suprahepática derecha
+intercostal y media subcostal). Cinco conservadas tras comparar candidatos; la hepatorrenal de
+335 sigue vigente. [16 pares registrados](../evidence/INDEX.md#image-views-66-paired). Sólo cambia
+la adquisición; no hay remodelación anatómica ni tareas programadas. Aceptación remota pendiente
+del último commit del PR352; los resultados anteriores no se reutilizan como CI del nuevo head.

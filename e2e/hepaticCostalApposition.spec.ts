@@ -1,12 +1,20 @@
 import { expect, test } from '@playwright/test';
-import { bootWithoutErrors, budget } from './support';
+import { bootWithoutErrors, budget, windowAcquired } from './support';
 import { Interface } from '../src/anatomy/interfaces';
 
 test('registered costal cortical interfaces precede bone in the production atlas', async ({ page }, info) => {
   budget(180000);
   const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
   await page.locator('[data-window="intercostal"]').click();
-  await page.waitForFunction(() => Math.abs(window.__vexusTest!.sim().pose.yaw + 1.2) < 0.001);
+  await windowAcquired(page, 'intercostal');
+  // Keep the original costal-interface plane independently of the saved vascular framing.
+  await page.evaluate(() => {
+    const s = window.__vexusTest!.sim();
+    s.setPose({ phi: 2.5, z: -35, yaw: -1.2, rock: 0.08958884100807597, tilt: 0.15439831127567974, lift: 0 });
+    s.advance(s.physiology.clock.dt);
+    s.advance(s.physiology.clock.dt);
+    s.render();
+  });
   await page.locator('#freeze').click();
   const report = await page.evaluate((ribInterface) => {
     const s = window.__vexusTest!.sim(),

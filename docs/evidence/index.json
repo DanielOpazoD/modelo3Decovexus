@@ -82,6 +82,59 @@
    ]
   },
   {
+   "id": "image-ci-67-source-audit",
+   "path": "image-ci-67/source-audit",
+   "kind": "dir",
+   "bytes": 45832,
+   "sha256": "025e25ab07775480d5cfba2953e68a52a9af9800c6a605134dc8f188de81b330",
+   "files": 7,
+   "round": "image-ci-67",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 336
+    }
+   ]
+  },
+  {
+   "id": "image-views-66-paired",
+   "path": "image-views-66/paired",
+   "kind": "dir",
+   "bytes": 13704659,
+   "sha256": "127b674a0339b8d336b2f857cad17d12784e5c2be43ab38f393dc463bc799358",
+   "files": 34,
+   "round": "image-views-66",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 336
+    },
+    {
+     "doc": "docs/estado/imagen.md",
+     "decision": null
+    }
+   ]
+  },
+  {
+   "id": "image-visible-65-paired",
+   "path": "image-visible-65/paired",
+   "kind": "dir",
+   "bytes": 6804335,
+   "sha256": "e6d21145053d6ef6f2deee6fe89d430ff8d2986ce6c0bdc8c846498b20dd5370",
+   "files": 17,
+   "round": "image-visible-65",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 335
+    },
+    {
+     "doc": "docs/estado/imagen.md",
+     "decision": null
+    }
+   ]
+  },
+  {
    "id": "ivc-atrium",
    "path": "ivc-atrium",
    "kind": "dir",
