@@ -1,0 +1,12 @@
+{
+  "decision": 334,
+  "scope": "Axial amplitude interpolation; historical baseline retained; native identity and detail controls in speckleReduction.spec.ts",
+  "source": {
+    "default": "694f1eaed0dcc0d2bb471859df14b58265b6ba88640ac2c1390d3d02a24d49b6",
+    "s0028": "694f1eaed0dcc0d2bb471859df14b58265b6ba88640ac2c1390d3d02a24d49b6"
+  },
+  "productionTransforms": {
+    "default": "3519e528db90fe86ef113da92386034405e8eaab28be5d986d3ea2dfcebc9983",
+    "s0028": "3519e528db90fe86ef113da92386034405e8eaab28be5d986d3ea2dfcebc9983"
+  }
+}

@@ -353,3 +353,59 @@ test('RM identifica la imagen adquirida en vivo, congelada y en cine con el cont
   await page.waitForFunction(() => window.__vexusTest!.sim().displayed.bmode.speckleReduction === 0);
   await expect(hud).not.toContainText('RM ');
 });
+
+// Un operador estrictamente lateral es identidad si cada fila es constante.
+// Variar sólo profundidad discrimina la antigua interpolación del log en G (hasta 38 grises de error).
+test('RM conserva el perfil axial cuando no hay variación lateral', async ({ page }, info) => {
+  budget(180000);
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const result = await page.evaluate(() => {
+    const s = window.__vexusTest!.sim(),
+      r = s.renderer;
+    const p = r as unknown as SpeckleInternals;
+    const gl = r.gl,
+      W = p.tEnv.width,
+      H = p.tEnv.height;
+    const rows = [];
+    for (const kind of ['stripes', 'pulse', 'step', 'black']) {
+      const env = new Float32Array(W * H);
+      for (let y = 0; y < H; y++) {
+        const amp =
+          kind === 'stripes'
+            ? 10 ** ((-22 + 12 * Math.sin(y * 0.8)) / 20)
+            : kind === 'pulse'
+              ? 0.02 + Math.exp(-0.5 * ((y - H / 2) / 2) ** 2)
+              : kind === 'step'
+                ? y < H / 2
+                  ? 0.02
+                  : 0.8
+                : 0;
+        env.fill(amp, y * W, (y + 1) * W);
+      }
+      gl.bindTexture(gl.TEXTURE_2D, p.tEnv.textures[0]);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, W, H, gl.RED, gl.FLOAT, env);
+      const frames = ([0, 1, 2] as const).map((level) => {
+        const b = { ...s.bmode, gainDb: -15, persistence: 0, speckleReduction: level };
+        const c = { ...s.color, enabled: false };
+        p.speckleReduction(b, c, s.transducer);
+        p.scanConvert(b, c, null, s.transducer);
+        p.present(p.tScan);
+        return r.readDisplay().gray;
+      });
+      rows.push({
+        kind,
+        maxima: frames.slice(1).map((f) => f.reduce((m, v, i) => Math.max(m, Math.abs(v - frames[0][i])), 0)),
+        envelopeUnchanged: r.readEnvelope({ source: 'compound' }).data.every((v, i) => v === env[i]),
+      });
+    }
+    return { rows, size: [W, H], glError: gl.getError() };
+  });
+  await info.attach('axial-identity.json', { body: JSON.stringify(result), contentType: 'application/json' });
+  expect(result.size).toEqual([192, 1024]);
+  for (const row of result.rows) {
+    expect(row.envelopeUnchanged).toBe(true);
+    for (const maximum of row.maxima) expect(maximum, row.kind).toBeLessThanOrEqual(1);
+  }
+  expect(result.glError).toBe(0);
+  expect(errors).toEqual([]);
+});

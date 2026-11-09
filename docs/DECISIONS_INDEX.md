@@ -337,3 +337,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [331](DECISIONS.md#L11098) | Las dos ventanas de la VCI como imagen completa: subxifoidea centrada en la unión, aorta sobre la vértebra y estómago distendido | vigente |
 | [332](DECISIONS.md#L11160) | El estómago de la epigástrica como víscera hueca: muscular propia gruesa y contenido líquido con ecos puntuales | vigente |
 | [333](DECISIONS.md#L11221) | El diagnóstico del entorno no confunde un árbol limpio con objetos Git disponibles | vigente |
+| [334](DECISIONS.md#L11248) | RM conserva la interpolación axial de amplitud sin cambiar el filtro lateral | vigente |

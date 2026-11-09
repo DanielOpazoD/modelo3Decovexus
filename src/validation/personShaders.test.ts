@@ -9,6 +9,7 @@ import { personBindingAbi, personShaderAbi } from '../../tools/build/personShade
 import type { personShader } from '../anatomy/gpu/personShader';
 import { S0028_BUNDLE } from '../anatomy/people/s0028/descriptor';
 import baseline from './fixtures/person-shaders-main.json';
+import scanConvertRevision from './fixtures/scanconvert-axial-334.json';
 import { loadShaderGraph } from './support/shaderGraph';
 
 const root = process.cwd();
@@ -49,14 +50,19 @@ function programs(privateExtension = false) {
   );
 }
 
-it('conserva los 38 fragmentos y el vértice de main, fuente y transformados', () => {
+it('conserva los programas de main salvo la revisión axial 334 de G, fuente y transformados', () => {
   expect(abi.base).toBe(baseline.base);
   expect(abi.base).toMatch(/^[0-9a-f]{40}$/);
   const result = programs();
   for (const mode of ['source', 'productionTransforms'] as const) {
     expect(Object.keys(result[mode])).toHaveLength(39);
     expect(result[mode]).toEqual(
-      Object.fromEntries(baseline[mode].programs.map((p) => [p.name, { default: p.sha256, s0028: p.s0028Sha256 }])),
+      Object.fromEntries(
+        baseline[mode].programs.map((p) => [
+          p.name,
+          p.name === 'FRAG_SCANCONVERT' ? scanConvertRevision[mode] : { default: p.sha256, s0028: p.s0028Sha256 },
+        ]),
+      ),
     );
   }
 });

@@ -1689,7 +1689,18 @@ void main() {
   if (r < 0.0 || r > uDepth || abs(theta) > uHalfSector) { oColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
   vec2 uv = vec2((theta + uHalfSector) / (2.0 * uHalfSector), r / uDepth);
   // Con Color la rama R no se calcula: la prioridad del color sigue mirando el gris de la envolvente
-  float g = uSpeckleOn == 1 ? displayDb(texture(uBLog, uv).r, r) : displayGrey(texture(uEnv, uv).r, r);
+  float env;
+  if (uSpeckleOn == 1) {
+    // R filtra sólo lateralmente. Conservar su interpolación lateral en dB,
+    // pero reconstruir amplitudes antes de interpolar profundidad (decisión 334).
+    float h = float(textureSize(uBLog, 0).y);
+    float y = uv.y * h - 0.5;
+    float v = (floor(y) + 0.5) / h;
+    float a = texture(uBLog, vec2(uv.x, v)).r;
+    float b = texture(uBLog, vec2(uv.x, v + 1.0 / h)).r;
+    env = mix(exp(a * 0.11512925465), exp(b * 0.11512925465), fract(y));
+  } else env = texture(uEnv, uv).r;
+  float g = displayGrey(env, r);
   vec3 col = vec3(g);
   if (uColorOn == 1 && theta >= uBox.x && theta <= uBox.y && r >= uBox.z && r <= uBox.w) {
     vec2 cuv = vec2((theta - uBox.x) / (uBox.y - uBox.x), (r - uBox.z) / (uBox.w - uBox.z));

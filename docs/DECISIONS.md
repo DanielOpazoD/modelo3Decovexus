@@ -11244,3 +11244,40 @@ blob falla usando el doctor original de `1b77636` y pasa con el candidato; se co
 La capa rápida pasa 2058 pruebas y cinco fallos esperados. Check completo y CI del head final son
 requisitos separados de aceptación; no se atribuye a estas comprobaciones validación de imagen o clínica.
 Evidencia: `fidelity-next15-evidence/environment/git-isolation-20261108/guard`.
+
+## 334. RM conserva la interpolación axial de amplitud sin cambiar el filtro lateral
+
+**Estado: candidato no integrado; no-regresión de coste por estado pendiente.**
+
+**Problema.** Sin RM, G interpola la envolvente antes de convertirla a dB. Con RM, G interpolaba el
+logaritmo filtrado en ambos ejes. Aunque R sólo toca líneas de una misma profundidad, activar RM
+oscurecía también transiciones axiales sin variación lateral. En un control nativo 192×1024,
+constante en cada fila, el escalón cambiaba hasta 38 niveles de gris; una modulación axial, seis.
+
+**Cambio.** R y sus parámetros permanecen iguales. G interpola horizontalmente los dB de dos filas
+centradas, reconstruye sus amplitudes y mezcla en profundidad antes de aplicar la curva de grises.
+No cambia la envolvente, la PSF, los tejidos, la fase, Color, M ni el corte. Conserva R16F y no añade
+texturas. Una primera alternativa de transportar el residuo dB fue rechazada: corregía el eje axial
+pero incumplía contraste lateral y ancho de borde; su fuente y resultados se conservan.
+
+**Comparación.** Dos casos y dos ventanas (hepatorrenal/portal subcostal), fundamental/armónica,
+RM0/RM1, a 30 s en apnea y con fase del receptor registrada: 16 imágenes por versión. La envolvente
+y RM0 son idénticos entre versiones en los ocho estados. La mejora es discreta en detalles finos;
+no elimina el grano alargado que también existe con RM0 ni acredita realismo clínico.
+
+**Controles.** Las siete pruebas Metal de RM pasan, incluida la nueva identidad axial: máximo un
+nivel de gris (R16F) y negro exacto. Los límites anteriores permanecen: RM1 borde +0,21671 mm,
+contraste 0,95642, pico 0,88374; RM2 +0,40304 mm, 0,90137 y 0,79411. No se reajustan umbrales.
+Build: default 1.033.617 B; s0028 1.069.963 B, margen 117 B, sin ampliar el techo.
+
+**Coste y límite de aceptación.** Ocho estados, siete pares alternados de cinco cuadros completos,
+consulta GPU envolvente, preparación/envío separados, sin capturas dentro. Suma de medianas:
+razón 0,99937654; suma de p95 nearest-rank: 0,99866445. Seis estados incumplen al menos una razón
+individual ≤1; mayor incremento de mediana +0,4325 %, de p95 +0,5577 %. No se repite el banco
+para conseguir verde ni se infiere ahorro. Es una corrección funcional conservada en rama; no está
+aceptada para main. El banco sustituye únicamente G por fuentes enlazadas antes del intervalo;
+G candidato externo produce la misma imagen que el del build. Excluye Worker, 3D, compositor,
+compilación fría y memoria total; no es una medición de FPS ni de desfase.
+
+Evidencia manual: `fidelity-next15-evidence/image/manual-paired-64` (protocolos, 32 imágenes,
+señales originales, negativo axial, alternativa rechazada, resultados y coste). No tareas programadas.
