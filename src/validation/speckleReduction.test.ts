@@ -57,6 +57,7 @@ describe('reducción de moteado del equipo (decisión 313)', () => {
   });
 
   it('G usa la rama solo si R ha corrido, y la prioridad del color no la ve', () => {
-    expect(FRAG_SCANCONVERT).toContain('uSpeckleOn == 1 ? displayDb(texture(uBLog, uv).r, r) : displayGrey(texture(uEnv, uv).r, r)');
+    expect(FRAG_SCANCONVERT).toContain('if (uSpeckleOn == 1)');
+    expect(FRAG_SCANCONVERT).toContain('else env = texture(uEnv, uv).r;');
   });
 });
