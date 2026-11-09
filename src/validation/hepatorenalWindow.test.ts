@@ -43,6 +43,7 @@ it('hepatorrenal del atlas: todo el sector en contacto, riñón en eje largo sin
   let blockedKidney = 0;
   let sinus = 0;
   let liver = 0;
+  let allLiver = 0;
   let uMin = Infinity;
   let uMax = -Infinity;
   for (let l = 0; l < lines; l++) {
@@ -66,7 +67,10 @@ it('hepatorrenal del atlas: todo el sector en contacto, riñón en eje largo sin
         uMin = Math.min(uMin, u);
         uMax = Math.max(uMax, u);
         if (c.tissue === Tissue.RenalSinus) sinus++;
-      } else if (!blocked && c.tissue === Tissue.Liver) liver++;
+      } else if (c.tissue === Tissue.Liver) {
+        allLiver++;
+        if (!blocked) liver++;
+      }
     }
   }
   // Antes: 0,89 de contacto, 78 mm de riñón, 21 % tras bloqueo y 18 cm² de hígado.
@@ -75,4 +79,6 @@ it('hepatorrenal del atlas: todo el sector en contacto, riñón en eje largo sin
   expect(blockedKidney / kidney).toBeLessThan(0.12);
   expect(sinus * cm2).toBeGreaterThan(5);
   expect(liver * cm2).toBeGreaterThan(35);
+  // A visible kidney alone can still leave the hepatic comparison behind a rib.
+  expect(liver / allLiver).toBeGreaterThan(0.85);
 });

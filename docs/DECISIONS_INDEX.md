@@ -338,3 +338,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [332](DECISIONS.md#L11160) | El estómago de la epigástrica como víscera hueca: muscular propia gruesa y contenido líquido con ecos puntuales | vigente |
 | [333](DECISIONS.md#L11221) | El diagnóstico del entorno no confunde un árbol limpio con objetos Git disponibles | vigente |
 | [334](DECISIONS.md#L11248) | RM conserva la interpolación axial de amplitud sin cambiar el filtro lateral | vigente |
+| [335](DECISIONS.md#L11287) | El inicio hepatorrenal muestra hígado y riñón entre costillas | vigente |

@@ -11283,3 +11283,36 @@ compilación fría y memoria total; no es una medición de FPS ni de desfase.
 
 Evidencia manual: `fidelity-next15-evidence/image/manual-paired-64` (protocolos, 32 imágenes,
 señales originales, negativo axial, alternativa rechazada, resultados y coste). No tareas programadas.
+
+## 335. El inicio hepatorrenal muestra hígado y riñón entre costillas
+
+**Problema.** La ventana inicial de la persona actual conserva el riñón visible, pero una sombra
+costal atraviesa una parte grande del hígado. La prueba de transmisión sólo protegía el riñón;
+contar hígado anatómico detrás de hueso no garantizaba una comparación hepatorrenal visible.
+
+**Cambio.** Se cambia exclusivamente la pose inicial hepatorrenal de la persona actual a
+φ 2,8; z −115 mm; yaw −0,12; rock −0,163; tilt −0,431 rad. Los órganos, sus tamaños, tejidos,
+vasos, ganancia, foco, PSF, reducción de moteado y resoluciones permanecen iguales. Es una mejora
+visible de adquisición y composición del corte, no una remodelación anatómica ni validación clínica.
+Las poses renal, legacy, referencia y s0028 se conservan.
+
+**Selección y negativos.** Una rejilla declarada de 675 poses más la original se evalúa sobre la
+persona instalada, a 30 s en apnea espiratoria: 33 rayos y 70 profundidades. El primer candidato
+capturado perdió seno renal y falló el mínimo original de 5 cm² (4,6314 cm²); se descarta, sin cambiar
+ese mínimo. Se selecciona de los resultados ya guardados una pose que conserva el seno y el eje
+largo. Pasan los contratos previos de contacto, extensión renal, obstrucción y áreas de hígado/seno.
+La selección no demuestra un óptimo universal ni forma anatómica externa.
+
+**Regresión protegida.** Además de los mínimos anteriores, >85 % del hígado muestreado debe quedar
+acústicamente accesible. El control CPU considera hueso/gas anterior; el navegador usa la transmisión
+adquirida >0,01 que ya se exigía al riñón, en los dos casos. El control de traslación actualiza únicamente
+su destino explícito a la nueva pose: conserva 100 cuadros, tolerancia y conservación de los tres ejes.
+Su primer fallo por esperar las coordenadas antiguas se conserva. El barrido renal de dos vistas original
+permanece intacto.
+
+**Comparaciones.** Antes/después significa dos posiciones de sonda sobre la misma anatomía. Misma
+fisiología a 30 s, semilla, ajustes y fase del receptor registrada; fundamental/armónica y RM0/RM1,
+dos casos. No se interpreta la diferencia de píxeles como una corrección de tejidos ni como ahorro.
+[Comparaciones registradas](evidence/INDEX.md#image-visible-65-paired). El protocolo, la rejilla completa,
+los candidatos descartados y los resultados se conservan en la misma ronda manual `image-visible-65`. Check completo y CI del head final son requisitos separados de aceptación. Sin tareas
+programadas.

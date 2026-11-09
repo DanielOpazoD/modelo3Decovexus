@@ -82,6 +82,25 @@
    ]
   },
   {
+   "id": "image-visible-65-paired",
+   "path": "image-visible-65/paired",
+   "kind": "dir",
+   "bytes": 6804335,
+   "sha256": "e6d21145053d6ef6f2deee6fe89d430ff8d2986ce6c0bdc8c846498b20dd5370",
+   "files": 17,
+   "round": "image-visible-65",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 335
+    },
+    {
+     "doc": "docs/estado/imagen.md",
+     "decision": null
+    }
+   ]
+  },
+  {
    "id": "ivc-atrium",
    "path": "ivc-atrium",
    "kind": "dir",

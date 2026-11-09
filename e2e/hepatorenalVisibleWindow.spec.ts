@@ -16,7 +16,8 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
         t = s.renderer.readTransmission();
       let kidney = 0,
         visibleKidney = 0,
-        liver = 0;
+        liver = 0,
+        visibleLiver = 0;
       const radii: number[] = [];
       for (let v = 0; v < 64; v++)
         for (let u = 0; u < 32; u++) {
@@ -26,13 +27,17 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
             (x, i) => x + (s.transducer.curvatureRadius + r) * (fr.axial[i] * Math.cos(theta) + fr.lateral[i] * Math.sin(theta)),
           ) as [number, number, number];
           const c = s.anatomy.classifyWorld(p, a.sample);
-          if (Number(c.tissue) === 4) liver++;
+          const row = Math.min(t.samples - 1, Math.floor((r / s.displayed.bmode.depthMm) * t.samples)),
+            line = Math.min(t.lines - 1, Math.floor(((u + 0.5) / 32) * t.lines));
+          const transmitted = t.single[row * t.lines + line] > 0.01;
+          if (Number(c.tissue) === 4) {
+            liver++;
+            if (transmitted) visibleLiver++;
+          }
           if ([17, 18].includes(c.tissue)) {
             kidney++;
-            const row = Math.min(t.samples - 1, Math.floor((r / s.displayed.bmode.depthMm) * t.samples)),
-              line = Math.min(t.lines - 1, Math.floor(((u + 0.5) / 32) * t.lines));
             // Use the acquired transmission: anatomy behind opaque bone alone is insufficient.
-            if (t.single[row * t.lines + line] > 0.01) {
+            if (transmitted) {
               visibleKidney++;
               radii.push(r);
             }
@@ -43,6 +48,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
         kidney,
         visibleKidney,
         liver,
+        visibleLiver,
         span: radii.length ? Math.max(...radii) - Math.min(...radii) : 0,
         errors: window.__vexusTest!.loggedErrors(),
       };
@@ -52,6 +58,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
     expect(result.visibleKidney).toBeGreaterThan(50);
     expect(result.visibleKidney / result.kidney).toBeGreaterThan(0.65);
     expect(result.liver).toBeGreaterThan(100);
+    expect(result.visibleLiver / result.liver).toBeGreaterThan(0.85);
     expect(result.span).toBeGreaterThan(35);
     expect(result.errors).toEqual([]);
     expect(errors).toEqual([]);

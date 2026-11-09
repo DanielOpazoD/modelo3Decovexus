@@ -300,9 +300,11 @@ const ABDOMINAL_POINTS: readonly StartPoint[] = START_POINTS.map((sp) => ({
 // Decisión 331: la subxifoidea se desliza 15 mm hacia la cabeza y se abanica 1,7° más a la derecha, como haría un
 // ecografista: la unión cavoauricular queda en el sector con la suprahepática que desemboca junto a ella, y la columna sale
 // del plano (antes, la AD en el borde y una VCI recta de borde a borde sobre la sombra vertebral).
+// La ventana hepatorrenal entra entre costillas: conserva el eje largo y el seno renal,
+// y deja visible el parénquima hepático que antes quedaba detrás de la sombra costal.
 const DEFAULT_POSES: Partial<Record<StartPoint['id'], Pick<StartPoint, 'phi' | 'z' | 'yaw' | 'rock' | 'tilt'>>> = {
   renal: { phi: 2.804, z: -120.3, yaw: 0.113, rock: -0.154, tilt: -0.368 },
-  hepatorenal: { phi: 2.9, z: -123.9, yaw: 0.08, rock: 0.037, tilt: -0.431 },
+  hepatorenal: { phi: 2.8, z: -115, yaw: -0.12, rock: -0.163, tilt: -0.431 },
   subxiphoid: { ...ABDOMINAL_POSES.subxiphoid, z: -45, tilt: -0.13 },
 };
 const DEFAULT_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...DEFAULT_POSES[sp.id] }));
