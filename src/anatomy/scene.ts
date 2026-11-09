@@ -290,7 +290,7 @@ export class AnatomyScene {
     registeredBody: Float32Array | undefined,
     readonly person: InstalledCpuPerson,
   ) {
-    if (!person) throw new Error('Escena sin persona instalada');
+    if (!person) throw new Error('Falta persona');
     this.identity = person.identity;
     this.hasAbdominalAtlas = !!person?.assets.buffers.abdominal;
     const fat = patient.habitus.subcutaneousFatMm;
@@ -446,6 +446,7 @@ export class AnatomyScene {
       });
     const tree = buildVesselTree(this.kidneyRight, this.kidneyLeft, this.hasAbdominalAtlas);
     this.vessels = tree.vessels;
+    person.cpu.curveVessels?.(this.vessels);
     // Ramas de 3.º–4.º orden confinadas al hígado (el SDF ya conoce riñón y vesícula); las madres sin hijas en su extremo,
     // afiladas (decisión 87)
     const { branches, parents } = buildHepaticBranches(

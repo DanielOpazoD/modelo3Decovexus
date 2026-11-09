@@ -86,3 +86,18 @@ Medido en el candidato basado en main `8ed26cf` el 2026-11-07 con `tools/docs/es
 
 Memoria: el criterio de trabajo es ≤ 2,0 GB de pico en Metal para toda la aplicación (decisión 318); con s0028 se midió
 1,68–1,77 GB en P2 (decisión 320). P3 r3 lee la grasa de plazas ya reservadas del atlas (decisión 321).
+
+## Candidato de trayectos vasculares curvos (337)
+
+Doce trayectos principales de current conservan sus hitos/radios y cambian la interpolación intermedia.
+Se regeneran también 75 ramas periféricas, incluido su reparto entre familias y calibre local.
+CPU, GPU, pared y Doppler usan los mismos nodos. La bifurcación subcostal cambia de contorno
+sin mover la sonda ni filtrar la imagen. [Pares registrados](../evidence/INDEX.md#image-junctions-70-paired).
+Es una aproximación de geometría, no segmentación externa ni fillets completos. Paridad y
+contención focales aprobadas en Metal y SwiftShader, ambos casos; coste por estado no acredita
+no-regresión. Aún no integrado ni aprobado por CI del head final.
+
+La decisión338 conserva exactamente las curvas/paredes337 y resuelve su coste nativo mediante
+la rejilla conservadora existente. Ocho capturas idénticas; coste GPU agregado−42,78% frente
+a curvas sin optimizar y−45,54% frente a main98280b5, sin regresión de mediana/p95 en los ocho estados.
+La estimación entre hitos sigue siendo una aproximación, no segmentación independiente.

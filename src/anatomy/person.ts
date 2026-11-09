@@ -7,6 +7,7 @@ import type { PersonAssets, PersonIdentity } from './personAssets';
 import type { createAbdominalQueries, createThoracicQueries } from './personAtlas';
 import type { IndexedSourceSurface } from './s0028Surface';
 import type { AnatomyScene } from './scene';
+import type { VesselDef } from './vesselTree';
 
 export interface AnatomyPerson {
   readonly classifyInside: (
@@ -20,6 +21,8 @@ export interface AnatomyPerson {
   readonly assets: PersonAssets;
   readonly atlas: ReturnType<typeof createAbdominalQueries> & ReturnType<typeof createThoracicQueries>;
   readonly skinMm: number;
+  /** Construction-only refinement of this person’s registered vascular landmarks. */
+  readonly curveVessels?: (vessels: VesselDef[]) => void;
   readonly regional?: ReturnType<typeof createSourceQueries> &
     ReturnType<typeof createWallQueries> &
     ReturnType<typeof createSolidsQueries>;

@@ -89,3 +89,11 @@ intercostal y media subcostal). Cinco conservadas tras comparar candidatos; la h
 335 sigue vigente. [16 pares registrados](../evidence/INDEX.md#image-views-66-paired). Sólo cambia
 la adquisición; no hay remodelación anatómica ni tareas programadas. Aceptación remota pendiente
 del último commit del PR352; los resultados anteriores no se reutilizan como CI del nuevo head.
+
+## Rejilla vascular nativa (decisión338)
+
+Metal conserva sus pasadas y ahora usa la misma selección conservadora de tubos que staged-atlas.
+En ocho estados, la geometría/paredes337 produce ocho imágenes idénticas con y sin el índice.
+Dos bancos pareados completos:−42,78%GPU frente a curvas sin optimizar y−45,54% frente a main98280b5;
+mediana/p95 por estado mejoran. Resolución192×1024/PSF/semillas intactas. No se infieren FPS,
+memoria total ni coste3D/Worker/compositor. Tablas observadas149.504–184.320B; techo existente4MiB.

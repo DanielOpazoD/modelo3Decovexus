@@ -165,7 +165,7 @@ export function shapeMetric(shape: TubeShape, radiusScale: number): { wt: Vec3; 
  */
 export function tubeShapeTexel(tube: Pick<Tube, 'shape' | 'smoothRadius'>, radiusScale: number): [number, number, number, number] {
   const { shape } = tube;
-  if (shape && tube.smoothRadius) throw new Error('Un tubo con forma orgánica no lleva radio smoothstep (téxel H4)');
+  if (shape && tube.smoothRadius) throw new Error('Tube.shape incompatible con smoothRadius');
   if (!shape) return [0, 0, 0, tube.smoothRadius ? -1 : 0];
   const { wt } = shapeMetric(shape, radiusScale);
   return [wt[0], wt[1], wt[2], shape.amp];

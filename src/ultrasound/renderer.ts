@@ -999,13 +999,13 @@ export class UltrasoundRenderer {
       kept++;
     }
     this.tubeCount = kept;
-    // Every reach rounds UP; changing caliber/shape invalidates the index before drawing.
-    const reaches =
-      this.transmissionHitsPipeline === 'staged-atlas'
-        ? keptIds.map((original, compact) => tubeGridReach(this.sceneData, this.tubeMaxRadii[original], compact * TUBE_HEADER_TEXELS * 4))
-        : [];
+    // El índice conserva geometría y orden también en Metal; no depende del reparto de pasadas.
+    // Cada alcance redondea hacia arriba; calibre/forma invalidan el índice antes de dibujar.
+    const reaches = s.hasAbdominalAtlas
+      ? keptIds.map((original, compact) => tubeGridReach(this.sceneData, this.tubeMaxRadii[original], compact * TUBE_HEADER_TEXELS * 4))
+      : [];
     const key = keptIds.join(',') + ';' + reaches.join(',');
-    if (this.transmissionHitsPipeline === 'staged-atlas' && key !== this.tubeGridKey) {
+    if (s.hasAbdominalAtlas && key !== this.tubeGridKey) {
       this.tubeGridKey = key;
       const spheres = keptIds.map((_, i): TubeSphere => {
         const j = (i * TUBE_HEADER_TEXELS + 3) * 4;
