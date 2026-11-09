@@ -165,6 +165,29 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
     const pose = startPointsFor(torso, { person: 'current' }).find((p) => p.id === 'epigastric')!;
     const results = [];
     for (const systole of [false, true]) {
+      // Manual render bypasses the application's frame pacer. Drain the previous image
+      // before submitting another; keep the original map deadline and both pulse phases.
+      await page.evaluate(async () => {
+        const s = window.__vexusTest!.sim();
+        s.frozen = true;
+        const gl = s.renderer.gl;
+        const fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        if (!fence) throw new Error('Aortic acquisition fence unavailable');
+        gl.flush();
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const poll = () => {
+              const status = gl.clientWaitSync(fence, 0, 0);
+              if (status === gl.WAIT_FAILED) reject(new Error('Aortic acquisition fence failed'));
+              else if (status === gl.TIMEOUT_EXPIRED) window.setTimeout(poll, 16);
+              else resolve();
+            };
+            poll();
+          });
+        } finally {
+          gl.deleteSync(fence);
+        }
+      });
       const frame = await page.evaluate(
         ({ pose, systole }) => {
           const s = window.__vexusTest!.sim();

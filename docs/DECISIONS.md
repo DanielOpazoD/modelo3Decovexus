@@ -11359,3 +11359,15 @@ intersección anterior. Se exige ganancia estricta en ambos, +50 % en normal, +2
 
 **Presupuesto.** El primer build supera s0028 por 69 B porque los inicios están en la clausura común.
 Se abrevian dos ayudas redundantes, conservando técnica y valores; no se amplía el techo.
+
+**Corrección de CI352.** La ejecución 42567275879 falla en cuatro pruebas: dos esperan la z
+histórica de la tarjeta epigástrica, otra el yaw intercostal antiguo y la aórtica no adquiere su
+segundo mapa. Las pruebas gástrica y costal ahora esperan la tarjeta vigente y colocan de forma
+explícita sus planos originales: mantienen todos sus testigos, aserciones y plazos. El ensayo
+SwiftShader original también falla en el segundo mapa aórtico del caso grave. Su render manual
+bypasseaba el regulador de cuadros: se drena la GPU antes de cada fase, sin ampliar la espera del
+mapa. La traza contiene una lectura DOM sin respuesta, no prueba una cola de mapas obsoletos.
+Pasan ambos casos SwiftShader y siete pruebas Metal, sin reintentos. Los cambios son del arnés;
+la CI negativa no se rehabilita ni esto acredita reparar bloqueos ajenos.
+[Fuentes y auditoría de aserciones conservadas](evidence/INDEX.md#image-ci-67-source-audit).
+El head corregido requiere check y CI protegida propios antes de fusionar.

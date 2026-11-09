@@ -82,6 +82,21 @@
    ]
   },
   {
+   "id": "image-ci-67-source-audit",
+   "path": "image-ci-67/source-audit",
+   "kind": "dir",
+   "bytes": 45832,
+   "sha256": "025e25ab07775480d5cfba2953e68a52a9af9800c6a605134dc8f188de81b330",
+   "files": 7,
+   "round": "image-ci-67",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 336
+    }
+   ]
+  },
+  {
    "id": "image-views-66-paired",
    "path": "image-views-66/paired",
    "kind": "dir",

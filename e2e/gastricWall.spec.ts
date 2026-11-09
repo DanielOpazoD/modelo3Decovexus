@@ -7,7 +7,7 @@ import { abdomenQuery, GASTRIC_WALL } from '../src/anatomy/organs/abdomen';
 import { Tissue } from '../src/anatomy/tissues';
 import { abdominalAtlasValue, setAbdominalAtlas } from '../src/validation/support/legacyPerson/abdominalAtlas';
 import { fixturePerson } from '../src/validation/support/legacyPerson/state';
-import { bootWithoutErrors, budget } from './support';
+import { bootWithoutErrors, budget, windowAcquired } from './support';
 
 /** La pared entera, también fuera del plano: puntos materiales del estómago hasta un poco más allá de sus pliegues, fuera de la rejilla del atlas. */
 function stomachWallPoints(): number[][] {
@@ -40,7 +40,15 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
     await page.selectOption('#case-select', caseId);
     await page.getByRole('button', { name: 'Apnea espiratoria', exact: true }).click();
     await page.locator('[data-window="epigastric"]').click();
-    await page.waitForFunction(() => Math.abs(window.__vexusTest!.sim().pose.z + 35) < 1e-8);
+    await windowAcquired(page, 'epigastric');
+    // Fixed gastric regression plane: the VCI card may improve without removing this stomach witness.
+    await page.evaluate(() => {
+      const s = window.__vexusTest!.sim();
+      s.setPose({ phi: 1.55, z: -35, yaw: -Math.PI / 2, rock: 0, tilt: 0.15, lift: 0 });
+      s.advance(s.physiology.clock.dt);
+      s.advance(s.physiology.clock.dt);
+      s.render();
+    });
     const result = await page.evaluate(
       ({ contents, wall, wallPoints, margin }) => {
         const s = window.__vexusTest!.sim();
