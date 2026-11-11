@@ -1,6 +1,6 @@
 # Estado vigente: imagen
 
-Actualizado: 2026-11-07 sobre main `8ed26cf`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
+Actualizado: 2026-11-11 sobre main `e8e1bec`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
 techos los limitan. La explicación de cada pasada está en `docs/ARCHITECTURE.md`; las decisiones, en `docs/DECISIONS.md`.
 
 ## A0 nativa current (339)
@@ -49,15 +49,15 @@ samplers y ranuras de uniforms: decisión 317):
 
 <!-- programas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `8ed26cf` el 2026-11-07 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `e8e1bec` el 2026-11-11 con `tools/docs/estado.ts`.
 
 | Programa                  | Samplers default / s0028 | Ranuras default / s0028 | Uso de tokens (peor persona) | Uso de ramas |
 | ------------------------- | -----------------------: | ----------------------: | ---------------------------: | -----------: |
-| `FRAG_RAWFIELD`           |                  10 / 10 |               136 / 136 |                         91 % |         91 % |
-| `FRAG_RAWFIELD_ECHO`      |                  16 / 16 |               137 / 137 |                         91 % |         91 % |
-| `FRAG_RAWFIELD_CLASS`     |                  10 / 10 |               136 / 136 |                         91 % |         91 % |
-| `FRAG_RAWFIELD_ELEVATION` |                  15 / 15 |               137 / 137 |                         91 % |         92 % |
-| `FRAG_RAWFIELD_GRADIENT`  |                  15 / 15 |               138 / 138 |                         91 % |         91 % |
+| `FRAG_RAWFIELD`           |                  10 / 10 |               136 / 136 |                         92 % |         92 % |
+| `FRAG_RAWFIELD_ECHO`      |                  16 / 16 |               137 / 137 |                         92 % |         92 % |
+| `FRAG_RAWFIELD_CLASS`     |                  10 / 10 |               136 / 136 |                         92 % |         92 % |
+| `FRAG_RAWFIELD_ELEVATION` |                  15 / 15 |               137 / 137 |                         92 % |         92 % |
+| `FRAG_RAWFIELD_GRADIENT`  |                  15 / 15 |               138 / 138 |                         92 % |         91 % |
 | `FRAG_TRANS_HITS`         |                    6 / 6 |               101 / 101 |                         91 % |         92 % |
 | `FRAG_TRANS_HITS_GRID`    |                  11 / 11 |               102 / 102 |                         91 % |         92 % |
 | `FRAG_COLOR`              |                    7 / 7 |               110 / 110 |                         91 % |         92 % |

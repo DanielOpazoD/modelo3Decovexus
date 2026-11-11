@@ -1,19 +1,19 @@
 # Estado vigente: pruebas
 
-Actualizado: 2026-11-07 sobre main `8ed26cf`. Qué capas de prueba hay, cuánto tardan y cómo se acepta un cambio. La
+Actualizado: 2026-11-11 sobre main `e8e1bec`. Qué capas de prueba hay, cuánto tardan y cómo se acepta un cambio. La
 estrategia está en `docs/TESTING.md`; el procedimiento de aceptación y fusión, en `CONTRIBUTING.md`.
 
 ## Capas
 
 <!-- capas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `8ed26cf` el 2026-11-07 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `e8e1bec` el 2026-11-11 con `tools/docs/estado.ts`.
 
 | Capa                                    |  Cuántas | Dónde                                   |
 | --------------------------------------- | -------: | --------------------------------------- |
-| Archivos vitest (rápidos + lentos)      |      321 | `src/**/*.test.ts`                      |
+| Archivos vitest (rápidos + lentos)      |      331 | `src/**/*.test.ts`                      |
 | De ellos, lentos (`// @tier slow`)      |       34 | `npm run test:slow`, `check`, CI        |
-| Especificaciones e2e / llamadas `test(` | 85 / 143 | `e2e/*.spec.ts`, 12 fragmentos en la CI |
+| Especificaciones e2e / llamadas `test(` | 89 / 148 | `e2e/*.spec.ts`, 12 fragmentos en la CI |
 | Contratos Python                        |       20 | `tools/anatomy/*_test.py` (local)       |
 
 <!-- fin de capas -->

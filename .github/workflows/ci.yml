@@ -130,8 +130,11 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
     # 96 pruebas de main consumieron 245–253 min acumulados en CI38361760302/38366458518.
-    # El Atlas añade 25 casos: doce corredores, sin ampliar los 40 min ni los plazos individuales.
-    timeout-minutes: 40
+    # El Atlas añade 25 casos: doce corredores, sin ampliar los plazos individuales.
+    # 11-11-2026: el mismo fragmento tarda de 19 a 40 min según el corredor (CI43104280280 frente a CI43106840942, donde el
+    # 3/12 se canceló con sus 15 pruebas terminadas en verde). El límite del trabajo sólo detecta un cuelgue del corredor;
+    # cada prueba conserva su plazo propio. Sube de 40 a 55 min para quedar fuera de ese ruido.
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
