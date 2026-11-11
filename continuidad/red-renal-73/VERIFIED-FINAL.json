@@ -1,0 +1,174 @@
+{
+  "passAll": true,
+  "states": [
+    {
+      "case": "normal-adult",
+      "view": "renal",
+      "median": [
+        58.033291,
+        30.185833
+      ],
+      "p95NearestRank": [
+        60.798458,
+        30.617499
+      ]
+    },
+    {
+      "case": "normal-adult",
+      "view": "hepatorenal",
+      "median": [
+        55.768124,
+        29.440666
+      ],
+      "p95NearestRank": [
+        57.130125,
+        29.868541
+      ]
+    },
+    {
+      "case": "normal-adult",
+      "view": "portal",
+      "median": [
+        73.696874,
+        46.072208
+      ],
+      "p95NearestRank": [
+        76.576749,
+        47.126041
+      ]
+    },
+    {
+      "case": "normal-adult",
+      "view": "subcostal",
+      "median": [
+        67.735541,
+        30.553541
+      ],
+      "p95NearestRank": [
+        68.930374,
+        31.844541
+      ]
+    },
+    {
+      "case": "severe-congestion",
+      "view": "renal",
+      "median": [
+        58.706375,
+        29.297583
+      ],
+      "p95NearestRank": [
+        60.635083,
+        30.341666
+      ]
+    },
+    {
+      "case": "severe-congestion",
+      "view": "hepatorenal",
+      "median": [
+        57.137041,
+        29.284541
+      ],
+      "p95NearestRank": [
+        58.302916,
+        29.796
+      ]
+    },
+    {
+      "case": "severe-congestion",
+      "view": "portal",
+      "median": [
+        74.650208,
+        46.875041
+      ],
+      "p95NearestRank": [
+        75.932916,
+        48.838499
+      ]
+    },
+    {
+      "case": "severe-congestion",
+      "view": "subcostal",
+      "median": [
+        69.448999,
+        31.809583
+      ],
+      "p95NearestRank": [
+        71.005916,
+        33.557416
+      ]
+    }
+  ],
+  "gpuAggregateMedianRatio": 0.5309229379705365,
+  "gpuSavingPercent": 46.90770620294635,
+  "measuredFrames": 560,
+  "a0States": 24,
+  "a0Uint32ValuesPerPath": 55296,
+  "images": [
+    {
+      "file": "normal-adult-hepatorenal-after.png",
+      "size": [
+        712,
+        671
+      ],
+      "changedPixels": 0
+    },
+    {
+      "file": "normal-adult-portal-after.png",
+      "size": [
+        712,
+        671
+      ],
+      "changedPixels": 0
+    },
+    {
+      "file": "normal-adult-renal-after.png",
+      "size": [
+        712,
+        671
+      ],
+      "changedPixels": 0
+    },
+    {
+      "file": "normal-adult-subcostal-after.png",
+      "size": [
+        712,
+        671
+      ],
+      "changedPixels": 0
+    },
+    {
+      "file": "severe-congestion-hepatorenal-after.png",
+      "size": [
+        712,
+        671
+      ],
+      "changedPixels": 0
+    },
+    {
+      "file": "severe-congestion-portal-after.png",
+      "size": [
+        712,
+        671
+      ],
+      "changedPixels": 0
+    },
+    {
+      "file": "severe-congestion-renal-after.png",
+      "size": [
+        712,
+        671
+      ],
+      "changedPixels": 0
+    },
+    {
+      "file": "severe-congestion-subcostal-after.png",
+      "size": [
+        712,
+        671
+      ],
+      "changedPixels": 0
+    }
+  ],
+  "historicalEvidenceEntriesPreserved": 112,
+  "scope": "Saved observations; no new GPU run, no clinical oracle; total GPU per five frames, not FPS; p95 nearest-rank seven intervals equals maximum"
+}

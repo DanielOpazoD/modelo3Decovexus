@@ -1,0 +1,42 @@
+[
+  {
+    "file": "normal-adult-hepatorenal-after.png",
+    "pixelsChanged": 0,
+    "sha256": "508512d35dda641fe860c367005aaaf608bd43d58b3dc87f20a5751bcc3af13e"
+  },
+  {
+    "file": "normal-adult-portal-after.png",
+    "pixelsChanged": 0,
+    "sha256": "c29981f40666b42ee91f9f3eb539836e9833eea25fba6569650c6656b49b6149"
+  },
+  {
+    "file": "normal-adult-renal-after.png",
+    "pixelsChanged": 0,
+    "sha256": "2ca7ee394d4c781d4e3f808db9ace8569d3e79a75a79019f2870a5a235c3f978"
+  },
+  {
+    "file": "normal-adult-subcostal-after.png",
+    "pixelsChanged": 0,
+    "sha256": "88c13189ed76abc40866d148debfb02b9b4be3da0fa586f73d392c04e9234f31"
+  },
+  {
+    "file": "severe-congestion-hepatorenal-after.png",
+    "pixelsChanged": 0,
+    "sha256": "c8c1457d7bab189728e8f6ba12aa94009a649ad4f180a898e85be26dde13f7d0"
+  },
+  {
+    "file": "severe-congestion-portal-after.png",
+    "pixelsChanged": 0,
+    "sha256": "a41d8e1050d2b75526e342e3c1a4967d89409bed4443f9d235d20f19a5968aea"
+  },
+  {
+    "file": "severe-congestion-renal-after.png",
+    "pixelsChanged": 0,
+    "sha256": "3f13beb4b17df439b658517f88e98d594a3bbe32f8c508023476944399f4f88e"
+  },
+  {
+    "file": "severe-congestion-subcostal-after.png",
+    "pixelsChanged": 0,
+    "sha256": "5b49a478e78e0d9aefc3266e468a9896347358deea29ec33b22ff5491845f62c"
+  }
+]

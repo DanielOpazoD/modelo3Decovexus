@@ -4,7 +4,7 @@
 
 - El simulador ecográfico VExUS completo está en la raíz: aplicación TypeScript/WebGL, recursos anatómicos, pruebas, documentación, herramientas y configuraciones. La base importada corresponde a `DanielOpazoD/vexus-sim` en `adaf67255268f021b06575d2663a26c881e4f663` (PR #353 integrada allí).
 - `maqueta-anatomica/` es una **aplicación exploratoria 3D separada**, para estudiar anatomía con colores planos y sin moteado. Sus cambios no están integrados en el simulador. Incluye la maqueta 102, el prototipo 103, datos, inventario, comparaciones y evidencias resumidas.
-- La rama `wip/red-renal-73` conserva los cambios locales de producto que estaban sin commit al preparar la copia. Son trabajo en curso, **no están validados ni fusionados**. Consultar su diff con `main` y verificarlo antes de aceptarlo.
+- La rama `wip/red-renal-73` conserva exactamente los cambios locales de producto que estaban sin commit al preparar la copia. La evidencia histórica incluida informa de controles locales favorables, pero **no hay CI nueva ni fusión de esta rama**. En esta copia pasaron TypeScript y 22 pruebas focalizadas; no se repitió todo el check. Consultar el diff con `main` y verificar el head antes de aceptarlo.
 
 Este repositorio es público. Los datos incluidos son derivados del caso público `s0028` de TotalSegmentator, no una anatomía confirmada del usuario ni una referencia clínica individual. No se incluyen el TAC original completo ni el archivo histórico completo de evidencias locales. La aplicación es educativa y no es un dispositivo médico.
 
@@ -36,7 +36,9 @@ npm run build
 
 El verificador de datos comprueba hashes, bloques y reconstrucción exacta de ambos atlas. `--reconstruir-fuentes` también reconstruye `FIELDS98.npz` y los datos originales del visor 102 desde sus fragmentos; no sobrescribe archivos existentes. La prueba del visor necesita Chromium de Playwright y WebGL funcional. Las pruebas del producto y sus requisitos completos están en `docs/TESTING.md` y `AGENTS.md`.
 
-En la preparación de esta copia, el build del simulador y la prueba E2E de arranque `e2e/smoke.spec.ts` pasaron. Se compararon los framebuffers de las maquetas originales con las portátiles en Metal: seis vistas de 102 y ocho de 103 coincidieron byte a byte. Véase `maqueta-anatomica/evidencia/PORTABILIDAD.json`. Esa comparación prueba el transporte en esas vistas y dispositivo, no la corrección anatómica ni el coste GPU del producto. No se ha ejecutado todo el conjunto de pruebas de la rama renal pendiente para esta entrega.
+En la preparación de esta copia, el build del simulador base y la prueba E2E de arranque `e2e/smoke.spec.ts` pasaron. La rama renal pasó además `typecheck` y cuatro archivos de pruebas focalizadas (22 pruebas); no se repitió su check completo. Los informes previos disponibles están en `continuidad/red-renal-73/`: declaran un check local de 2.330 pruebas y 16 fallos esperados, calibración y E2E aprobados, y un banco GPU de ocho estados con −46,91 % agregado. Esos son resultados históricos informados, no una nueva CI ni verificación independiente de los 221 archivos históricos que estaban sin materializar.
+
+Se compararon los framebuffers de las maquetas originales con las portátiles en Metal: seis vistas de 102 y ocho de 103 coincidieron byte a byte. Véase `maqueta-anatomica/evidencia/PORTABILIDAD.json`. Esa comparación prueba el transporte en esas vistas y dispositivo, no la corrección anatómica ni el coste GPU del producto.
 
 También se reconstruyeron los dos archivos fuente divididos y se repitieron la construcción, el control topológico y las muestras reservadas de la fascia 103 en un directorio temporal: los arrays resultantes coincidieron con los originales. El primer intento reveló cuatro módulos Python no incluidos inicialmente; se incorporaron antes de la repetición. Estos controles usan campos derivados, no el TAC original (`maqueta-anatomica/evidencia/REPRO-FUENTES.json`).
 

@@ -1,6 +1,8 @@
 dist
 node_modules
 maqueta-anatomica
+# Evidencia histórica copiada sin alterar sus bytes
+continuidad/red-renal-73
 coverage
 docs/DECISIONS_INDEX.md
 # generados por tools/docs/evidence-index.ts

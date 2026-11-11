@@ -1,0 +1,181 @@
+{
+  "states": [
+    {
+      "case": "normal-adult",
+      "view": "renal",
+      "sameAcquisition": true,
+      "frameMs": [
+        4.066666667660077,
+        5.116666664679845
+      ],
+      "paddingFrames": [
+        26,
+        33
+      ],
+      "sharedProtocol": {
+        "phase": "capture",
+        "targetSeconds": 30,
+        "frames": 7,
+        "receiverPhaseReset": false,
+        "receiverPhaseRegistered": true,
+        "historyStartFrame": 128,
+        "historyEndFrame": 134
+      }
+    },
+    {
+      "case": "normal-adult",
+      "view": "hepatorenal",
+      "sameAcquisition": true,
+      "frameMs": [
+        4,
+        4.883333335320155
+      ],
+      "paddingFrames": [
+        33,
+        27
+      ],
+      "sharedProtocol": {
+        "phase": "capture",
+        "targetSeconds": 30,
+        "frames": 7,
+        "receiverPhaseReset": false,
+        "receiverPhaseRegistered": true,
+        "historyStartFrame": 128,
+        "historyEndFrame": 134
+      }
+    },
+    {
+      "case": "normal-adult",
+      "view": "portal",
+      "sameAcquisition": true,
+      "frameMs": [
+        4.216666668653488,
+        4.683333337306976
+      ],
+      "paddingFrames": [
+        23,
+        28
+      ],
+      "sharedProtocol": {
+        "phase": "capture",
+        "targetSeconds": 30,
+        "frames": 7,
+        "receiverPhaseReset": false,
+        "receiverPhaseRegistered": true,
+        "historyStartFrame": 128,
+        "historyEndFrame": 134
+      }
+    },
+    {
+      "case": "normal-adult",
+      "view": "subcostal",
+      "sameAcquisition": true,
+      "frameMs": [
+        3.9000000009934106,
+        4.700000007947286
+      ],
+      "paddingFrames": [
+        40,
+        41
+      ],
+      "sharedProtocol": {
+        "phase": "capture",
+        "targetSeconds": 30,
+        "frames": 7,
+        "receiverPhaseReset": false,
+        "receiverPhaseRegistered": true,
+        "historyStartFrame": 128,
+        "historyEndFrame": 134
+      }
+    },
+    {
+      "case": "severe-congestion",
+      "view": "renal",
+      "sameAcquisition": true,
+      "frameMs": [
+        4.116666664679845,
+        4.9833333392937975
+      ],
+      "paddingFrames": [
+        27,
+        23
+      ],
+      "sharedProtocol": {
+        "phase": "capture",
+        "targetSeconds": 30,
+        "frames": 7,
+        "receiverPhaseReset": false,
+        "receiverPhaseRegistered": true,
+        "historyStartFrame": 128,
+        "historyEndFrame": 134
+      }
+    },
+    {
+      "case": "severe-congestion",
+      "view": "hepatorenal",
+      "sameAcquisition": true,
+      "frameMs": [
+        3.98333332935969,
+        4.950000007947286
+      ],
+      "paddingFrames": [
+        31,
+        23
+      ],
+      "sharedProtocol": {
+        "phase": "capture",
+        "targetSeconds": 30,
+        "frames": 7,
+        "receiverPhaseReset": false,
+        "receiverPhaseRegistered": true,
+        "historyStartFrame": 128,
+        "historyEndFrame": 134
+      }
+    },
+    {
+      "case": "severe-congestion",
+      "view": "portal",
+      "sameAcquisition": true,
+      "frameMs": [
+        4.283333336313565,
+        4.716666668653488
+      ],
+      "paddingFrames": [
+        28,
+        25
+      ],
+      "sharedProtocol": {
+        "phase": "capture",
+        "targetSeconds": 30,
+        "frames": 7,
+        "receiverPhaseReset": false,
+        "receiverPhaseRegistered": true,
+        "historyStartFrame": 128,
+        "historyEndFrame": 134
+      }
+    },
+    {
+      "case": "severe-congestion",
+      "view": "subcostal",
+      "sameAcquisition": true,
+      "frameMs": [
+        3.9333333323399224,
+        4.699999998013179
+      ],
+      "paddingFrames": [
+        41,
+        40
+      ],
+      "sharedProtocol": {
+        "phase": "capture",
+        "targetSeconds": 30,
+        "frames": 7,
+        "receiverPhaseReset": false,
+        "receiverPhaseRegistered": true,
+        "historyStartFrame": 128,
+        "historyEndFrame": 134
+      }
+    }
+  ],
+  "excluded": "frameMs is observed CPU timing; paddingFrames aligns warmup to same history128..134, not measured input. All other sample/pose/seed/controls/serial/protocol equal."
+}

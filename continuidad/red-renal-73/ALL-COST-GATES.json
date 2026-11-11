@@ -1,0 +1,668 @@
+[
+  {
+    "bank": "cost",
+    "aggregateRatio": 1.0327907512251744,
+    "failedStates": 6,
+    "states": [
+      {
+        "case": "normal-adult",
+        "view": "renal",
+        "median": [
+          51.436041,
+          60.850708
+        ],
+        "p95": [
+          61.576416,
+          61.989875
+        ],
+        "passed": false
+      },
+      {
+        "case": "normal-adult",
+        "view": "hepatorenal",
+        "median": [
+          56.648416,
+          58.734166
+        ],
+        "p95": [
+          58.650291,
+          60.081833
+        ],
+        "passed": false
+      },
+      {
+        "case": "normal-adult",
+        "view": "portal",
+        "median": [
+          59.952791,
+          73.298166
+        ],
+        "p95": [
+          73.566083,
+          77.262333
+        ],
+        "passed": false
+      },
+      {
+        "case": "normal-adult",
+        "view": "subcostal",
+        "median": [
+          69.283624,
+          58.626833
+        ],
+        "p95": [
+          71.252333,
+          69.443583
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "renal",
+        "median": [
+          59.393333,
+          55.528124
+        ],
+        "p95": [
+          61.811208,
+          62.162624
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "hepatorenal",
+        "median": [
+          56.869791,
+          58.597875
+        ],
+        "p95": [
+          57.748208,
+          60.9865
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "portal",
+        "median": [
+          68.654499,
+          74.069291
+        ],
+        "p95": [
+          76.346416,
+          78.785749
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "subcostal",
+        "median": [
+          68.719333,
+          67.351541
+        ],
+        "p95": [
+          73.083,
+          71.619
+        ],
+        "passed": true
+      }
+    ]
+  },
+  {
+    "bank": "cost-grid",
+    "aggregateRatio": 0.9594260778480789,
+    "failedStates": 4,
+    "states": [
+      {
+        "case": "normal-adult",
+        "view": "renal",
+        "median": [
+          61.130208,
+          57.833125
+        ],
+        "p95": [
+          75.49225,
+          63.436374
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "hepatorenal",
+        "median": [
+          55.343416,
+          53.680083
+        ],
+        "p95": [
+          57.605041,
+          57.745625
+        ],
+        "passed": false
+      },
+      {
+        "case": "normal-adult",
+        "view": "portal",
+        "median": [
+          62.062791,
+          63.889416
+        ],
+        "p95": [
+          77.491,
+          69.861958
+        ],
+        "passed": false
+      },
+      {
+        "case": "normal-adult",
+        "view": "subcostal",
+        "median": [
+          58.656791,
+          62.840208
+        ],
+        "p95": [
+          69.749208,
+          65.5335
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "renal",
+        "median": [
+          59.227624,
+          56.953833
+        ],
+        "p95": [
+          63.373666,
+          59.005958
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "hepatorenal",
+        "median": [
+          56.7155,
+          55.658708
+        ],
+        "p95": [
+          58.130791,
+          58.499291
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "portal",
+        "median": [
+          74.92925,
+          65.598833
+        ],
+        "p95": [
+          78.046874,
+          71.493083
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "subcostal",
+        "median": [
+          69.771625,
+          61.183791
+        ],
+        "p95": [
+          72.942624,
+          64.449375
+        ],
+        "passed": true
+      }
+    ]
+  },
+  {
+    "bank": "cost-bound",
+    "aggregateRatio": 0.9302464086763914,
+    "failedStates": 2,
+    "states": [
+      {
+        "case": "normal-adult",
+        "view": "renal",
+        "median": [
+          57.120374,
+          55.992041
+        ],
+        "p95": [
+          62.915583,
+          62.796916
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "hepatorenal",
+        "median": [
+          55.430875,
+          56.366833
+        ],
+        "p95": [
+          64.805958,
+          61.933583
+        ],
+        "passed": false
+      },
+      {
+        "case": "normal-adult",
+        "view": "portal",
+        "median": [
+          76.125666,
+          67.585625
+        ],
+        "p95": [
+          77.838541,
+          71.791666
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "subcostal",
+        "median": [
+          65.720666,
+          61.177833
+        ],
+        "p95": [
+          69.406875,
+          63.774249
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "renal",
+        "median": [
+          58.986624,
+          59.609791
+        ],
+        "p95": [
+          60.591333,
+          62.314541
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "hepatorenal",
+        "median": [
+          56.854041,
+          56.035624
+        ],
+        "p95": [
+          60.885874,
+          59.407875
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "portal",
+        "median": [
+          74.728541,
+          56.8125
+        ],
+        "p95": [
+          78.626083,
+          71.893041
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "subcostal",
+        "median": [
+          67.680624,
+          63.308166
+        ],
+        "p95": [
+          72.578958,
+          64.762833
+        ],
+        "passed": true
+      }
+    ]
+  },
+  {
+    "bank": "cost-bound3d",
+    "aggregateRatio": 0.961947683453347,
+    "failedStates": 5,
+    "states": [
+      {
+        "case": "normal-adult",
+        "view": "renal",
+        "median": [
+          59.138333,
+          58.631916
+        ],
+        "p95": [
+          62.262541,
+          71.069333
+        ],
+        "passed": false
+      },
+      {
+        "case": "normal-adult",
+        "view": "hepatorenal",
+        "median": [
+          56.658375,
+          58.017583
+        ],
+        "p95": [
+          57.846166,
+          60.234749
+        ],
+        "passed": false
+      },
+      {
+        "case": "normal-adult",
+        "view": "portal",
+        "median": [
+          75.242583,
+          59.325416
+        ],
+        "p95": [
+          75.761833,
+          67.782666
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "subcostal",
+        "median": [
+          64.954916,
+          61.727291
+        ],
+        "p95": [
+          69.897583,
+          64.404541
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "renal",
+        "median": [
+          57.988208,
+          58.909124
+        ],
+        "p95": [
+          61.535041,
+          60.582791
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "hepatorenal",
+        "median": [
+          56.578458,
+          54.607583
+        ],
+        "p95": [
+          59.286708,
+          60.778875
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "portal",
+        "median": [
+          58.610458,
+          68.305958
+        ],
+        "p95": [
+          75.448125,
+          70.165874
+        ],
+        "passed": false
+      },
+      {
+        "case": "severe-congestion",
+        "view": "subcostal",
+        "median": [
+          70.517958,
+          61.150083
+        ],
+        "p95": [
+          71.455458,
+          65.362999
+        ],
+        "passed": true
+      }
+    ]
+  },
+  {
+    "bank": "cost-cached",
+    "aggregateRatio": 0.5347638981672205,
+    "failedStates": 0,
+    "states": [
+      {
+        "case": "normal-adult",
+        "view": "renal",
+        "median": [
+          57.15975,
+          29.482666
+        ],
+        "p95": [
+          69.052541,
+          30.696999
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "hepatorenal",
+        "median": [
+          55.276375,
+          29.166833
+        ],
+        "p95": [
+          57.387166,
+          31.222333
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "portal",
+        "median": [
+          65.246499,
+          36.962166
+        ],
+        "p95": [
+          75.748916,
+          47.038208
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "subcostal",
+        "median": [
+          64.045958,
+          31.452249
+        ],
+        "p95": [
+          69.389666,
+          32.13225
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "renal",
+        "median": [
+          59.892625,
+          29.351416
+        ],
+        "p95": [
+          61.635749,
+          31.216333
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "hepatorenal",
+        "median": [
+          57.206583,
+          30.347625
+        ],
+        "p95": [
+          58.913958,
+          31.404791
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "portal",
+        "median": [
+          67.568083,
+          46.737791
+        ],
+        "p95": [
+          76.862124,
+          48.615041
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "subcostal",
+        "median": [
+          70.029583,
+          31.969666
+        ],
+        "p95": [
+          71.437625,
+          33.444416
+        ],
+        "passed": true
+      }
+    ]
+  },
+  {
+    "bank": "cost-final",
+    "aggregateRatio": 0.5309229379705365,
+    "failedStates": 0,
+    "states": [
+      {
+        "case": "normal-adult",
+        "view": "renal",
+        "median": [
+          58.033291,
+          30.185833
+        ],
+        "p95": [
+          60.798458,
+          30.617499
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "hepatorenal",
+        "median": [
+          55.768124,
+          29.440666
+        ],
+        "p95": [
+          57.130125,
+          29.868541
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "portal",
+        "median": [
+          73.696874,
+          46.072208
+        ],
+        "p95": [
+          76.576749,
+          47.126041
+        ],
+        "passed": true
+      },
+      {
+        "case": "normal-adult",
+        "view": "subcostal",
+        "median": [
+          67.735541,
+          30.553541
+        ],
+        "p95": [
+          68.930374,
+          31.844541
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "renal",
+        "median": [
+          58.706375,
+          29.297583
+        ],
+        "p95": [
+          60.635083,
+          30.341666
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "hepatorenal",
+        "median": [
+          57.137041,
+          29.284541
+        ],
+        "p95": [
+          58.302916,
+          29.796
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "portal",
+        "median": [
+          74.650208,
+          46.875041
+        ],
+        "p95": [
+          75.932916,
+          48.838499
+        ],
+        "passed": true
+      },
+      {
+        "case": "severe-congestion",
+        "view": "subcostal",
+        "median": [
+          69.448999,
+          31.809583
+        ],
+        "p95": [
+          71.005916,
+          33.557416
+        ],
+        "passed": true
+      }
+    ]
+  }
+]

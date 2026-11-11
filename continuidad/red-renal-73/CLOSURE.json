@@ -1,0 +1,111 @@
+{
+  "status": "completed-local-gpu-and-image-gates-passed",
+  "base": "adaf67255268f021b06575d2663a26c881e4f663",
+  "branch": "codex/renal-network-73",
+  "source": {
+    "commit": "adaf67255268f021b06575d2663a26c881e4f663",
+    "tree": "cf480a39faf1041c3e846d23f55bdf5323c823bd",
+    "fingerprint": "1ef20c7d7ec5673fc9d1941c6446f733d825503521fcd6b71f965ad2c3e39cc4"
+  },
+  "gpuCostPassed": true,
+  "gpuAggregateRatio": 0.5309229379705365,
+  "gpuStates": 8,
+  "gpuMeasuredFrames": 560,
+  "imagesPreserved": 8,
+  "a0ReservedStates": 24,
+  "check": {
+    "exitCode": 0,
+    "passed": 2330,
+    "expectedFailures": 16,
+    "files": 331
+  },
+  "calibrationExitCode": 0,
+  "e2e": {
+    "native-scope-final": {
+      "tests": 6,
+      "stats": {
+        "startTime": "2026-11-10T01:55:52.732Z",
+        "duration": 41551.861999999994,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "source": {
+        "commit": "adaf67255268f021b06575d2663a26c881e4f663",
+        "tree": "cf480a39faf1041c3e846d23f55bdf5323c823bd",
+        "fingerprint": "1ef20c7d7ec5673fc9d1941c6446f733d825503521fcd6b71f965ad2c3e39cc4"
+      }
+    },
+    "swift-final": {
+      "tests": 5,
+      "stats": {
+        "startTime": "2026-11-10T01:56:35.297Z",
+        "duration": 827869.489,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "source": {
+        "commit": "adaf67255268f021b06575d2663a26c881e4f663",
+        "tree": "cf480a39faf1041c3e846d23f55bdf5323c823bd",
+        "fingerprint": "1ef20c7d7ec5673fc9d1941c6446f733d825503521fcd6b71f965ad2c3e39cc4"
+      }
+    }
+  },
+  "scopeFinalImages": [
+    {
+      "file": "normal-adult-hepatorenal-after.png",
+      "pixelsChanged": 0,
+      "sha256": "508512d35dda641fe860c367005aaaf608bd43d58b3dc87f20a5751bcc3af13e"
+    },
+    {
+      "file": "normal-adult-portal-after.png",
+      "pixelsChanged": 0,
+      "sha256": "c29981f40666b42ee91f9f3eb539836e9833eea25fba6569650c6656b49b6149"
+    },
+    {
+      "file": "normal-adult-renal-after.png",
+      "pixelsChanged": 0,
+      "sha256": "2ca7ee394d4c781d4e3f808db9ace8569d3e79a75a79019f2870a5a235c3f978"
+    },
+    {
+      "file": "normal-adult-subcostal-after.png",
+      "pixelsChanged": 0,
+      "sha256": "88c13189ed76abc40866d148debfb02b9b4be3da0fa586f73d392c04e9234f31"
+    },
+    {
+      "file": "severe-congestion-hepatorenal-after.png",
+      "pixelsChanged": 0,
+      "sha256": "c8c1457d7bab189728e8f6ba12aa94009a649ad4f180a898e85be26dde13f7d0"
+    },
+    {
+      "file": "severe-congestion-portal-after.png",
+      "pixelsChanged": 0,
+      "sha256": "a41d8e1050d2b75526e342e3c1a4967d89409bed4443f9d235d20f19a5968aea"
+    },
+    {
+      "file": "severe-congestion-renal-after.png",
+      "pixelsChanged": 0,
+      "sha256": "3f13beb4b17df439b658517f88e98d594a3bbe32f8c508023476944399f4f88e"
+    },
+    {
+      "file": "severe-congestion-subcostal-after.png",
+      "pixelsChanged": 0,
+      "sha256": "5b49a478e78e0d9aefc3266e468a9896347358deea29ec33b22ff5491845f62c"
+    }
+  ],
+  "commit": null,
+  "PR": null,
+  "merged": false,
+  "ciRun": null,
+  "automationCreated": false,
+  "limits": [
+    "Metal M4 observed states, not universal GPU performance/FPS",
+    "s0028 native scope restoration after GPU bank; current program hashes and all eight images unchanged; no selective rerun",
+    "CPU/GPU boundary exclusions remain; no clinical validation",
+    "Nominal added buffers, not total RSS/VRAM or cold benchmark",
+    "Code remains local on isolated branch; no new commit/PR/CI/merge"
+  ]
+}
