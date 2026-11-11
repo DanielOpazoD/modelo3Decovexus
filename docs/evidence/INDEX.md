@@ -8,7 +8,7 @@ Generado por `tools/docs/evidence-index.ts` desde `index.json`, que guarda adem�
 presente, `node --import tsx tools/docs/evidence-index.ts --check` verifica tipo, bytes y hash de cada entrada; sin
 ella solo avisa. Una carpeta se resume por el SHA-256 de las líneas `sha256  ruta` de sus archivos, ordenadas.
 
-112 artefactos; 1.620.007.685 bytes.
+113 artefactos; 1.633.512.133 bytes.
 
 | Id | Ruta en la raíz | Tipo | Archivos | Bytes | SHA-256 | Citado en (decisión) |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -20,6 +20,7 @@ ella solo avisa. Una carpeta se resume por el SHA-256 de las líneas `sha256  ru
 | <a id="image-ci-67-source-audit"></a>`image-ci-67-source-audit` | `image-ci-67/source-audit` | carpeta | 7 | 45.832 | `025e25ab0777` | DECISIONS.md (336) |
 | <a id="image-gpu-71-measured"></a>`image-gpu-71-measured` | `image-gpu-71/measured` | carpeta | 25 | 3.693.572 | `8a9ac2eb65f2` | DECISIONS.md (338) |
 | <a id="image-junctions-70-paired"></a>`image-junctions-70-paired` | `image-junctions-70/paired` | carpeta | 22 | 7.090.410 | `5f0c21954876` | DECISIONS.md (337), estado/anatomia.md |
+| <a id="image-renal-network-73-measured"></a>`image-renal-network-73-measured` | `image-renal-network-73/measured` | carpeta | 82 | 13.504.448 | `8e0e4a6a6e2a` | DECISIONS.md (339) |
 | <a id="image-views-66-paired"></a>`image-views-66-paired` | `image-views-66/paired` | carpeta | 34 | 13.704.659 | `127b674a0339` | DECISIONS.md (336), estado/imagen.md |
 | <a id="image-visible-65-paired"></a>`image-visible-65-paired` | `image-visible-65/paired` | carpeta | 17 | 6.804.335 | `e6d21145053d` | DECISIONS.md (335), estado/imagen.md |
 | <a id="ivc-atrium"></a>`ivc-atrium` | `ivc-atrium` | carpeta | 2755 | 643.426.112 | `9013f3287ccf` | anatomia/relaciones-tac.md |

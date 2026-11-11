@@ -1,9 +1,9 @@
+import { classifyKidneys } from '../anatomy/people/default/classifier';
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { afterAll, describe, expect, it } from 'vitest';
 import { ANATOMY_GLSL } from '../anatomy/gpu/anatomy.glsl';
 import {
-  ATLAS_KIDNEY_SINUS,
   KIDNEY_GLSL,
   KIDNEY_SINUS,
   MEDULLA_MIN_DEPTH_MM,
@@ -147,7 +147,7 @@ describe('seno digitado y médula del riñón (decisión 305)', () => {
     setAbdominalAtlas();
     check(SINUS_FINGERS, KIDNEY_SINUS, false);
     loadAtlas();
-    check(SINUS_FINGERS_ATLAS, ATLAS_KIDNEY_SINUS, true);
+    check(SINUS_FINGERS_ATLAS, { radii: new AnatomyScene(PATIENT).kidneyRight.sinusRadii, offsetV: KIDNEY_SINUS.offsetV }, true);
   });
 
   it('con el atlas, la médula es ≥ 4 % del parénquima en los dos riñones (2,6 y 3,2 % antes; 35 % en RM, no alcanzable en este contorno)', () => {
@@ -180,7 +180,9 @@ describe('seno digitado y médula del riñón (decisión 305)', () => {
       };
       // contraejemplos de las revisiones: (punto, tejido, salida real por bisección, mm)
       for (const [q, tissue, exit] of witnesses) {
-        const { c } = at(q);
+        const { p } = at(q);
+        // Cota del tejido renal antes de los vasos: una raíz segmentaria puede ocupar el testigo.
+        const c = classifyKidneys(scene, p).cls!;
         expect(c.tissue).toBe(tissue);
         expect(c.boundaryDistance).toBeLessThan(exit);
       }

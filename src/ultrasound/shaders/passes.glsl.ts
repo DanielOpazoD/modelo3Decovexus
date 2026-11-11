@@ -201,11 +201,14 @@ float echoFrequency(float r) { return 1.0 / (1.0 + uBeamTx.w * max(r, 0.0)); }
  * @twin transmision-a0
  * @twin rejilla-segmentos
  */
-export const FRAG_TRANS_HITS = /* glsl */ `${INTEGER_SHADER_HEADER_GLSL}
+const TRANS_HITS_SOURCE = /* glsl */ `${INTEGER_SHADER_HEADER_GLSL}
 ${ANATOMY_GLSL}
 ${BEAM_GLSL}
 ${MIRROR_DIRECTION_GLSL}
 uniform float uCoarseN;
+#ifdef A0_CACHED
+uniform sampler2D uA0Grid;
+#endif
 in vec2 vUv;
 layout(location = 0) out vec4 h0; // (segmento del espejo, del primer gas, del primer hueso, tipo de gas)
 layout(location = 1) out vec4 h1; // (dirección reflejada, r del espejo)
@@ -240,7 +243,15 @@ void main() {
     float r = (float(s) + 0.5) * step;
     vec3 p = mirrorSeg >= 0.0 ? hitPoint + dir * (r - hitR) : origin + dir * r;
     vec3 m = toMaterial(p);
+#ifdef A0_CACHED
+    Cls c;
+    if(mirrorSeg<0.0){
+      vec4 cached=texelFetch(uA0Grid,ivec2(int(gl_FragCoord.x),s+(behind?n:0)),0);
+      c.tissue=int(cached.x); c.n=cached.yzw;
+    }else c=classifyWith(m,!behind);
+#else
     Cls c = classifyWith(m, !behind);
+#endif
     if (behind) {
       // ΔL: lo que el gas de la cortina cuesta de más frente al tejido de detrás
       curtainDb += lungDb - segmentDb(c.tissue, step);
@@ -308,6 +319,18 @@ void main() {
   h2 = pleuraD >= 0.0 ? vec4(pleuraD, pleuraDz, curtainDb, ${glslFloat(CURTAIN_GAS_KIND)} + 4.0 * (curtainLast + 1.0)) : vec4(-1.0, 0.0, 0.0, 0.0);
 }
 `;
+
+// Select before compilation so the original/legacy program has no grid sampler or dead branch.
+const hitSource = (cached: boolean): string =>
+  TRANS_HITS_SOURCE.replace(
+    /#ifdef A0_CACHED\n([\s\S]*?)(?:#else\n([\s\S]*?))?#endif/g,
+    (_match, grid: string, direct: string | undefined) => (cached ? grid : (direct ?? '')),
+  );
+/** @twin transmision-a0
+ * @twin rejilla-segmentos
+ */
+export const FRAG_TRANS_HITS = hitSource(false);
+export const FRAG_TRANS_HITS_CACHED = hitSource(true);
 
 const A0_STAGED_COMMON = /* glsl */ `${INTEGER_SHADER_HEADER_GLSL}
 ${ANATOMY_GLSL}

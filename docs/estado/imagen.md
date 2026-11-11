@@ -3,6 +3,16 @@
 Actualizado: 2026-11-07 sobre main `8ed26cf`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
 techos los limitan. La explicación de cada pasada está en `docs/ARCHITECTURE.md`; las decisiones, en `docs/DECISIONS.md`.
 
+## A0 nativa current (339)
+
+A0 usa dos draws: clasificación directa de centros y bucle original de impactos/reflejos/pleura.
+No cambia la pasada B nativa ni la resolución192×1024. Ocho imágenes idénticas al rediseño sin
+optimización;24 estados A0 bit a bit. Banco MetalM4:−46,91% GPU agregado frente a adaf672,
+mediana y p95 por cada una de ocho escenas≤base. No FPS ni garantía universal de hardware/poses.
+SwiftShader conserva su reparto; s0028 nativa conserva A0 original. Objetivos adicionales
+1.004.544B nominales e índice vascular current8mm, techo4MiB. No memoria total ni coste frío.
+Ver decisión339 y evidencia original; aceptación completa/CI se acreditan por separado.
+
 ## Pasadas por cuadro
 
 La tabla `FRAME_PASSES` de `src/ultrasound/passGraph.ts` es la fuente: declara qué lee y escribe cada pasada, y

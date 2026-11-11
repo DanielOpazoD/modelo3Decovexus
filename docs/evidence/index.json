@@ -131,6 +131,21 @@
    ]
   },
   {
+   "id": "image-renal-network-73-measured",
+   "path": "image-renal-network-73/measured",
+   "kind": "dir",
+   "bytes": 13504448,
+   "sha256": "8e0e4a6a6e2a67d0f3c9fd8d9431ebaa5cd7ec29890a50c0044ed7d27f52c574",
+   "files": 82,
+   "round": "image-renal-network-73",
+   "citedBy": [
+    {
+     "doc": "docs/DECISIONS.md",
+     "decision": 339
+    }
+   ]
+  },
+  {
    "id": "image-views-66-paired",
    "path": "image-views-66/paired",
    "kind": "dir",
