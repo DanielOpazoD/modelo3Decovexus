@@ -92,6 +92,7 @@ import {
   FRAG_TRANSMISSION,
   FRAG_TRANSMISSION_STEERED,
   FRAG_TRANS_HITS,
+  FRAG_TRANS_HITS_CACHED,
   FRAG_TRANS_HITS_FINISH,
   FRAG_TRANS_HITS_GRID,
   FRAG_TRANS_HITS_INITIAL,
@@ -379,7 +380,7 @@ interface AtlasHitStages {
 
 export class UltrasoundRenderer {
   readonly gl: WebGL2RenderingContext;
-  /** Same A0 discretization; SwiftShader needs classification outside its per-line loop. */
+  /** A0: misma discretización; atlas precalcula centros antes de reducir cada línea. */
   readonly transmissionHitsPipeline: 'line' | 'staged-atlas';
   private pTransHits: GLProgram | null;
   private atlasHitStages: AtlasHitStages | null;
@@ -546,11 +547,12 @@ export class UltrasoundRenderer {
     const gl = canvas.getContext('webgl2', { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: false });
     if (!gl) throw new Error('WebGL2 no disponible');
     this.gl = gl;
-    // Renderer identity may be hidden by browser policy; choose the bootable path when unknown.
     const debug = gl.getExtension('WEBGL_debug_renderer_info');
     const renderer = debug ? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)) : '';
+    const stageRaw = currentScene.hasAbdominalAtlas && (!renderer || /SwiftShader/i.test(renderer));
+    // A0 precalcula centros; Metal conserva bisección/reflejo inline y B nativo.
     this.transmissionHitsPipeline =
-      currentScene.hasAbdominalAtlas && (!renderer || /SwiftShader/i.test(renderer)) ? 'staged-atlas' : 'line';
+      currentScene.hasAbdominalAtlas && (stageRaw || currentScene.identity.person === 'current') ? 'staged-atlas' : 'line';
     if (!gl.getExtension('EXT_color_buffer_float')) throw new Error('EXT_color_buffer_float no disponible');
     gl.getExtension('OES_texture_float_linear');
     // compilación en hilos de fondo del navegador (opcional; sin ella, el mismo lote en serie): se pide antes
@@ -563,25 +565,24 @@ export class UltrasoundRenderer {
             a0Grid: FRAG_TRANS_HITS_GRID,
             a0Initial: FRAG_TRANS_HITS_INITIAL,
             a0Refine: FRAG_TRANS_HITS_REFINE,
-            a0Finish: FRAG_TRANS_HITS_FINISH,
+            a0Finish: stageRaw ? FRAG_TRANS_HITS_FINISH : FRAG_TRANS_HITS_CACHED,
           }
         : { transmissionHits: FRAG_TRANS_HITS };
     // Keep native/legacy B unchanged. Staging is selected by the actual renderer, never by a test URL.
-    const rawFragments: Record<string, string> =
-      this.transmissionHitsPipeline === 'staged-atlas'
-        ? {
-            rawElevation: FRAG_RAWFIELD_ELEVATION,
-            rawElevationSteered: FRAG_RAWFIELD_ELEVATION_STEERED,
-            rawClass: FRAG_RAWFIELD_CLASS,
-            rawClassSteered: FRAG_RAWFIELD_CLASS_STEERED,
-            rawGradient: FRAG_RAWFIELD_GRADIENT,
-            rawGradientSteered: FRAG_RAWFIELD_GRADIENT_STEERED,
-            rawEcho: FRAG_RAWFIELD_ECHO,
-            rawEchoSteered: FRAG_RAWFIELD_ECHO_STEERED,
-            rawfield: FRAG_RAWFIELD_CACHED,
-            rawfieldSteered: FRAG_RAWFIELD_CACHED_STEERED,
-          }
-        : { rawfield: FRAG_RAWFIELD, rawfieldSteered: FRAG_RAWFIELD_STEERED };
+    const rawFragments: Record<string, string> = stageRaw
+      ? {
+          rawElevation: FRAG_RAWFIELD_ELEVATION,
+          rawElevationSteered: FRAG_RAWFIELD_ELEVATION_STEERED,
+          rawClass: FRAG_RAWFIELD_CLASS,
+          rawClassSteered: FRAG_RAWFIELD_CLASS_STEERED,
+          rawGradient: FRAG_RAWFIELD_GRADIENT,
+          rawGradientSteered: FRAG_RAWFIELD_GRADIENT_STEERED,
+          rawEcho: FRAG_RAWFIELD_ECHO,
+          rawEchoSteered: FRAG_RAWFIELD_ECHO_STEERED,
+          rawfield: FRAG_RAWFIELD_CACHED,
+          rawfieldSteered: FRAG_RAWFIELD_CACHED_STEERED,
+        }
+      : { rawfield: FRAG_RAWFIELD, rawfieldSteered: FRAG_RAWFIELD_STEERED };
     const p: Record<string, GLProgram> = GLProgram.linkAll(
       gl,
       VERT,
@@ -652,7 +653,7 @@ export class UltrasoundRenderer {
     this.tPre = createTarget(gl, LINES, COARSE_DEPTH, [fn, fn, fn, fn]);
     this.tTrans = createTarget(gl, LINES, COARSE_DEPTH, [f, fn, f, f]);
     this.tRaw = createTarget(gl, LINES, FINE_DEPTH, [f2]);
-    if (this.transmissionHitsPipeline === 'staged-atlas')
+    if (stageRaw)
       this.rawStages = {
         classes: { look0: p.rawClass, steered: p.rawClassSteered },
         elevation: { look0: p.rawElevation, steered: p.rawElevationSteered },
@@ -1015,7 +1016,10 @@ export class UltrasoundRenderer {
         const at = compact * TUBE_HEADER_TEXELS * 4;
         return tubeGridRegions(this.sceneData, (NODE_BASE + this.sceneData[at]) * 4, this.sceneData[at + 1], reaches[compact]);
       });
-      this.tubeGrid = buildTubeGrid(spheres, regions, 16) ?? buildTubeGrid(spheres, regions);
+      this.tubeGrid =
+        buildTubeGrid(spheres, regions, s.identity.person === 'current' ? 8 : 16) ??
+        buildTubeGrid(spheres, regions, 16) ??
+        buildTubeGrid(spheres, regions);
       if (this.tubeGrid) {
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.tubeGridTex);
@@ -1490,7 +1494,8 @@ export class UltrasoundRenderer {
   /**
    * SwiftShader compiles the nested anatomy classifier in A0's per-line loop too slowly to boot.
    * Classify the same coarse centers in a 2D target, reduce each line, refine its first mirror with
-   * six draws, then classify the reflected centers. Keep native drivers on the original A0.
+   * six draws, then classify the reflected centers. Native drivers only use the direct grid;
+   * their original loop still refines and classifies reflected rays inline.
    */
   private passAtlasTransmissionHits(inputs: FrameInputs, stages: AtlasHitStages): void {
     const gl = this.gl;
@@ -1511,6 +1516,11 @@ export class UltrasoundRenderer {
     setup(stages.programs.grid, stages.grid, stages.refine[1]);
     stages.programs.grid.i('uA0ReflectedGrid', 0);
     drawFullscreen(gl);
+    if (!this.rawStages) {
+      setup(stages.programs.finish, this.tHits, stages.refine[1]);
+      drawFullscreen(gl);
+      return;
+    }
     setup(stages.programs.initial, stages.initial, stages.refine[1]);
     drawFullscreen(gl);
     let previous = stages.refine[1];

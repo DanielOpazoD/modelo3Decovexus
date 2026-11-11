@@ -40,7 +40,7 @@ describe('segment envelopes of the uploaded vascular geometry', () => {
           };
           const reach = tubeGridReach(header(tube, scale, 0.4), 12);
           const regions = tubeGridRegions(packed, 0, nodes.length, reach);
-          const grid = buildTubeGrid([[0, 0, 0, 280]], [regions], 16)!;
+          const grid = buildTubeGrid([[0, 0, 0, 280]], [regions], 8)!;
           expect(grid).not.toBeNull();
           for (let segment = 0; segment < nodes.length - 1; segment++)
             for (const fraction of [-0.1, 0, 0.25, 0.5, 0.75, 1, 1.1]) {

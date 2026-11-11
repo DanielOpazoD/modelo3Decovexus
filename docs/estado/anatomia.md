@@ -4,6 +4,14 @@ Actualizado: 2026-11-07 sobre main `8ed26cf`. Qué anatomía hay hoy, dónde se 
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
+## Red renal current (339)
+
+El seno tiene semiejes30×9×6,5mm, doce prolongaciones y papilas/bases en sus posiciones previas;
+la papila polar compuesta13 tiene radio3mm. Seis raíces interlobares derechas alcanzan sus padres
+arterial/venoso sin cruzar médula ni conectar arteria con vena. Pared, calibre e identidad Doppler
+siguen cada tubo. Contornos externos y relación hepatorrenal conservados. Son trayectos estimados,
+no una segmentación nueva; legacy/s0028 no reciben esta geometría. Evidencia y alcance en decisión339.
+
 ## Personas
 
 La fidelidad se mide contra un humano real, no contra un promedio (decisión 311). Hay dos personas y dos variantes de

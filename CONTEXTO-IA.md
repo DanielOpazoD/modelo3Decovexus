@@ -4,7 +4,7 @@
 
 - El simulador ecográfico VExUS completo está en la raíz: aplicación TypeScript/WebGL, recursos anatómicos, pruebas, documentación, herramientas y configuraciones. La base importada corresponde a `DanielOpazoD/vexus-sim` en `adaf67255268f021b06575d2663a26c881e4f663` (PR #353 integrada allí).
 - `maqueta-anatomica/` es una **aplicación exploratoria 3D separada**, para estudiar anatomía con colores planos y sin moteado. Sus cambios no están integrados en el simulador. Incluye la maqueta 102, el prototipo 103, datos, inventario, comparaciones y evidencias resumidas.
-- La rama `wip/red-renal-73` conserva exactamente los cambios locales de producto que estaban sin commit al preparar la copia. La evidencia histórica incluida informa de controles locales favorables, pero **no hay CI nueva ni fusión de esta rama**. En esta copia pasaron TypeScript y 22 pruebas focalizadas; no se repitió todo el check. Consultar el diff con `main` y verificar el head antes de aceptarlo.
+- El commit `0bdcd2e` conserva exactamente los cambios locales de producto de `wip/red-renal-73` que estaban sin commit al preparar la copia. Incluye un rediseño estimado del seno, las pirámides y la red interlobar y una optimización nativa de A0. Consultar en GitHub su integración y la CI del head correspondiente: la evidencia histórica incluida no acredita una ejecución posterior.
 
 Este repositorio es público. Los datos incluidos son derivados del caso público `s0028` de TotalSegmentator, no una anatomía confirmada del usuario ni una referencia clínica individual. No se incluyen el TAC original completo ni el archivo histórico completo de evidencias locales. La aplicación es educativa y no es un dispositivo médico.
 

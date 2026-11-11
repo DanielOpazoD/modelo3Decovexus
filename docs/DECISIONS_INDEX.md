@@ -342,3 +342,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [336](DECISIONS.md#L11320) | Revisar las ocho ventanas y guardar encuadres vasculares más completos | vigente |
 | [337](DECISIONS.md#L11375) | Curvar los trayectos vasculares entre hitos y hacia su desembocadura | vigente |
 | [338](DECISIONS.md#L11449) | Rejilla conservadora vascular también en Metal | vigente |
+| [339](DECISIONS.md#L11487) | Seno, pirámides y red interlobar integrados con A0 nativo precalculado | vigente |

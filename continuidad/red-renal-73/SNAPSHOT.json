@@ -1,0 +1,165 @@
+{
+  "baseHead": "adaf67255268f021b06575d2663a26c881e4f663",
+  "trackedChanges": 22,
+  "untrackedFiles": 4,
+  "patchSha256": "ceabff756f0963a0b56611d4381e99a0f17d13f04eb1fa63868355c9ddb31507",
+  "files": [
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 87310,
+      "sha256": "946552ed47becebadd6a97af6e524763e9f7cd8eabc045364f37580b082c645d",
+      "kind": "tracked"
+    },
+    {
+      "path": "docs/APPROXIMATIONS.md",
+      "bytes": 128269,
+      "sha256": "a93feef83919d4bfa86f5efde623132a484adbf120feb57ae5a767b720cf32e7",
+      "kind": "tracked"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "bytes": 1273657,
+      "sha256": "a6442ff80bfb5bf6035c625012ab1ef142ace9caf57f83d0a9e9f3ec5e70fa2f",
+      "kind": "tracked"
+    },
+    {
+      "path": "docs/DECISIONS_INDEX.md",
+      "bytes": 37993,
+      "sha256": "0738520d295b25b07d554318347ae5079f5d2e6bdbd7c22428303b2eaeecd4b0",
+      "kind": "tracked"
+    },
+    {
+      "path": "docs/estado/anatomia.md",
+      "bytes": 9117,
+      "sha256": "20f49e12d270dfb9266b98f2372e9aeeb892c406cfb46f949edd793f4c51b952",
+      "kind": "tracked"
+    },
+    {
+      "path": "docs/estado/imagen.md",
+      "bytes": 8138,
+      "sha256": "32acb0c6f1c977e20abd30fa372861755e90308af17cbccb9a2dc98139a6e499",
+      "kind": "tracked"
+    },
+    {
+      "path": "docs/evidence/INDEX.md",
+      "bytes": 26931,
+      "sha256": "9d1862b49a2d5ce30cbd44ecdd2b9cb48cb908e8334a094c37702af3152ae5d2",
+      "kind": "tracked"
+    },
+    {
+      "path": "docs/evidence/index.json",
+      "bytes": 45912,
+      "sha256": "dc92d99b2410b620b43abcd82aebd5dca5e2a1faa390787a69694c7c42a33e1d",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/anatomy/gpu/tubeSegmentGrid.test.ts",
+      "bytes": 5462,
+      "sha256": "cc5087d1668178bacbf67f7e8124705c2e505f3444bd46df5477032ec25e97a2",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/anatomy/organs/kidney.ts",
+      "bytes": 33387,
+      "sha256": "904cfd2487e19e7779897e9bdb107794a2fe06cf455fb651e74c3ac4cd3c75c1",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/anatomy/people/default/cpu.ts",
+      "bytes": 2813,
+      "sha256": "517ebc0e0497a67f1ad07d9dcf8fe5875b31f6f3bd19da39bc0bfe2f2f4bda18",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/anatomy/people/default/vascularBranches.ts",
+      "bytes": 5697,
+      "sha256": "42a4ca81c90df2f669f28f260434ee78d99ec180015ba87d2f857d77e04432ff",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/anatomy/person.ts",
+      "bytes": 2847,
+      "sha256": "75e2f8a64f97c79284b7e74939d31c00645cb69a18cd80c159bec179b0f5bc8e",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/ultrasound/renderer.ts",
+      "bytes": 109343,
+      "sha256": "27b90fee335d51305bc23551f3cd461534537051d66a2ae3993c686ed724a923",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/ultrasound/shaders/passes.glsl.ts",
+      "bytes": 96012,
+      "sha256": "98b3880f926897374a6abe14ee59815de044416a30685a1ce0440abbb4c89d4e",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/validation/fixtures/s0028-shader-default.json",
+      "bytes": 735,
+      "sha256": "227d3f95dfae866b00680eb257770d51de7bfe2e023fd1b15a4a9f9e9cf18c4d",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/validation/personShaders.test.ts",
+      "bytes": 3425,
+      "sha256": "e06dd125cbe0d934644a7804871676b5e9d3f4d92ebf12500b78827acca5fb19",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/validation/renalSinus.test.ts",
+      "bytes": 13618,
+      "sha256": "29307a94786b9d64fc66defbec8173de1d19454aa74ff1f41fc4ad0fa38b69f0",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/validation/s0028WallDefault.test.ts",
+      "bytes": 4734,
+      "sha256": "c5c2fcfb83c21c1edbeaf4ffb43e5cf29e1909a877a47a501445da2663705afe",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/validation/s0028WallGpu.test.ts",
+      "bytes": 8027,
+      "sha256": "f1959524ea85d8e1fba9d8ffdbbb55ebd0e35e4968f1ad4328c8ad9f84cad099",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/validation/shaderLimits.test.ts",
+      "bytes": 47967,
+      "sha256": "65d0015a373d5c307f1e55aeb6a23f788a54a6fb36ac3d1772a108d29fb5c588",
+      "kind": "tracked"
+    },
+    {
+      "path": "src/validation/vascularBranches.test.ts",
+      "bytes": 5323,
+      "sha256": "5b6d0ee5a62e21a17b0203d32db0faf612e57d39e17fd5c15d060eed01091623",
+      "kind": "tracked"
+    },
+    {
+      "path": "e2e/renalNetwork.spec.ts",
+      "bytes": 3120,
+      "sha256": "80b3fd88737408f9cbe9285c1a49797f8ab15d78afe1ac0639a5e35f1d0a3129",
+      "kind": "untracked"
+    },
+    {
+      "path": "src/validation/fixtures/renal-reference-339.json",
+      "bytes": 226,
+      "sha256": "ba6db287c0077ddde1ec854bb89a0dc8e7a682f54afd8a1b3a10fbb60506785b",
+      "kind": "untracked"
+    },
+    {
+      "path": "src/validation/fixtures/renal-shaders-339.json",
+      "bytes": 10263,
+      "sha256": "8c6a6938af9556dd683940e0c43a7a40512a3720c4530bd9e0bede69ad3b28d5",
+      "kind": "untracked"
+    },
+    {
+      "path": "src/validation/renalNetwork.test.ts",
+      "bytes": 6260,
+      "sha256": "282f4ee48998d9b0fc2e80e5242ac825da274716132b9ba17bb62ecdc4dbef8c",
+      "kind": "untracked"
+    }
+  ],
+  "scope": "exact snapshot; validation status not implied"
+}

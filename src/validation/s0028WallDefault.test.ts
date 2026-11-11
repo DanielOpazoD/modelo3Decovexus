@@ -8,16 +8,18 @@ import { Tissue } from '../anatomy/tissues';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
 import baseline from './fixtures/s0028-wall-default.json';
+import renalRevision from './fixtures/renal-reference-339.json';
 import { AnatomyScene, BASELINE_CALIBER, vesselApScale, wallThicknessMm, type Classification } from './support/legacyPerson/scene';
 
-it('conserva el hash histórico y limita los cambios actuales a la geometría vascular aprobada', () => {
+it('fija la referencia renal 339 y limita las diferencias a los vasos autorizados', () => {
   const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/${name}-atlas.gzip.bin`))).buffer;
   const person = installDefaultCpu({
     abdominal: new Uint16Array(raw('abdominal')),
     thoracic: new Uint16Array(raw('thoracic')),
     body: new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer),
   });
-  // Decisión 337: conservar el hash de referencia, no sustituirlo por el resultado nuevo.
+  // Referencia 339 sin curvas: 15 diferencias dentro del riñón frente al hash histórico,
+  // reconstruido por separado en main. Se conserva el fixture anterior.
   const reference = new AnatomyScene(NORMAL_ADULT, undefined, {
     ...person,
     cpu: { ...person.cpu, curveVessels: undefined },
@@ -39,6 +41,12 @@ it('conserva el hash histórico y limita los cambios actuales a la geometría va
     'pvLeftMedial',
     'pvRightAnterior',
     'pvRightPosterior',
+    'interlobarArtery1',
+    'interlobarArtery2',
+    'interlobarArtery3',
+    'interlobarVein1',
+    'interlobarVein2',
+    'interlobarVein3',
   ].sort();
   expect([...new Set([...changed, ...previous].map((v) => v.id))].sort()).toEqual(allowed);
   expect(scene.ducts).toEqual(reference.ducts);
@@ -77,7 +85,8 @@ it('conserva el hash histórico y limita los cambios actuales a la geometría va
         samples++;
       }
   expect(samples).toBe(baseline.samples);
-  expect(hash.digest('hex')).toBe(baseline.semanticSha256);
+  expect(renalRevision.previousSemanticSha256).toBe(baseline.semanticSha256);
+  expect(hash.digest('hex')).toBe(renalRevision.semanticSha256);
   expect(differences).toBeGreaterThan(0);
   // El dominio no puede justificar una mutación ajena (aire convertido en sangre).
   const exterior: Vec3 = [210, 160, 60],

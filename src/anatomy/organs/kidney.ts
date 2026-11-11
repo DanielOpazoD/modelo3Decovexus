@@ -100,19 +100,19 @@ export interface RenalPyramid {
  * más anchas que altas. Entre dos pirámides vecinas queda una columna de corteza de ≥ 2 mm. Decisión 305: las bases crecen hasta ese
  * límite (5,6–10,9 mm) y la papila mide 2 mm de radio: con el contorno del atlas, la médula seguía siendo el 3 % del parénquima.
  */
-const PYRAMID_SPECS: ReadonlyArray<{ theta: number; u: number; baseR: number }> = [
-  { theta: Math.PI + 0.05, u: -39, baseR: 10.3 },
-  { theta: Math.PI - 0.04, u: -15, baseR: 10.9 },
-  { theta: Math.PI + 0.03, u: 10, baseR: 9.4 },
-  { theta: Math.PI - 0.06, u: 37, baseR: 9.8 },
-  { theta: Math.PI / 2 + 0.1, u: -25, baseR: 9 },
-  { theta: Math.PI / 2 - 0.05, u: 1, baseR: 8.2 },
-  { theta: Math.PI / 2 + 0.02, u: 26, baseR: 7.8 },
-  { theta: (3 * Math.PI) / 2 - 0.08, u: -24, baseR: 9.3 },
-  { theta: (3 * Math.PI) / 2 + 0.04, u: -1, baseR: 10.3 },
-  { theta: (3 * Math.PI) / 2 - 0.02, u: 25, baseR: 6.2 },
-  { theta: (3 * Math.PI) / 4, u: -2, baseR: 6.5 },
-  { theta: (5 * Math.PI) / 4, u: 20, baseR: 5.6 },
+const PYRAMID_SPECS: ReadonlyArray<readonly [number, number, number]> = [
+  [Math.PI + 0.05, -39, 10.3],
+  [Math.PI - 0.04, -15, 10.9],
+  [Math.PI + 0.03, 10, 9.4],
+  [Math.PI - 0.06, 37, 9.8],
+  [Math.PI / 2 + 0.1, -25, 9],
+  [Math.PI / 2 - 0.05, 1, 8.2],
+  [Math.PI / 2 + 0.02, 26, 7.8],
+  [(3 * Math.PI) / 2 - 0.08, -24, 9.3],
+  [(3 * Math.PI) / 2 + 0.04, -1, 10.3],
+  [(3 * Math.PI) / 2 - 0.02, 25, 6.2],
+  [(3 * Math.PI) / 4, -2, 6.5],
+  [(5 * Math.PI) / 4, 20, 5.6],
 ];
 
 /** La papila empieza a esta distancia de la superficie del seno (mm). */
@@ -137,16 +137,16 @@ function along(a: Vec3, b: Vec3, d: number): Vec3 {
   return [a[0] + ((b[0] - a[0]) * d) / l, a[1] + ((b[1] - a[1]) * d) / l, a[2] + ((b[2] - a[2]) * d) / l];
 }
 
-function buildPyramids(specs: ReadonlyArray<{ theta: number; u: number; baseR: number }>, sinus = KIDNEY_SINUS, apexR = 2): RenalPyramid[] {
+function buildPyramids(specs: ReadonlyArray<readonly [number, number, number]>, sinus = KIDNEY_SINUS, apexR = 2): RenalPyramid[] {
   const ru = KIDNEY_RADII[0];
   const su = sinus.radii[0];
   const out: RenalPyramid[] = [];
   const cone = (s: Vec3, o: Vec3, baseR: number) => {
     out.push({ apex: along(s, o, PAPILLA_OFFSET_MM), base: along(o, s, RENAL_CORTEX_MM), apexR, baseR });
   };
-  for (const p of specs) {
-    const { s, o } = sinusRay(p.theta, p.u, sinus);
-    cone(s, o, p.baseR);
+  for (const [theta, u, baseR] of specs) {
+    const { s, o } = sinusRay(theta, u, sinus);
+    cone(s, o, baseR);
   }
   // pirámides compuestas de los polos, hacia ±u
   cone([su * 0.97, KIDNEY_SINUS.offsetV, 0], [ru, -2, 0], 10.8);
@@ -173,26 +173,26 @@ export function atlasInterior(q: Vec3, extra = 0): Vec3 {
 export const PYRAMIDS_ATLAS: readonly RenalPyramid[] = buildPyramids(
   [
     // la fila que mira a la ventana, con las columnas de las interlobares entre sus conos
-    { theta: 0.6 * Math.PI, u: -39, baseR: 10.3 },
-    { theta: 0.6 * Math.PI, u: -15, baseR: 11.5 },
-    { theta: 0.6 * Math.PI, u: 10, baseR: 11.5 },
-    { theta: 0.6 * Math.PI, u: 37, baseR: 9.8 },
+    [0.6 * Math.PI, -39, 10.3],
+    [0.6 * Math.PI, -15, 11.5],
+    [0.6 * Math.PI, 10, 11.5],
+    [0.6 * Math.PI, 37, 9.8],
     // la lateral, al tresbolillo
-    { theta: 1.1 * Math.PI, u: -27, baseR: 8 },
-    { theta: 1.1 * Math.PI, u: -2.5, baseR: 10.3 },
-    { theta: 1.1 * Math.PI, u: 23.5, baseR: 9 },
+    [1.1 * Math.PI, -27, 8],
+    [1.1 * Math.PI, -2.5, 10.3],
+    [1.1 * Math.PI, 23.5, 9],
     // la de enfrente de la ventana
-    { theta: 1.6 * Math.PI, u: -25, baseR: 10.5 },
-    { theta: 1.6 * Math.PI, u: 0.5, baseR: 11 },
-    { theta: 1.6 * Math.PI, u: 26, baseR: 8.4 },
+    [1.6 * Math.PI, -25, 10.5],
+    [1.6 * Math.PI, 0.5, 11],
+    [1.6 * Math.PI, 26, 8.4],
     // las dos que flanquean el hilio, delante
-    { theta: 0.3 * Math.PI, u: -26, baseR: 5.9 },
-    { theta: 0.3 * Math.PI, u: 23.5, baseR: 6 },
+    [0.3 * Math.PI, -26, 5.9],
+    [0.3 * Math.PI, 23.5, 6],
   ],
   ATLAS_KIDNEY_SINUS,
   // papila de 8 mm: entre la corteza y el seno hay solo unos 7 mm, y un cono de punta fina se queda en una raya
   4,
-);
+).map((p, i) => (i === 13 ? { ...p, apexR: 3 } : p));
 
 /**
  * Factor de las cotas que salen de los conos de las pirámides (decisión 87, revisión adversarial): la seudodistancia de
@@ -429,9 +429,6 @@ export const SINUS_FINGERS_ATLAS = buildFingers(
     [0.6, 23.5, 3.5],
     [0.8, -27, 6.5],
     [0.8, 23.5, 5.5],
-    [0.75, -2.5, 4.5],
-    [0.85, -15, 6.2],
-    [0.85, 10, 6.8],
     [1.1, -15, 8],
     [1.1, 10, 8],
     [1.35, -21, 5.1],

@@ -44,7 +44,7 @@ export function createDefaultCpu(assets: PersonAssets): InstalledCpuPerson {
     // (`tools/anatomy/move-kidneys.ts`, que genera estos marcos)
     kidneyFrame: (side) => {
       const f = KIDNEY_FRAMES[side];
-      return { center: [...f.center] as Vec3, ...orthonormalBasis(f.long, f.hilumHint) };
+      return { center: [...f.center] as Vec3, ...orthonormalBasis(f.long, f.hilumHint), sinusRadii: [30, 9, 6.5] as Vec3 };
     },
   };
   return Object.freeze({ identity: assets.identity, assetKey: assets.assetKey, assets, cpu: Object.freeze(cpu) });

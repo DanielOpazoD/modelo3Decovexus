@@ -27,6 +27,12 @@ citadas) es la referencia.
 
 ## Anatomía (`src/anatomy`)
 
+La decisión339 reorganiza el seno y las pirámides current y conecta seis raíces interlobares
+al pedículo derecho. **[EXTRAPOLACIÓN PROPIA]**: semieje hiliar9mm, doce prolongaciones y rutas
+intrarrenales estimadas, conservando hitos originales y pared. No es segmentación clínica ni red
+vascular bilateral completa. La mejora visual se compara con la misma adquisición y sonda;
+paridad computacional y coste GPU no sustituyen valoración por ecografistas ni referencia física.
+
 La decisión 337 interpola con curvas doce trayectos hepáticos/portales de current, conservando
 cada hito y radio original. **[EXTRAPOLACIÓN PROPIA]**: el trayecto entre hitos y su orientación
 hacia el padre son estimados. Se almacena como una polilínea de ocho segmentos, no como una

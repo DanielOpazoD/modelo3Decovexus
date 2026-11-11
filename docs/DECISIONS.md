@@ -11483,3 +11483,51 @@ incluyó frameMs/padding previo entre las entradas y falló; se conservan fuente
 excluye únicamente esos dos metadatos de ejecución, validando los restantes incluida historia/serial.
 No se repite ninguna captura. Aceptación completa y CI sobre head final exigidas antes de fusión.
 [Datos y protocolo](evidence/INDEX.md#image-gpu-71-measured).
+
+## 339. Seno, pirámides y red interlobar integrados con A0 nativo precalculado
+
+**Problema.** En current, el seno central y tres prolongaciones redundantes se fundían visualmente
+con la fila medular. Seis raíces interlobares acababan separadas de su arteria/vena renal.
+La corrección geométrica sola y tres optimizaciones de descarte fallaron el coste por estado;
+se conservan los cuatro bancos negativos, sin elevar umbrales ni reducir resolución.
+
+**Decisión.** El dueño renal current estrecha el semieje hiliar del seno de12 a9mm, manteniendo
+los otros semiejes30/6,5mm y las posiciones originales de papilas/bases. Quedan12 prolongaciones
+de las15 anteriores; sólo la papila polar compuesta13 reduce su radio de4 a3mm. Las seis raíces
+derechas se conectan a sus padres existentes por trayectos estimados separados; conservan sus
+tres nodos, radios, pared, referencia de calibre e identidad Doppler. No se cambian contornos
+externos, hígado, fascia, grasa, sonda, ganancia, filtros, semilla ni PSF. Legacy y s0028 conservan
+su anatomía. La geometría intrarrenal continúa siendo **EXTRAPOLACIÓN PROPIA**, no segmentación.
+
+Para pagar el trabajo vascular, current usa la rejilla conservadora8mm, fallback16/32mm y techo4MiB.
+En GPU nativa A0 precalcula la clasificación de centros directos y conserva el bucle original
+para pleura, seis bisecciones y clasificación de rayos reflejados. B nativa no cambia. SwiftShader
+mantiene el reparto A0/B existente; s0028 nativa conserva A0 original y rejilla16/32mm. Las variantes
+se seleccionan antes de compilar; el programa original no incorpora sampler ni rama muerta.
+No se aceptó el reparto completo de A0 en nativo: alteraba algunos últimos bits de dirección.
+
+**Evidencia.** Ocho imágenes del rediseño permanecen idénticas píxel por píxel al optimizar;
+24 estados reservados (ocho escenas, tres inclinaciones) conservan los tres RGBA32F de A0 bit a bit.
+Ocho escenas normal/grave×renal/hepatorrenal/portal/subcostal,192×1024, siete pares alternados
+por escena y cinco cuadros por intervalo (560 cuadros): razón agregada de medianas0,530923
+frente a main adaf672 (−46,91%). Todas las medianas y p95 nearest-rank por estado pasan≤1;
+razones0,451071–0,627929 y0,461981–0,643180, respectivamente. Consulta GPU envolvente de todas
+las pasadas; sin capturas/readback en intervalo. No son FPS ni coste total de la aplicación.
+El primer banco aprobado de la variante anterior también se conserva (−46,52%); el final corresponde
+a la limpieza de selección de variantes, no a una repetición selectiva.
+
+Preparación/envío CPU separados en originales. Objetivos A0 adicionales:1.004.544B nominales;
+la ruta nativa aún reserva los objetivos/programas de refinamiento del contenedor común.
+Índice vascular observado al inicio1.335.296/1.343.488B por caso. No es RSS/VRAM total ni coste frío.
+El cierre de fuente aísla el seno en el dueño current y conserva los shaders/entradas current
+medidos; build s0028 sigue bajo su techo original, con margen pequeño.
+
+**Contratos.** Conexión al padre, separación arterial/venosa, luces/paredes fuera de médula,
+paridad regional CPU/GPU, seguimiento renal original y envoltura. Los hashes históricos se
+conservan como referencias y el cambio permitido se acredita aparte: quince puntos de82.251
+cambian sólo dentro de riñones; las demás modificaciones pertenecen a las18 ramas autorizadas.
+Los negativos de tejido ajeno, alteración GLSL y raíces desconectadas permanecen.
+La prueba regional excluye explícitamente puntos a≤0,1mm de interfaz; no resuelve las diferencias
+CPU/GPU de atlas filtrado. Calibración, check completo y CI del head final se acreditan por
+separado; esta decisión no declara merge ni validación clínica.
+Evidencia: `$VEXUS_EVIDENCE_ROOT/image-renal-network-73/measured`.

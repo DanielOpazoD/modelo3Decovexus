@@ -1,3 +1,4 @@
+import { cross, normalize, sub } from '../../../core/vec3';
 import type { Vec3 } from '../../../core/vec3';
 import type { TubeNode } from '../../primitives';
 import type { VesselDef } from '../../vesselTree';
@@ -83,6 +84,41 @@ export function curvedBranch(nodes: readonly TubeNode[], parent: readonly TubeNo
 
 export function curveVascularBranches(vessels: VesselDef[]): void {
   const byId = (id: VesselId) => vessels.find((v) => v.id === id)!;
+  // [EXTRAPOLACIÓN PROPIA] Red segmentaria del seno, ajustada al espacio entre columnas y paredes.
+  // Construcción solamente: las tres muestras originales de cada interlobar y sus calibres se conservan.
+  const arterial = byId('renalArteryRight').tube.nodes;
+  const origin = arterial[arterial.length - 1].p;
+  const medial = normalize(sub(arterial[arterial.length - 2].p, origin));
+  const axis = normalize(cross(medial, sub(byId('renalVeinRight').tube.nodes[0].p, origin)));
+  const anterior = normalize(cross(axis, medial));
+  const routes: Partial<Record<VesselId, Vec3[]>> = {
+    interlobarArtery1: [
+      [-23, -2, 3],
+      [-25, -4, 5],
+      [-29, -4, 4],
+      [-32, -1, 6],
+    ],
+    interlobarArtery2: [[0.6, 6, -2]],
+    interlobarArtery3: [[17.4, 10, -6]],
+    interlobarVein1: [[-10.8, 10, 5]],
+    interlobarVein2: [[-0.5, 12, 5]],
+    interlobarVein3: [[4.7, 12, 5]],
+  };
+  for (const v of vessels) {
+    const route = routes[v.id];
+    if (!route) continue;
+    const venous = v.id.includes('Vein');
+    const parent = byId(venous ? 'renalVeinRight' : 'renalArteryRight').tube.nodes;
+    const root = parent[venous ? 0 : parent.length - 1];
+    const tip = v.tube.nodes[venous ? v.tube.nodes.length - 1 : 0];
+    const join = { p: [...root.p] as Vec3, r: Math.min(tip.r, root.r) };
+    const bends = route.map(([u, y, z]) => ({
+      p: origin.map((x, j) => x + u * axis[j] + (y - 6) * medial[j] + (z + 4) * anterior[j]) as Vec3,
+      r: tip.r,
+    }));
+    if (venous) v.tube.nodes.push(...bends, join);
+    else v.tube.nodes.unshift(join, ...bends);
+  }
   // Preserve every source landmark; estimate a curved path only between them.
   for (const [child, parent, atStart] of [
     ['hvCommonTrunk', 'ivcInfra', false],

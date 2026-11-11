@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen renal: seno menos compacto, separación medular y seis raíces interlobares conectadas con sus paredes. A0 nativa current conserva la imagen y reduce el coste GPU medido en ocho escenas, sin filtros ni cambios de sonda (339).
+
 - Metal usa la rejilla vascular conservadora: conserva las curvas y paredes con ocho capturas idénticas y reduce el coste GPU medido (decisión338).
 - Anatomía: doce trayectos hepáticos y portales se curvan entre sus hitos originales; sus paredes siguen la misma geometría que la luz y el Doppler. Sin filtros ni cambios de sonda (337).
 

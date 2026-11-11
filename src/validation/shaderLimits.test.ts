@@ -287,6 +287,14 @@ const steeredLeaks = (src: string, ids: readonly string[]): string[] =>
  * silencio. Cada caso (la hepatomegalia cambia el árbol procedural) debe dejar margen.
  */
 describe('Límites del shader con margen para crecer', () => {
+  it('A0 nativo precalculado conserva el techo original de dos clasificadores', () => {
+    const source = personShader(PASSES.FRAG_TRANS_HITS_CACHED, { person: 'current' });
+    const graph = glslCallGraph(source);
+    expect(expandedTokens(graph, 'main')).toBeLessThanOrEqual(limits.FRAG_TRANS_HITS[0]);
+    expect(expandedBranches(graph, 'main')).toBeLessThanOrEqual(limits.FRAG_TRANS_HITS[1]);
+    expect(PASSES.FRAG_TRANS_HITS).not.toContain('uA0Grid');
+    expect(source).not.toContain('#ifdef A0_CACHED');
+  });
   it('las funciones añadidas o modificadas para s0028 no introducen bucles GLSL', () => {
     const sources = PASSES as unknown as Record<string, string>;
     for (const name of Object.keys(limits)) expect(newLoops(sources[name], personShader(sources[name], S0028)), name).toEqual([]);
@@ -691,6 +699,7 @@ vec4 s28WallAt(vec3 p,out bool valid){`,
   it('ningún shader inlinea classify más veces que antes de la decisión 61, ni faceGradient dentro de un bucle', () => {
     const budget: Record<string, number> = {
       FRAG_TRANS_HITS: 2,
+      FRAG_TRANS_HITS_CACHED: 2,
       // Decision190 splits A0's existing two classifier copies between two programs.
       // Native A0 keeps its original cap; staged programs may not classify inside a loop.
       FRAG_TRANS_HITS_GRID: 1,
@@ -718,7 +727,7 @@ vec4 s28WallAt(vec3 p,out bool valid){`,
       for (const body of loopBodies(g)) expect(reaches(g, body, 'faceGradient'), `${name}: faceGradient en un bucle`).toBe(false);
       // warpAt ya es analítico (una evaluación); A0 admite solo la llamada del primer impacto.
       // La prohibición sigue intacta para cualquier otra llamada dentro de un bucle.
-      const warpGraph = name === 'FRAG_TRANS_HITS' ? glslCallGraph(withoutSingleMirrorWarp(src)) : g;
+      const warpGraph = ['FRAG_TRANS_HITS', 'FRAG_TRANS_HITS_CACHED'].includes(name) ? glslCallGraph(withoutSingleMirrorWarp(src)) : g;
       for (const body of loopBodies(warpGraph)) expect(reaches(warpGraph, body, 'warpAt'), `${name}: warpAt en un bucle`).toBe(false);
       // ni la textura del psoas y del cuadrado (decisión 81: un Voronoi de 3 × 3 células por plano de elevación)
       for (const body of loopBodies(g)) expect(reaches(g, body, 'fascicleSeptum'), `${name}: fascicleSeptum en un bucle`).toBe(false);

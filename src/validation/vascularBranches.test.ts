@@ -89,7 +89,28 @@ describe('curved vascular courses', () => {
     const before = structuredClone(vessels);
     curveVascularBranches(vessels);
     const changed = vessels.filter((v, i) => JSON.stringify(v.tube.nodes) !== JSON.stringify(before[i].tube.nodes));
-    expect(changed).toHaveLength(12);
+    expect(changed.map((v) => v.id).sort()).toEqual(
+      [
+        'hvCommonTrunk',
+        'hvLeft',
+        'hvLeftTributary',
+        'hvMiddle',
+        'hvMiddleTributary',
+        'hvRight',
+        'hvRightAnterior',
+        'hvRightPosterior',
+        'pvLeftLateral',
+        'pvLeftMedial',
+        'pvRightAnterior',
+        'pvRightPosterior',
+        'interlobarArtery1',
+        'interlobarArtery2',
+        'interlobarArtery3',
+        'interlobarVein1',
+        'interlobarVein2',
+        'interlobarVein3',
+      ].sort(),
+    );
     for (let i = 0; i < vessels.length; i++) {
       const { tube, ...rest } = vessels[i],
         { tube: old, ...previous } = before[i];
