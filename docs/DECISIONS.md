@@ -11540,6 +11540,6 @@ la maqueta 103) no se distingue en una ventana VExUS.
 **Opciones.** Seguir con las reglas acumuladas; o reemplazar las que frenan por una página, conservando causalidad, paridad y honestidad.
 **Decisión.** `docs/REGLAS.md` manda sobre el resto: `s0028` como única anatomía, alcance por lo que se ve o se mide, aceptación por
 láminas y CI, techo de coste GPU absoluto, `docs/estado/` como verdad vigente y decisiones de diez líneas. Maqueta 103 congelada.
-**Consecuencias.** Sin check local obligatorio ni recibos con hash. Techo de 16,7 ms por cuadro (60 fps). Con el equipo cargado, `main`
-midió 12–15 ms antes de la red renal 339 y 16–20 ms con ella: falta repetir la medida sin carga.
+**Consecuencias.** Sin check local obligatorio ni recibos con hash. El coste se acepta si el bucle real sostiene 60 fps (`fps` de
+`npm run fidelity`); `frameCostMs` no lo representa: dio +33 % a la red renal 339, un 30 % más rápida en el bucle real.
 **Verificación.** `docs.test.ts` y `estado.test.ts`; `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md` y `CONTEXTO-IA.md` apuntan a la página.

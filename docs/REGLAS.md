@@ -29,13 +29,13 @@ no cumple ninguna de las dos no se modela, por correcto que sea anatómicamente.
 
 ## Coste GPU
 
-Techo absoluto, no relativo: **cada estado del banco cuesta como máximo 16,7 ms por cuadro** (60 fps, objetivo 7 de la misión), medido
-con `frameCostMs` en el equipo de referencia (Apple M4, Metal) sin otra carga. Un cambio que queda bajo el techo pasa, suba o baje
-respecto de `main`; la cifra se anota en el PR. `frameCostMs` no incluye el navegador 3D ni el compositor: el techo es necesario, no
-suficiente, para los 60 fps.
+Techo absoluto, no relativo: **el bucle real de la aplicación sostiene 60 fps con la sonda quieta en cada estado del banco** (campo
+`fps` de `npm run fidelity`, la lectura del propio HUD), en el equipo de referencia (Apple M4, Metal) sin otra carga. Un cambio que lo
+mantiene pasa, suba o baje el coste respecto de `main`; la cifra se anota en el PR. Con carga ajena no se concluye nada absoluto: se
+miden las dos versiones a la vez, alternadas, y se informa la razón entre ellas.
 
-El 11-11-2026, con el equipo cargado, `main` midió 12–15 ms en ocho estados antes de la red renal (decisión 339) y 16–20 ms con ella.
-Está pendiente repetir la medida sin carga.
+Se mide el bucle real, no un sustituto. El 11-11-2026 `frameCostMs` (cuadros síncronos fuera del bucle) dio un 33 % más de coste a la
+red renal de la decisión 339, que en el bucle real resultó un 30 % más rápida con la sonda quieta y un 8 % girándola.
 
 Los techos duros no se mueven para obtener verde: samplers, ranuras de uniforms y los tokens y ramas que tumban el JIT de
 SwiftShader. Los autoimpuestos (bundle, descarga, memoria) se suben solo declarando la cifra al responsable.
