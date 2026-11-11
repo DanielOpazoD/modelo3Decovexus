@@ -1,6 +1,7 @@
 import { GALLBLADDER_WALL_MM } from '../organs/gallbladder';
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
-import { S0028_RENAL_FACE_MM, s0028FatPages } from '../people/s0028/solidsData';
+import { S0028_RENAL_FACE_MM, s0028FatPages, s0028RenalPages } from '../people/s0028/solidsData';
+import { S0028_RENAL_INTERIOR as R } from '../s0028RenalInteriorData';
 import { RIGID_BASE } from './anatomy.glsl';
 
 /** Campos P3 de cada atlas, en el orden de los índices GLSL: los doce dueños abdominales y los tres vasos fuente (P5). */
@@ -58,9 +59,11 @@ float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+fl
  * Política P3 en la GPU (decisión 321, r3), par GLSL de `s0028Owners` y de la rama s0028 de `scene.ts`. Sin bucles en
  * este código ni en lo que llama (las funciones `s28P*`): cada campo se lee por su caja y, a menos de un vóxel de su
  * frontera, con los mismos ocho nodos exactos de la CPU (`sourceDistancePrecise`). Dueños independientes antes de
- * cualquier orden; dos o más son conflicto y U; el riñón es U por dentro con su borde O como cara acústica; la grasa
- * compatible D sale de 77 páginas RG16F subidas a huecos del atlas abdominal (sin textura ni sampler nuevos).
+ * cualquier orden; dos o más son conflicto y U; el riñón lleva el rótulo de su interior (46 páginas más, `s28PRen`) con su
+ * borde O como cara acústica; la grasa compatible D sale de 77 páginas RG16F subidas a huecos del atlas abdominal (sin
+ * textura ni sampler nuevos).
  * @twin s0028-duenos
+ * @twin s0028-interior-renal
  * @twin s0028-gradiente-renal
  */
 export const S0028_SOLIDS_GLSL = /* glsl */ `
@@ -79,6 +82,21 @@ bool s28PFat(vec3 p,int b){
   int bit=(v.x*n.y+v.y)*n.z+v.z,at=S28F_AT[b]+(bit>>3),h=at&2047;
   vec2 t=texelFetch(uAbdominalAtlas,S28F_PAGE[at>>11]+ivec3((h>>1)&31,h>>6,0),0).rg;
   return ((int((h&1)==0?t.x:t.y)>>(bit&7))&1)==1;
+}
+const vec3 S28N_LO[2]=vec3[](${R.boxes.map((b) => vec(b.originMm)).join(',')});
+const vec3 S28N_DIM[2]=vec3[](${R.boxes.map((b) => vec(b.dimensions)).join(',')});
+const ivec3 S28N_PAGE[${R.pageCount}]=ivec3[](${s0028RenalPages()
+  .map((p) => `ivec3(${p.join(',')})`)
+  .join(',')});
+// Etiqueta del interior renal del vóxel nearest (gemelo: s0028RenalInterior): dos vóxeles por byte, el par en el nibble
+// bajo; un byte exacto por half en páginas 32×32 RG16F, página nueva por caja. 0 es U, también fuera de la caja.
+int s28PRen(vec3 p){
+  int b=p.x<10.0?0:1;
+  ivec3 v=ivec3(floor((p-S28N_LO[b])/1.5+0.5)),n=ivec3(S28N_DIM[b]);
+  if(any(lessThan(v,ivec3(0)))||any(greaterThanEqual(v,n)))return 0;
+  int i=(v.x*n.y+v.y)*n.z+v.z,at=${R.boxes[1].pageBase * 2048}*b+(i>>1),h=at&2047;
+  vec2 t=texelFetch(uAbdominalAtlas,S28N_PAGE[at>>11]+ivec3((h>>1)&31,h>>6,0),0).rg;
+  return (int((h&1)==0?t.x:t.y)>>((i&1)<<2))&7;
 }
 void s28PAdd(inout int n,inout int k,inout float d,int id,float v){if(v<0.0){if(n==0){k=id;d=v;}n++;}}
 // Dueños independientes de un punto material (gemelo: s0028Owners): cuántos hay; k y d, el primero (con un solo dueño,
@@ -141,8 +159,10 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   if(dGb<0.0||dGb<uGbExtra.y)gn=abdominalAtlasGradient(m,7);
   if(dGb<0.0){c.tissue=T_FLUID;c.bd=-dGb;c.n=gn;c.iface=IF_GALLBLADDER;c.ifd=-dGb;return;}
   if(dGb<uGbExtra.y){c.tissue=T_BILEWALL;c.bd=min(dGb,uGbExtra.y-dGb);c.n=gn;c.iface=IF_GALLBLADDER;c.ifd=dGb;return;}
-  // Riñón: interior U (el quiste izquierdo, líquido E), sin corteza, seno, cápsula ni vasos dentro.
-  if(renal){c.tissue=k==13?T_FLUID:T_UNSEGMENTED;c.bd=-od;}
+  // Riñón (r5): corteza y médula E del rótulo del propio TAC dentro de la máscara; seno graso y colector D en el hueco
+  // del hilio, fuera de ella; lo demás U. El quiste izquierdo, líquido E.
+  int ren=s28PRen(m);
+  if(renal){c.tissue=k==13?T_FLUID:ren==1?T_RENAL_CORTEX:ren==2?T_RENAL_MEDULLA:T_UNSEGMENTED;c.bd=-od;}
   else if(s28PAbdomen(m,k==2?0:k==7?1:k==6?2:k==1?3:-1,od,c))return;
   else if(k==0){
     c.n=abdominalAtlasGradient(m,4);c.bd=-od;
@@ -150,12 +170,12 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
     c.tissue=T_LIVER;return;
   }
   else if(k==8&&s28PLA(m,8)>0.0){c.tissue=s28PLA(m,8)<=2.0?T_PSOAS:T_MUSCLE;c.bd=-od;return;}
-  else if(k==17){c.tissue=T_FAT;c.bd=0.0;}
+  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:T_FAT;c.bd=0.0;}
   else{
     vec3 dn;float dome=sdDome(m,dn);
     if(dome>=0.0&&dome<DIAPHRAGM_MM){c.tissue=T_DIAPHRAGM;c.bd=min(min(dome,DIAPHRAGM_MM-dome),e.z);c.n=dn;
       if(dome>0.5*DIAPHRAGM_MM){c.iface=IF_DIAPHRAGM_LIVER;c.ifd=DIAPHRAGM_MM-dome;}}
-    else{c.tissue=T_UNSEGMENTED;c.bd=0.0;}
+    else{c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:T_UNSEGMENTED;c.bd=0.0;}
   }
   // Contorno acústico renal: el borde O de la máscara, a ambos lados aunque los dos sean U.
   if(abs(e.y)<${S0028_RENAL_FACE_MM.toFixed(1)}&&abs(e.y)<c.ifd){c.iface=IF_RENAL_CAPSULE;c.ifd=abs(e.y);}

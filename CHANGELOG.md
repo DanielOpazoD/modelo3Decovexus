@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: el riñón deja de ser una mancha homogénea. Corteza, médula y seno salen del propio TAC, en la CPU, el corte y la imagen (341).
+
 - Imagen renal: seno menos compacto, separación medular y seis raíces interlobares conectadas con sus paredes. A0 nativa current conserva la imagen y reduce el coste GPU medido en ocho escenas, sin filtros ni cambios de sonda (339).
 
 - Metal usa la rejilla vascular conservadora: conserva las curvas y paredes con ocho capturas idénticas y reduce el coste GPU medido (decisión338).

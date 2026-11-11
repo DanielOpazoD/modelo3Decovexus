@@ -65,6 +65,7 @@ it('reposo y compresión: dueños evaluados en el material, invariantes de lími
       const k = compression ?? probeContact({ ...pose, lift: 0 }, CONVEX_C35, scene.torso),
         f = k.frame;
       let kidney = 0,
+        labelled = 0,
         bone = 0;
       for (let j = 0; j < 160; j += 3)
         for (let i = 0; i < 267; i += 3) {
@@ -82,17 +83,23 @@ it('reposo y compresión: dueños evaluados en el material, invariantes de lími
           for (const o of owners) expect(o.id === 'compatible_fat' ? o.d === 0 : o.d < 0, `${id} ${o.id}`).toBe(true);
           const tube = c.vesselHit || c.interface === Interface.DuctLumen;
           if (state === 'conflict') expect(c.tissue).toBe(Tissue.UnsegmentedSoftTissue);
-          else if (state === 'U' && !tube && c.tissue !== Tissue.Diaphragm) expect(c.tissue).toBe(Tissue.UnsegmentedSoftTissue);
+          // Sin dueño, U; o el seno renal rotulado en el hueco del hilio (decisión 341).
+          else if (state === 'U' && !tube && c.tissue !== Tissue.Diaphragm)
+            expect([Tissue.UnsegmentedSoftTissue, Tissue.RenalSinus, Tissue.RenalPelvis]).toContain(c.tissue);
           else if (owners[0]?.id.startsWith('kidney_r')) {
             kidney++;
-            // El material del riñón sigue siendo U con y sin presión; la compresión heredada sí lo desplaza (r3).
-            expect([c.tissue, c.vessel]).toEqual([Tissue.UnsegmentedSoftTissue, null]);
+            // El material del riñón es el de su rótulo (corteza, médula o U) con y sin presión, sin vasos de otra
+            // persona; la compresión heredada sí lo desplaza (r3).
+            expect([Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.UnsegmentedSoftTissue]).toContain(c.tissue);
+            expect(c.vessel).toBeNull();
+            if (c.tissue !== Tissue.UnsegmentedSoftTissue) labelled++;
           } else if (owners[0]?.id === 'bone') {
             bone++;
             expect([Tissue.Bone, Tissue.Vertebra]).toContain(c.tissue);
           }
         }
       if (id === 'renal') expect(kidney, `${id} ${compression ? 'compresión' : 'reposo'}`).toBeGreaterThan(50);
+      if (id === 'renal') expect(labelled, `${id} con rótulo`).toBeGreaterThan(40);
       if (id === 'intercostal') expect(bone).toBeGreaterThan(20);
     }
   }

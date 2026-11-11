@@ -21,7 +21,8 @@ export interface PersonBundleGraph {
 
 // La instalación inicial del Worker ahora resiste un cambio de caso en vuelo. Su código compartido lleva
 // s0028 cuatro bytes sobre el antiguo techo en el build medido; reservamos 1 KiB, sin ampliar default ni GPU.
-export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + KB;
+// Decisión 341: s0028 sube otros 28 KiB para llevar el rótulo de su interior renal (datos generados del TAC, no código).
+export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 29 * KB;
 export const DEFAULT_JS_BUDGET = TOTAL_JS_BUDGET;
 export const S0028_JS_BUDGET = PERSON_JS_CEILING;
 

@@ -486,3 +486,12 @@ así que en las ventanas de incidencia casi normal las capas siguen paralelas de
 capas profundas queda pendiente. No es validación clínica.
 
 La decisión 337 regenera también las ramas periféricas a partir de los padres curvos: sus posiciones, radios locales y reparto entre familias dependen del generador existente, no de una segmentación vascular independiente.
+
+### s0028: interior renal del propio TAC (341)
+
+El riñón s0028 toma su interior del rótulo offline de `tools/anatomy/s0028-renal-interior.py`, por vóxel nearest de 1,5 mm y
+sin distancias entre tejidos: los límites corteza–médula y del seno salen escalonados a esa resolución. Corteza y médula son una
+hipótesis E (umbral de Otsu del HU suavizado; d′ nativo 1,4 y 1,3, bajo el 2,0 que pedía D). Seno graso y luz del colector son
+D. Los vasos del hilio y sus interfaces, que el exportador deja U, se muestran como contenido del seno
+(`s0028-renal-sinus-fill.py`): el compartimento es D, tratarlo como material ecogénico del seno es [EXTRAPOLACIÓN PROPIA]. La
+boca hiliar a menos de 3 mm del exterior sigue U. El HU decide dónde está cada tejido, no su brillo. No es validación clínica.

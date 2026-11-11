@@ -84,9 +84,10 @@ export function classifyInside(
   spineDistance: number,
   solids?: S0028Ownership,
 ): Classification {
-  // P3: el interior renal es U (borde D de su máscara); sin corteza, seno, cápsula ni vasos de otra persona dentro.
+  // r5: el interior renal sale del rótulo offline del propio TAC (corteza y médula E, seno graso y colector D); lo demás U.
   const owner = solids?.owners[0]?.id;
   const renal = owner?.startsWith('kidney');
+  const interior = scene.person.cpu.regional!.s0028RenalInterior(m);
   {
     const lung = scene.person.cpu.regional!.s0028SourceValue(m, 'lung');
     if (lung.d < 0) return { ...NONE, tissue: Tissue.Lung, boundaryDistance: -lung.d };
@@ -146,7 +147,7 @@ export function classifyInside(
     return renalFace(
       {
         ...NONE,
-        tissue: owner === 'kidney_cyst_left' ? Tissue.Fluid : Tissue.UnsegmentedSoftTissue,
+        tissue: owner === 'kidney_cyst_left' ? Tissue.Fluid : (RENAL_TISSUE[interior] ?? Tissue.UnsegmentedSoftTissue),
         boundaryDistance: -solids!.owners[0].d,
       },
       solids!,
@@ -164,19 +165,24 @@ export function classifyInside(
     if (muscle.d < 0 && muscle.label > 0)
       return { ...NONE, tissue: muscle.label <= 2 ? Tissue.Psoas : Tissue.Muscle, boundaryDistance: -muscle.d };
     // Grasa compatible D por vóxel (HU, ≤30 mm del riñón, sin máscara): composición, no compartimento.
-    if (owner === 'compatible_fat') return renalFace({ ...NONE, tissue: Tissue.Fat, boundaryDistance: 0 }, solids!);
+    if (owner === 'compatible_fat')
+      return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.Fat, boundaryDistance: 0 }, solids!);
     // Conservar la cúpula E; la máscara de cada órgano ya ganó antes.
     // No usar esta estimación P7 para cortar el hígado de la persona.
     const dome = sdDiaphragm(m, scene.diaphragm, scene.torso);
     if (dome >= 0 && dome < DIAPHRAGM_THICKNESS_MM)
       return renalFace(scene.classifyDiaphragm(dome, scene.person.cpu.regional!.s0028InsideWall(m) ?? Infinity), solids!);
-    return renalFace({ ...NONE, tissue: Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' }, solids!);
+    return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' }, solids!);
   }
 }
 function renalFace(c: Classification, solids: S0028Ownership): Classification {
   const d = Math.abs(solids.kidneyMm);
   return d < S0028_RENAL_FACE_MM && d < c.interfaceDistance ? { ...c, interface: Interface.RenalCapsule, interfaceDistance: d } : c;
 }
+
+/** Corteza y médula sólo dentro de la máscara renal; seno graso y colector sólo en el hueco del hilio, fuera de ella. */
+const RENAL_TISSUE: Readonly<Record<number, Tissue>> = { 1: Tissue.RenalCortex, 2: Tissue.RenalMedulla };
+const SINUS_TISSUE: Readonly<Record<number, Tissue>> = { 3: Tissue.RenalSinus, 4: Tissue.RenalPelvis, 5: Tissue.RenalSinus };
 
 /** s0028 P3: sin arquitectura ni grasa perirrenal analíticas (Morison sin grasa inventada). */
 const NO_KIDNEY = { cls: null, dPeriMm: 1e3, periThin: false } as const;

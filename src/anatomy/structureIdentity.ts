@@ -35,10 +35,14 @@ export function structureIdentity(p: Vec3, tissue: Tissue, iface: Interface, sce
   const { abdominalAtlasSdf, abdominalAtlasValue } = scene.person?.cpu.atlas ?? EMPTY_ATLAS;
   const owner = solids?.owners[0]?.id;
   if (solids?.state === 'conflict') return 17;
-  if (owner === 'kidney_right') return 18;
-  if (owner === 'kidney_left' || owner === 'kidney_cyst_left') return 19;
+  // s0028: con corteza o médula del rótulo del propio TAC es el riñón; sin rótulo sigue siendo «interior U».
+  const parenchyma = tissue === Tissue.RenalCortex || tissue === Tissue.RenalMedulla;
+  if (owner === 'kidney_right') return parenchyma ? 2 : 18;
+  if (owner === 'kidney_left' || owner === 'kidney_cyst_left') return parenchyma ? 3 : 19;
   if (tissue === Tissue.Liver || tissue === Tissue.LiverCapsule) return 1;
   if ([Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalCapsule, Tissue.RenalPelvis].includes(tissue)) {
+    // s0028: el seno está en el hueco del hilio, fuera de la máscara; el lado es el de su caja.
+    if (solids) return p[0] < 10 ? 2 : 3;
     const d = (center: Vec3) => center.reduce((sum, value, i) => sum + (value - p[i]) ** 2, 0);
     return d(scene.kidneyRight.center) <= d(scene.kidneyLeft.center) ? 2 : 3;
   }

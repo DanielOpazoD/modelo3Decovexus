@@ -1,9 +1,11 @@
 import type { Vec3 } from '../../../core/vec3';
 import { HALF } from '../../halfFloat';
 import type { PersonAssets } from '../../personAssets';
+import { S0028_RENAL_INTERIOR as R } from '../../s0028RenalInteriorData';
+import { S0028_RENAL_INTERIOR_RUNS } from '../../s0028RenalInteriorRuns';
 import { sourceDistance, sourceLabel } from '../../sourceVolume';
 import { S0028_BUNDLE as B } from './descriptor';
-import { s0028FatPages } from './solidsData';
+import { s0028FatPages, s0028RenalPages } from './solidsData';
 import type { S0028WallSample } from './wall';
 /** O máscara fuente automática; D derivación reproducible; E hipótesis acotada; U desconocido (decisión 321). */
 export type S0028Certainty = 'O' | 'D' | 'E' | 'U';
@@ -47,6 +49,32 @@ export interface S0028Ownership {
   readonly kidneyMm: number;
 }
 
+/** Etiquetas del interior renal (r5): el exportador offline las saca del propio TAC; 0 es U. */
+export const S0028_RENAL_LABEL = { U: 0, cortex: 1, medulla: 2, sinusFat: 3, collectingSystem: 4, sinusUnclassified: 5 } as const;
+const RENAL_CODE: Readonly<Record<string, number>> = { U: 0, C: 9, M: 10, F: 3, P: 4, S: 13 };
+let renalCodes: readonly Uint8Array[] | undefined;
+/** Código por vóxel de cada caja (xyz, z rápida): bits 0–2 la etiqueta, bit 3 hipótesis E. Se expande una vez. */
+function s0028RenalCodes(): readonly Uint8Array[] {
+  renalCodes ??= R.boxes.map((b, i) => {
+    const codes = new Uint8Array(b.dimensions[0] * b.dimensions[1] * b.dimensions[2]);
+    let at = 0;
+    for (const [, symbol, length] of S0028_RENAL_INTERIOR_RUNS[i].matchAll(/([A-Z])([0-9a-z]*)/gu)) {
+      const n = length ? parseInt(length, 36) : 1;
+      codes.fill(RENAL_CODE[symbol], at, at + n);
+      at += n;
+    }
+    if (at !== codes.length) throw new Error('Interior renal s0028 truncado');
+    return codes;
+  });
+  return renalCodes;
+}
+/** Half exacto de un byte 0…255, como lo guarda la textura RG16F. */
+const byteHalf = (n: number): number => {
+  if (n === 0) return 0;
+  const e = Math.floor(Math.log2(n));
+  return ((e + 15) << 10) | ((n / 2 ** e - 1) * 1024);
+};
+
 export function createSolidsQueries(assets: PersonAssets) {
   const abdominalAtlas = assets.buffers.abdominal,
     thoracicAtlas = assets.buffers.thoracic;
@@ -62,7 +90,7 @@ export function createSolidsQueries(assets: PersonAssets) {
     ['liver', 'liver', 'O'],
     ['spleen', 'spleen', 'O'],
     ['pancreas', 'pancreas', 'O'],
-    // Borde D de la máscara; corteza, médula, seno y cápsula no están segmentados: interior U.
+    // Borde D de la máscara. El dueño sigue siendo U: su interior lo rotula `s0028RenalInterior` (E) y sin rótulo es U.
     ['kidneyRight', 'kidney_right', 'U'],
     ['kidneyLeft', 'kidney_left', 'U'],
     ['gallbladder', 'gallbladder', 'O'],
@@ -108,7 +136,40 @@ export function createSolidsQueries(assets: PersonAssets) {
   /** Las páginas de grasa en sus colocaciones del atlas abdominal ya asignado: texSubImage, sin textura ni sampler nuevos. */
   function s0028SolidsUploads(): ReadonlyArray<{ offset: readonly number[]; size: readonly number[]; data: Uint16Array }> {
     if (!fat) throw new Error('Paquete P3 s0028 no cargado');
-    return s0028FatPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: fat!.subarray(2048 * i, 2048 * (i + 1)) }));
+    return [
+      ...s0028FatPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: fat!.subarray(2048 * i, 2048 * (i + 1)) })),
+      ...s0028RenalUploads(),
+    ];
+  }
+
+  /** Páginas del interior renal: dos vóxeles por byte (el par en el nibble bajo), un byte exacto por half, página nueva por caja. */
+  function s0028RenalUploads(): ReadonlyArray<{ offset: readonly number[]; size: readonly number[]; data: Uint16Array }> {
+    const words = new Uint16Array(2048 * R.pageCount);
+    s0028RenalCodes().forEach((codes, i) => {
+      for (let v = 0; v < codes.length; v += 2)
+        words[2048 * R.boxes[i].pageBase + (v >> 1)] = byteHalf(codes[v] | ((codes[v + 1] ?? 0) << 4));
+    });
+    return s0028RenalPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: words.subarray(2048 * i, 2048 * (i + 1)) }));
+  }
+
+  /**
+   * Etiqueta del interior renal en el vóxel nearest de la caja del lado de p (derecha si x < 10 mm): 1 corteza y 2 médula
+   * (hipótesis E, dentro de la máscara renal), 3 seno graso y 4 colector (D, en el hueco del hilio, fuera de la máscara),
+   * 5 vasos e interfaces del seno sin subclasificar (compartimento D, material E); 0 es U, también fuera de la caja.
+   * Par GLSL: `s28PRen`.
+   * @twin s0028-interior-renal
+   */
+  function s0028RenalInterior(p: Vec3): number {
+    const side = p[0] < 10 ? 0 : 1,
+      b = R.boxes[side],
+      [nx, ny, nz] = b.dimensions,
+      x = Math.round((p[0] - b.originMm[0]) / 1.5),
+      y = Math.round((p[1] - b.originMm[1]) / 1.5),
+      z = Math.round((p[2] - b.originMm[2]) / 1.5);
+    // El dominio lo decide el índice redondeado, no la coordenada: en la última cara de la caja el float32 de la GPU
+    // y el double de la CPU caerían a lados distintos de una comparación continua.
+    if (!(x >= 0 && y >= 0 && z >= 0 && x < nx && y < ny && z < nz)) return 0;
+    return s0028RenalCodes()[side][(x * ny + y) * nz + z] & 7;
   }
 
   /**
@@ -224,5 +285,5 @@ export function createSolidsQueries(assets: PersonAssets) {
   }
 
   if (assets.buffers.capacity) setS0028Solids(assets.buffers.capacity);
-  return Object.freeze({ s0028SolidsUploads, s0028KidneyGradient, s0028CompatibleFat, s0028RigidSpan, s0028Owners });
+  return Object.freeze({ s0028SolidsUploads, s0028KidneyGradient, s0028CompatibleFat, s0028RenalInterior, s0028RigidSpan, s0028Owners });
 }

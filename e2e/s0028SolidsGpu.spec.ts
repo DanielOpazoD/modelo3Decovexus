@@ -9,7 +9,7 @@ import { bootWithoutErrors, budget } from './support';
 /**
  * P3 r3 (decisión 321): la GPU clasifica los sólidos s0028 con la misma política que la CPU. Mismos puntos MATERIALES
  * (sin sonda y con D = 0, mundo = material; y con respiración y compresión en las ventanas): dueños, conflicto U, riñón
- * U con su contorno O, quiste E, grasa D, U sin dueño. La lógica de la comparación vive aquí (no en el bundle): la
+ * con el rótulo de su interior (decisión 341: corteza, médula, seno; sin rótulo, U) y su contorno O, quiste E, grasa D, U sin dueño. La lógica de la comparación vive aquí (no en el bundle): la
  * página sólo expone la simulación. Empate: coordenada a < 1e-5 vóxel de la mitad de celda de la rejilla común del TAC.
  */
 interface Row {
@@ -24,11 +24,15 @@ interface Row {
   normalMin: number;
   ties: number;
   analyticGpu: number;
+  labelled: [number, number];
   classes: Record<string, [number, number]>;
   worst: string[];
 }
 
-const ANALYTIC = [Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalPelvis, Tissue.RenalCapsule, Tissue.PerirenalFat];
+/** Compartimentos de la arquitectura analítica de la otra persona: nunca en s0028. */
+const ANALYTIC = [Tissue.RenalCapsule, Tissue.PerirenalFat];
+/** Tejidos del rótulo del interior renal s0028 (decisión 341). */
+const LABELLED = [Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalPelvis];
 const field = (name: string) => B.fields.find((f) => f.name === name)!;
 const ARGS = {
   kidneys: [field('kidneyRight'), field('kidneyLeft')].map((f) => ({ o: f.originMm, n: f.dimensions })),
@@ -38,6 +42,7 @@ const ARGS = {
   cysts: cysts.cyst.flat(),
   lattice: B.fields[0].originMm,
   analytic: ANALYTIC.map(Number),
+  labelled: LABELLED.map(Number),
   renal: Number(Interface.RenalCapsule),
   names: {
     tissue: Object.fromEntries(
@@ -48,7 +53,7 @@ const ARGS = {
   },
 };
 
-test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños, conflicto, riñón U con contorno, grasa D', async ({
+test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños, conflicto, riñón rotulado con contorno, grasa D', async ({
   page,
 }) => {
   budget(600_000);
@@ -110,6 +115,7 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
         normalMin: 1,
         ties: 0,
         analyticGpu: 0,
+        labelled: [0, 0],
         classes: {},
         worst: [],
       };
@@ -137,6 +143,10 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
           const r = (row.classes[cls] ??= [0, 0]);
           r[0]++;
           if (a.analytic.includes(gpu.tissue[i])) row.analyticGpu++;
+          if (a.labelled.includes(ct)) {
+            row.labelled[0]++;
+            if (ct === gpu.tissue[i]) row.labelled[1]++;
+          }
           if (ci === a.renal) {
             row.renalCpu++;
             if (gpu.iface[i] === a.renal && ct === gpu.tissue[i]) {
@@ -272,7 +282,7 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
   }
   for (const r of rows) {
     const still = r.id.endsWith('D=0');
-    // Ningún tejido renal analítico de la otra persona en la GPU s0028, y desacuerdo interior ≤ 0,5 % (P2).
+    // Ningún compartimento renal analítico de la otra persona en la GPU s0028, y desacuerdo interior ≤ 0,5 % (P2).
     expect(r.analyticGpu, tag(r)).toBe(0);
     if (r.interior) expect(1 - r.interiorSame / r.interior, tag(r)).toBeLessThanOrEqual(0.005);
     // Sin respiración: cada clase P3 de la CPU con el mismo tejido en la GPU y el contorno con su distancia y su normal.
@@ -295,5 +305,9 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
   }
   expect(rows.find((r) => r.id === 'conflictos D=0')!.classes.conflictU).toEqual([conflicts.points.length, conflicts.points.length]);
   expect(rows.reduce((s, r) => s + r.renalCpu, 0)).toBeGreaterThan(2000);
+  // El rótulo del interior renal llega a la GPU: miles de puntos de corteza, médula y seno, con el mismo tejido que la CPU.
+  const labelled = rows.filter((r) => r.id.endsWith('D=0')).reduce((s, r) => [s[0] + r.labelled[0], s[1] + r.labelled[1]], [0, 0]);
+  expect(labelled[0]).toBeGreaterThan(3000);
+  expect(labelled[1] / labelled[0]).toBeGreaterThanOrEqual(0.99);
   expect(errors).toEqual([]);
 });
