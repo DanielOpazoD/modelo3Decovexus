@@ -1,0 +1,143 @@
+{
+  "scope": "Simulador s0028 en build de desarrollo; GPU, no FPS ni aceptación de producto.",
+  "completed": true,
+  "intervals": 168,
+  "pairsPerState": 7,
+  "framesPerInterval": 5,
+  "medianSumRatio": 0.9956147207435911,
+  "states": [
+    {
+      "caseId": "normal-adult",
+      "view": "subxiphoid",
+      "baselineMedianMs": 10.9048498,
+      "candidateMedianMs": 11.0871998,
+      "medianRatio": 1.0167219176187094,
+      "baselineP95Ms": 11.4750916,
+      "candidateP95Ms": 11.3155332,
+      "p95Ratio": 0.98609523953604,
+      "passed": false
+    },
+    {
+      "caseId": "normal-adult",
+      "view": "intercostal",
+      "baselineMedianMs": 10.9237248,
+      "candidateMedianMs": 10.5934916,
+      "medianRatio": 0.9697691761696523,
+      "baselineP95Ms": 11.3578082,
+      "candidateP95Ms": 11.1879582,
+      "p95Ratio": 0.9850455301754437,
+      "passed": true
+    },
+    {
+      "caseId": "normal-adult",
+      "view": "portal",
+      "baselineMedianMs": 10.26735,
+      "candidateMedianMs": 10.4597248,
+      "medianRatio": 1.0187365581186967,
+      "baselineP95Ms": 10.8739916,
+      "candidateP95Ms": 11.158675,
+      "p95Ratio": 1.0261802115057732,
+      "passed": false
+    },
+    {
+      "caseId": "normal-adult",
+      "view": "subcostal",
+      "baselineMedianMs": 13.3792832,
+      "candidateMedianMs": 13.3478416,
+      "medianRatio": 0.9976499787372766,
+      "baselineP95Ms": 13.6717998,
+      "candidateP95Ms": 13.6383916,
+      "p95Ratio": 0.9975564153594466,
+      "passed": true
+    },
+    {
+      "caseId": "normal-adult",
+      "view": "renal",
+      "baselineMedianMs": 14.3635998,
+      "candidateMedianMs": 14.1151416,
+      "medianRatio": 0.9827022331825201,
+      "baselineP95Ms": 14.679925,
+      "candidateP95Ms": 14.6833666,
+      "p95Ratio": 1.000234442614659,
+      "passed": false
+    },
+    {
+      "caseId": "normal-adult",
+      "view": "hepatorenal",
+      "baselineMedianMs": 14.4177748,
+      "candidateMedianMs": 14.6958082,
+      "medianRatio": 1.0192840714920863,
+      "baselineP95Ms": 15.016175,
+      "candidateP95Ms": 14.7766332,
+      "p95Ratio": 0.9840477485111887,
+      "passed": false
+    },
+    {
+      "caseId": "severe-congestion",
+      "view": "subxiphoid",
+      "baselineMedianMs": 7.3101748,
+      "candidateMedianMs": 7.145075,
+      "medianRatio": 0.9774150681048009,
+      "baselineP95Ms": 7.5125416,
+      "candidateP95Ms": 7.8713082,
+      "p95Ratio": 1.0477556889668338,
+      "passed": false
+    },
+    {
+      "caseId": "severe-congestion",
+      "view": "intercostal",
+      "baselineMedianMs": 7.2496582,
+      "candidateMedianMs": 7.3566748,
+      "medianRatio": 1.0147616062782105,
+      "baselineP95Ms": 7.7126998,
+      "candidateP95Ms": 7.7449916,
+      "p95Ratio": 1.0041868348097769,
+      "passed": false
+    },
+    {
+      "caseId": "severe-congestion",
+      "view": "portal",
+      "baselineMedianMs": 7.2852666,
+      "candidateMedianMs": 6.8427998,
+      "medianRatio": 0.9392655307905959,
+      "baselineP95Ms": 8.2027832,
+      "candidateP95Ms": 8.5030832,
+      "p95Ratio": 1.0366095254108385,
+      "passed": false
+    },
+    {
+      "caseId": "severe-congestion",
+      "view": "subcostal",
+      "baselineMedianMs": 6.9892416,
+      "candidateMedianMs": 6.94225,
+      "medianRatio": 0.9932765809669535,
+      "baselineP95Ms": 7.1861082,
+      "candidateP95Ms": 7.19835,
+      "p95Ratio": 1.0017035368323566,
+      "passed": false
+    },
+    {
+      "caseId": "severe-congestion",
+      "view": "renal",
+      "baselineMedianMs": 7.0432166,
+      "candidateMedianMs": 7.1039248,
+      "medianRatio": 1.0086193856369545,
+      "baselineP95Ms": 7.2659748,
+      "candidateP95Ms": 7.2568,
+      "p95Ratio": 0.9987372926203928,
+      "passed": false
+    },
+    {
+      "caseId": "severe-congestion",
+      "view": "hepatorenal",
+      "baselineMedianMs": 8.0700082,
+      "candidateMedianMs": 7.9958582,
+      "medianRatio": 0.990811657415664,
+      "baselineP95Ms": 8.3892166,
+      "candidateP95Ms": 8.2023082,
+      "p95Ratio": 0.9777203988272278,
+      "passed": true
+    }
+  ],
+  "passed": false
+}

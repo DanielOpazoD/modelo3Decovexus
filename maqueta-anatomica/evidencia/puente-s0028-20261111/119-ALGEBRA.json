@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "checked": 32256,
+  "uniform": 2688,
+  "negativeSameOwnerDifferentMaterial": 3720,
+  "scope": "Control algebraico finito; no medición GPU ni prueba de anatomía."
+}

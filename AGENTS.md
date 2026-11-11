@@ -1,7 +1,7 @@
 # Trabajar en VExUS Sim
 
 Antes de trabajar en esta copia, lee `CONTEXTO-IA.md`: distingue el simulador
-integrado, la rama renal sin fusionar y la maqueta experimental separada. La
+con las mejoras renales integradas y la maqueta experimental separada. La
 maqueta 103 no ha pasado la puerta de coste GPU ni una evaluación clínica.
 
 1. Lee `docs/CONTINUIDAD.md`: cierre funcional acreditado, alcance vigente y límites. Las instrucciones

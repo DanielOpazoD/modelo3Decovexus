@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "sourceSha": "2de528fb8c2aa465808418f91bcbd47eb2b807e5",
+  "treeSha": "fdcfa302a3904217b0c9eec7d27124380179ca2e",
+  "scope": "protected-ci",
+  "ci": {
+    "repository": "DanielOpazoD/modelo3Decovexus",
+    "runId": 43104280280,
+    "attempt": 1
+  },
+  "validation": [
+    {
+      "phase": "core",
+      "files": 324
+    },
+    {
+      "phase": "matrix",
+      "files": 7
+    }
+  ],
+  "e2e": {
+    "tests": 208,
+    "shards": 12,
+    "retries": 0,
+    "collectionSha256": "e97ed01e79c515862caee1b91ace99d0f868e1a3a581c74f353fbddc09579245"
+  },
+  "evidence": [
+    {
+      "artifact": "validation-core",
+      "path": "core.json",
+      "sha256": "243baccbdf86db6893ec42be8b01de0a9b8212cd73875c6a40166a4e352531e1"
+    },
+    {
+      "artifact": "validation-core",
+      "path": "core.source.json",
+      "sha256": "95151949cc09ccb0239109ecf8be2079b7144a94605abbc93b975414aaa65af3"
+    },
+    {
+      "artifact": "validation-matrix",
+      "path": "matrix.json",
+      "sha256": "4b4076d785760536a7b4aeca1ef1ce86f747aa342e2d17a5fb60698d7d4db2bf"
+    },
+    {
+      "artifact": "validation-matrix",
+      "path": "matrix.source.json",
+      "sha256": "1b5fad00306217614f08fd5acfe2f2eeb0ced388401931deee9930e62c67b323"
+    },
+    {
+      "artifact": "e2e-tiempos-1",
+      "path": "e2e-results.json",
+      "sha256": "a7d41f5ebf2c44155b6b2630e042853bf9571ed380f35d0fbfb4c4386664e430"
+    },
+    {
+      "artifact": "e2e-tiempos-1",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "c953d00a828e8727584a25f574d16d87e89090a8997da39855b75a0ee622d025"
+    },
+    {
+      "artifact": "e2e-tiempos-2",
+      "path": "e2e-results.json",
+      "sha256": "34ed712c08f234c45b1014ef2b3231f8b079271f847a47d63129cadbda9bcbbc"
+    },
+    {
+      "artifact": "e2e-tiempos-2",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "b369104f50a3c20a06d5c72af2bb3c9e8ff94ff455a245a3c16db0cd114de686"
+    },
+    {
+      "artifact": "e2e-tiempos-3",
+      "path": "e2e-results.json",
+      "sha256": "4330334e31304679fdc7c8d38f771ad0ae81d54ba53567b9374f745c1e8fbab4"
+    },
+    {
+      "artifact": "e2e-tiempos-3",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "b399e372fb1700c119fec45d7a264fbd6989773229f62ce76702cbb716f39a6f"
+    },
+    {
+      "artifact": "e2e-tiempos-4",
+      "path": "e2e-results.json",
+      "sha256": "87314c96cc3d5401f5d3e812f581326520c4558fbed6521e914f73c47a85a4d3"
+    },
+    {
+      "artifact": "e2e-tiempos-4",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "1eb31061d6b8e296d9787262cf43d3ee6df4ed5a0daa44b0a8f5522d731f2346"
+    },
+    {
+      "artifact": "e2e-tiempos-5",
+      "path": "e2e-results.json",
+      "sha256": "9c3cc0e511be3353b250d9f5e42f0ded060e4f9a6a60122c44483c484cd70137"
+    },
+    {
+      "artifact": "e2e-tiempos-5",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "25a5c3c3dfbb6cb460748fecef7f9c1c9739c481b80db1261ba14d136db467b3"
+    },
+    {
+      "artifact": "e2e-tiempos-6",
+      "path": "e2e-results.json",
+      "sha256": "b34d4a186b5bd9b0d119f33448d0174ce6d44d562ba89a988188b7645ce7f15a"
+    },
+    {
+      "artifact": "e2e-tiempos-6",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "058caec0f1e97fa6ebee1b90eaf0d1ba8ced9f8d30c5f84ea8e9bb3bbd831b80"
+    },
+    {
+      "artifact": "e2e-tiempos-7",
+      "path": "e2e-results.json",
+      "sha256": "20fc07180ef5604491818a025c5c0c030246ddabcfb7609befbc56bc800cb511"
+    },
+    {
+      "artifact": "e2e-tiempos-7",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "427cfab157209b7b51a6bde2743829df7ed6b87ae6e24c1c99cd4bebe03ff7f6"
+    },
+    {
+      "artifact": "e2e-tiempos-8",
+      "path": "e2e-results.json",
+      "sha256": "4fd5b7a158becc5251e6b8fb591787e531f5bc32295e01b22a8990b99c767026"
+    },
+    {
+      "artifact": "e2e-tiempos-8",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "c2936c7381bddae073c82b0bc0b816b27942b0915efded466b53ecd890e71da5"
+    },
+    {
+      "artifact": "e2e-tiempos-9",
+      "path": "e2e-results.json",
+      "sha256": "183060be3e99855d7b1b6561f9c4ed2b55a5dc74936fd9873ed03b00a3b1a37f"
+    },
+    {
+      "artifact": "e2e-tiempos-9",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "c4532e8d242a4d45f239f75f8d99a6c2722ac84844f108da589f43a3575d45d8"
+    },
+    {
+      "artifact": "e2e-tiempos-10",
+      "path": "e2e-results.json",
+      "sha256": "535c970d218a93e71697e4bf794f34cd7f1b2f428754944a127cee09608edd0e"
+    },
+    {
+      "artifact": "e2e-tiempos-10",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "634f0364cebefb0b564fb4c70581fbff0df2de2897f889c045edd0ed0fbf3590"
+    },
+    {
+      "artifact": "e2e-tiempos-11",
+      "path": "e2e-results.json",
+      "sha256": "2fc29e4843705e64913f6011d01799d78983ff509f9a13d5d243e02c8d2af494"
+    },
+    {
+      "artifact": "e2e-tiempos-11",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "b7c81c307a3ba2577317436a407a638b39671689e7b3a5a790968dc98eb77ecc"
+    },
+    {
+      "artifact": "e2e-tiempos-12",
+      "path": "e2e-results.json",
+      "sha256": "92cfd277b8b6ed25f6e20e0cb89a22d485032d8f7e654f143182d06d7f068579"
+    },
+    {
+      "artifact": "e2e-tiempos-12",
+      "path": ".validation/e2e-execution.json",
+      "sha256": "15c0f777e03b941e89bceab1902eac08bd0692d48c8c890214d36a2456571e92"
+    }
+  ],
+  "cost": {
+    "testMilliseconds": 21156740,
+    "longestShardMilliseconds": 2125795.718,
+    "shortestShardMilliseconds": 1100571.1469999999,
+    "longestTests": [
+      {
+        "file": "renalCutTracking.spec.ts",
+        "title": "renal and hepatorenal sweeps retain acquisition geometry with two views and stop duplicate frozen work",
+        "milliseconds": 466924
+      },
+      {
+        "file": "registeredComparison.spec.ts",
+        "title": "compara imágenes registradas pese a distinto trabajo del receptor antes de adquirir",
+        "milliseconds": 412573
+      },
+      {
+        "file": "portalPresentation.spec.ts",
+        "title": "porta: tarjeta real, rojo y sensibilidad, reference=atlas, severe=true",
+        "milliseconds": 378401
+      },
+      {
+        "file": "portalPresentation.spec.ts",
+        "title": "porta: tarjeta real, rojo y sensibilidad, reference=atlas, severe=false",
+        "milliseconds": 371492
+      },
+      {
+        "file": "cutMapConcurrency.spec.ts",
+        "title": "two live atlas views keep producing the current cut through probe and case changes",
+        "milliseconds": 321315
+      }
+    ]
+  }
+}

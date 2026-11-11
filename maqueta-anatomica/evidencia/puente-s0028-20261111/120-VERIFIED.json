@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "samples": 27770,
+  "maxArithmeticDifference": 2.220446049250313e-16,
+  "negativeShiftedNodeChanges": 512,
+  "changesAt001Mm": 5459,
+  "geometricGatePassed": false,
+  "scope": "Reconstruye valores y conteos; no verifica raíces por bisección ni representa un oráculo anatómico."
+}

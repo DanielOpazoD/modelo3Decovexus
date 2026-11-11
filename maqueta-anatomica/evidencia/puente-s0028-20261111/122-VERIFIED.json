@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "pointsByAxis": 1567868,
+  "mismatches": 0,
+  "oldFormulaMismatches": 18629,
+  "samplesSha256": "8106bd94cdf88f6e03c653fcdcd3110ea1fb6480ff99652539f01dd7e5186f84",
+  "scope": "Reconstrucción escalar de las muestras; no prueba todas las posiciones ni la GPU."
+}
