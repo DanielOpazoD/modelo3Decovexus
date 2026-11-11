@@ -67,6 +67,6 @@ Se conservan `maqueta-anatomica/evidencia/RESULTS.md`, los contratos y los datos
 
 ## Siguiente trabajo recomendado
 
-Estudiar una representación que comparta lecturas ya necesarias de la anatomía regional, sin ocultar órganos, cambiar la resolución ni modificar la identidad. Las rejillas regional y nueva tienen medio voxel de diferencia: simplemente empaquetarlas juntas no conserva automáticamente la geometría. Definir primero precisión, límites, memoria, controles negativos y coste completo; verificar superficies, contactos, cortes y contexto con la misma cámara; medir todas las vistas de forma pareada. No reactivar las variantes rechazadas por inercia.
+Desde el 11-11-2026 el rumbo está en `docs/REGLAS.md`: la maqueta 103 queda congelada como visor de consulta y el trabajo pasa a completar la persona `s0028` del simulador por lo que se ve en las ventanas VExUS (interior renal, venas hepáticas y porta del mismo hígado, VCI–aurícula derecha) hasta que sea la única anatomía. La hipótesis anterior de una representación conjunta para abaratar 103 se conserva en `maqueta-anatomica/evidencia/NEXT-DECISION.md`, sin trabajo asignado.
 
 La prioridad del usuario es una anatomía básica integrada y creíble —relaciones entre órganos, fascias, costillas y vasos— antes de ajustar texturas o filtros. No crear tareas programadas. Conserva incertidumbre, discrepancias, licencias, evidencia negativa y trabajo ajeno; no supongas validación clínica ni infles calificaciones.

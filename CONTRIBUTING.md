@@ -1,5 +1,8 @@
 # Cómo contribuir
 
+Las reglas vigentes de rumbo, alcance, aceptación y coste están en [`docs/REGLAS.md`](docs/REGLAS.md) y prevalecen sobre este
+documento.
+
 ## Arquitectura git
 
 ```
@@ -50,7 +53,7 @@ Después: `npm run workspace:doctor`. Ver `docs/engineering/workspace.md`.
 
 Durante la edición usa `npm run feedback` o tests explícitos: ver
 [ciclo de iteración](docs/engineering/iteration.md). Ese diagnóstico no acredita aceptación.
-Ejecuta el check completo cuando el candidato esté estable:
+La CI del PR ejecuta el check completo. Ejecútalo en local solo si no hay CI disponible o para adelantar un fallo:
 
 ```bash
 npm run check
@@ -152,7 +155,7 @@ cuando son términos técnicos de programación; comentarios en español.
 
 ## Plantilla de decisión (desde la 45)
 
-Cada decisión nueva de `docs/DECISIONS.md` sigue este esquema (las 1–44 son registro histórico):
+Cada decisión nueva de `docs/DECISIONS.md` sigue este esquema en diez líneas como máximo (las 1–44 son registro histórico):
 
 ```markdown
 ## N. Título en una línea
