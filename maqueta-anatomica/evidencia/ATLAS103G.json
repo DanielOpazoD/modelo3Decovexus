@@ -1,0 +1,55 @@
+{
+  "atlasShapeXYZ": [
+    196,
+    149,
+    449
+  ],
+  "atlasByteCount": 209801536,
+  "beforeSha256": "0207e3f5dbd3f176301e8771a49f00bac35e1ba6b4cc460b5e786fba09103bc7",
+  "afterSha256": "47b4009a9997cab417990c48ac5a7616d11c86881204c33a0cd314f5b1911a95",
+  "changedFloatSlots": 124151,
+  "changedOutsideReservedSlab": 0,
+  "componentsVerifiedExact": true,
+  "regions": [
+    {
+      "name": "ql",
+      "channel": 0,
+      "origin": [
+        -73.23527431275116,
+        -71.96478450019774,
+        -215.23879268882285
+      ],
+      "shapeXYZ": [
+        37,
+        28,
+        86
+      ],
+      "atlasStartXYZ": [
+        168,
+        0,
+        122
+      ]
+    },
+    {
+      "name": "rib12",
+      "channel": 1,
+      "origin": [
+        -73.23527431275116,
+        -74.96478450019774,
+        -132.73879268882285
+      ],
+      "shapeXYZ": [
+        41,
+        19,
+        45
+      ],
+      "atlasStartXYZ": [
+        168,
+        0,
+        122
+      ]
+    }
+  ],
+  "paddingCondition": "support uses inner 1-node margin; first interpolated x atlas >=169; hepatic max fetch x167",
+  "limitations": "packed atlas bytes, not total GPU memory/RSS; no original anatomic oracle"
+}

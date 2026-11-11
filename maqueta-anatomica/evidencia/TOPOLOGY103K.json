@@ -1,0 +1,42 @@
+{
+  "sharedEdges": 91,
+  "components": 1,
+  "nonManifoldEdges": 0,
+  "cases": {
+    "arc-v-fascia": {
+      "hits": 0,
+      "pairs": 879,
+      "examples": []
+    },
+    "arc-self": {
+      "hits": 0,
+      "pairs": 8193,
+      "examples": []
+    },
+    "fascia-self": {
+      "hits": 0,
+      "pairs": 1552,
+      "examples": []
+    },
+    "fascia-v-renal": {
+      "hits": 0,
+      "pairs": 0,
+      "examples": []
+    },
+    "fascia-v-previous": {
+      "hits": 0,
+      "pairs": 0,
+      "examples": []
+    },
+    "arc-v-previous": {
+      "hits": 0,
+      "pairs": 125,
+      "examples": []
+    }
+  },
+  "negativeCrossingDetected": true,
+  "negativeSharedEdgeAccepted": true,
+  "negativeCoplanarOverlapDetected": true,
+  "scope": "triangle mid-surface floating point; not total thickness or external anatomy",
+  "passed": true
+}

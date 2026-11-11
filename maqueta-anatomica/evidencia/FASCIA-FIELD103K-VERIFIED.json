@@ -1,0 +1,12 @@
+{
+  "newSamples": 8640,
+  "newInside": 0,
+  "minimumCompositeMm": 1.1598262786865234,
+  "minimumRawMm": 1.1598262786865234,
+  "originalLabelsInside": {},
+  "knownNegativeHInside": 60,
+  "thresholdMm": -0.002,
+  "passed": true,
+  "negativeScope": "known prior H geometry, not independent data",
+  "scope": "12,816 sampled thickened-surface points, not all possible intersections or independent anatomy"
+}

@@ -1,0 +1,119 @@
+{
+  "views": [
+    {
+      "mode": "k",
+      "name": "global",
+      "w": 760,
+      "h": 560,
+      "hash": "156038c3070253f7a26df877a6bb368fd14809722317f2f585cdb65320a6aa63"
+    },
+    {
+      "mode": "k",
+      "name": "sternal",
+      "w": 760,
+      "h": 560,
+      "hash": "1a4bcd72e9b7c7e236216660f0de20a0ea4da21714f39848b7f6f9e7760b0e0b"
+    },
+    {
+      "mode": "k",
+      "name": "support",
+      "w": 760,
+      "h": 560,
+      "hash": "4c90f439b99a0adc0793fb828f2861612b7187f7e3380a88a061fbc162adc8c6"
+    },
+    {
+      "mode": "k",
+      "name": "crus-vessel",
+      "w": 760,
+      "h": 560,
+      "hash": "0b8337db75c08aaa72913108b6fd4c271aa75a77c8e6d97966f50b8a2f68536d"
+    },
+    {
+      "mode": "k",
+      "name": "fascia-detail",
+      "w": 760,
+      "h": 560,
+      "hash": "0bf14d8827a73dfe751d1cebe0b8376affa3514740004dc427998e1f14a77547"
+    },
+    {
+      "mode": "k",
+      "name": "fascia-right",
+      "w": 760,
+      "h": 560,
+      "hash": "86dffcd5541c00c80563f7a3d21fe22d703eedcadba824db058cb45e82cab770"
+    },
+    {
+      "mode": "k",
+      "name": "right-ql-rib-near",
+      "w": 760,
+      "h": 560,
+      "hash": "dad6be09c80215ff8e13631f7889a33042d8ade8fd90ae7cdca0d861e7b059aa"
+    },
+    {
+      "mode": "k",
+      "name": "right-insertion-close",
+      "w": 760,
+      "h": 560,
+      "hash": "ad0c0b1ca43fa3a3d0cc72508ea156a3e6a408b0be40d69d6d027a44f24c3b34"
+    },
+    {
+      "mode": "l",
+      "name": "global",
+      "w": 760,
+      "h": 560,
+      "hash": "156038c3070253f7a26df877a6bb368fd14809722317f2f585cdb65320a6aa63"
+    },
+    {
+      "mode": "l",
+      "name": "sternal",
+      "w": 760,
+      "h": 560,
+      "hash": "1a4bcd72e9b7c7e236216660f0de20a0ea4da21714f39848b7f6f9e7760b0e0b"
+    },
+    {
+      "mode": "l",
+      "name": "support",
+      "w": 760,
+      "h": 560,
+      "hash": "4c90f439b99a0adc0793fb828f2861612b7187f7e3380a88a061fbc162adc8c6"
+    },
+    {
+      "mode": "l",
+      "name": "crus-vessel",
+      "w": 760,
+      "h": 560,
+      "hash": "0b8337db75c08aaa72913108b6fd4c271aa75a77c8e6d97966f50b8a2f68536d"
+    },
+    {
+      "mode": "l",
+      "name": "fascia-detail",
+      "w": 760,
+      "h": 560,
+      "hash": "0bf14d8827a73dfe751d1cebe0b8376affa3514740004dc427998e1f14a77547"
+    },
+    {
+      "mode": "l",
+      "name": "fascia-right",
+      "w": 760,
+      "h": 560,
+      "hash": "86dffcd5541c00c80563f7a3d21fe22d703eedcadba824db058cb45e82cab770"
+    },
+    {
+      "mode": "l",
+      "name": "right-ql-rib-near",
+      "w": 760,
+      "h": 560,
+      "hash": "dad6be09c80215ff8e13631f7889a33042d8ade8fd90ae7cdca0d861e7b059aa"
+    },
+    {
+      "mode": "l",
+      "name": "right-insertion-close",
+      "w": 760,
+      "h": 560,
+      "hash": "ad0c0b1ca43fa3a3d0cc72508ea156a3e6a408b0be40d69d6d027a44f24c3b34"
+    }
+  ],
+  "errors": [],
+  "scope": "K versus L, same cameras and layer masks, exact framebuffer bytes; readback outside GPU benchmark",
+  "passed": true
+}

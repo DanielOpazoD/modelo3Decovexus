@@ -1,5 +1,6 @@
 dist
 node_modules
+maqueta-anatomica
 coverage
 docs/DECISIONS_INDEX.md
 # generados por tools/docs/evidence-index.ts

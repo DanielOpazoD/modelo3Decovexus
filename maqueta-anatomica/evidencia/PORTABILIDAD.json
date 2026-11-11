@@ -1,0 +1,231 @@
+{
+  "rows": [
+    {
+      "version": "102",
+      "mode": "original",
+      "name": "global",
+      "w": 760,
+      "h": 560,
+      "sha": "7bb069cacdd0a68ba93ee62f0d860121971e2ca6c91bf4e7cd9e701f15add9e6"
+    },
+    {
+      "version": "102",
+      "mode": "original",
+      "name": "sternal",
+      "w": 760,
+      "h": 560,
+      "sha": "1a4bcd72e9b7c7e236216660f0de20a0ea4da21714f39848b7f6f9e7760b0e0b"
+    },
+    {
+      "version": "102",
+      "mode": "original",
+      "name": "support",
+      "w": 760,
+      "h": 560,
+      "sha": "b7b1a313b86cda4a4ea32cea4a42c92b9c4641e277d11dfbb45bd88a8ad43cac"
+    },
+    {
+      "version": "102",
+      "mode": "original",
+      "name": "crus-vessel",
+      "w": 760,
+      "h": 560,
+      "sha": "cee4a9cde17150c62b56f93524f1826678c426b54f26c801a90f65ef571f0a29"
+    },
+    {
+      "version": "102",
+      "mode": "original",
+      "name": "fascia-detail",
+      "w": 760,
+      "h": 560,
+      "sha": "0bf14d8827a73dfe751d1cebe0b8376affa3514740004dc427998e1f14a77547"
+    },
+    {
+      "version": "102",
+      "mode": "original",
+      "name": "fascia-right",
+      "w": 760,
+      "h": 560,
+      "sha": "19c8f81cfe7b80e020b899729f906012f25368a27e420d53ac3c67aae506d01c"
+    },
+    {
+      "version": "102",
+      "mode": "portable",
+      "name": "global",
+      "w": 760,
+      "h": 560,
+      "sha": "7bb069cacdd0a68ba93ee62f0d860121971e2ca6c91bf4e7cd9e701f15add9e6"
+    },
+    {
+      "version": "102",
+      "mode": "portable",
+      "name": "sternal",
+      "w": 760,
+      "h": 560,
+      "sha": "1a4bcd72e9b7c7e236216660f0de20a0ea4da21714f39848b7f6f9e7760b0e0b"
+    },
+    {
+      "version": "102",
+      "mode": "portable",
+      "name": "support",
+      "w": 760,
+      "h": 560,
+      "sha": "b7b1a313b86cda4a4ea32cea4a42c92b9c4641e277d11dfbb45bd88a8ad43cac"
+    },
+    {
+      "version": "102",
+      "mode": "portable",
+      "name": "crus-vessel",
+      "w": 760,
+      "h": 560,
+      "sha": "cee4a9cde17150c62b56f93524f1826678c426b54f26c801a90f65ef571f0a29"
+    },
+    {
+      "version": "102",
+      "mode": "portable",
+      "name": "fascia-detail",
+      "w": 760,
+      "h": 560,
+      "sha": "0bf14d8827a73dfe751d1cebe0b8376affa3514740004dc427998e1f14a77547"
+    },
+    {
+      "version": "102",
+      "mode": "portable",
+      "name": "fascia-right",
+      "w": 760,
+      "h": 560,
+      "sha": "19c8f81cfe7b80e020b899729f906012f25368a27e420d53ac3c67aae506d01c"
+    },
+    {
+      "version": "103",
+      "mode": "original",
+      "name": "global",
+      "w": 760,
+      "h": 560,
+      "sha": "156038c3070253f7a26df877a6bb368fd14809722317f2f585cdb65320a6aa63"
+    },
+    {
+      "version": "103",
+      "mode": "original",
+      "name": "sternal",
+      "w": 760,
+      "h": 560,
+      "sha": "1a4bcd72e9b7c7e236216660f0de20a0ea4da21714f39848b7f6f9e7760b0e0b"
+    },
+    {
+      "version": "103",
+      "mode": "original",
+      "name": "support",
+      "w": 760,
+      "h": 560,
+      "sha": "4c90f439b99a0adc0793fb828f2861612b7187f7e3380a88a061fbc162adc8c6"
+    },
+    {
+      "version": "103",
+      "mode": "original",
+      "name": "crus-vessel",
+      "w": 760,
+      "h": 560,
+      "sha": "0b8337db75c08aaa72913108b6fd4c271aa75a77c8e6d97966f50b8a2f68536d"
+    },
+    {
+      "version": "103",
+      "mode": "original",
+      "name": "fascia-detail",
+      "w": 760,
+      "h": 560,
+      "sha": "0bf14d8827a73dfe751d1cebe0b8376affa3514740004dc427998e1f14a77547"
+    },
+    {
+      "version": "103",
+      "mode": "original",
+      "name": "fascia-right",
+      "w": 760,
+      "h": 560,
+      "sha": "86dffcd5541c00c80563f7a3d21fe22d703eedcadba824db058cb45e82cab770"
+    },
+    {
+      "version": "103",
+      "mode": "original",
+      "name": "right-ql-rib-near",
+      "w": 760,
+      "h": 560,
+      "sha": "dad6be09c80215ff8e13631f7889a33042d8ade8fd90ae7cdca0d861e7b059aa"
+    },
+    {
+      "version": "103",
+      "mode": "original",
+      "name": "right-insertion-close",
+      "w": 760,
+      "h": 560,
+      "sha": "ad0c0b1ca43fa3a3d0cc72508ea156a3e6a408b0be40d69d6d027a44f24c3b34"
+    },
+    {
+      "version": "103",
+      "mode": "portable",
+      "name": "global",
+      "w": 760,
+      "h": 560,
+      "sha": "156038c3070253f7a26df877a6bb368fd14809722317f2f585cdb65320a6aa63"
+    },
+    {
+      "version": "103",
+      "mode": "portable",
+      "name": "sternal",
+      "w": 760,
+      "h": 560,
+      "sha": "1a4bcd72e9b7c7e236216660f0de20a0ea4da21714f39848b7f6f9e7760b0e0b"
+    },
+    {
+      "version": "103",
+      "mode": "portable",
+      "name": "support",
+      "w": 760,
+      "h": 560,
+      "sha": "4c90f439b99a0adc0793fb828f2861612b7187f7e3380a88a061fbc162adc8c6"
+    },
+    {
+      "version": "103",
+      "mode": "portable",
+      "name": "crus-vessel",
+      "w": 760,
+      "h": 560,
+      "sha": "0b8337db75c08aaa72913108b6fd4c271aa75a77c8e6d97966f50b8a2f68536d"
+    },
+    {
+      "version": "103",
+      "mode": "portable",
+      "name": "fascia-detail",
+      "w": 760,
+      "h": 560,
+      "sha": "0bf14d8827a73dfe751d1cebe0b8376affa3514740004dc427998e1f14a77547"
+    },
+    {
+      "version": "103",
+      "mode": "portable",
+      "name": "fascia-right",
+      "w": 760,
+      "h": 560,
+      "sha": "86dffcd5541c00c80563f7a3d21fe22d703eedcadba824db058cb45e82cab770"
+    },
+    {
+      "version": "103",
+      "mode": "portable",
+      "name": "right-ql-rib-near",
+      "w": 760,
+      "h": 560,
+      "sha": "dad6be09c80215ff8e13631f7889a33042d8ade8fd90ae7cdca0d861e7b059aa"
+    },
+    {
+      "version": "103",
+      "mode": "portable",
+      "name": "right-insertion-close",
+      "w": 760,
+      "h": 560,
+      "sha": "ad0c0b1ca43fa3a3d0cc72508ea156a3e6a408b0be40d69d6d027a44f24c3b34"
+    }
+  ],
+  "errors": [],
+  "scope": "original single-file viewer vs portable viewer, identical camera/layers, exact framebuffer sha256",
+  "passed": true
+}

@@ -1,0 +1,197 @@
+{
+  "rows": [
+    {
+      "view": "global",
+      "kind": "color",
+      "mode": "m",
+      "changedPixels": 16,
+      "maxChannelDifference": 18,
+      "meanAbsoluteChannelDifference": 4.816729323308271e-05
+    },
+    {
+      "view": "global",
+      "kind": "color",
+      "mode": "no-cert",
+      "changedPixels": 16,
+      "maxChannelDifference": 18,
+      "meanAbsoluteChannelDifference": 4.816729323308271e-05
+    },
+    {
+      "view": "global",
+      "kind": "color",
+      "mode": "no-ray",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "global",
+      "kind": "color",
+      "mode": "neither",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "global",
+      "kind": "pick",
+      "mode": "m",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "global",
+      "kind": "pick",
+      "mode": "no-cert",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "global",
+      "kind": "pick",
+      "mode": "no-ray",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "global",
+      "kind": "pick",
+      "mode": "neither",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "fascia-right",
+      "kind": "color",
+      "mode": "m",
+      "changedPixels": 25,
+      "maxChannelDifference": 9,
+      "meanAbsoluteChannelDifference": 7.695018796992481e-05
+    },
+    {
+      "view": "fascia-right",
+      "kind": "color",
+      "mode": "no-cert",
+      "changedPixels": 25,
+      "maxChannelDifference": 9,
+      "meanAbsoluteChannelDifference": 7.695018796992481e-05
+    },
+    {
+      "view": "fascia-right",
+      "kind": "color",
+      "mode": "no-ray",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "fascia-right",
+      "kind": "color",
+      "mode": "neither",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "fascia-right",
+      "kind": "pick",
+      "mode": "m",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "fascia-right",
+      "kind": "pick",
+      "mode": "no-cert",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "fascia-right",
+      "kind": "pick",
+      "mode": "no-ray",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "fascia-right",
+      "kind": "pick",
+      "mode": "neither",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "right-ql-rib-near",
+      "kind": "color",
+      "mode": "m",
+      "changedPixels": 4,
+      "maxChannelDifference": 25,
+      "meanAbsoluteChannelDifference": 5.639097744360902e-05
+    },
+    {
+      "view": "right-ql-rib-near",
+      "kind": "color",
+      "mode": "no-cert",
+      "changedPixels": 4,
+      "maxChannelDifference": 25,
+      "meanAbsoluteChannelDifference": 5.639097744360902e-05
+    },
+    {
+      "view": "right-ql-rib-near",
+      "kind": "color",
+      "mode": "no-ray",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "right-ql-rib-near",
+      "kind": "color",
+      "mode": "neither",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "right-ql-rib-near",
+      "kind": "pick",
+      "mode": "m",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "right-ql-rib-near",
+      "kind": "pick",
+      "mode": "no-cert",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "right-ql-rib-near",
+      "kind": "pick",
+      "mode": "no-ray",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    },
+    {
+      "view": "right-ql-rib-near",
+      "kind": "pick",
+      "mode": "neither",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "meanAbsoluteChannelDifference": 0.0
+    }
+  ],
+  "scope": "same cameras in two viewer instances; 8-bit RGBA exact comparisons, not benchmark"
+}

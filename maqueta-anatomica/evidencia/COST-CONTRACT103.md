@@ -1,0 +1,5 @@
+# Coste de maqueta103: cámaras registradas antes del banco
+
+La comparación primaria mantiene exactamente las seis cámaras de 102, su secuencia, la resolución 760×560, tres renders de calentamiento por vía/vista, siete pares alternados y tres renders por intervalo. El tiempo es query Metal GPU envolvente, sin captura ni readback en intervalo. En las seis se mantienen las puertas 102: suma de medianas <=1, y cada mediana y p95 nearest-rank <=1; con siete intervalos, p95 es el máximo. Datos originales de 102 y de este banco se conservan; no hay repetición selectiva.
+
+Además, se medirán dos cámaras predefinidas en `views103.json`: cuadrado lumbar/costilla derechos y el acercamiento a la inserción. Para poder afirmar no regresión en las vistas añadidas, también deben bajar sus medianas y p95 con el mismo procedimiento. Se informan como cobertura adicional, sin cambiar ni sustituir la comparación primaria. Si falla alguna cámara no se presenta el costo como resuelto para ese alcance. No extrapolar estos resultados estáticos a FPS, producto, dispositivos distintos ni anatomía clínica.

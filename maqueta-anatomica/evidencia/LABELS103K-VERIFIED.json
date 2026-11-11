@@ -1,0 +1,327 @@
+{
+  "rows": [
+    {
+      "walls": "no-walls",
+      "groups": [
+        {
+          "name": "qlField",
+          "points": 5700,
+          "physicalChanged": 811,
+          "pairs": [
+            {
+              "before": 88,
+              "after": 1,
+              "count": 355
+            },
+            {
+              "before": 2,
+              "after": 88,
+              "count": 278
+            },
+            {
+              "before": 1,
+              "after": 88,
+              "count": 159
+            },
+            {
+              "before": 47,
+              "after": 1,
+              "count": 10
+            },
+            {
+              "before": 1,
+              "after": 47,
+              "count": 5
+            },
+            {
+              "before": 2,
+              "after": 47,
+              "count": 4
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 811,
+          "membraneChanged": 811
+        },
+        {
+          "name": "ribField",
+          "points": 5700,
+          "physicalChanged": 1040,
+          "pairs": [
+            {
+              "before": 47,
+              "after": 1,
+              "count": 930
+            },
+            {
+              "before": 1,
+              "after": 47,
+              "count": 87
+            },
+            {
+              "before": 2,
+              "after": 88,
+              "count": 9
+            },
+            {
+              "before": 88,
+              "after": 1,
+              "count": 7
+            },
+            {
+              "before": 1,
+              "after": 88,
+              "count": 4
+            },
+            {
+              "before": 2,
+              "after": 47,
+              "count": 3
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 1040,
+          "membraneChanged": 1040
+        },
+        {
+          "name": "102Selection",
+          "points": 19000,
+          "physicalChanged": 28,
+          "pairs": [
+            {
+              "before": 47,
+              "after": 1,
+              "count": 18
+            },
+            {
+              "before": 88,
+              "after": 1,
+              "count": 7
+            },
+            {
+              "before": 1,
+              "after": 47,
+              "count": 1
+            },
+            {
+              "before": 1,
+              "after": 88,
+              "count": 1
+            },
+            {
+              "before": 2,
+              "after": 88,
+              "count": 1
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 28,
+          "membraneChanged": 28
+        },
+        {
+          "name": "fasciaReserved",
+          "points": 4944,
+          "physicalChanged": 36,
+          "pairs": [
+            {
+              "before": 2,
+              "after": 165,
+              "count": 35
+            },
+            {
+              "before": 1,
+              "after": 165,
+              "count": 1
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 36,
+          "membraneChanged": 36
+        },
+        {
+          "name": "global",
+          "points": 5000,
+          "physicalChanged": 1,
+          "pairs": [
+            {
+              "before": 2,
+              "after": 88,
+              "count": 1
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 1,
+          "membraneChanged": 1
+        }
+      ]
+    },
+    {
+      "walls": "walls",
+      "groups": [
+        {
+          "name": "qlField",
+          "points": 5700,
+          "physicalChanged": 811,
+          "pairs": [
+            {
+              "before": 88,
+              "after": 1,
+              "count": 355
+            },
+            {
+              "before": 2,
+              "after": 88,
+              "count": 278
+            },
+            {
+              "before": 1,
+              "after": 88,
+              "count": 159
+            },
+            {
+              "before": 47,
+              "after": 1,
+              "count": 10
+            },
+            {
+              "before": 1,
+              "after": 47,
+              "count": 5
+            },
+            {
+              "before": 2,
+              "after": 47,
+              "count": 4
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 971,
+          "membraneChanged": 971
+        },
+        {
+          "name": "ribField",
+          "points": 5700,
+          "physicalChanged": 1040,
+          "pairs": [
+            {
+              "before": 47,
+              "after": 1,
+              "count": 930
+            },
+            {
+              "before": 1,
+              "after": 47,
+              "count": 87
+            },
+            {
+              "before": 2,
+              "after": 88,
+              "count": 9
+            },
+            {
+              "before": 88,
+              "after": 1,
+              "count": 7
+            },
+            {
+              "before": 1,
+              "after": 88,
+              "count": 4
+            },
+            {
+              "before": 2,
+              "after": 47,
+              "count": 3
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 1049,
+          "membraneChanged": 1049
+        },
+        {
+          "name": "102Selection",
+          "points": 19000,
+          "physicalChanged": 28,
+          "pairs": [
+            {
+              "before": 47,
+              "after": 1,
+              "count": 18
+            },
+            {
+              "before": 88,
+              "after": 1,
+              "count": 7
+            },
+            {
+              "before": 1,
+              "after": 47,
+              "count": 1
+            },
+            {
+              "before": 1,
+              "after": 88,
+              "count": 1
+            },
+            {
+              "before": 2,
+              "after": 88,
+              "count": 1
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 38,
+          "membraneChanged": 38
+        },
+        {
+          "name": "fasciaReserved",
+          "points": 4944,
+          "physicalChanged": 36,
+          "pairs": [
+            {
+              "before": 2,
+              "after": 165,
+              "count": 35
+            },
+            {
+              "before": 1,
+              "after": 165,
+              "count": 1
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 36,
+          "membraneChanged": 36
+        },
+        {
+          "name": "global",
+          "points": 5000,
+          "physicalChanged": 1,
+          "pairs": [
+            {
+              "before": 2,
+              "after": 88,
+              "count": 1
+            }
+          ],
+          "protectedPairs": [],
+          "protectedCount": 0,
+          "semanticChanged": 3,
+          "membraneChanged": 3
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "contract": "QUERY-CONTRACT103.md",
+  "scope": "sampled physical label differences; does not prove all points"
+}

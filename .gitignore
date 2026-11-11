@@ -30,3 +30,7 @@ e2e-results.json
 
 # Caché de herramientas Python offline
 __pycache__/
+
+# Archivo reconstruible de los fragmentos de la maqueta experimental
+maqueta-anatomica/fuentes/anatomical-maquette-102/FIELDS98.npz
+maqueta-anatomica/fuentes/anatomical-maquette-102/VIEWER-DATA102-delivery.json

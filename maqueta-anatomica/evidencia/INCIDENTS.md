@@ -1,0 +1,10 @@
+# Incidencias conservadas
+
+- Construcciones iniciales redujeron excesivamente el volumen efectivo pese a conservar signos en nodos; `VOLUME103-VERIFIED.json` y `VOLUME103F-VERIFIED.json` se rechazan. La malla F se usó después como calibración, no como reserva.
+- G expandió la costilla sobre el arco en 164 muestras; H corrigió esa expansión pero su lámina nueva tuvo 60 muestras dentro de la costilla compuesta. Ambos se conservan.
+- J y J2 causaron cruces de mallas y contactos nuevos de fascia, respectivamente. J3 eliminó el cruce de la lámina pero cambió 157 muestras de arco a costilla y cuatro a otra fascia, incumpliendo el contrato de identidad. `LABELS103J3-VERIFIED.json` conserva el fallo.
+- El verificador heredado `FASCIA-FIELD103J3-VERIFIED.json` devolvió fallo porque esperaba que la propia muestra J3 activase un negativo que ya no ocurría. Una auditoría separada conserva ese fallo y usa el caso H registrado como control negativo conocido; no es control independiente.
+- La primera auditoría del certificado informó 512 muestras para un grupo que sólo tenía 72 y declaró un negativo sin ejecutarlo. Se conserva `CERTIFICATE103M-FIRST.json`; el informe corregido registra cantidades reales y ejecuta explícitamente el mutante, sin cambiar el atlas.
+- El verificador heredado de máscaras originales mostró ceros para el arco con arrays vacíos. Se conserva `ORIGINAL-SUBSET103K.json` y `ORIGINAL-SUBSET103K-AUDIT.json` declara explícitamente cero muestras de arco en esta corrida; el arco no se modificó respecto a 102.
+- Un lanzamiento de build relativo falló antes de importar porque el wrapper cambia el directorio de trabajo; se usó la ruta absoluta. Una preparación de test supuso una forma de array expandida, pero el array ya estaba aplanado; se corrigió la comprobación antes de capturar. También hubo búsquedas exploratorias de rutas inexistentes. Ninguno alteró datos medidos.
+- M conservó las etiquetas muestreadas pero siete framebuffers cambiaron. `DIAGNOSIS103M.json` separa el certificado y el descarte por rayo; la causa numérica exacta no está demostrada. M se descartó antes del banco.

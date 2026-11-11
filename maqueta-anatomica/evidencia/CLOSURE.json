@@ -1,0 +1,17 @@
+{
+  "iteration": 103,
+  "status": "partial_experimental_gpu_constraint_failed",
+  "base": "../anatomical-maquette-102/index-final102e.html",
+  "viewer": "index-final103l.html",
+  "images": ["images-comparison103l/fascia-detalle-comparacion.png", "images-comparison103l/contexto-renal-comparacion.png"],
+  "geometry": {"qlAndRightRib": "reconstructed from prior derived model; facets remain", "newFasciaTriangles": 240, "previousFasciaTriangles": 116, "sharedArcEdges": 91, "originalArcUnchanged": true, "directCostalInsertion": "not completed or observed", "modelOnly": true},
+  "checks": {"protectedLabelPointsPerWallState": 40344, "cutsPointsPerVersion": 39653, "reservedFasciaPoints": 12816, "newFasciaVsRibThicknessSamples": 8640, "newFasciaInsideRibSamples": 0, "availableOriginalMasks": 11, "completeSourceUnavailable": true, "qlVolumeRatioSampled": 0.9792245600105862, "ribVolumeRatioSampled": 0.979746835443038, "expertReview": false},
+  "gpu": {"renderer": "Apple M4 ANGLE Metal", "resolution": [760, 560], "views": 8, "pairsPerView": 7, "framesPerInterval": 3, "primarySixAggregateRatio": 1.0954030417354006, "allEightAggregateRatio": 1.098318576779545, "primaryPassed": false, "allEightPassed": false, "scope": "static experimental viewer, not product or FPS"},
+  "rejectedAlternatives": ["103K: +18.50% aggregate", "103J3: changed protected arc labels", "103M: changed pixels; not timed", "103M2: +10.53% aggregate"],
+  "newGlobalScore": null,
+  "productChanges": false,
+  "commit": null,
+  "pullRequest": null,
+  "scheduledTasksCreated": false,
+  "next": "NEXT-DECISION.md"
+}

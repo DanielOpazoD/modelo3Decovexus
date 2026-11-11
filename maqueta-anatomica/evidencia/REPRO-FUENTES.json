@@ -1,0 +1,15 @@
+{
+  "arraysExactlyEqual": {
+    "vertices": true,
+    "arcFaces": true,
+    "fasciaFaces": true,
+    "oldFasciaFaces": true,
+    "newFasciaFaces": true,
+    "anchors": true
+  },
+  "construction": true,
+  "topology": true,
+  "reserved": true,
+  "scope": "replayed from included derived fields and reconstructed 102 data; no original CT or independent anatomy",
+  "passed": true
+}

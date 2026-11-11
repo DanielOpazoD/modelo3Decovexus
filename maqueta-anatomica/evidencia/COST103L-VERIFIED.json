@@ -1,0 +1,95 @@
+{
+  "rows": [
+    {
+      "view": "global",
+      "beforeMedianMs": 19.573013666666668,
+      "afterMedianMs": 21.888111,
+      "medianRatio": 1.1182800652347165,
+      "beforeP95NearestRankMs": 23.025861,
+      "afterP95NearestRankMs": 23.514430333333333,
+      "p95Ratio": 1.021218287269837,
+      "passed": false
+    },
+    {
+      "view": "sternal",
+      "beforeMedianMs": 30.85781933333333,
+      "afterMedianMs": 34.307291666666664,
+      "medianRatio": 1.111786004580276,
+      "beforeP95NearestRankMs": 33.724638666666664,
+      "afterP95NearestRankMs": 36.27429166666667,
+      "p95Ratio": 1.0756020850275285,
+      "passed": false
+    },
+    {
+      "view": "support",
+      "beforeMedianMs": 37.13433333333333,
+      "afterMedianMs": 40.58349966666667,
+      "medianRatio": 1.0928834860820626,
+      "beforeP95NearestRankMs": 38.385486,
+      "afterP95NearestRankMs": 41.826541666666664,
+      "p95Ratio": 1.0896447075508349,
+      "passed": false
+    },
+    {
+      "view": "crus-vessel",
+      "beforeMedianMs": 32.02574966666667,
+      "afterMedianMs": 35.60237466666667,
+      "medianRatio": 1.1116796651827532,
+      "beforeP95NearestRankMs": 34.720083,
+      "afterP95NearestRankMs": 36.604374666666665,
+      "p95Ratio": 1.0542709436111273,
+      "passed": false
+    },
+    {
+      "view": "fascia-detail",
+      "beforeMedianMs": 42.269652666666666,
+      "afterMedianMs": 44.47154166666667,
+      "medianRatio": 1.0520914855242325,
+      "beforeP95NearestRankMs": 42.552416666666666,
+      "afterP95NearestRankMs": 46.253680333333335,
+      "p95Ratio": 1.0869812799508058,
+      "passed": false
+    },
+    {
+      "view": "fascia-right",
+      "beforeMedianMs": 49.02281933333333,
+      "afterMedianMs": 54.149486,
+      "medianRatio": 1.10457714869085,
+      "beforeP95NearestRankMs": 50.39458333333334,
+      "afterP95NearestRankMs": 58.17506933333333,
+      "p95Ratio": 1.1543913152041803,
+      "passed": false
+    },
+    {
+      "view": "right-ql-rib-near",
+      "beforeMedianMs": 30.909249666666668,
+      "afterMedianMs": 32.853611,
+      "medianRatio": 1.0629054847432995,
+      "beforeP95NearestRankMs": 32.288208,
+      "afterP95NearestRankMs": 34.10624966666666,
+      "p95Ratio": 1.0563066760058863,
+      "passed": false
+    },
+    {
+      "view": "right-insertion-close",
+      "beforeMedianMs": 46.337041666666664,
+      "afterMedianMs": 52.602263666666666,
+      "medianRatio": 1.1352097970576096,
+      "beforeP95NearestRankMs": 48.515875,
+      "afterP95NearestRankMs": 55.311597,
+      "p95Ratio": 1.1400721310292765,
+      "passed": false
+    }
+  ],
+  "primarySixAggregateRatio": 1.0954030417354006,
+  "allEightAggregateRatio": 1.098318576779545,
+  "primaryPassed": false,
+  "allEightPassed": false,
+  "intervals": 112,
+  "framesMeasured": 336,
+  "warmupFrames": 48,
+  "p95": "nearest-rank; with 7 observations, maximum",
+  "scope": "static experimental maquette, Metal whole-render GPU queries, 760x560; not product FPS or clinical validity",
+  "finalViewerSha256": "b198a3e6723bd7bd4340b0b3c93885815490609639cb698c5b4e794483d43c07",
+  "finalIndexSha256": "11ab54a5aca245a1cec4b8bf67fe0b125c02bb446846a899eea7098ec4386631"
+}

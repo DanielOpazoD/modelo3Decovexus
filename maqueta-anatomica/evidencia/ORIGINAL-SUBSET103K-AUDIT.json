@@ -1,0 +1,84 @@
+{
+  "groups": [
+    {
+      "group": "available_organs",
+      "files": [
+        {
+          "name": "aorta",
+          "sha256": "ea6b1a111d3173bd3f50d8db2cb53e5ca333ddf7be029a695339eb16bac668e9"
+        },
+        {
+          "name": "inferior_vena_cava",
+          "sha256": "2cd0fa06d036f01f1481c6ff9dbf1456375a452472d66a6ff7ad5adb159ca14b"
+        },
+        {
+          "name": "esophagus",
+          "sha256": "112ba8a39ad213c5a4cdc51d02689707d8cf33cee7e7224d3b8c6468d26f79ee"
+        },
+        {
+          "name": "stomach",
+          "sha256": "aae7e04e3fa785dbde2aa04534f5cc65dbe8d3553ce07567036ee50d2c00780d"
+        },
+        {
+          "name": "pancreas",
+          "sha256": "37b6580de54f2fb9a11b8013fce39239c723f060295ea29ee21612e831487033"
+        },
+        {
+          "name": "portal_vein_and_splenic_vein",
+          "sha256": "f1ea0abdb068d6726059b02262981663a4bee2f68296aa1035db5fd46063db8c"
+        },
+        {
+          "name": "duodenum",
+          "sha256": "2056a02419a2df22b2d93109a08919caf0f419154013452a4c9a5dfee190815c"
+        },
+        {
+          "name": "lung_lower_lobe_left",
+          "sha256": "f58c971a64526b5c764975a4796efb6334a407da188d90e035c73d3fe5483ed6"
+        },
+        {
+          "name": "lung_lower_lobe_right",
+          "sha256": "d1928da02bdd9038a262a24038e76c0e0f0e9b50c25e4143052e7e58cee9038d"
+        }
+      ],
+      "fasciaSamples": 12816,
+      "fasciaInside": 0,
+      "fasciaMinimumFieldMm": 28.564198898288954,
+      "negativeInteriorDetected": true,
+      "arcSamplesInThisRun": 0,
+      "arcUnchangedFrom102": true
+    },
+    {
+      "group": "right_paravertebral",
+      "files": [
+        {
+          "name": "autochthon_right",
+          "sha256": "4aff88000c0fc00b0ee46ddd62dae4b43963c45d8b8c8b4b84d36cf2ff83493e"
+        }
+      ],
+      "fasciaSamples": 12816,
+      "fasciaInside": 0,
+      "fasciaMinimumFieldMm": 10.2548385705803,
+      "negativeInteriorDetected": true,
+      "arcSamplesInThisRun": 0,
+      "arcUnchangedFrom102": true
+    },
+    {
+      "group": "left_rib_12",
+      "files": [
+        {
+          "name": "rib_left_12",
+          "sha256": "4917d9680eb95828ab907a58da93cd94068f8866544d4109d0636aca1a42ecc3"
+        }
+      ],
+      "fasciaSamples": 12816,
+      "fasciaInside": 0,
+      "fasciaMinimumFieldMm": 75.28834060841902,
+      "negativeInteriorDetected": true,
+      "arcSamplesInThisRun": 0,
+      "arcUnchangedFrom102": true
+    }
+  ],
+  "passed": true,
+  "correction": "Original inherited report printed zero arc counts on empty arrays. They are not observations; this report explicitly records zero arc samples.",
+  "scope": "11 accessible masks at 1.5mm; no original kidney, liver, right rib XII, psoas or L1; not clinical validation"
+}

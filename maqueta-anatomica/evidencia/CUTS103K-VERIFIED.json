@@ -1,0 +1,190 @@
+{
+  "pointsPerVersion": 39653,
+  "plans": [
+    {
+      "name": "coronal-y-53",
+      "points": 16036,
+      "physicalChanged": 56,
+      "semanticChanged": 63,
+      "protectedPairs": [],
+      "pairs": [
+        {
+          "before": 2,
+          "after": 88,
+          "count": 18
+        },
+        {
+          "before": 1,
+          "after": 88,
+          "count": 8
+        },
+        {
+          "before": 88,
+          "after": 1,
+          "count": 28
+        },
+        {
+          "before": 47,
+          "after": 1,
+          "count": 2
+        }
+      ]
+    },
+    {
+      "name": "axial-z-108",
+      "points": 12871,
+      "physicalChanged": 64,
+      "semanticChanged": 74,
+      "protectedPairs": [],
+      "pairs": [
+        {
+          "before": 1,
+          "after": 88,
+          "count": 5
+        },
+        {
+          "before": 2,
+          "after": 88,
+          "count": 15
+        },
+        {
+          "before": 88,
+          "after": 1,
+          "count": 14
+        },
+        {
+          "before": 47,
+          "after": 1,
+          "count": 13
+        },
+        {
+          "before": 2,
+          "after": 47,
+          "count": 1
+        },
+        {
+          "before": 1,
+          "after": 47,
+          "count": 16
+        }
+      ]
+    },
+    {
+      "name": "sagital-izquierdo-x67",
+      "points": 3036,
+      "physicalChanged": 0,
+      "semanticChanged": 0,
+      "protectedPairs": [],
+      "pairs": []
+    },
+    {
+      "name": "sagital-derecho-x-60",
+      "points": 3036,
+      "physicalChanged": 28,
+      "semanticChanged": 31,
+      "protectedPairs": [],
+      "pairs": [
+        {
+          "before": 1,
+          "after": 47,
+          "count": 11
+        },
+        {
+          "before": 47,
+          "after": 1,
+          "count": 9
+        },
+        {
+          "before": 88,
+          "after": 1,
+          "count": 2
+        },
+        {
+          "before": 2,
+          "after": 88,
+          "count": 3
+        },
+        {
+          "before": 1,
+          "after": 88,
+          "count": 3
+        }
+      ]
+    },
+    {
+      "name": "arco-derecho-y-57_5",
+      "points": 2583,
+      "physicalChanged": 68,
+      "semanticChanged": 75,
+      "protectedPairs": [],
+      "pairs": [
+        {
+          "before": 2,
+          "after": 88,
+          "count": 22
+        },
+        {
+          "before": 1,
+          "after": 88,
+          "count": 7
+        },
+        {
+          "before": 88,
+          "after": 1,
+          "count": 26
+        },
+        {
+          "before": 47,
+          "after": 1,
+          "count": 7
+        },
+        {
+          "before": 1,
+          "after": 47,
+          "count": 6
+        }
+      ]
+    },
+    {
+      "name": "sagital-ql-derecho-x-37",
+      "points": 2091,
+      "physicalChanged": 41,
+      "semanticChanged": 56,
+      "protectedPairs": [],
+      "pairs": [
+        {
+          "before": 47,
+          "after": 1,
+          "count": 12
+        },
+        {
+          "before": 1,
+          "after": 47,
+          "count": 6
+        },
+        {
+          "before": 2,
+          "after": 47,
+          "count": 2
+        },
+        {
+          "before": 88,
+          "after": 1,
+          "count": 1
+        },
+        {
+          "before": 2,
+          "after": 88,
+          "count": 13
+        },
+        {
+          "before": 1,
+          "after": 88,
+          "count": 7
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "scope": "six 1mm same-coordinate model cuts, no original CT or external reference"
+}

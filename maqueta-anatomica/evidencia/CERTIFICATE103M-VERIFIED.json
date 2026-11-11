@@ -1,0 +1,43 @@
+{
+  "rows": [
+    {
+      "field": "ql",
+      "cells": 82620,
+      "positive": 72813,
+      "negative": 5057,
+      "mixed": 4750,
+      "certifiedContradictions": 0,
+      "samplesPerSign": {
+        "-1": 512,
+        "0": 512,
+        "1": 512
+      },
+      "oppositeSignMutantDetected": 1
+    },
+    {
+      "field": "rib12",
+      "cells": 31680,
+      "positive": 30812,
+      "negative": 72,
+      "mixed": 796,
+      "certifiedContradictions": 0,
+      "samplesPerSign": {
+        "-1": 72,
+        "0": 512,
+        "1": 512
+      },
+      "oppositeSignMutantDetected": 1
+    }
+  ],
+  "thresholdMm": 0.0001,
+  "outsideReservedChanged": 0,
+  "RGChannelsUnchanged": true,
+  "contourSlabUnchanged": true,
+  "otherHepaticXUnchanged": true,
+  "atlasBytesUnchanged": 209801536,
+  "mutantOppositeSignCaught": true,
+  "sourceAtlasSha256": "47b4009a9997cab417990c48ac5a7616d11c86881204c33a0cd314f5b1911a95",
+  "certificateAtlasSha256": "b3971b3422bff74716202075a1aff35fea42c7f76cfad93760a306d41749086e",
+  "passed": true,
+  "scope": "all field cells, arithmetic sign certificate; not anatomical correctness"
+}

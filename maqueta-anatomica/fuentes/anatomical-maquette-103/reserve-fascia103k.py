@@ -1,0 +1,15 @@
+from pathlib import Path
+import sys,json,numpy as np,base64,gzip
+from scipy.ndimage import map_coordinates
+R=Path(__file__).resolve().parent;A=R.parent/'anatomical-maquette-102';sys.path.insert(0,str(A));from model83 import Model
+p=np.load(R/'PART103K-PILOT.npz');t=p['vertices'][p['fasciaFaces']].astype(float);norm=np.cross(t[:,1]-t[:,0],t[:,2]-t[:,0]);nlen=np.linalg.norm(norm,axis=1);assert (nlen>1e-9).all();norm/=nlen[:,None];w=np.random.default_rng(np.random.SeedSequence([10316,165])).dirichlet([1,1,1],size=(len(t),12));mid=np.einsum('tvc,tsv->tsc',t,w);q=np.concatenate([(mid+norm[:,None,:]*x).reshape(-1,3) for x in [-.375,0,.375]])
+F=np.load(A/'FIELDS98.npz');B=np.load(R/'FIELDS103G.npz');g=np.load(A/'FASCIA101-ONLY-GRID.npz');nt=np.load(A/'NETWORK-GRID.npz');m=object.__new__(Model);m.T=g['triangles'];m.bo=g['origin'];m.bd=g['dims'];m.bsp=g['spans'];m.bi=g['indices'];m.S=nt['segments'];m.spans=nt['spans'];m.indices=nt['indices'];m.go=nt['origin'];m.gd=nt['dims'];checks={};anchor=p['vertices'][:861].reshape(-1,7,3)[-1].mean(0);near=np.linalg.norm(q-anchor,axis=1)<3
+for k in ['organs','bone','psoas-model-right','QL-model-right']:
+ x=map_coordinates(F[k],((q-F['origin'])/1.5).T,order=1,mode='constant',cval=-100,prefilter=False);bad=((x<0)&~near)|((x<-.5)&near) if k=='bone' else x<0;checks[k]={'bad':int(bad.sum()),'minimum':float(x.min())}
+x=map_coordinates(B['qlNew'],((q-B['qlOrigin'])/1.5)[:,::-1].T,order=1,mode='constant',cval=100,prefilter=False);D=json.loads((A/'VIEWER-DATA102-delivery.json').read_text());desc=D['rDescriptors'][0];origin=np.array(desc['origin']);dims=np.array(desc['shape']);sx,sy,sz=D['rShape'];atlas=np.frombuffer(gzip.decompress(base64.b64decode(D['renalFields'])),'<f4').reshape(sz,sy,sx,4);renal=atlas[D['outerZ']:D['outerZ']+dims[2],:dims[1],:dims[0],0];pos=(q-origin)/.75;inside=((np.floor(pos)>=0)&(np.floor(pos)<dims-1)).all(1);ko=np.full(len(q),100.);ko[inside]=map_coordinates(renal,pos[inside,::-1].T,order=1,mode='constant',cval=100,prefilter=False);x=np.maximum(x,.005-ko);checks['QL-new']={'bad':int((x<0).sum()),'minimum':float(x.min())};x=m.bridgeDistances(q);checks['renalFascia']={'bad':int((x<=.375).sum()),'minimum':float(x.min())if np.isfinite(x).any()else None};x=m.distances(q)
+for j,k in enumerate(['artery','vein']):checks[k]={'bad':int((x[:,j]<=.12).sum()),'minimum':float(x[:,j].min())if np.isfinite(x[:,j]).any()else None}
+# A 2 mm displacement into the renal fascia must be noticed separately in the grid-level negative.
+negativeDetected=False
+for y in [0.25,0.5,1.,1.5,2.]:
+ d=m.bridgeDistances(q+np.array([0.,y,0.]));negativeDetected|=bool((d<=.375).any())
+np.savez_compressed(R/'RESERVED-SAMPLES10316.npz',samples=q);out={'seed':10316,'faces':len(t),'samples':len(q),'checks':checks,'negativeFasciaDetected':negativeDetected,'passed':all(z['bad']==0 for z in checks.values())and negativeDetected,'scope':'reserved surface samples and estimated fields; negative shifts are separate, no independent anatomy'};(R/'RESERVED-FASCIA10316.json').write_text(json.dumps(out,indent=2)+'\n');print(json.dumps(out,indent=2))

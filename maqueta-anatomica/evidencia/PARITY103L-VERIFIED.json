@@ -1,0 +1,21 @@
+{
+  "rows": [
+    {
+      "walls": "no-walls",
+      "points": 65568,
+      "physicalDifferences": 0,
+      "membraneDifferences": 0,
+      "semanticDifferences": 0
+    },
+    {
+      "walls": "walls",
+      "points": 65568,
+      "physicalDifferences": 0,
+      "membraneDifferences": 0,
+      "semanticDifferences": 0
+    }
+  ],
+  "mutantTooSmallBoxDifferences": 1880,
+  "passed": true,
+  "scope": "same sample points, exact code parity; not independent anatomy"
+}

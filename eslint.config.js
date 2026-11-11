@@ -3,7 +3,9 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'public/**', 'coverage/**', 'test-results/**', 'playwright-report/**'] },
+  {
+    ignores: ['dist/**', 'node_modules/**', 'public/**', 'coverage/**', 'test-results/**', 'playwright-report/**', 'maqueta-anatomica/**'],
+  },
   js.configs.recommended,
   // Reglas con información de tipos (promesas sin esperar, `await` de no-promesas, etc.)
   ...tseslint.configs.recommendedTypeChecked,

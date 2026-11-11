@@ -1,0 +1,20 @@
+{
+  "sha256": "6958f88fcb709cd84e2270e7480d238338921f1e2927b9e0e1738221bb1e5c08",
+  "parts": [
+    {
+      "path": "FIELDS98.npz.part00",
+      "bytes": 24000000,
+      "sha256": "1dc87518f3d86765bbb517c265c089556bdf710a8838a26f74955204775f42f2"
+    },
+    {
+      "path": "FIELDS98.npz.part01",
+      "bytes": 24000000,
+      "sha256": "4d13ac766f55a6e1e9de5a905a7680c1cbf51733f3fe1aa6d978633c2b664e0d"
+    },
+    {
+      "path": "FIELDS98.npz.part02",
+      "bytes": 19859212,
+      "sha256": "f11ba9c3535958a90ccc00b2dbb0db79e58d5aa5e5b1fc40cd362ef09cef83d4"
+    }
+  ]
+}
