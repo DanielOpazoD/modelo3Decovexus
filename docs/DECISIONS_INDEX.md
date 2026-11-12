@@ -348,3 +348,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [342](DECISIONS.md#L11559) | Mover la sonda no cuesta dos tercios de los cuadros | vigente |
 | [343](DECISIONS.md#L11571) | La grasa de s0028 llega a todo el abdomen superior | vigente |
 | [344](DECISIONS.md#L11582) | La prueba de pared de s0028 lleva una cota por backend | vigente |
+| [345](DECISIONS.md#L11595) | Los troncos de la aorta y la porta de s0028 salen de sus máscaras | vigente |

@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: la aorta, el tronco portal, sus dos ramas y la esplénica salen de las máscaras de la propia persona; la bifurcación portal aparece en el hilio, como en su TAC (345).
+
 - Pruebas: la paridad de la pared de s0028 lleva una cota por backend; en Metal fallaba por el filtro del hardware, no por la regla (344).
 
 - Anatomía s0028: la grasa del TAC llega a todo el abdomen superior; el fondo oscuro alrededor del riñón pasa a ser tejido ecogénico (343).

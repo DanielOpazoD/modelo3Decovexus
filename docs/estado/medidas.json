@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-12",
- "main": "850c995",
+ "main": "000c8eb",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 48929
+   "actual": 51058
   },
   {
    "what": "`cpu.js`",
@@ -313,7 +313,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 69645
+   "actual": 69912
   },
   {
    "what": "`thoracic-atlas.gzip.bin`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1039467
+   "actual": 1039734
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1099214
+   "actual": 1101610
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,7 +624,7 @@
  ],
  "s0028DescriptorSha256": "fd1b1d17d634db116f9eb3b27e3c235e47b172c7a30713e7fc502aa3063a9115",
  "tests": {
-  "vitestFiles": 331,
+  "vitestFiles": 333,
   "slowFiles": 34,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,

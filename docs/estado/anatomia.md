@@ -1,6 +1,6 @@
 # Estado vigente: anatomía
 
-Actualizado: 2026-11-12 sobre main `850c995`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
+Actualizado: 2026-11-12 sobre main `000c8eb`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
@@ -38,9 +38,10 @@ cubre con legacy. Tras P8, el corte sustituye el default por s0028 cuando pase l
 | P3 r1–r2 | sólidos y compartimento posterior en CPU y Worker                         | 321 (en revisión) | fusionada      |
 | P3 r3    | sólidos y posterior en la GPU                                             | 321 (en revisión) | fusionada      |
 | P3 r4    | interior renal desde el propio TAC, offline (se instala en r5)            | 321 (en revisión) | fusionada      |
-| P3 r5    | interior renal instalado en CPU, Worker y GPU, con el seno del hilio      | 341               | en PR          |
-| —        | grasa compatible D en todo el abdomen superior, a 3 mm                    | 343               | en PR          |
-| P4–P6    | digestivo, gas y capas; redes vasculares del mismo hígado                 | —                 | pendientes     |
+| P3 r5    | interior renal instalado en CPU, Worker y GPU, con el seno del hilio      | 341               | fusionada      |
+| —        | grasa compatible D en todo el abdomen superior, a 3 mm                    | 343               | fusionada      |
+| P5 (1)   | aorta, tronco portal, ramas portales y esplénica desde sus máscaras       | 345               | en PR          |
+| P4–P6    | digestivo, gas y capas; cava, suprahepáticas y ramas del mismo hígado     | —                 | pendientes     |
 | P7–P8    | tórax y VCI–AD del caso; diez poses y adquisiciones, lista de relaciones  | —                 | pendientes     |
 
 ## Dónde se calcula
@@ -79,7 +80,7 @@ Todos los techos de la aplicación, con su fuente, están en `docs/estado/presup
 
 <!-- presupuestos s0028: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `850c995` el 2026-11-12 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `000c8eb` el 2026-11-12 con `tools/docs/estado.ts`.
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |

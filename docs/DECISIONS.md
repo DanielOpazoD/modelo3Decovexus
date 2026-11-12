@@ -11591,3 +11591,16 @@ cara a 0,1 mm; en el peso respiratorio, menos del 1 % de puntos aislados (9 de 3
 **Consecuencias.** En Metal la pared de la imagen se aparta de la que mide la CPU menos de un píxel (0,14 mm a 14 cm), y a 45–60 mm
 algún punto respira con otra celda de la carta. La CI gana una aserción y la prueba puede vigilar la GPU nativa.
 **Verificación.** La prueba en Metal y en SwiftShader con `workspace:e2e`; `ifdErrP95`, `weightOutliers` y `p99GradientDiff`.
+
+## 345. Los troncos de la aorta y la porta de s0028 salen de sus máscaras
+
+**Contexto.** s0028 usaba los troncos de la otra persona. Medido contra sus máscaras: el eje de la aorta estaba dentro en el 41 % de
+su largo, el del tronco portal en el 33 % y la esplénica a 26 mm. En la lámina epigástrica la porta caía en pleno parénquima.
+**Opciones.** Rotular la luz por vóxeles como el interior renal (pierde pared, color y PW); instalar el grafo P5 de 2.067 nodos (no
+cabe en 128 tubos); o lo decidido.
+**Decisión.** `s0028-trunks.py` saca el camino más central y el radio inscrito de las máscaras de aorta y porta/esplénica, y
+`install-s0028-trunks.ts` los escribe como nodos. `placeS0028Vessels` (gancho `curveVessels` de la persona) sustituye esos cinco tubos
+y arrastra el origen de los doce vasos que nacían de ellos. Sin GLSL, activos ni texturas nuevos: los tubos ya son datos de escena.
+**Consecuencias.** La porta y la aorta de la imagen están donde las tiene esta persona. Cava, suprahepáticas, venas renales y ramas
+distales siguen siendo ajenas. Quedan 2.262 B de margen en el techo JS de s0028.
+**Verificación.** 307 testigos de las máscaras: 91 % (porta) y 100 % (aorta) en la luz, frente a 13 % y 53 % sin el gancho; láminas.
