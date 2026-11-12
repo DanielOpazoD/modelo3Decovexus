@@ -69,9 +69,26 @@ export const HEART_WALLS = { lv: 8, rv: 4, ra: 2, la: 2.5, ivs: 9, ias: 4, avs: 
  * corazón.
  */
 export const IVC_ORIFICE_MM = HEART_WALLS.pericardium + HEART_WALLS.ra + 1.5;
+/**
+ * Forma del corazón de una persona: marco de los ventrículos y sus cuatro cavidades, con las mismas paredes y tabiques. Sin ella
+ * (`AnatomyPerson.heart`) vale la esquemática de arriba. Las coordenadas son anteriores al registro (`heartShift`).
+ */
+export interface HeartShape {
+  readonly origin: Vec3;
+  readonly axes: readonly [Vec3, Vec3, Vec3];
+  readonly cavities: {
+    readonly lv: { readonly c: Vec3; readonly r: Vec3 };
+    readonly rv: { readonly c: Vec3; readonly r: Vec3 };
+    readonly ra: { readonly c: Vec3; readonly r: Vec3 };
+    readonly la: { readonly c: Vec3; readonly r: Vec3 };
+  };
+}
+export const HEART_SHAPE: HeartShape = { origin: HEART_ORIGIN, axes: HEART_AXES, cavities: HEART_CAVITIES };
+const shapeOf = (person?: AnatomyPerson): HeartShape => person?.heart ?? HEART_SHAPE;
 /** Estimated inferior approach lip, derived from the existing atrium and orifice thickness. */
-export const RA_APPROACH_TOP_Z =
-  HEART_CAVITIES.ra.c[2] - Math.hypot(HEART_CAVITIES.ra.r[1] * RA_TILT[1], HEART_CAVITIES.ra.r[2] * RA_TILT[0]) + IVC_ORIFICE_MM;
+export const raApproachTopZ = (shape: HeartShape): number =>
+  shape.cavities.ra.c[2] - Math.hypot(shape.cavities.ra.r[1] * RA_TILT[1], shape.cavities.ra.r[2] * RA_TILT[0]) + IVC_ORIFICE_MM;
+export const RA_APPROACH_TOP_Z = raApproachTopZ(HEART_SHAPE);
 
 /**
  * Mediastino: grasa alrededor del saco (mm), unión suave con la columna (mm), grasa de los ángulos cardiofrénicos (en la
@@ -116,7 +133,6 @@ function registeredHeartPoint(m: Vec3, person?: AnatomyPerson): Vec3 {
 }
 
 const W = HEART_WALLS;
-const CAV = HEART_CAVITIES;
 const MED = MEDIASTINUM;
 const WALL4 = [W.lv, W.rv, W.ra, W.la] as const;
 
@@ -140,8 +156,8 @@ export function domeFloor(m: Vec3, d: Diaphragm, torso: Torso): number {
 /** Coordenadas de un punto en el marco de los ventrículos. */
 export function heartFrame(m: Vec3, person?: AnatomyPerson): Vec3 {
   m = registeredHeartPoint(m, person);
-  const d: Vec3 = [m[0] - HEART_ORIGIN[0], m[1] - HEART_ORIGIN[1], m[2] - HEART_ORIGIN[2]];
-  const a = HEART_AXES;
+  const { origin, axes: a } = shapeOf(person);
+  const d: Vec3 = [m[0] - origin[0], m[1] - origin[1], m[2] - origin[2]];
   return [
     d[0] * a[0][0] + d[1] * a[0][1] + d[2] * a[0][2],
     d[0] * a[1][0] + d[1] * a[1][1] + d[2] * a[1][2],
@@ -152,15 +168,16 @@ export function heartFrame(m: Vec3, person?: AnatomyPerson): Vec3 {
 /** Coordenadas de un punto en el marco de la AD (su centro, inclinada `RA_TILT` en el plano sagital). */
 export function raFrame(m: Vec3, person?: AnatomyPerson): Vec3 {
   m = registeredHeartPoint(m, person);
-  const [c, s] = RA_TILT;
-  const y = m[1] - CAV.ra.c[1];
-  const z = m[2] - CAV.ra.c[2];
-  return [m[0] - CAV.ra.c[0], y * c - z * s, y * s + z * c];
+  const [c, s] = RA_TILT,
+    ra = shapeOf(person).cavities.ra.c;
+  const y = m[1] - ra[1];
+  const z = m[2] - ra[2];
+  return [m[0] - ra[0], y * c - z * s, y * s + z * c];
 }
 
 /** Elipsoide de la AD sin los tabiques (mm, negativa dentro): la VCI que entra en ella. */
 export function raSdf(m: Vec3, person?: AnatomyPerson): number {
-  return sdEllipsoidLocal(raFrame(m, person), CAV.ra.r);
+  return sdEllipsoidLocal(raFrame(m, person), shapeOf(person).cavities.ra.r);
 }
 
 /** Inferior crossing of the statically registered tilted RA at this XY.
@@ -170,15 +187,16 @@ export function raInferiorZ(x: number, y: number, person?: AnatomyPerson): numbe
   const shift = heartShift(person);
   x -= shift[0];
   y -= shift[1];
+  const ra = shapeOf(person).cavities.ra;
   const [c, s] = RA_TILT,
-    [rx, ry, rz] = CAV.ra.r,
-    dx = x - CAV.ra.c[0],
-    dy = y - CAV.ra.c[1],
+    [rx, ry, rz] = ra.r,
+    dx = x - ra.c[0],
+    dy = y - ra.c[1],
     a = (s * s) / (ry * ry) + (c * c) / (rz * rz),
     b = 2 * dy * c * s * (1 / (rz * rz) - 1 / (ry * ry)),
     cc = (dx * dx) / (rx * rx) + dy * dy * ((c * c) / (ry * ry) + (s * s) / (rz * rz)) - 1,
     discriminant = b * b - 4 * a * cc;
-  return shift[2] + CAV.ra.c[2] + (discriminant >= 0 ? (-b - Math.sqrt(discriminant)) / (2 * a) : -Math.hypot(ry * s, rz * c));
+  return shift[2] + ra.c[2] + (discriminant >= 0 ? (-b - Math.sqrt(discriminant)) / (2 * a) : -Math.hypot(ry * s, rz * c));
 }
 
 /**
@@ -190,7 +208,7 @@ export function raInferiorZ(x: number, y: number, person?: AnatomyPerson): numbe
 export function ivcAtrium(m: Vec3, floor: number, person?: AnatomyPerson): { cavity: number; outside: boolean; cut: number } {
   const ra = heartChambers(m, person)[2];
   const cavity = Math.max(ra, floor + W.pericardium + W.ra);
-  const approach = Math.min(raInferiorZ(m[0], m[1], person), RA_APPROACH_TOP_Z + heartShift(person)[2]) - m[2];
+  const approach = Math.min(raInferiorZ(m[0], m[1], person), raApproachTopZ(shapeOf(person)) + heartShift(person)[2]) - m[2];
   // A diaphragm below the inherited atrium must not delete the intervening cava.
   // Above the actual atrial entry, the original septal/outer exclusion remains.
   return {
@@ -206,10 +224,11 @@ export function ivcAtrium(m: Vec3, floor: number, person?: AnatomyPerson): { cav
  */
 export function heartChambers(m: Vec3, person?: AnatomyPerson): [number, number, number, number] {
   const q = heartFrame(m, person);
-  const lv = sdEllipsoidLocal(q, CAV.lv.r);
-  const rv = Math.max(sdEllipsoidLocal([q[0] - CAV.rv.c[0], q[1] - CAV.rv.c[1], q[2] - CAV.rv.c[2]], CAV.rv.r), W.ivs - lv);
+  const cav = shapeOf(person).cavities;
+  const lv = sdEllipsoidLocal(q, cav.lv.r);
+  const rv = Math.max(sdEllipsoidLocal([q[0] - cav.rv.c[0], q[1] - cav.rv.c[1], q[2] - cav.rv.c[2]], cav.rv.r), W.ivs - lv);
   const a = registeredHeartPoint(m, person);
-  const la = sdEllipsoidLocal([a[0] - CAV.la.c[0], a[1] - CAV.la.c[1], a[2] - CAV.la.c[2]], CAV.la.r);
+  const la = sdEllipsoidLocal([a[0] - cav.la.c[0], a[1] - cav.la.c[1], a[2] - cav.la.c[2]], cav.la.r);
   const ra = Math.max(raSdf(m, person), Math.max(W.ias - la, W.avs - lv));
   return [lv, rv, ra, la];
 }
@@ -269,7 +288,16 @@ export function heartOuterSdf(m: Vec3, floor: number, person?: AnatomyPerson): n
 
 const vec = (v: readonly number[]): string => `vec${v.length}(${v.map((x) => x.toFixed(4)).join(',')})`;
 /** vec3 del shader: origen y ejes del marco de los ventrículos; semiejes del VI; centro y semiejes del VD, de la AD y de la AI. */
-const V3 = [HEART_ORIGIN, ...HEART_AXES, CAV.lv.r, CAV.rv.c, CAV.rv.r, CAV.ra.c, CAV.ra.r, CAV.la.c, CAV.la.r];
+const vectorsOf = ({ origin, axes, cavities: c }: HeartShape) => [origin, ...axes, c.lv.r, c.rv.c, c.rv.r, c.ra.c, c.ra.r, c.la.c, c.la.r];
+const V3 = vectorsOf(HEART_SHAPE);
+/**
+ * Los dos textos de `HEART_GLSL` que dependen de la forma: la lista de `HV` y el labio de entrada de la AD. Una persona con
+ * forma propia los sustituye por los suyos en su shader (`personShader`); el resto del módulo es común.
+ */
+export const heartShapeGlsl = (shape: HeartShape): { vectors: string; approachTop: string } => ({
+  vectors: vectorsOf(shape).map(vec).join(','),
+  approachTop: raApproachTopZ(shape).toFixed(8),
+});
 /**
  * vec4 del shader: paredes; tabiques y pericardio; grasa, unión, grasa de la cúpula y su altura; columna (x, y, semiejes);
  * esfera envolvente; tope de la columna, suelo de la AD e inclinación de la AD; columna con el atlas (decisión 331).

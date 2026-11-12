@@ -892,11 +892,12 @@ export class UltrasoundRenderer {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, bodyData);
     for (let i = 0; i < TISSUE_COUNT; i++) {
       // Frecuencia efectiva de penetración del perfil (banda baja por atenuación)
-      this.alpha[i] = attenuationDbPerCm(i, this.profile.bEffectiveMHz);
-      const alphaD = attenuationDbPerCm(i, this.profile.dopplerEffectiveMHz);
+      const look = this.gpu?.tissueLook?.[i];
+      this.alpha[i] = attenuationDbPerCm(i, this.profile.bEffectiveMHz) * (look?.attenuation ?? 1);
+      const alphaD = attenuationDbPerCm(i, this.profile.dopplerEffectiveMHz) * (look?.attenuation ?? 1);
       this.dopplerRatio[i] = this.alpha[i] > 0 ? alphaD / this.alpha[i] : 1;
-      this.back[i] = TISSUES[i].backscatter;
-      this.clump[i] = TISSUES[i].speckleClump ?? 0;
+      this.back[i] = look?.backscatter ?? TISSUES[i].backscatter;
+      this.clump[i] = look?.speckleClump ?? TISSUES[i].speckleClump ?? 0;
       this.flags[i] = TISSUES[i].gas ? 1 : TISSUES[i].bone ? 2 : 0;
     }
   }

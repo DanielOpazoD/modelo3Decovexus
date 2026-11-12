@@ -187,10 +187,14 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   // Con la normal fija el reflejo salía en una dirección sin relación con el diafragma: raya saturada y cuñas negras.
   if(k==14){c.tissue=T_LUNG;c.bd=-od;
     c.n=normalize(vec3(s28PT(m+vec3(1.5,0.0,0.0),2)-od,s28PT(m+vec3(0.0,1.5,0.0),2)-od,s28PT(m+vec3(0.0,0.0,1.5),2)-od)+vec3(0.0,0.0,1e-4));return;}
-  if(k==15){float dome=sdDome(m,c.n),ifd;c.tissue=thorax(m,dome,c.bd,ifd,c.n);return;}
   bool renal=k==3||k==4||k==13;
   vec3 gn;float dGb=e.x+${GALLBLADDER_WALL_MM.toFixed(3)};
   ${tubes}
+  // Corazón (decisión 356): dentro de la máscara, las cavidades de esta persona son sangre y el resto, miocardio; sin el recorte
+  // por la cúpula de la otra (suelo a −1000).
+  if(k==15){float ifd;c.n=vec3(0.0,0.0,-1.0);
+    if(thorax(m,-1000.0,c.bd,ifd,c.n)==T_BLOOD){c.tissue=T_BLOOD;c.bd=min(c.bd,-od);}else{c.tissue=T_MYOCARDIUM;c.bd=-od;}
+    c.n=vec3(0.0,1.0,0.0);return;}
   if(dGb<0.0||dGb<uGbExtra.y)gn=abdominalAtlasGradient(m,7);
   if(dGb<0.0){c.tissue=T_FLUID;c.bd=-dGb;c.n=gn;c.iface=IF_GALLBLADDER;c.ifd=-dGb;return;}
   if(dGb<uGbExtra.y){c.tissue=T_BILEWALL;c.bd=min(dGb,uGbExtra.y-dGb);c.n=gn;c.iface=IF_GALLBLADDER;c.ifd=dGb;return;}
@@ -295,9 +299,16 @@ export function s0028SolidsShader(source: string, replace: Replace): string {
   const from = body.search(/int\s+\w+\s*=\s*-1\s*;\s*float\s+\w+\s*=\s*1e9\s*;/),
     to = body.search(/if\s*\(\s*dDome\s*<\s*0\.0\s*\)/);
   if (start < 0 || from < 0 || to < from) throw new Error('Falta la clasificación interior que P3 sustituye');
-  const tubes = body.slice(from, to).replace(/float\s+dDome\s*=\s*sdDome\(m,\s*dn\);/, 'dn=vec3(0.0,0.0,-0.5);float dDome=1000.0;');
+  const tubes = body
+    .slice(from, to)
+    .replace(/float\s+dDome\s*=\s*sdDome\(m,\s*dn\);/, 'dn=vec3(0.0,0.0,-0.5);float dDome=1000.0;')
+    // La cava dentro de la máscara del corazón (dueño 15, decisión 356): sangre hasta donde llega su eje, que acaba en la aurícula,
+    // sin pared ni cara. La regla de la aurícula devuelve (cavidad, fuera, cota): aquí, dentro de la cavidad. Sin escribir el
+    // nombre de la función ni el de su variable, que el build acorta.
+    .replace(/(\w+)\s*=\s*\w+\(m,\s*dDome\s*\*\s*max\(1\.0,\s*-0\.5\s*\/\s*dn\.z\)\);/, '$& if(k==15)$1=vec3(-1000.0,0.0,1000.0);');
   // La única ivec2 del tramo es la lista de candidatos de la rejilla de tubos.
   if (!tubes.includes('dDome=1000.0')) throw new Error('Tubos s0028 sin cúpula');
+  if (!tubes.includes('if(k==15)')) throw new Error('Tubos s0028 sin la cava en el corazón');
   // El material del páncreas, el bazo, el tubo digestivo y la vejiga sale del dueño P3: sin el bucle de cuatro campos.
   const loop =
     /for\s*\(\s*int\s+(\w+)\s*=\s*0\s*;\s*\1\s*<\s*4\s*;\s*\1\s*\+\+\s*\)\s*\{\s*vec2\s+(\w+)\s*=\s*abdominalAtlasValue\s*\(\s*\w+\s*,\s*\1\s*\)\s*;\s*if\s*\(\s*\2\.x\s*<\s*(\w+)\s*\)\s*\{\s*(\w+)\s*=\s*\1\s*;\s*\3\s*=\s*\2\.x\s*;\s*(\w+)\s*=\s*\2\.y\s*;\s*\}\s*\}/;

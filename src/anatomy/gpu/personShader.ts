@@ -1,7 +1,8 @@
 import { ABDOMINAL_FIELDS } from '../abdominalAtlasData';
 import type { PersonDescriptors } from '../anatomyBundle';
 import { gastricGlsl, GASTRIC_WALL } from '../organs/abdomen';
-import { GASTRIC_312 } from '../people/s0028/cpu';
+import { HEART_SHAPE, heartShapeGlsl } from '../organs/heart';
+import { GASTRIC_312, S0028_HEART } from '../people/s0028/cpu';
 import { S0028_READER_GLSL } from './s0028Solids.glsl';
 import { s0028WallShader } from './s0028Wall.glsl';
 
@@ -118,6 +119,13 @@ vec2 thoracicValue(vec3 p){
   // s0028 está en pausa (decisión 327): su pared conserva la difusa de Lambert
   if (/float\s+wallDiffuseLobe\s*\(/.test(changed))
     changed = replaceFunction(changed, 'float', 'wallDiffuseLobe', 'float wallDiffuseLobe(float c){return 1.0;}');
+  // Corazón de s0028 (decisión 356): las mismas funciones con sus cavidades; sólo cambian las constantes de forma.
+  const schematic = heartShapeGlsl(HEART_SHAPE),
+    own = heartShapeGlsl(S0028_HEART);
+  if (changed.includes(schematic.vectors)) {
+    if (!changed.includes(schematic.approachTop)) throw new Error('Falta el labio de la AD en el shader');
+    changed = changed.replace(schematic.vectors, own.vectors).replace(schematic.approachTop, own.approachTop);
+  }
   return s0028WallShader(changed, replaceFunction);
 }
 

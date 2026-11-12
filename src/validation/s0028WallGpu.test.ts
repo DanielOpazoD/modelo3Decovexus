@@ -4,6 +4,8 @@ import { shaderCosts } from '../../tools/anatomy/s0028-shader-metrics';
 import { minifyGlslBody } from '../../tools/build/glslMinify';
 import { RIGID_BASE } from '../anatomy/gpu/anatomy.glsl';
 import { personShader } from '../anatomy/gpu/personShader';
+import { HEART_SHAPE, heartShapeGlsl } from '../anatomy/organs/heart';
+import { S0028_HEART } from '../anatomy/people/s0028/cpu';
 import * as PASSES from '../ultrasound/shaders/passes.glsl';
 import baseline from './fixtures/s0028-shader-default.json';
 import { S0028_BUNDLE as bundle } from './support/legacyPerson/anatomyBundle';
@@ -68,10 +70,20 @@ it('especializa los programas s0028 después de compactar GLSL para producción'
   }
 });
 
-it('el corazón s0028 usa la normal de la cúpula para su suelo, como heartFloor en la CPU', () => {
-  // Con la normal inicial (0,1,0) el factor de pendiente max(1, −0,5/n.z) valía 1 y movía el suelo cardíaco (paridad r2b).
+it('el corazón s0028 no se recorta por la cúpula de la otra persona y lleva sus propias cavidades (decisión 356)', () => {
+  // Antes: `thorax(m, sdDome(m, …))` dentro de la máscara; la cúpula ajena, más alta, dejaba casi todo como mediastino.
   const source = personShader(PASSES.FRAG_RAWFIELD_CLASS, { person: 's0028', bundle });
-  expect(source).toMatch(/if\(k==15\)\{float dome=sdDome\(m,c\.n\),ifd;c\.tissue=thorax\(m,dome,c\.bd,ifd,c\.n\);return;\}/);
+  // Suelo a −1000 y sólo dos materiales dentro de la máscara: sangre de una cavidad o miocardio.
+  expect(source).toMatch(/if\(k==15\)\{float ifd;c\.n=vec3\(0\.0,0\.0,-1\.0\);\s*if\(thorax\(m,-1000\.0,c\.bd,ifd,c\.n\)==T_BLOOD\)/);
+  expect(source).not.toMatch(/float dome=sdDome\(m,c\.n\)/);
+  // La cava, dentro de la máscara, es sangre hasta el final de su eje: la regla va tras la consulta de la aurícula.
+  expect(source).toMatch(/if\(k==15\)\w+=vec3\(-1000\.0,0\.0,1000\.0\);/);
+  // Las constantes de forma son las de esta persona; las de la esquemática quedan en el programa por defecto.
+  const own = heartShapeGlsl(S0028_HEART).vectors,
+    schematic = heartShapeGlsl(HEART_SHAPE).vectors;
+  expect(source).toContain(own);
+  expect(source).not.toContain(schematic);
+  expect(PASSES.FRAG_RAWFIELD_CLASS).toContain(schematic);
 });
 
 it('sin cortina pulmonar procedural en s0028: A0 no toma la pared regional por pleura ni B pone aire bajo ella', () => {

@@ -7,7 +7,6 @@ import { gallbladderSdf } from '../../organs/gallbladder';
 import { heartFloor, ivcAtrium, thorax } from '../../organs/heart';
 import type { S0028Ownership } from '../../people/s0028/solids';
 import { S0028_PREPERITONEAL_MM, S0028_RENAL_FACE_MM, S0028_SUBCUTANEOUS_REACH_MM } from '../../people/s0028/solidsData';
-import { sdDiaphragmSlope } from '../../primitives';
 import type { AnatomyScene, Classification, VesselCaliber } from '../../scene';
 import { NONE } from '../../scene';
 import { DIAPHRAGM_THICKNESS_MM, Tissue } from '../../tissues';
@@ -121,23 +120,26 @@ export function classifyInside(
   {
     const lung = scene.person.cpu.regional!.s0028SourceValue(m, 'lung');
     if (lung.d < 0) return { ...NONE, tissue: Tissue.Lung, boundaryDistance: -lung.d };
-    // P7 conserva los interiores cardíacos E vigentes, limitados por la máscara de esta persona.
-    if (scene.person.cpu.regional!.s0028SourceValue(m, 'heart').d < 0) {
-      const [dome, slope] = sdDiaphragmSlope(m, scene.diaphragm, scene.torso);
-      const t = thorax(m, dome, heartFloor(dome, slope), scene.person?.cpu);
-      return { ...NONE, tissue: t.tissue, boundaryDistance: t.bd };
-    }
   }
   const curtain = null;
   if (curtain) return curtain;
   const tube = scene.classifyTubes(m, caliber);
   if (tube && tube.interface !== Interface.IvcLumen) return tube;
+  // Corazón (decisión 356): dentro de la máscara de esta persona no hay cúpula que recorte (suelo a −1000): la cava entra en su
+  // aurícula con la regla de la decisión 85, y fuera de ella gana el corazón.
+  const heart = scene.person.cpu.regional!.s0028SourceValue(m, 'heart');
   const [dDome, slope] = [1e3, 1];
   const floor = heartFloor(dDome, slope);
   // la VCI que entra en la aurícula derecha (decisión 85): dentro de ella no hay pared que dibujar (antes daba un eco de
   // pared brillante y seguía como un anillo dentro de la cavidad): su pared es sangre de la aurícula y su luz conserva el
   // flujo sin cara; fuera de la aurícula, por encima de su suelo, no hay VCI (gana el corazón)
-  const ivc = tube?.interface === Interface.IvcLumen ? ivcAtrium(m, floor, scene.person?.cpu) : null;
+  // Dentro de la máscara del corazón la cava es sangre hasta donde llega su eje, que acaba en la aurícula: sin pared ni cara.
+  const ivc =
+    tube?.interface !== Interface.IvcLumen
+      ? null
+      : heart.d < 0
+        ? { cavity: -1e3, outside: false, cut: 1e3 }
+        : ivcAtrium(m, floor, scene.person?.cpu);
   if (tube && ivc && ivc.cavity < 0) {
     if (tube.tissue === Tissue.Blood)
       return {
@@ -149,6 +151,14 @@ export function classifyInside(
     return { ...NONE, tissue: Tissue.Blood, boundaryDistance: -ivc.cavity };
   }
   if (tube && !ivc?.outside) return ivc ? { ...tube, boundaryDistance: Math.min(tube.boundaryDistance, ivc.cut) } : tube;
+  if (heart.d < 0) {
+    // Sus cavidades (el esquema encajado a su TAC, `S0028_HEART`) son sangre y el resto de la máscara, miocardio. Con el recorte
+    // por la cúpula de la otra persona, más alta, casi toda la máscara quedaba como «mediastino», con textura de hígado.
+    const t = thorax(m, -1e3, -1e3, scene.person?.cpu);
+    return t.tissue === Tissue.Blood
+      ? { ...NONE, tissue: Tissue.Blood, boundaryDistance: Math.min(t.bd, -heart.d) }
+      : { ...NONE, tissue: Tissue.Myocardium, boundaryDistance: -heart.d };
+  }
   if (dDome < 0) {
     // tórax (decisión 85): el corazón en su saco, el mediastino o el pulmón; la capa del pericardio dibuja su cara
     const t = thorax(m, dDome, floor, scene.person?.cpu);
