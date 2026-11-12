@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Pruebas: la paridad de la pared de s0028 lleva una cota por backend; en Metal fallaba por el filtro del hardware, no por la regla (344).
+
 - Anatomía s0028: la grasa del TAC llega a todo el abdomen superior; el fondo oscuro alrededor del riñón pasa a ser tejido ecogénico (343).
 
 - Rendimiento: mover la sonda ya no baja la imagen de 60 a 20 cuadros por segundo; va aproximadamente al doble, 37–49 en un M4 (342).
