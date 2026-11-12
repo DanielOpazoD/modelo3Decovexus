@@ -993,6 +993,14 @@ export const TWINS: readonly TwinPair[] = [
     evidence: [{ ...E.s0028Solids, scope: 'tejido en las celdas de la caja amplia y en las diez ventanas' }],
   },
   {
+    id: 's0028-diafragma',
+    what: 'Diafragma de s0028: lámina bajo la base de su pulmón, donde ningún dueño reclama el punto (distancia al pulmón menor que el espesor y pulmón encima).',
+    kind: 'cpu-glsl',
+    cpu: [{ file: 'src/anatomy/people/s0028/classifier.ts', symbols: ['s0028Diaphragm'] }],
+    gpu: [{ file: 'src/anatomy/gpu/s0028Solids.glsl.ts', symbols: ['s28Dia'], templates: ['S0028_READER_GLSL'] }],
+    evidence: [{ ...E.s0028Solids, scope: 'tejido en los puntos de la lámina bajo el pulmón y sus controles 3 mm más abajo' }],
+  },
+  {
     id: 's0028-gradiente-renal',
     what: 'Normal de la cara renal s0028: gradiente analítico de la trilineal del riñón, con los ocho nodos de su celda.',
     kind: 'cpu-glsl',

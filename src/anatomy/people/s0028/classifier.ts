@@ -81,7 +81,8 @@ export function classifyWall(
 /**
  * Diafragma de s0028 (decisión 348): la lámina de `DIAPHRAGM_THICKNESS_MM` pegada por debajo a la base de su propio pulmón, donde
  * ninguna máscara reclama el punto. Devuelve los mm bajo el pulmón, o null. «Por debajo»: 3 mm más arriba el pulmón queda al
- * menos 1 mm más cerca. Sustituye a la cúpula analítica de la otra persona, que no coincidía con este pulmón. Gemelo: `s28Dia`.
+ * menos 1 mm más cerca. Sustituye a la cúpula analítica de la otra persona, que no coincidía con este pulmón.
+ * @twin s0028-diafragma
  */
 export function s0028Diaphragm(regional: { s0028SourceValue: (p: Vec3, name: string) => { d: number } }, m: Vec3): number | null {
   const d = regional.s0028SourceValue(m, 'lung').d;

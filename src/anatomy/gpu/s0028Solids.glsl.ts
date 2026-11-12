@@ -36,6 +36,7 @@ const table = (prefix: string, names: readonly string[]) =>
 /**
  * Lectores P1 de P3, par GLSL de `s0028SourceValue` (distancia y rótulo); también los usan la pared ligera y la pleura.
  * @twin s0028-lector
+ * @twin s0028-diafragma
  */
 export const S0028_READER_GLSL = /* glsl */ `
 ${table('S28A', ABDOMINAL)}
@@ -50,7 +51,7 @@ float s28P(highp sampler3D t,vec3 p,vec3 lo,vec3 dim,vec3 off){
 }
 float s28PA(vec3 p,int k){return s28P(uAbdominalAtlas,p,S28A_LO[k],S28A_DIM[k],S28A_OFF[k]);}
 float s28PT(vec3 p,int k){return s28P(uThoracicAtlas,p,S28T_LO[k],S28T_DIM[k],S28T_OFF[k]);}
-// Diafragma de esta persona (decisión 348): lámina bajo la base de su pulmón; mm bajo el pulmón o −1. Gemelo: s0028Diaphragm.
+// Diafragma de esta persona (decisión 348): lámina bajo la base de su pulmón; mm bajo el pulmón o −1 (par de s0028Diaphragm).
 float s28Dia(vec3 m){float d=s28PT(m,2);return d>=0.0&&d<DIAPHRAGM_MM&&s28PT(m+vec3(0.0,0.0,3.0),2)<d-1.0?d:-1.0;}
 // Etiqueta nearest (gemela de sourceLabel): floor(q + 0,5) es Math.round para q ≥ 0.
 float s28PLA(vec3 p,int k){return texelFetch(uAbdominalAtlas,ivec3(S28A_OFF[k]+floor((p-S28A_LO[k])/1.5+0.5)),0).g;}
