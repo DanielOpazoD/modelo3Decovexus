@@ -4,15 +4,15 @@ Antes de trabajar en esta copia, lee `CONTEXTO-IA.md`: distingue el simulador
 con las mejoras renales integradas y la maqueta experimental separada. La
 maqueta 103 no ha pasado la puerta de coste GPU ni una evaluación clínica.
 
-1. Lee `docs/CONTINUIDAD.md`: cierre funcional acreditado, alcance vigente y límites. Las instrucciones
-   actuales del usuario prevalecen sobre cualquier instantánea histórica.
+1. Lee `docs/REGLAS.md`: rumbo, alcance, aceptación y coste vigentes en una página. `docs/CONTINUIDAD.md` es archivo
+   histórico. Las instrucciones actuales del usuario prevalecen sobre cualquier instantánea histórica.
 2. Lee `docs/MISION.md` y `CONTRIBUTING.md`: misión, aceptación y fusión. `CLAUDE.md` resume los
    invariantes delicados; `docs/ARCHITECTURE.md` y `docs/TESTING.md` explican los contratos.
 3. Entorno: `tools/workspace/run.sh npm run workspace:doctor`. Comandos y evidencias en
    `docs/engineering/workspace.md`. Node 24; una sola carga intensiva local a la vez. El lote CPU
    acotado de `check` cuenta como una carga; no superponer GPU, build ni hook mientras corre.
-   Durante la edición usa feedback focalizado según `docs/engineering/iteration.md`; check y CI
-   completos siguen siendo obligatorios para aceptar el candidato final.
+   Durante la edición usa feedback focalizado según `docs/engineering/iteration.md`; la CI completa
+   sigue siendo obligatoria para aceptar el candidato final; el check local completo, solo si no hay CI.
 4. Estado vigente por subsistema, corto y con cifras medidas: `docs/estado/` (anatomía, imagen, pruebas y
    presupuestos). La evidencia pesada se cita por `docs/evidence/INDEX.md`, nunca por una ruta absoluta.
    Consulta `docs/DECISIONS_INDEX.md` antes de abrir el historial completo. No conviertas un pendiente

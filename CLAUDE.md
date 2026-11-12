@@ -4,14 +4,17 @@ Simulador VExUS: cadena causal fisiología → anatomía → sonda → imagen �
 grado. Lee primero `docs/MISION.md` (misión, objetivos y criterios para decidir: todo cambio sirve a un objetivo),
 después `README.md`, `docs/ARCHITECTURE.md`, `docs/GLOSSARY.md` y `docs/TESTING.md`.
 
+Las reglas vigentes de rumbo, alcance, aceptación y coste caben en una página: `docs/REGLAS.md`. Si este archivo u otro la
+contradicen, manda ella.
+
 ## Continuidad y trabajo
 
-Lee `AGENTS.md` y `docs/CONTINUIDAD.md` para el alcance vigente. El procedimiento único de
+Lee `AGENTS.md` y `docs/estado/` para el alcance vigente; `docs/CONTINUIDAD.md` es archivo. El procedimiento único de
 instalación, aceptación y fusión está en `CONTRIBUTING.md`; los comandos locales y perfiles,
 en `docs/engineering/workspace.md`. No uses un prompt histórico como estado actual.
 
-- `npm run check` y el veredicto protegido de CI son obligatorios antes de integrar.
-- Decisión nueva → `docs/DECISIONS.md` con la plantilla de `CONTRIBUTING.md` y `npm run docs:index`.
+- La CI del último commit del PR en verde es obligatoria antes de integrar; el `npm run check` local completo, solo si no hay CI.
+- Decisión nueva → `docs/DECISIONS.md` con la plantilla de `CONTRIBUTING.md`, diez líneas como máximo, y `npm run docs:index`.
 - Aproximación o limitación nueva → `docs/APPROXIMATIONS.md` / `docs/LIMITATIONS.md`
   (las limitaciones con id en `src/validation/limitations.ts`).
 

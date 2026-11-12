@@ -343,3 +343,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [337](DECISIONS.md#L11375) | Curvar los trayectos vasculares entre hitos y hacia su desembocadura | vigente |
 | [338](DECISIONS.md#L11449) | Rejilla conservadora vascular también en Metal | vigente |
 | [339](DECISIONS.md#L11487) | Seno, pirámides y red interlobar integrados con A0 nativo precalculado | vigente |
+| [340](DECISIONS.md#L11535) | Reglas vigentes en una página y rumbo a una sola anatomía | vigente |

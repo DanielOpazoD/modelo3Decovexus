@@ -11531,3 +11531,15 @@ La prueba regional excluye explícitamente puntos a≤0,1mm de interfaz; no resu
 CPU/GPU de atlas filtrado. Calibración, check completo y CI del head final se acreditan por
 separado; esta decisión no declara merge ni validación clínica.
 Evidencia: `$VEXUS_EVIDENCE_ROOT/image-renal-network-73/measured`.
+
+## 340. Reglas vigentes en una página y rumbo a una sola anatomía
+
+**Contexto.** El 11-11-2026 el responsable autoriza cambiar reglas. El repositorio tiene tres anatomías en paralelo, 339 decisiones,
+un check local de 70–85 min y puertas de coste relativas que rechazan subidas del 0,4 %; el último trabajo (fascia y costilla XII de
+la maqueta 103) no se distingue en una ventana VExUS.
+**Opciones.** Seguir con las reglas acumuladas; o reemplazar las que frenan por una página, conservando causalidad, paridad y honestidad.
+**Decisión.** `docs/REGLAS.md` manda sobre el resto: `s0028` como única anatomía, alcance por lo que se ve o se mide, aceptación por
+láminas y CI, techo de coste GPU absoluto, `docs/estado/` como verdad vigente y decisiones de diez líneas. Maqueta 103 congelada.
+**Consecuencias.** Sin check local obligatorio ni recibos con hash. El coste se acepta si el bucle real sostiene 60 fps (`fps` de
+`npm run fidelity`); `frameCostMs` no lo representa: dio +33 % a la red renal 339, un 30 % más rápida en el bucle real.
+**Verificación.** `docs.test.ts` y `estado.test.ts`; `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md` y `CONTEXTO-IA.md` apuntan a la página.

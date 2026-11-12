@@ -1,6 +1,6 @@
 # Estado vigente: presupuestos
 
-Actualizado: 2026-11-11 sobre main `2de528f`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
+Actualizado: 2026-11-12 sobre main `e8e1bec`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
 su valor actual. Los techos no se suben para obtener verde (decisión 322); subir uno es una decisión propia, declarada en
 la PR y en `docs/DECISIONS.md`.
 
@@ -22,7 +22,7 @@ la PR y en `docs/DECISIONS.md`.
 
 <!-- tabla generada por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `2de528f` el 2026-11-11 con `tools/docs/estado.ts`. No se copian a mano.
+Medido en el candidato basado en main `e8e1bec` el 2026-11-12 con `tools/docs/estado.ts`. No se copian a mano.
 
 | Techo                                               |      Límite |      Actual |     Margen | Unidad   | Decisión | Fuente                                 |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- | -------- | -------------------------------------- |
@@ -83,7 +83,7 @@ Medido en el candidato basado en main `2de528f` el 2026-11-11 con `tools/docs/es
 | Trabajo «check» de la CI                            |          25 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
 | Trabajo «matrix-validation» de la CI                |          25 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
 | Trabajo «triplex-early» de la CI                    |          10 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
-| Trabajo «e2e» de la CI                              |          40 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
+| Trabajo «e2e» de la CI                              |          55 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
 
 Programas especializados (`shaderLimits.test.ts`, decisiones 309 y 320): tokens y ramas expandidos de `main`, por persona.
 

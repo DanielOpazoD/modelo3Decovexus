@@ -69,6 +69,8 @@ Se conservan `maqueta-anatomica/evidencia/RESULTS.md`, los contratos y los datos
 
 ## Siguiente trabajo recomendado
 
+Desde el 11-11-2026 el rumbo está en `docs/REGLAS.md`: la maqueta 103 queda congelada como visor de consulta y el trabajo pasa a completar la persona `s0028` del simulador por lo que se ve en las ventanas VExUS (interior renal, venas hepáticas y porta del mismo hígado, VCI–aurícula derecha) hasta que sea la única anatomía. La hipótesis anterior de una representación conjunta para abaratar 103 se conserva en `maqueta-anatomica/evidencia/NEXT-DECISION.md`, sin trabajo asignado.
+
 La investigación posterior para unir la maqueta con el simulador y sus resultados negativos están resumidos en [`maqueta-anatomica/evidencia/puente-s0028-20261111/README.md`](maqueta-anatomica/evidencia/puente-s0028-20261111/README.md). Son experimentos externos: no hay un candidato integrado ni una demostración de coste GPU aceptable. Mantener la identidad `s0028`, las certezas O/D/E/U y los conflictos con las estructuras existentes; no copiar la anatomía de `current` a esa persona. Antes de integrar hay que comprobar los gemelos CPU/Worker/GLSL, la geometría de superficie, el coste y la memoria del programa completo y la revisión visual independiente.
 
 La prioridad del usuario es una anatomía básica integrada y creíble —relaciones entre órganos, fascias, costillas y vasos— antes de ajustar texturas o filtros. No crear tareas programadas. Conserva incertidumbre, discrepancias, licencias, evidencia negativa y trabajo ajeno; no supongas validación clínica ni infles calificaciones.
