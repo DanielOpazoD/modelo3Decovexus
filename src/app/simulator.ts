@@ -237,6 +237,20 @@ export class Simulator {
     this.syncProbeContact();
   }
 
+  /**
+   * Pide una pose sin resolver todavía su contacto: `pose` cambia ya, pero el marco y la compresión siguen siendo los
+   * adquiridos hasta `settleContact()`. El bucle de la aplicación la usa para enviar la ecografía a la GPU antes de
+   * gastar los milisegundos de CPU del contacto (decisión 342); la imagen sigue a la mano con un cuadro de retraso.
+   */
+  requestPose(p: ProbePose): void {
+    this.pose = clampPose(p, this.scene.torso);
+  }
+
+  /** Resuelve el contacto de la pose pedida con `requestPose`, si cambió. */
+  settleContact(): void {
+    this.syncProbeContact();
+  }
+
   /** Cambia el régimen de adquisición, conservando paciente, dinámica y reloj. */
   beginAcquisitionEpoch(): void {
     this.acquisitionEpoch++;
@@ -270,8 +284,11 @@ export class Simulator {
     if (!opts.keepRenderer) this.renderer.dispose();
   }
 
-  /** Avanza la simulación el tiempo real transcurrido y genera la IQ correspondiente. */
-  advance(elapsedSeconds: number): void {
+  /**
+   * Avanza la simulación el tiempo real transcurrido y genera la IQ correspondiente. Con `keepContact` adquiere con el
+   * contacto ya resuelto aunque haya una pose pedida pendiente (`requestPose`): el bucle lo resuelve después del cuadro.
+   */
+  advance(elapsedSeconds: number, opts: { keepContact?: boolean } = {}): void {
     if (this.frozen) return;
     const clock = this.physiology.clock;
     const t0 = clock.t;
@@ -280,7 +297,7 @@ export class Simulator {
     // la compresión sigue a la sonda (decisión 63): todo el cuadro (CPU, GPU, puerta) ve el mismo tejido y el
     // mismo marco, el efectivo (la sonda hundida). Con la sonda quieta el contacto no cambia (sale solo de la
     // pose): se reutiliza
-    this.syncProbeContact();
+    if (!opts.keepContact) this.syncProbeContact();
     // Sonda: velocidad estimada entre cuadros (clutter y destello por movimiento)
     const newFrame = this.#lastContact.frame;
     // Las dos poses delimitan este lote, no el lote previo más el actual.
@@ -338,7 +355,8 @@ export class Simulator {
       {
         sample: s,
         frame: this.#lastContact.frame,
-        pose: this.pose,
+        // La pose de ESTE contacto: coincide con `pose` salvo mientras una pose pedida espera su contacto.
+        pose: this.#contactPose,
         compression: this.#lastContact,
         transducer: this.transducer,
         caliber: this.anatomy.caliberFor(s),

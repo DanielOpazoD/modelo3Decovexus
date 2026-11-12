@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { GpuFramePacer } from '../app/gpuFramePacer';
+import { GpuFramePacer, YIELD_AFTER_WAITS } from '../app/gpuFramePacer';
 
 function fixture() {
   const sync = {} as WebGLSync;
@@ -140,10 +140,26 @@ describe('Adquisiciones sin cola de cuadros GPU', () => {
     expect(ultrasound.gl.deleteSync).toHaveBeenCalledExactlyOnceWith(ultrasound.sync);
     expect(navigator.gl.deleteSync).not.toHaveBeenCalled();
     navigator.gl.clientWaitSync.mockReturnValue(navigator.gl.ALREADY_SIGNALED);
-    expect(pacer.ready()).toBe(false);
+    // Una sola RAF de espera: se adquiere en cuanto termina, sin ceder otra.
     expect(pacer.ready()).toBe(true);
     expect(navigator.gl.deleteSync).toHaveBeenCalledExactlyOnceWith(navigator.sync);
     expect(ultrasound.gl.deleteSync).toHaveBeenCalledOnce();
+  });
+
+  it('una sola RAF de espera no cede otra; dos o más sí (GPU lenta u otra vista preparando)', () => {
+    // Contrato sustituido: antes cualquier espera cedía una RAF, y al mover la sonda una GPU real que terminaba justo
+    // después del refresco gastaba tres RAF por cuadro (20 por segundo) en vez de dos.
+    for (const waits of [1, 2, 5]) {
+      const { pacer, gl, context } = fixture();
+      pacer.submit(context);
+      for (let raf = 0; raf < waits; raf++) expect(pacer.ready(), `espera ${raf + 1} de ${waits}`).toBe(false);
+      gl.clientWaitSync.mockReturnValue(gl.ALREADY_SIGNALED);
+      if (waits >= YIELD_AFTER_WAITS) expect(pacer.ready(), `cede tras ${waits}`).toBe(false);
+      expect(pacer.ready(), `adquiere tras ${waits}`).toBe(true);
+      // La cuenta empieza de nuevo con cada cuadro.
+      pacer.submit(context);
+      expect(pacer.ready()).toBe(true);
+    }
   });
 
   it('deduplica los contextos rápidos sin añadir una RAF ni vallas duplicadas', () => {

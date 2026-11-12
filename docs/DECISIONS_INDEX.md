@@ -345,3 +345,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [339](DECISIONS.md#L11487) | Seno, pirámides y red interlobar integrados con A0 nativo precalculado | vigente |
 | [340](DECISIONS.md#L11535) | Reglas vigentes en una página y rumbo a una sola anatomía | vigente |
 | [341](DECISIONS.md#L11547) | El riñón s0028 lleva el interior de su propio TAC | vigente |
+| [342](DECISIONS.md#L11559) | Mover la sonda no cuesta dos tercios de los cuadros | vigente |

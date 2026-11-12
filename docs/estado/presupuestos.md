@@ -33,10 +33,10 @@ Medido en el candidato basado en main `cf69381` el 2026-11-12 con `tools/docs/es
 | `anatomy.glsl.js`                                   |     122.880 |      23.152 |     99.728 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `anatomyScene.js`                                   |     122.880 |      16.163 |    106.717 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `annotation-capacity.gzip.bin`                      |     856.999 |     284.466 |    572.533 | B        | 320      | `tools/ci/bundleBudgets.ts`            |
-| `bootstrap.js`                                      |     343.040 |     252.382 |     90.658 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `bootstrap.js`                                      |     343.040 |     252.662 |     90.378 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | B        | 321      | `tools/ci/bundleBudgets.ts`            |
-| `cpu.js`                                            |     122.880 |      47.486 |     75.394 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cpu.js`                                            |     122.880 |      14.398 |    108.482 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `cpu.js`                                            |     122.880 |      47.486 |     75.394 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cutMapView.js`                                     |     122.880 |      16.838 |    106.042 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cutMapWorker.js`                                   |     122.880 |        3721 |    119.159 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `deformation.js`                                    |     122.880 |        1559 |    121.321 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -46,7 +46,7 @@ Medido en el candidato basado en main `cf69381` el 2026-11-12 con `tools/docs/es
 | `index.css`                                         |      20.480 |      20.475 |          5 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `index.js`                                          |     343.040 |        2878 |    340.162 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `loadPinnedAsset.js`                                |     122.880 |        1081 |    121.799 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `navigator3d.js`                                    |     122.880 |      28.405 |     94.475 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `navigator3d.js`                                    |     122.880 |      30.701 |     92.179 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `personAssets.js`                                   |     122.880 |        4292 |    118.588 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `preload-helper.js`                                 |     122.880 |        1417 |    121.463 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `pwMeasurements.js`                                 |     122.880 |      15.821 |    107.059 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -69,11 +69,11 @@ Medido en el candidato basado en main `cf69381` el 2026-11-12 con `tools/docs/es
 | `thoracic-direct.gzip.bin`                          |   5.252.011 |   5.252.011 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `thoracic-surface.gzip.bin`                         |   6.291.456 |   3.341.604 |  2.949.852 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `thoracicSurfaceData.js`                            |     122.880 |        3124 |    119.756 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `three.js`                                          |     385.024 |     369.107 |     15.917 | B        | 307      | `tools/ci/bundleBudgets.ts`            |
+| `three.js`                                          |     385.024 |     369.161 |     15.863 | B        | 307      | `tools/ci/bundleBudgets.ts`            |
 | `units.js`                                          |     122.880 |         388 |    122.492 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `vesselTree.js`                                     |     122.880 |     108.778 |     14.102 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.036.410 |     33.670 | B        | 322      | `tools/ci/personBundles.ts`            |
-| JS clausura s0028 (Workers y ganchos incluidos)     |   1.099.776 |   1.094.051 |       5725 | B        | 322      | `tools/ci/personBundles.ts`            |
+| `vesselTree.js`                                     |     122.880 |     109.205 |     13.675 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.039.467 |     30.613 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura s0028 (Workers y ganchos incluidos)     |   1.103.872 |   1.097.108 |       6764 | B        | 322      | `tools/ci/personBundles.ts`            |
 | Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.433.526 |  4.566.474 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.567.375 | 10.942.627 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
@@ -103,8 +103,8 @@ Programas especializados (`shaderLimits.test.ts`, decisiones 309 y 320): tokens 
 ## Lectura
 
 - Cada persona tiene su clausura JS, con Workers, worklet y ganchos incluidos (decisión 322, punto 3). Todos los archivos
-  de `dist` pertenecen a una o ambas rutas; el total de su unión es informativo. El techo de default es 1.070.080 B; el de s0028, 1.099.776 B: 1 KiB por el Worker y 28 KiB
-  por el rótulo del interior renal (decisión 341).
+  de `dist` pertenecen a una o ambas rutas; el total de su unión es informativo. El techo de default es 1.070.080 B; el de s0028, 1.103.872 B: 1 KiB por el Worker, 28 KiB
+  por el rótulo del interior renal (decisión 341) y 4 KiB de margen (decisión 342).
 - Los activos s0028 están fijados uno a uno (decisiones 317–321); la descarga del paquete completo tiene su propio techo
   de 25.000.000 B (decisión 318). Las texturas RAW se comprueban al cargar, con la misma cuenta que la tabla.
 - Los programas tienen techo de tokens y ramas expandidos (decisión 309) porque el JIT de SwiftShader de la CI muere por

@@ -124,6 +124,8 @@ function assertConsumers(lib: Map<string, string>, consumers: readonly string[])
   // Read the vendor's actual dispatch map independently of this transform.
   const ids = registry(readFileSync(join(THREE, 'webgl/WebGLPrograms.js'), 'utf8'), 'shaderIDs');
   for (const consumer of consumers) {
+    // ShaderMaterial y RawShaderMaterial traen su propio GLSL: no despachan a ninguna familia de la biblioteca.
+    if (consumer === 'ShaderMaterial' || consumer === 'RawShaderMaterial') continue;
     const text = ids.get(consumer);
     if (!text) throw new Error(`Unknown material dispatch: ${consumer}`);
     const family = text.slice(1, -1); // AST initializer is a single quoted literal in the inspected vendor.
@@ -144,6 +146,9 @@ describe('familias Three sin consumidor del navegador', () => {
     const newPhysical = materials("import * as THREE from 'three'; new THREE.MeshPhysicalMaterial();", 'retained-family.ts');
     expect(newPhysical).toEqual(['MeshPhysicalMaterial']);
     expect(() => assertConsumers(lib, newPhysical)).not.toThrow();
+    // El compositor del navegador 3D usa un ShaderMaterial; un material desconocido sigue siendo un error.
+    expect(used).toContain('ShaderMaterial');
+    expect(() => assertConsumers(lib, ['MeshInventedMaterial'])).toThrow(/Unknown material dispatch/);
     expect(() => assertConsumers(lib, ['MeshPhongMaterial'])).toThrow(/Consumed shader family removed/);
     const missingBasic = new Map(lib);
     missingBasic.delete('basic');

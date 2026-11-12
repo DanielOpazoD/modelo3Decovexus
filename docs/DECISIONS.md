@@ -11555,3 +11555,15 @@ interfaces del seno E en el hueco del hilio; lo demás U. Sin sampler ni textura
 **Consecuencias.** El techo JS de s0028 sube 28 KiB, a 1.099.776 B (usa 1.094.051). Límites entre tejidos escalonados a 1,5 mm.
 **Verificación.** Lámina hepatorrenal antes y después; paridad CPU = Worker = GPU (`s0028SolidsGpu.spec.ts` en Metal, más de 3.000
 puntos rotulados); `s0028SolidsClassify.test.ts` sustituye «interior U» por un oráculo propio de los tramos. Sin validación clínica.
+
+## 342. Mover la sonda no cuesta dos tercios de los cuadros
+
+**Contexto.** En un M4 la imagen iba a 60 fps con la sonda quieta y a 20 al girarla o deslizarla. La ecografía tarda 7–9 ms de GPU:
+el límite no era ella. Cada cuadro gastaba tres RAF: dibujar, esperar la valla y una cesión pensada para la GPU por software.
+**Opciones.** Abaratar la imagen (no era el coste); permitir dos cuadros en vuelo (rompe el contrato del limitador); o lo decidido.
+**Decisión.** `GpuFramePacer` cede solo tras dos o más RAF de espera. La pose pedida cambia al instante (`requestPose`), pero su
+contacto se resuelve una vez por cuadro, tras enviar la ecografía y el 3D. El 3D guarda su escena estática y al mover la sonda solo
+dibuja sonda y abanico, no tres millones de triángulos. `bodyDepth` evalúa lo mismo sin listas temporales.
+**Consecuencias.** Al mover, de 19–21 a 37–49 fps (32–38 con carga ajena). La imagen sigue a la mano con un cuadro de retraso. La
+sonda del 3D tapa los rótulos de ventana cercanos. El techo JS de s0028 pasa a 1.103.872 B (usa 1.097.108).
+**Verificación.** fps del bucle real con dos builds alternados; 19 e2e de navegación en Metal sin cambios; `gpuFramePacer.test.ts`.

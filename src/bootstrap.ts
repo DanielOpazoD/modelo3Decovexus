@@ -192,13 +192,17 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
     markStartup('controls:ready');
     panel.onCapture = () => drawTraces(sim());
     session.equipment.subscribe(() => panel.sync());
+    // Los gestos, las teclas y la animación PIDEN la pose (`requestPose`): cambia al instante, pero su contacto se resuelve
+    // una vez por cuadro y después de enviar la ecografía (`settleContact` en `frame`). Resolverlo cuesta varios
+    // milisegundos de CPU y, hecho antes, retrasaba el envío hasta que la GPU ya no terminaba antes del siguiente refresco;
+    // varios eventos del ratón en un mismo cuadro dejan además de resolver un contacto cada uno (decisión 342).
     const probeAnimator = new ProbeAnimator(
       () => sim().pose,
-      (p) => sim().setPose(p),
+      (p) => sim().requestPose(p),
     );
     function setPoseManual(p: Parameters<Simulator['setPose']>[0]): void {
       probeAnimator.cancel(); // cualquier gesto manual cancela la animación
-      sim().setPose(p);
+      sim().requestPose(p);
     }
     // Carril izquierdo: accesos por territorio (la sonda se desliza hasta su punto de partida), ayuda y corte plegable
     const windows = new StartPointCards($('start-points'), {
@@ -560,10 +564,8 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       if (loopFrames === 0) markStartup('frame:begin');
       const s = sim();
       fitCanvases();
-      input.tick(dt);
-      probeAnimator.tick(dt);
       if (loopFrames === 0) markStartup('advance:begin');
-      s.advance(dt);
+      s.advance(dt, { keepContact: true });
       if (loopFrames === 0) markStartup('advance:ready');
       const comparisonOpen = panel.venousComparisonOpen;
       if (comparisonOpen) panel.renderVenous();
@@ -573,16 +575,26 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       if ((!comparisonOpen || s.mmode.enabled) && !gpu.lost) {
         if (loopFrames === 0) markStartup('ultrasound:begin');
         s.render();
+        // La GPU empieza ya con la ecografía: lo que sigue en este cuadro (3D, trazas, rótulos) es CPU y no debe retrasarla.
+        s.renderer.gl.flush();
         if (loopFrames === 0) markStartup('ultrasound:ready');
         firstGpuFrame.submit(s.renderer.gl);
         cine.tick();
       }
       if (!comparisonOpen) {
+        // El 3D muestra la misma pose que la imagen de este cuadro y también entra ya en la GPU.
         if (loopFrames === 0 && nav) markStartup('navigator:draw');
+        const drawn = nav?.renderRevision;
         nav?.draw();
+        if (nav && nav.renderRevision !== drawn) nav.gpuContext.flush();
         if (loopFrames === 0 && nav) markStartup('navigator:drawn');
-        drawAcquiredViews(s, now, true);
       }
+      // Con la ecografía y el 3D ya en la GPU: teclas mantenidas, animación hacia una ventana y el contacto de la pose
+      // pedida. La pose nueva se ve en el cuadro siguiente.
+      input.tick(dt);
+      probeAnimator.tick(dt);
+      s.settleContact();
+      if (!comparisonOpen) drawAcquiredViews(s, now, true);
       const t = s.physiology.clock.t;
       const h = hudText({
         patientLabel: caseDisplayLabel(s.patient.id, store.get().debug),

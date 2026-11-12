@@ -65,7 +65,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 252382
+   "actual": 252662
   },
   {
    "what": "`candidate-manifest.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 47486
+   "actual": 14398
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14398
+   "actual": 47486
   },
   {
    "what": "`cutMapView.js`",
@@ -169,7 +169,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 28405
+   "actual": 30701
   },
   {
    "what": "`personAssets.js`",
@@ -353,7 +353,7 @@
    "unit": "B",
    "decision": 307,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 369107
+   "actual": 369161
   },
   {
    "what": "`units.js`",
@@ -369,7 +369,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 108778
+   "actual": 109205
   },
   {
    "what": "JS clausura default (Workers y ganchos incluidos)",
@@ -377,15 +377,15 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1036410
+   "actual": 1039467
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
-   "limit": 1099776,
+   "limit": 1103872,
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1094051
+   "actual": 1097108
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",

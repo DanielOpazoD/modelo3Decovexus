@@ -150,8 +150,34 @@ function bodySample(phi: number, z: number, data: Float32Array, point?: Vec3): [
 export function bodySection(phi: number, z: number, data: Float32Array): [number, number, number, number, number] {
   return bodySample(phi, z, data);
 }
+/** Lo que `bodySample` deriva del perfil en cada llamada; un perfil cargado es inmutable por identidad (216). */
+let depthLayout: { data: Float32Array; c: Float64Array; rows: number; minZ: number; step: number } | null = null;
+/**
+ * Profundidad con signo respecto de la piel del cuerpo de referencia. Hace las mismas operaciones, en el mismo orden,
+ * que `bodySample` con punto (resultado idéntico bit a bit: `referenceBody.test.ts` lo exige con `toBe`), sin listas
+ * temporales ni buscar los coeficientes en cada llamada: el contacto de la sonda la evalúa decenas de miles de veces
+ * por pose.
+ */
 export function bodyDepth(p: Vec3, data: Float32Array): number {
-  return bodySample(0, p[2], data, p);
+  if (depthLayout?.data !== data) {
+    const rows = BODY_SUBDIVISIONS * (data.length / bodyStride(data) - 1) + 1,
+      minZ = data.length === BODY_ROWS * BODY_STRIDE ? -160 : -400;
+    depthLayout = { data, c: bodyCoefficients(data), rows, minZ, step: (120 - minZ) / (rows - 1) };
+  }
+  const { c, rows, minZ, step } = depthLayout;
+  const zz = Math.max(0, Math.min(rows - 1, (p[2] - minZ) / step));
+  const row = Math.min(rows - 2, Math.floor(zz)),
+    f = zz - row;
+  const y = p[1] - polynomial(c, (row + 1) * BODY_COEFFICIENT_STRIDE - 4, f);
+  const angle = ((((Math.atan2(y, p[0]) / (2 * Math.PI)) % 1) + 1) % 1) * BODY_SECTORS;
+  const i = Math.floor(angle),
+    g = angle - i,
+    base = row * BODY_COEFFICIENT_STRIDE + i * 16;
+  const r0 = polynomial(c, base, g),
+    r1 = polynomial(c, base + 4, g),
+    r2 = polynomial(c, base + 8, g),
+    r3 = polynomial(c, base + 12, g);
+  return Math.hypot(p[0], y) - (((r3 * f + r2) * f + r1) * f + r0);
 }
 /** Gradiente de la profundidad del cuerpo de referencia (lado TS de `bodyGradient` en la GLSL). @twin tronco-primitivas */
 export function bodyGradient(p: Vec3, data: Float32Array): Vec3 {

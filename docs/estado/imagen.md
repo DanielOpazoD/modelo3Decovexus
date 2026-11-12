@@ -107,3 +107,10 @@ En ocho estados, la geometría/paredes337 produce ocho imágenes idénticas con 
 Dos bancos pareados completos:−42,78%GPU frente a curvas sin optimizar y−45,54% frente a main98280b5;
 mediana/p95 por estado mejoran. Resolución192×1024/PSF/semillas intactas. No se infieren FPS,
 memoria total ni coste3D/Worker/compositor. Tablas observadas149.504–184.320B; techo existente4MiB.
+
+## Cadencia al mover la sonda (decisión 342)
+
+Con la sonda quieta el bucle va a 60 fps; al girarla o deslizarla, a 37–49 (Apple M4, Metal; antes 19–21; con carga ajena, 32–38
+frente a 17–19). La ecografía tarda 7–9 ms de GPU por cuadro. Lo que queda por debajo de 60 al mover es CPU del hilo principal:
+resolver el contacto de la sonda cuesta unos 5 ms por pose (`bodyDepth`) y, si el cuadro termina tarde, la siguiente RAF llega antes
+que la valla o que la reserva de turno.
