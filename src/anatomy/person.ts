@@ -1,5 +1,6 @@
 import type { Vec3 } from '../core/vec3';
 import type { GastricWall } from './organs/abdomen';
+import type { HeartShape } from './organs/heart';
 import type { createSourceQueries } from './people/s0028/atlas';
 import type { createSolidsQueries } from './people/s0028/solids';
 import type { createWallQueries } from './people/s0028/wall';
@@ -35,6 +36,8 @@ export interface AnatomyPerson {
   /** Capas del estómago cuando la persona conserva otras (s0028, decisión 332); sin ellas, `GASTRIC_WALL`. */
   readonly gastricWall?: GastricWall;
   /** Marco nuevo (copia propia) del riñón del atlas (0 derecho, 1 izquierdo) cuando la persona lo mueve (decisiones 329 y 330); sin él, el de la escena. */
+  /** Forma del corazón de esta persona (marco ventricular y cavidades); sin ella, la esquemática de `organs/heart.ts`. */
+  readonly heart?: HeartShape;
   readonly kidneyFrame?: (side: number) => { center: Vec3; u: Vec3; v: Vec3; w: Vec3; sinusRadii?: Vec3 };
 }
 
@@ -49,6 +52,13 @@ export interface PersonGpuPlan {
   readonly uploads: readonly AtlasUpload[];
   /** Tramos por tubo que recorre el shader de esta persona; sin él, `MAX_TUBE_SEGMENTS`. */
   readonly tubeSegments?: number;
+  /**
+   * Aspecto de los tejidos de esta persona en la imagen, donde difiere de la tabla común (`TISSUES`): retrodispersión, agrupación
+   * del moteado y factor sobre la atenuación, por índice de tejido. Solo cambia lo que se sube a la GPU.
+   */
+  readonly tissueLook?: Readonly<
+    Record<number, { readonly backscatter?: number; readonly speckleClump?: number; readonly attenuation?: number }>
+  >;
 }
 
 export interface InstalledCpuPerson {

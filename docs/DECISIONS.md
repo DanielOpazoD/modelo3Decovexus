@@ -11721,3 +11721,29 @@ no se distinguen en esa fase, se trazan por relación anatómica. `vesselOverlap
 **Consecuencias.** Giros de 8° a 10° en los troncos; 493 nodos de 640. Cuesta un 7–10 % de tiempo de cuadro en las ventanas con
 más vasos (medido en Metal sin cabecera). Sin cambios en la pared portal ni en el final torácico de la cava.
 **Verificación.** Tabla de giros y de solapes antes y ahora; láminas de las ventanas vasculares; paridad CPU/GPU en Metal.
+
+## 355. Aspecto propio de los tejidos de s0028: la grasa visceral separa los órganos
+
+**Contexto.** El responsable: «la separación entre órganos no es clara»; pidió afinar capas y relaciones. Auditadas las ocho
+ventanas contra el mismo plano del TAC: en la renal el borde hepático no se veía, porque la grasa visceral y perirrenal salían a
+1,3–2,5 dB del hígado; el estómago lleno parecía un quiste y el colon lleno, hígado.
+**Opciones.** Cambiar la tabla común (mueve también a la otra persona, calibrada en las decisiones 87 y 104) o dar a cada persona
+su aspecto; se elige lo segundo: la retrodispersión, la agrupación y la atenuación ya se suben a la GPU como datos.
+**Decisión.** `PersonGpuPlan.tissueLook` sustituye esos tres valores por tejido. En s0028: grasa perirrenal 3,0 y visceral 2,6
+(4–5 dB sobre el hígado); contenido gástrico 0,45 con moteado grueso y atenuación ×2,5; contenido colónico 3,5 y atenuación ×5.
+**Consecuencias.** En la ventana renal se leen hígado, grasa, riñón y colon con su sombra. El Doppler pulsado en CPU sigue con
+la tabla común. Valores [EXTRAPOLACIÓN PROPIA], sin calibración clínica.
+**Verificación.** Láminas de las ocho ventanas con su plano de TAC al lado; `s0028TissueLook.test.ts`.
+
+## 356. s0028 tiene corazón: cavidades encajadas a su TAC y la cava llega a la aurícula
+
+**Contexto.** En la cava en eje largo, la vista de VExUS, la cava acababa en un bloque: dentro de la máscara cardíaca de s0028 se
+usaba el corazón esquemático recortado por la cúpula de la otra persona, más alta, y casi todo quedaba como «mediastino».
+**Opciones.** Un volumen de sangre del TAC en el atlas (otra reserva, otro lector); o el esquema de cuatro cavidades con la forma
+de esta persona, que es lo elegido por coste.
+**Decisión.** `HeartShape` parametriza el corazón por persona; `S0028_HEART` coloca las cuatro cavidades donde se ven en sus
+cortes axiales (centros y semiejes leídos a ojo). Dentro de su máscara: cavidad, sangre; el resto, miocardio; sin recorte de
+cúpula. La cava es sangre hasta el final de su eje, dentro de la aurícula. El shader de la otra persona no cambia.
+**Consecuencias.** La cava desemboca en una aurícula; sin válvulas, movimiento ni pericardio. La separación automática de cámaras
+no fue fiable (las válvulas no se resuelven en esa fase del TAC).
+**Verificación.** Láminas subxifoidea y subcostal; `s0028Heart.test.ts`; fila «corazón» en la paridad CPU/GPU (Metal).

@@ -358,3 +358,5 @@ Generado por `npm run docs:index` — no editar a mano.
 | [352](DECISIONS.md#L11683) | La pared de s0028 se lee por capas: fascias a los dos lados, músculo estriado y grasa preperitoneal | vigente |
 | [353](DECISIONS.md#L11696) | Los ejes de los troncos de s0028 reparten el giro entre sus nodos | vigente |
 | [354](DECISIONS.md#L11710) | Los vasos de s0028 son curvas y sus luces no se atraviesan | vigente |
+| [355](DECISIONS.md#L11725) | Aspecto propio de los tejidos de s0028: la grasa visceral separa los órganos | vigente |
+| [356](DECISIONS.md#L11738) | s0028 tiene corazón: cavidades encajadas a su TAC y la cava llega a la aurícula | vigente |

@@ -234,6 +234,18 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
               pts.push(x + 0.31, y + 0.23, z + 0.17, x + 0.31, y + 0.23, z - 2.83);
       out.push(compare('diafragma', 0, NO, pts));
     }
+    // Corazón de la persona (decisión 356): la caja de su máscara y la llegada de la cava, fuera de la rejilla del TAC.
+    {
+      const pts: number[] = [];
+      for (let z = -16; z <= 104; z += 5)
+        for (let y = -32; y <= 73; y += 5)
+          for (let x = -47; x <= 84; x += 5) {
+            // Solo la máscara y su entorno inmediato: la pared torácica anterior tiene sus propias filas.
+            const p: [number, number, number] = [x + 0.31, y + 0.23, z + 0.17];
+            if (sim.scene.person.cpu.regional!.s0028SourceValue(p, 'heart').d < 4) pts.push(...p);
+          }
+      out.push(compare('corazón', 0, NO, pts));
+    }
     // Testigos de conflicto (nueve pares del censo, fuera de las mitades de celda): U con los dos dueños, sin elegir material.
     out.push(compare('conflictos', 0, NO, a.conflicts));
     // La banda sola daría Fat en estos puntos; con grasa D superpuesta debe dar conflicto U.
@@ -335,6 +347,10 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
   expect(rows.reduce((s, r) => s + r.renalCpu, 0)).toBeGreaterThan(2000);
   // El diafragma de la persona llega a la GPU: cientos de puntos de la lámina bajo el pulmón, con sus controles.
   expect(rows.find((r) => r.id === 'diafragma D=0')!.points).toBeGreaterThan(400);
+  // El corazón llega a la GPU: miles de puntos de su caja (sangre de las cavidades, miocardio, pulmón, cava) con el mismo tejido.
+  const heart = rows.find((r) => r.id === 'corazón D=0')!;
+  expect(heart.points, tag(heart)).toBeGreaterThan(3000);
+  expect(heart.same / heart.points, tag(heart)).toBeGreaterThanOrEqual(0.99);
   // La grasa amplia llega a la GPU: miles de celdas de grasa D fuera de las cajas renales con el mismo tejido que la CPU.
   const wide = rows.find((r) => r.id === 'grasa amplia D=0')!;
   expect(wide.classes.fatD[0], tag(wide)).toBeGreaterThan(2000);

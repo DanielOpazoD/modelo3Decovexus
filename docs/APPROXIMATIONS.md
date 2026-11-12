@@ -558,3 +558,16 @@ relaciones habituales: la mesentérica nace de la cara anterior de la aorta, pas
 izquierda de su vena; la renal derecha pasa por detrás de la cava; la hepática común sale por encima de la confluencia portal y
 queda por delante de la porta. La vena mesentérica superior sí es la del TAC. Los ejes de todos los troncos se dibujan como curvas
 que pasan por los nodos medidos: entre nodos, la curva es una interpolación [EXTRAPOLACIÓN PROPIA], no una medida.
+
+### s0028: brillo de la grasa y del contenido digestivo (355)
+
+Los valores de `S0028_TISSUE_LOOK` (grasa perirrenal y visceral, contenido del estómago y del colon) son de aspecto: se eligieron
+mirando las ventanas para que los órganos se separen como en una ecografía, no se midieron. El TAC dice que el estómago y el colon
+de esta persona están llenos; no dice cómo suena ese contenido.
+
+### s0028: corazón de cuatro elipsoides (356)
+
+El corazón de s0028 es el esquema de cuatro cavidades elipsoidales con sus paredes y tabiques, colocado y dimensionado a ojo sobre
+los cortes de su TAC. La máscara `heart` limita el conjunto; dentro de ella, lo que no es cavidad se dibuja como miocardio, así que
+donde el elipsoide se queda corto la pared sale más gruesa que la real. No hay válvulas, ni movimiento de las cavidades, ni saco
+pericárdico. Sirve para que la cava termine en una aurícula; no para evaluar el corazón.
