@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 54078
+   "actual": 54542
   },
   {
    "what": "`cpu.js`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1106332
+   "actual": 1106796
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",

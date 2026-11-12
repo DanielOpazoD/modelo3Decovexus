@@ -15,6 +15,7 @@ sin raíz que nace junto a ella, la media, unida a la izquierda en un tronco com
 import heapq, json, os, sys
 import numpy as np, nibabel as nib
 from scipy import ndimage as ndi
+from scipy.optimize import least_squares
 
 case, out = sys.argv[1:3]
 candidate = sys.argv[3] if len(sys.argv) > 3 else None
@@ -77,23 +78,70 @@ def arc(pts):
     return np.r_[0, np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))]
 
 
-def fit(pts, r, max_nodes=MAX_NODES):
-    """Nodos de una poligonal que sigue el eje: se añade cada vez el punto que más se aparta, hasta `max_nodes`."""
-    keep = [0, len(pts) - 1]
-    def worst():
-        best = (0.0, -1)
-        for a, b in zip(keep[:-1], keep[1:]):
-            ab = pts[b] - pts[a]; L = float(ab @ ab)
-            for i in range(a + 1, b):
-                t = np.clip((pts[i] - pts[a]) @ ab / L, 0, 1) if L else 0
-                d = float(np.linalg.norm(pts[i] - (pts[a] + t * ab)))
-                if d > best[0]: best = (d, i)
-        return best
-    while len(keep) < max_nodes:
-        d, i = worst()
-        if d < 0.5: break
-        keep = sorted(keep + [i])
-    return [[*np.round(pts[i], 1).tolist(), round(float(r[i]), 1)] for i in keep], worst()[0]
+def project(nodes, P):
+    """Proyección de los puntos P sobre la poligonal: (distancia, tramo, parámetro en el tramo)."""
+    a, b = nodes[:-1], nodes[1:]
+    ab = b - a; L = np.maximum((ab * ab).sum(1), 1e-9)
+    t = np.clip(((P[:, None, :] - a[None]) * ab[None]).sum(2) / L[None], 0, 1)
+    d = np.linalg.norm(P[:, None, :] - (a[None] + t[..., None] * ab[None]), axis=2)
+    k = d.argmin(1); i = np.arange(len(P))
+    return d[i, k], k, t[i, k]
+
+
+def turn(nodes):
+    """Mayor ángulo (grados) entre dos tramos consecutivos de la poligonal."""
+    d = np.diff(nodes, axis=0); d /= np.linalg.norm(d, axis=1)[:, None]
+    return float(np.degrees(np.arccos(np.clip((d[:-1] * d[1:]).sum(1), -1, 1))).max()) if len(d) > 1 else 0.0
+
+
+def turns(nodes):
+    """Giro en cada nodo interior como diferencia de las direcciones de sus dos tramos (norma 2·sin(θ/2), suave en θ = 0)."""
+    d = np.diff(nodes, axis=0); d = d / np.maximum(np.linalg.norm(d, axis=1), 1e-9)[:, None]
+    return (d[1:] - d[:-1]).ravel()
+
+
+def fit(pts, r, max_nodes=MAX_NODES, sigma=5.0, tol=0.6, reach=1.5):
+    """Poligonal de ≤ `max_nodes` nodos que sigue el eje sin quebrarse en los nodos. El eje se suaviza por longitud de arco (σ mm,
+    con los extremos fijos: son uniones con otros tramos) y los nodos interiores se colocan por mínimos cuadrados de la distancia
+    del eje a la poligonal más el giro en cada nodo: el peso del giro sube mientras la poligonal siga a menos de `reach` mm del
+    eje suavizado, de modo que la curvatura se reparte entre todos los nodos; antes caían en los puntos más salientes (esquinas a
+    la vista). Un tramo corto y casi recto usa menos nodos. Los radios, por mínimos cuadrados sobre la misma proyección.
+    Devuelve (nodos, mayor desvío respecto del eje medido en mm, mayor giro en grados)."""
+    pts, r = np.asarray(pts, float), np.asarray(r, float)
+    s = arc(pts); L = float(s[-1]); n = max(8, int(np.ceil(L / 0.5)) + 1)
+    u = np.linspace(0, L, n); step = L / (n - 1)
+    P = np.stack([np.interp(u, s, pts[:, k]) for k in range(3)], 1); R = np.interp(u, s, r)
+    sg = min(sigma, L / 6)
+    Q = ndi.gaussian_filter1d(P, sg / step, axis=0, mode='nearest'); R = ndi.gaussian_filter1d(R, sg / step, mode='nearest')
+    # Extremos fijos: dos correcciones que decaen en 2σ, resueltas a la vez para que un tramo corto también cierre.
+    w0, w1 = np.exp(-u / (2 * sg)), np.exp(-(L - u) / (2 * sg))
+    c = np.linalg.solve(np.array([[w0[0], w1[0]], [w0[-1], w1[-1]]]), np.stack([P[0] - Q[0], P[-1] - Q[-1]]))
+    Q = Q + np.outer(w0, c[0]) + np.outer(w1, c[1])
+    D = Q[:: max(1, int(round(1.0 / step)))]
+    whole = lambda x: np.vstack([Q[0], x.reshape(-1, 3), Q[-1]])
+    best = None
+    for k in sorted({2, 3, 4, max_nodes} if L < 40 else {max_nodes}):
+        nodes = np.stack([np.interp(np.linspace(0, L, k), u, Q[:, j]) for j in range(3)], 1)
+        if k > 2:
+            x = nodes[1:-1].ravel()
+            # Tramos de longitud pareja (peso pequeño): sin esto dos nodos pueden juntarse y dejar un tramo degenerado.
+            even = lambda q: 0.3 * (np.linalg.norm(np.diff(q, axis=0), axis=1) * (k - 1) / L - 1)
+            for weight in (0.0, 2.0, 5.0, 10.0, 20.0, 40.0):
+                y = least_squares(lambda v: np.r_[project(whole(v), D)[0], weight * turns(whole(v)), even(whole(v))], x, max_nfev=60).x
+                if weight and max(project(whole(y), Q)[0].max(), project(whole(y), P)[0].max() - 0.3) > reach: break
+                x = y
+            nodes = whole(x)
+        best = nodes
+        if project(nodes, Q)[0].max() <= tol and turn(nodes) <= 6: break
+    nodes = best
+    _, seg, t = project(nodes, Q)
+    H = np.zeros((len(Q), len(nodes))); i = np.arange(len(Q))
+    H[i, seg] = 1 - t; H[i, seg + 1] += t
+    rad = np.clip(np.linalg.lstsq(H, R, rcond=None)[0], R.min(), R.max())
+    out = [[*np.round(q, 1).tolist(), round(float(x), 1)] for q, x in zip(nodes, rad)]
+    out[0][:3] = np.round(pts[0], 1).tolist(); out[-1][:3] = np.round(pts[-1], 1).tolist()
+    final = np.array([q[:3] for q in out])
+    return out, float(project(final, P)[0].max()), turn(final)
 
 
 def tip_radius(r, s, margin=6.0):
@@ -282,9 +330,9 @@ if candidate:
     witnesses['hepatic'] = np.round(pos[:: max(1, len(pos) // 200)], 2).tolist()
 
 for name, (p, r) in segments.items():
-    nodes, err = fit(np.asarray(p), np.asarray(r))
+    nodes, err, bend = fit(np.asarray(p), np.asarray(r))
     result[name] = nodes
-    report[name] = {'lengthMm': round(float(arc(np.asarray(p))[-1]), 1), 'nodes': len(nodes), 'fitErrorMm': round(err, 2), 'radiusMedianMm': round(float(np.median(r)), 2)}
+    report[name] = {'lengthMm': round(float(arc(np.asarray(p))[-1]), 1), 'nodes': len(nodes), 'fitErrorMm': round(err, 2), 'maxTurnDeg': round(bend, 1), 'radiusMedianMm': round(float(np.median(r)), 2)}
 json.dump({'format': 's0028-trunks-v1', 'person': 's0028', 'frame': meta['frameId'], 'vessels': result, 'report': report, 'witnesses': witnesses}, open(out, 'w'), indent=1)
 print('testigos', {k: len(v) for k, v in witnesses.items()})
 print(json.dumps(report, indent=1, ensure_ascii=False))

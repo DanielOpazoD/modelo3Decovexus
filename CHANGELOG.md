@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: los ejes de la porta, la cava, la aorta y las suprahepáticas reparten el giro entre sus nodos y dejan de quebrarse en esquinas (353)
+
 - Imagen s0028: la pared se lee por capas (fascia superficial, vaina a los dos lados, músculo estriado, grasa preperitoneal hipoecoica), la cápsula renal es una línea continua y la ventana hepatorrenal muestra el riñón tras el hígado, sin colon delante (352)
 
 - Imagen s0028: la grasa perirrenal y visceral se ve ecogénica (el riñón ya no parece rodeado de líquido), la pleura refleja con la normal del pulmón (sin raya ni cuñas negras junto a la cava) y la ventana de la cava muestra su tramo intrahepático (351).
