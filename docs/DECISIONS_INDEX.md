@@ -354,3 +354,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [348](DECISIONS.md#L11632) | El diafragma de s0028 va bajo la base de su propio pulmón | vigente |
 | [349](DECISIONS.md#L11644) | La cava y las suprahepáticas de s0028 salen de su TAC | vigente |
 | [350](DECISIONS.md#L11657) | Los vasos renales de s0028 van en el marco de su riñón | vigente |
+| [351](DECISIONS.md#L11670) | Manda lo que se ve: grasa visceral ecogénica, espejo pleural y ventana de la cava en s0028 | vigente |

@@ -6,7 +6,7 @@ import { abdomenQuery } from '../../organs/abdomen';
 import { gallbladderSdf } from '../../organs/gallbladder';
 import { heartFloor, ivcAtrium, thorax } from '../../organs/heart';
 import type { S0028Ownership } from '../../people/s0028/solids';
-import { S0028_RENAL_FACE_MM } from '../../people/s0028/solidsData';
+import { S0028_RENAL_FACE_MM, S0028_SUBCUTANEOUS_REACH_MM } from '../../people/s0028/solidsData';
 import { sdDiaphragmSlope } from '../../primitives';
 import type { AnatomyScene, Classification, VesselCaliber } from '../../scene';
 import { NONE } from '../../scene';
@@ -180,9 +180,17 @@ export function classifyInside(
     const muscle = scene.person.cpu.regional!.s0028SourceValue(m, 'posteriorMuscle');
     if (muscle.d < 0 && muscle.label > 0)
       return { ...NONE, tissue: muscle.label <= 2 ? Tissue.Psoas : Tissue.Muscle, boundaryDistance: -muscle.d };
-    // Grasa compatible D por vóxel (HU, ≤30 mm del riñón, sin máscara): composición, no compartimento.
-    if (owner === 'compatible_fat')
-      return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.Fat, boundaryDistance: 0 }, solids!);
+    // Grasa compatible D por vóxel (HU, sin máscara): composición, no compartimento. El TAC dice que es grasa; cómo se ve depende
+    // de dónde está (decisión 351): la de dentro de la cavidad (perirrenal, retroperitoneal, mesentérica) es ecogénica; con el
+    // material hipoecoico del panículo el riñón parecía rodeado de líquido. Dentro de la pared conocida ya decidió `classifyWall`.
+    if (owner === 'compatible_fat') {
+      // «Dentro»: la carta da geometría de pared en este punto (la misma consulta que la GPU), o está muy por debajo de la piel.
+      const visceral = scene.person.cpu.regional!.s0028InsideWall(m) !== null || -depth > S0028_SUBCUTANEOUS_REACH_MM;
+      // Junto al riñón (cajas de grasa a 1,5 mm, hasta 30 mm de él) es grasa perirrenal, la más brillante: el riñón resalta.
+      const perirenal = scene.person.cpu.regional!.s0028CompatibleFat(m) !== null;
+      const fat = !visceral ? Tissue.Fat : perirenal ? Tissue.PerirenalFat : Tissue.MesentericFat;
+      return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? fat, boundaryDistance: 0 }, solids!);
+    }
     // Diafragma de esta persona (decisión 348): la máscara de cada órgano ya ganó antes; no corta el hígado.
     const dome = s0028Diaphragm(scene.person.cpu.regional!, m);
     if (dome !== null) return renalFace(scene.classifyDiaphragm(dome, scene.person.cpu.regional!.s0028InsideWall(m) ?? Infinity), solids!);

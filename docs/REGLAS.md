@@ -20,12 +20,17 @@ no cumple ninguna de las dos no se modela, por correcto que sea anatómicamente.
 
 ## Aceptación
 
+- **Manda lo que se ve** (responsable, 12-11-2026): el objetivo es que la imagen se vea real, no que se calcule como si lo fuera.
+  Cada ventana se juzga mirándola como un ecografista, con cuatro preguntas: qué debe verse, qué no debe verse, qué relaciones
+  deben observarse y cuáles no. Una imagen que cumple sus pruebas y no se parece a una ecografía está mal; se corrige la causa
+  (material, artefacto, pose o anatomía) y la cifra se ajusta después. Decisión 351.
 - **Anatomía e imagen:** la lista de `docs/anatomia/relaciones-tac.md` sobre láminas del mismo plano, modelo y TAC, que el
   responsable puede ver. Los números confirman lo que se ve y detectan retrocesos; no son metas.
 - **Código:** la CI del último commit del PR en verde (check y e2e). El `npm run check` local completo ya no es obligatorio cuando
   la CI corre lo mismo; en local bastan el gancho de push y las pruebas del área tocada. Sin CI disponible, el check local la
   sustituye.
-- **Fusión:** la autoriza el responsable. Una CI verde no la sustituye.
+- **Fusión:** el responsable autorizó el 12-11-2026 crear y fusionar PR sin consultar cada una, con la CI del último commit en
+  verde. Los ajustes del repositorio siguen necesitando su permiso.
 
 ## Coste GPU
 

@@ -30,7 +30,9 @@ interface Row {
 }
 
 /** Compartimentos de la arquitectura analítica de la otra persona: nunca en s0028. */
-const ANALYTIC = [Tissue.RenalCapsule, Tissue.PerirenalFat];
+// La cápsula analítica de la otra persona. La grasa perirrenal dejó de contarse aquí: desde la decisión 351 es el material con que
+// s0028 viste la grasa de su TAC junto al riñón, y su paridad la comprueban las aserciones de tejido de cada fila.
+const ANALYTIC = [Tissue.RenalCapsule];
 /** Tejidos del rótulo del interior renal s0028 (decisión 341). */
 const LABELLED = [Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalPelvis];
 const field = (name: string) => B.fields.find((f) => f.name === name)!;
@@ -314,7 +316,10 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
     if (r.renalCpu >= 20) expect(r.renalBoth / r.renalCpu, tag(r)).toBeGreaterThanOrEqual(still ? 0.99 : 0.98);
     if (!still) continue;
     for (const cls of ['kidneyU', 'cystE', 'fatD', 'conflictU', 'noOwnerU'])
-      if (r.classes[cls]?.[0] >= 20) expect(r.classes[cls][1] / r.classes[cls][0], `${cls} ${tag(r)}`).toBeGreaterThanOrEqual(0.99);
+      // 1 % de la clase o dos puntos: en GPU nativa el filtro del hardware (decisión 344) mueve la proyección a la celda vecina
+      // de la carta en algún punto suelto, y una clase pequeña no llega al 99 % por dos de ellos. En SwiftShader son cero.
+      if (r.classes[cls]?.[0] >= 20)
+        expect(r.classes[cls][0] - r.classes[cls][1], `${cls} ${tag(r)}`).toBeLessThanOrEqual(Math.max(2, 0.01 * r.classes[cls][0]));
     expect(r.ifdMax, tag(r)).toBeLessThan(1e-3);
     if (r.id.startsWith('riñón') && r.id.includes('nodos')) expect(r.normalMin, tag(r)).toBeGreaterThan(0.999);
   }

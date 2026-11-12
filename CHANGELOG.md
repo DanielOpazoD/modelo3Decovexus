@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: la grasa perirrenal y visceral se ve ecogénica (el riñón ya no parece rodeado de líquido), la pleura refleja con la normal del pulmón (sin raya ni cuñas negras junto a la cava) y la ventana de la cava muestra su tramo intrahepático (351).
+
 - Anatomía s0028: los vasos renales van en el marco de su propio riñón; la ventana renal muestra venas y arterias interlobares en Doppler color (350).
 
 - Anatomía s0028: la cava infrahepática y las tres suprahepáticas salen de su TAC; la ventana subcostal muestra la confluencia de la derecha y la media en la cava (349).

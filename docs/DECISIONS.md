@@ -11666,3 +11666,16 @@ interlobar media. El techo JS de s0028 sube 8 KiB, a 1.112.064 B (usa 1.104.076)
 **Consecuencias.** La ventana renal de s0028 muestra venas y arterias interlobares en Doppler color. Su trayecto dentro del riñón es
 estimado: no sigue las pirámides del rótulo del TAC.
 **Verificación.** Dentro de las máscaras renales solo hay vasos renales (`s0028SolidsClassify.test.ts`); captura en color; Metal.
+
+## 351. Manda lo que se ve: grasa visceral ecogénica, espejo pleural y ventana de la cava en s0028
+
+**Contexto.** El responsable señaló dos imágenes de s0028 que pasaban sus pruebas y no parecían ecografías: el riñón «cubierto por
+líquido libre» y una línea hiperecogénica en la cava. Causas: toda la grasa del TAC llevaba el material hipoecoico del panículo
+(0,16); y el pulmón no daba su normal a la GPU, así que el espejo pleural rebotaba hacia delante (raya saturada y cuñas negras).
+**Opciones.** Mover la pose para esconderlo; tocar ganancias; o corregir el material y el artefacto, que es lo decidido.
+**Decisión.** La grasa del TAC dentro de la cavidad es ecogénica: perirrenal en las cajas junto al riñón, visceral en el resto; solo
+el panículo conserva el material de la pared (`S0028_SUBCUTANEOUS_REACH_MM` donde la carta no conoce la celda). El pulmón entrega el
+gradiente de su distancia como normal. La ventana de la cava apunta a su tramo intrahepático, y el buscador de poses cuenta el gas
+digestivo como obstáculo. `docs/REGLAS.md` recoge el criterio: cada ventana se juzga mirándola.
+**Consecuencias.** Sin halo de «líquido» ni cuñas negras; diafragma brillante con tejido detrás. La cápsula renal sigue «a cuentas».
+**Verificación.** Hojas de las ocho ventanas antes y ahora; oráculo `fatLook` en las pruebas; paridad GPU en Metal.

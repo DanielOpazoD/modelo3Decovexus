@@ -62,7 +62,8 @@ export interface WindowScore {
   through: number;
   score: number;
 }
-const BLOCK = new Set<Tissue>([Tissue.Bone, Tissue.Vertebra, Tissue.Lung, Tissue.Cartilage]);
+// Lo que un ecografista evita tener delante: hueso, cartílago, pulmón y gas digestivo (su sombra sucia tapa lo que hay detrás).
+const BLOCK = new Set<Tissue>([Tissue.Bone, Tissue.Vertebra, Tissue.Lung, Tissue.Cartilage, Tissue.BowelGas]);
 const LINES = 25;
 
 export function scoreWindow(anatomy: AnatomyQuery, sample: PhysiologySample, pose: ProbePose, t: WindowTarget): WindowScore {
@@ -138,8 +139,9 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
     hv = tube('hvRight'),
     // Confluencia: los últimos 40 mm de la derecha y de la media, que llegan a la cava por un lado y por otro.
     interlobar = scene.vesselById.get('interlobarVein2')!.tube.nodes.map((n) => n.p),
-    // Cava en eje largo: sus últimos 90 mm bajo el diafragma y el tramo que entra en la aurícula.
-    cava = [...tube('ivcInfra').slice(-18), ...tube('ivcSupra')],
+    // Cava en eje largo: su tramo intrahepático (z −125 a −30 mm), donde se mide en VExUS. Más arriba el pulmón de esta persona
+    // queda pegado a su pared posterior y el tórax de s0028 aún no tiene aurícula: la vista hacia la cabeza no se parece a una real.
+    cava = tube('ivcInfra').filter((p) => p[2] >= -125 && p[2] <= -30),
     rightEnd = hv.slice(-9),
     middleEnd = tube('hvMiddle').slice(-9);
   const liver = Tissue.Liver;
@@ -197,8 +199,8 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
     },
     {
       id: 'subxiphoid',
-      phi: [1.4, 1.9],
-      z: [-100, -30],
+      phi: [1.55, 2.0],
+      z: [-130, -50],
       depthMm: 180,
       points: cava,
       pivot: mid(cava),

@@ -1,6 +1,12 @@
 import { GALLBLADDER_WALL_MM } from '../organs/gallbladder';
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
-import { S0028_RENAL_FACE_MM, s0028FatPages, s0028RenalPages, s0028WideFatPages } from '../people/s0028/solidsData';
+import {
+  S0028_RENAL_FACE_MM,
+  S0028_SUBCUTANEOUS_REACH_MM,
+  s0028FatPages,
+  s0028RenalPages,
+  s0028WideFatPages,
+} from '../people/s0028/solidsData';
 import { S0028_RENAL_INTERIOR as R } from '../s0028RenalInteriorData';
 import { RIGID_BASE } from './anatomy.glsl';
 
@@ -176,7 +182,10 @@ vec3 s28PGrad(vec3 p){
  */
 const S0028_CLASSIFY_GLSL = (tubes: string) => /* glsl */ `
 void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
-  if(k==14){c.tissue=T_LUNG;c.bd=-od;return;}
+  // La pleura refleja como un espejo: necesita la normal de la superficie del pulmón de la persona (gradiente de su distancia).
+  // Con la normal fija el reflejo salía en una dirección sin relación con el diafragma: raya saturada y cuñas negras.
+  if(k==14){c.tissue=T_LUNG;c.bd=-od;
+    c.n=normalize(vec3(s28PT(m+vec3(1.5,0.0,0.0),2)-od,s28PT(m+vec3(0.0,1.5,0.0),2)-od,s28PT(m+vec3(0.0,0.0,1.5),2)-od)+vec3(0.0,0.0,1e-4));return;}
   if(k==15){float dome=sdDome(m,c.n),ifd;c.tissue=thorax(m,dome,c.bd,ifd,c.n);return;}
   bool renal=k==3||k==4||k==13;
   vec3 gn;float dGb=e.x+${GALLBLADDER_WALL_MM.toFixed(3)};
@@ -195,7 +204,8 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
     c.tissue=T_LIVER;return;
   }
   else if(k==8&&s28PLA(m,8)>0.0){c.tissue=s28PLA(m,8)<=2.0?T_PSOAS:T_MUSCLE;c.bd=-od;return;}
-  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:T_FAT;c.bd=0.0;}
+  // Grasa del TAC: dentro de la cavidad es visceral y ecogénica; solo el panículo conserva el material de la pared.
+  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:!(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?T_FAT:s28PFatIn(m,0)||s28PFatIn(m,1)?T_PERIRENAL:T_MESENTERIC_FAT;c.bd=0.0;}
   else{
     float dome=s28Dia(m);
     if(dome>=0.0){c.tissue=T_DIAPHRAGM;c.bd=min(min(dome,DIAPHRAGM_MM-dome),e.z);

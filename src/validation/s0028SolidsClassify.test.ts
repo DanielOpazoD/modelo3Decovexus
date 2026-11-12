@@ -45,7 +45,18 @@ beforeAll(() => {
 const at = (p: Vec3) => scene.classify(p, BASELINE_CALIBER);
 const ids = (c: Classification) => c.solids?.owners.map((o) => o.id) ?? [];
 /** Compartimentos que s0028 no identifica (decisión 321): los de la arquitectura analítica de la otra persona. */
-const NEVER = [Tissue.RenalCapsule, Tissue.PerirenalFat, Tissue.QuadratusLumborum, Tissue.RetroperitonealFat];
+const NEVER = [Tissue.RenalCapsule, Tissue.QuadratusLumborum, Tissue.RetroperitonealFat];
+const FATS = [Tissue.Fat, Tissue.MesentericFat, Tissue.PerirenalFat];
+/**
+ * Cómo se ve la grasa del TAC (decisión 351), con un oráculo propio: la de dentro de la cavidad es ecogénica (perirrenal en las
+ * cajas junto al riñón, visceral en el resto) y solo el panículo conserva el material hipoecoico de la pared. «Dentro»: pasada la
+ * cara interna de la pared conocida o, donde la carta no la conoce, a más de 50 mm de la piel.
+ */
+function fatLook(p: Vec3): Tissue {
+  // Donde la carta conoce la pared, la grasa con dueño propio ya está pasada su cara interna (dentro de la banda sería conflicto).
+  const visceral = s0028WallAt(p)?.kind === 'known' || -torsoDepth(p, scene.torso) > 50;
+  return !visceral ? Tissue.Fat : s0028CompatibleFat(p) !== null ? Tissue.PerirenalFat : Tissue.MesentericFat;
+}
 /**
  * Oráculo del interior renal (decisión 341), independiente del lector de la aplicación: expande por su cuenta los tramos
  * del exportador offline. 0 U, 1 corteza, 2 médula, 3 seno graso, 4 colector, 5 seno sin subclasificar.
@@ -280,6 +291,8 @@ it('U nunca se clasifica como tejido conocido en el compartimento posterior y re
           q = s0028WallAt(p);
         const fail = (what: string) => failures.length < 20 && failures.push(`${x},${y},${z}: ${what}`);
         if (NEVER.includes(c.tissue)) fail('compartimento de la otra persona ' + Tissue[c.tissue]);
+        // El material de grasa perirrenal solo viste a la grasa del TAC: nunca a un punto sin ese dueño.
+        if (c.tissue === Tissue.PerirenalFat && !owners.includes('compatible_fat')) fail('grasa perirrenal sin grasa del TAC');
         // Tejido renal sólo por rótulo: parénquima con dueño renal, seno sin él.
         if (RENAL.includes(c.tissue) && c.tissue !== (owners.some((id) => id.startsWith('kidney')) ? PARENCHYMA[label] : SINUS[label]))
           fail('tejido renal sin su rótulo');
@@ -345,7 +358,7 @@ it('grasa compatible D: vóxel con bit y sin máscara es grasa D; la envolvente 
     if (row.fat) {
       expect(ids(c), JSON.stringify(row)).toContain('compatible_fat');
       if (c.solids?.state === 'known' && !tube) {
-        expect(c.tissue).toBe(SINUS[renalLabel(p)] ?? Tissue.Fat);
+        expect(c.tissue).toBe(SINUS[renalLabel(p)] ?? fatLook(p));
         expect(c.solids.owners).toEqual([{ id: 'compatible_fat', d: 0, certainty: 'D' }]);
         fatChecked++;
       }
@@ -470,7 +483,7 @@ it('grasa compatible D: nunca dentro de la lámina subvóxel de aorta, VCI o por
   // Punto de la revisión: SDF de la VCI −0,096 mm con bit de grasa; antes salía Fat.
   const c = at([-16.56, 6.28, -184.82]);
   expect(ids(c)).not.toContain('compatible_fat');
-  expect(c.tissue).not.toBe(Tissue.Fat);
+  expect(FATS).not.toContain(c.tissue);
   let checked = 0;
   for (const name of ['aorta', 'inferior_vena_cava', 'portal_vein_and_splenic_vein'])
     brick(name, 1, (p, d) => {
@@ -640,7 +653,7 @@ it('grasa del abdomen a 3 mm (decisión 343): reproduce los testigos del TAC y s
     });
     for (const f of [...SOURCES, ...VESSELS]) expect(s0028SourceValue(p, f.name).d >= 0, `${row.cell.join(',')} ${f.name}`).toBe(true);
     if (!c.vesselHit && c.interface !== Interface.DuctLumen) {
-      expect(c.tissue, JSON.stringify(row.cell)).toBe(Tissue.Fat);
+      expect(c.tissue, JSON.stringify(row.cell)).toBe(fatLook(p));
       classifiedFat++;
     }
   }
