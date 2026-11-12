@@ -323,7 +323,7 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   portalSubcostal: { phi: 1.6, z: -50, yaw: -1.602, rock: 0.295, tilt: 0.255 },
   intercostal: { phi: 3.5, z: -105, yaw: -0.826, rock: 0.489, tilt: 0.499 },
   subcostal: { phi: 2.35, z: -88.5, yaw: 1.114, rock: 0.325, tilt: -0.345 },
-  subxiphoid: { phi: 1.48, z: -30, yaw: -0.156, rock: 0.507, tilt: -0.091 },
+  subxiphoid: { phi: 1.65, z: -65, yaw: -0.037, rock: 0.063, tilt: -0.115 },
   hepatorenal: { phi: 2.8, z: -125, yaw: -0.114, rock: 0.132, tilt: -0.351 },
   renal: { phi: 3.35, z: -115, yaw: -0.498, rock: 0.083, tilt: 0.11 },
 };

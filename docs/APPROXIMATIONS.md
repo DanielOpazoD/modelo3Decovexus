@@ -534,3 +534,11 @@ El riñón de s0028 no tiene vasos segmentados. Sus venas y arterias renales e i
 en el marco de cada máscara renal (centroide, eje principal, muesca hiliar): quedan dentro del riñón, pero su trayecto no sigue las
 pirámides ni las columnas del rótulo del TAC. La arteria esplénica, sin máscara, acompaña a la vena esplénica de la persona a 5 mm.
 Todo ello es [EXTRAPOLACIÓN PROPIA]. No es validación clínica.
+
+### s0028: aspecto de la grasa del TAC (351)
+
+El TAC dice dónde hay grasa, no cómo se ve. En s0028 la grasa de dentro de la cavidad lleva el material ecogénico de la grasa
+perirrenal (en las cajas de 1,5 mm junto al riñón) o de la visceral (en el resto), y solo la del panículo el hipoecoico de la pared.
+«Dentro» es pasada la cara interna de la pared conocida; donde la carta no conoce la celda, a más de 50 mm de la piel, un umbral
+fijo tomado del espesor de la pared de esta persona. Es una regla de aspecto [EXTRAPOLACIÓN PROPIA], no una segmentación de
+compartimentos grasos.
