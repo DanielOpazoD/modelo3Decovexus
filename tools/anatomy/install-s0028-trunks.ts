@@ -18,6 +18,8 @@ const source = JSON.parse(readFileSync(path, 'utf8')) as {
   vessels: Record<string, number[][]>;
   report: Record<string, { radiusMedianMm?: number; fitErrorMm?: number }>;
   witnesses: Record<string, number[][]>;
+  /** Ramas portales propias además de las cuatro con nombre: [vaso madre, nodos x, y, z, r], del origen a la punta. */
+  portalBranches?: [string, number[][]][];
 };
 if (source.format !== 's0028-trunks-v1' || source.person !== 's0028') throw new Error('Troncos de otro formato o persona');
 const ids = Object.keys(source.vessels);
@@ -36,11 +38,23 @@ for (const id of ['hvMiddle', 'hvLeft'])
 const v = source.vessels;
 if (!same(v.portalSplenic.at(-1)!, v.pvTrunk[0]) || !same(v.pvTrunk.at(-1)!, v.pvRight[0]) || !same(v.pvTrunk.at(-1)!, v.pvLeft[0]))
   throw new Error('Los tramos portales no comparten sus extremos');
+const branches = source.portalBranches ?? [];
+for (const [mother, nodes] of branches) {
+  if (!['pvRightAnterior', 'pvRightPosterior', 'pvLeftLateral', 'pvLeftMedial'].includes(mother))
+    throw new Error('Rama portal de madre desconocida: ' + mother);
+  if (nodes.length < 2 || nodes.length > 5 || nodes.some((n) => n.length !== 4 || n.some((x) => !Number.isFinite(x)) || n[3] < 1))
+    throw new Error('Rama portal inválida de ' + mother);
+}
+if (ids.includes('pvRightAnterior') !== branches.length > 0) throw new Error('Ramas portales sin sus madres, o al revés');
 writeFileSync(
   'src/anatomy/s0028TrunksData.ts',
   '/** Generado por tools/anatomy/install-s0028-trunks.ts. Troncos de s0028 desde sus máscaras: radio de referencia y nodos x, y, z, r (mm LAS), en el sentido del flujo. */\n' +
     'export const S0028_TRUNKS = ' +
     JSON.stringify(Object.fromEntries(ids.map((id) => [id, [Math.round(source.report[id].radiusMedianMm! * 10) / 10, v[id]]]))) +
+    ' as const;\n' +
+    '/** Ramas portales propias de s0028 además de las de segundo orden: vaso madre (su velocidad y su pared) y nodos, del origen a la punta. */\n' +
+    'export const S0028_PORTAL_BRANCHES = ' +
+    JSON.stringify(branches) +
     ' as const;\n',
 );
 // Testigos de las máscaras, a más de 2,2 mm (porta) y 3 mm (aorta) de su borde: los lee la prueba, no la aplicación.

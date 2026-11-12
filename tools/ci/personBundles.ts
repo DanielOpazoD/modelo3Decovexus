@@ -24,7 +24,8 @@ export interface PersonBundleGraph {
 // Decisión 341: s0028 sube otros 28 KiB para llevar el rótulo de su interior renal (datos generados del TAC, no código).
 // Decisión 342: y 4 KiB de margen para el código compartido, que había llegado a agotarlo.
 // Decisión 350: y 8 KiB más para los vasos y marcos de la persona (345–350), que lo dejaron en 238 B y después lo pasaron en 204 B.
-export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 41 * KB;
+// Decisión 357: y 4 KiB para el árbol portal de la persona (18 ramas medidas en su TAC: datos, no código); lo pasaba en 1,3 KiB.
+export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 45 * KB;
 export const DEFAULT_JS_BUDGET = TOTAL_JS_BUDGET;
 export const S0028_JS_BUDGET = PERSON_JS_CEILING;
 

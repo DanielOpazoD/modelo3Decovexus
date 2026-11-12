@@ -360,3 +360,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [354](DECISIONS.md#L11710) | Los vasos de s0028 son curvas y sus luces no se atraviesan | vigente |
 | [355](DECISIONS.md#L11725) | Aspecto propio de los tejidos de s0028: la grasa visceral separa los órganos | vigente |
 | [356](DECISIONS.md#L11738) | s0028 tiene corazón: cavidades encajadas a su TAC y la cava llega a la aurícula | vigente |
+| [357](DECISIONS.md#L11751) | El árbol portal de s0028 sale de su TAC y su pared se ve | vigente |

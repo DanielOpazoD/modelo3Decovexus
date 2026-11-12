@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 57189
+   "actual": 14398
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14398
+   "actual": 59875
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 23466
+   "actual": 23505
   },
   {
    "what": "`runtime.js`",
@@ -289,7 +289,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 485
+   "actual": 5730
   },
   {
    "what": "`surfaces.js`",
@@ -297,7 +297,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 485
   },
   {
    "what": "`teacherTab.js`",
@@ -381,11 +381,11 @@
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
-   "limit": 1112064,
+   "limit": 1116160,
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1110640
+   "actual": 1113365
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",

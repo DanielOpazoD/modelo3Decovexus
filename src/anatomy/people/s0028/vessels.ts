@@ -1,6 +1,6 @@
 import type { Vec3 } from '../../../core/vec3';
 import type { TubeNode } from '../../primitives';
-import { S0028_TRUNKS } from '../../s0028TrunksData';
+import { S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../../s0028TrunksData';
 import type { VesselDef } from '../../vesselTree';
 
 /** Un extremo a esta distancia (mm) o menos del eje anterior de un vaso nacía o moría en él. */
@@ -83,6 +83,34 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
   }
   reroute(vessels);
   accompany(vessels, 'splenicArtery', 'portalSplenic');
+  addPortalBranches(vessels);
+}
+
+/** Radio (mm) con que se apaga la punta de una rama portal propia: por debajo de la resolución, sin acabar en una bola. */
+const PORTAL_TIP_MM = 0.6;
+/**
+ * Ramas portales propias de s0028 (decisión 357): además de las cuatro de segundo orden, las que su TAC muestra saliendo de ellas.
+ * Como las procedurales, comparten el id de su madre (su velocidad por `flowFactor`, su pared periportal más fina) y no definen su
+ * área; van al final de la lista, tras las madres, y las procedurales ocupan los tubos que queden.
+ */
+function addPortalBranches(vessels: VesselDef[]): void {
+  for (const [mother, nodes] of S0028_PORTAL_BRANCHES) {
+    const parent = vessels.find((v) => v.id === mother && v.flowFactor === undefined);
+    if (!parent) continue;
+    vessels.push({
+      id: parent.id,
+      tube: {
+        kind: 'tube',
+        nodes: nodes.map(([x, y, z, r], i) => ({ p: [x, y, z], r: i === nodes.length - 1 ? PORTAL_TIP_MM : r })),
+        apScale: 1,
+      },
+      refRadius: nodes[0][3],
+      profileN: parent.profileN,
+      wallTissue: parent.wallTissue,
+      wallMm: Math.max(0.4, parent.wallMm * 0.7),
+      flowFactor: 0.85,
+    });
+  }
 }
 
 /**
@@ -267,6 +295,8 @@ export function smoothAxis(nodes: readonly TubeNode[], maxSegments = S0028_TUBE_
 /** Los troncos de las máscaras y los vasos que los acompañan, con el eje como curva. Las ramas procedurales ya están colocadas. */
 export function smoothS0028Vessels(vessels: VesselDef[]): void {
   for (const v of vessels)
+    // Los troncos medidos, con todos los tramos; los vasos que los acompañan, con la mitad: los nodos de la escena tienen techo
+    // (`MAX_NODES`) y las ramas portales propias, cortas y ya ajustadas a cinco nodos, se quedan como están.
     if (v.flowFactor === undefined && (v.id in S0028_TRUNKS || SMOOTHED.includes(v.id)))
-      v.tube = { ...v.tube, nodes: smoothAxis(v.tube.nodes) };
+      v.tube = { ...v.tube, nodes: smoothAxis(v.tube.nodes, v.id in S0028_TRUNKS ? S0028_TUBE_SEGMENTS : S0028_TUBE_SEGMENTS / 2) };
 }
