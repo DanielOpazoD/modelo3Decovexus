@@ -1,0 +1,127 @@
+{
+  "scope": "Cambio de caso nativo con instalación artificialmente demorada; no mide GPU.",
+  "runs": [
+    {
+      "name": "baseline",
+      "port": 6608,
+      "errors": [],
+      "patches": [
+        {
+          "url": "http://127.0.0.1:6608/src/ui/cutMapWorker.ts",
+          "originalSha256": "1c631e7e3d2548610aec2654df9945f770e05ad29bf6827a69070143a6d7b239",
+          "patchedSha256": "c8ccd06f70eb49535441989f3f0f12e853cf45f5568d413a5a18de4d2a9df0d0"
+        }
+      ],
+      "observed": {
+        "person": "s0028",
+        "patient": "severe-congestion",
+        "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+        "errors": [
+          "corte: Worker de otra identidad"
+        ],
+        "trace": [
+          {
+            "direction": "post",
+            "worker": 1,
+            "type": "init",
+            "id": 1,
+            "epoch": 1,
+            "assetKey": "s0028:s0028-audit-las-v1:s0028-p0e-P0c-direct-v1:1:224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7:cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08:0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e:5671296:2813952:body",
+            "person": "s0028",
+            "time": 1213.6000000238419
+          },
+          {
+            "direction": "post",
+            "worker": 1,
+            "type": "patient",
+            "id": 2,
+            "epoch": 2,
+            "assetKey": "s0028:s0028-audit-las-v1:s0028-p0e-P0c-direct-v1:1:224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7:cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08:0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e:5671296:2813952:body",
+            "person": "s0028",
+            "time": 1337.5
+          },
+          {
+            "direction": "reply",
+            "worker": 1,
+            "type": "error",
+            "id": 2,
+            "epoch": 2,
+            "assetKey": "s0028:s0028-audit-las-v1:s0028-p0e-P0c-direct-v1:1:224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7:cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08:0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e:5671296:2813952:body",
+            "message": "Worker de otra identidad",
+            "time": 1637.6000000238419
+          }
+        ]
+      },
+      "passed": true
+    },
+    {
+      "name": "candidate",
+      "port": 6610,
+      "errors": [],
+      "patches": [
+        {
+          "url": "http://127.0.0.1:6610/src/ui/cutMapWorker.ts",
+          "originalSha256": "052a75dc6c5fb1a557e5408f3b77b638bc590812f92c64c9aa71a4a29de390af",
+          "patchedSha256": "29ac107188bb9ede2a3b455dd11363975f2af074ed36c0fade0fdc3c3c24a044"
+        }
+      ],
+      "observed": {
+        "person": "s0028",
+        "patient": "severe-congestion",
+        "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+        "errors": [],
+        "trace": [
+          {
+            "direction": "post",
+            "worker": 1,
+            "type": "init",
+            "id": 1,
+            "epoch": 1,
+            "assetKey": "s0028:s0028-audit-las-v1:s0028-p0e-P0c-direct-v1:1:224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7:cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08:0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e:5671296:2813952:body",
+            "person": "s0028",
+            "time": 1144.300000011921
+          },
+          {
+            "direction": "post",
+            "worker": 1,
+            "type": "patient",
+            "id": 2,
+            "epoch": 2,
+            "assetKey": "s0028:s0028-audit-las-v1:s0028-p0e-P0c-direct-v1:1:224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7:cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08:0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e:5671296:2813952:body",
+            "person": "s0028",
+            "time": 1222.6000000238419
+          },
+          {
+            "direction": "reply",
+            "worker": 1,
+            "type": "ready",
+            "id": 2,
+            "epoch": 2,
+            "assetKey": "s0028:s0028-audit-las-v1:s0028-p0e-P0c-direct-v1:1:224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7:cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08:0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e:5671296:2813952:body",
+            "time": 4122
+          },
+          {
+            "direction": "post",
+            "worker": 1,
+            "type": "map",
+            "id": 3,
+            "epoch": 2,
+            "assetKey": "s0028:s0028-audit-las-v1:s0028-p0e-P0c-direct-v1:1:224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7:cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08:0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e:5671296:2813952:body",
+            "time": 4132.200000047684
+          },
+          {
+            "direction": "reply",
+            "worker": 1,
+            "type": "map",
+            "id": 3,
+            "epoch": 2,
+            "assetKey": "s0028:s0028-audit-las-v1:s0028-p0e-P0c-direct-v1:1:224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7:cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08:0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e:5671296:2813952:body",
+            "time": 4197.700000047684
+          }
+        ]
+      },
+      "passed": true
+    }
+  ],
+  "passed": true
+}

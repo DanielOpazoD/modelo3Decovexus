@@ -18,7 +18,7 @@ async function loadCpu(msg: CutMapInit): Promise<InstalledCpuPerson> {
   if (!['current', 'legacy'].includes(msg.identity.person)) throw new Error('Worker de persona desconocida');
   return (await import('../anatomy/people/default/cpu')).installDefaultCpu(msg.buffers, msg.identity.person === 'legacy');
 }
-function sameIdentity(a: InstalledCpuPerson, msg: CutMapInit): boolean {
+function sameIdentity(a: Pick<InstalledCpuPerson, 'assetKey' | 'identity'>, msg: CutMapInit): boolean {
   return (
     a.assetKey === msg.assetKey &&
     Object.entries(a.identity).every(([key, value]) => msg.identity[key as keyof typeof msg.identity] === value)
@@ -33,6 +33,7 @@ function chamberCode(m: Vec3, query: AnatomyQuery): number {
 export function createCutMapWorker(post: (message: CutMapReply, transfer?: Transferable[]) => void, install = loadCpu) {
   let query: AnatomyQuery | null = null;
   let person: InstalledCpuPerson | null = null;
+  let installing: { init: CutMapInit; promise: Promise<InstalledCpuPerson> } | null = null;
   let epoch = -1,
     revision = 0,
     initializing = false;
@@ -50,12 +51,20 @@ export function createCutMapWorker(post: (message: CutMapReply, transfer?: Trans
         query = null;
         pending = null;
         initializing = true;
-        if (msg.type === 'patient' && (!person || !sameIdentity(person, msg))) throw new Error('Worker de otra identidad');
-        const installed = msg.type === 'patient' ? person! : await install(msg);
+        if (msg.type === 'init') installing = { init: msg, promise: install(msg) };
+        let installed: InstalledCpuPerson;
+        if (installing && sameIdentity(installing.init, msg)) {
+          // Un cambio de caso puede llegar antes de que termine el primer import.
+          // Reutiliza esa instalación; el epoch decide quién puede publicarla.
+          installed = await installing.promise;
+        } else if (person && sameIdentity(person, msg)) {
+          installed = person;
+        } else throw new Error('Worker de otra identidad');
         if (epoch !== msg.epoch) return;
         if (!sameIdentity(installed, msg)) throw new Error('Identidad Worker incompatible');
         const scene = new AnatomyScene(msg.patient, msg.referenceProfile, installed);
         person = installed;
+        installing = null;
         query = new AnatomyQuery(scene);
         vesselIndex = new Map(scene.vessels.map((v, i) => [v.id, i]));
         initializing = false;
@@ -110,6 +119,7 @@ export function createCutMapWorker(post: (message: CutMapReply, transfer?: Trans
     } catch (error) {
       if (msg.epoch !== epoch) return;
       query = null;
+      installing = null;
       initializing = false;
       pending = null;
       post({

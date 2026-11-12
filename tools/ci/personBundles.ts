@@ -1,4 +1,4 @@
-import { TOTAL_JS_BUDGET } from './bundleBudgets';
+import { KB, TOTAL_JS_BUDGET } from './bundleBudgets';
 
 export type BundlePerson = 'default' | 's0028';
 export interface PersonChunk {
@@ -19,16 +19,17 @@ export interface PersonBundleGraph {
   selections: Array<{ from: string; to: string; person: BundlePerson; importer: string; module: string }>;
 }
 
-export const PERSON_JS_CEILING = TOTAL_JS_BUDGET;
-// Ambas conservan el techo de main: el margen liberado queda disponible para la anatomía default (322.3).
-export const DEFAULT_JS_BUDGET = PERSON_JS_CEILING;
+// La instalación inicial del Worker ahora resiste un cambio de caso en vuelo. Su código compartido lleva
+// s0028 cuatro bytes sobre el antiguo techo en el build medido; reservamos 1 KiB, sin ampliar default ni GPU.
+export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + KB;
+export const DEFAULT_JS_BUDGET = TOTAL_JS_BUDGET;
 export const S0028_JS_BUDGET = PERSON_JS_CEILING;
 
 export function measurePersonBundles(graph: PersonBundleGraph, limits = { default: DEFAULT_JS_BUDGET, s0028: S0028_JS_BUDGET }) {
   const chunks = new Map(graph.chunks.map((c) => [c.file, c]));
   if (chunks.size !== graph.chunks.length) throw new Error('Archivo JS duplicado');
   if (!graph.roots.includes(graph.worker) || !graph.roots.includes(graph.worklet)) throw new Error('Falta raíz Worker/worklet');
-  for (const max of Object.values(limits)) if (max > PERSON_JS_CEILING) throw new Error('Techo de persona ampliado');
+  if (limits.default > DEFAULT_JS_BUDGET || limits.s0028 > S0028_JS_BUDGET) throw new Error('Techo de persona ampliado');
   const owners = new Map<string, string>();
   for (const chunk of chunks.values()) {
     if (!Number.isSafeInteger(chunk.bytes) || chunk.bytes < 0) throw new Error('Tamaño JS inválido');

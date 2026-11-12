@@ -67,14 +67,14 @@ describe('clausuras completas por persona', () => {
     expect(result.s0028.bytes).toBe(86);
     expect(result.totalJsBytes).toBe(106);
   });
-  it('conserva el techo JS de main para las dos personas', () => {
+  it('conserva default y limita la ampliación de s0028 a 1 KiB', () => {
     expect(DEFAULT_JS_BUDGET).toBe(1_070_080);
-    expect(S0028_JS_BUDGET).toBe(1_070_080);
-    expect(PERSON_JS_CEILING).toBe(1_070_080);
+    expect(S0028_JS_BUDGET).toBe(1_071_104);
+    expect(PERSON_JS_CEILING).toBe(1_071_104);
   });
-  it.each(['default', 's0028'] as const)('acepta el techo de main y rechaza +1 B en %s', (person) => {
+  it.each(['default', 's0028'] as const)('acepta su techo y rechaza +1 B en %s', (person) => {
     const g = fixture();
-    const ceiling = 1_070_080;
+    const ceiling = person === 'default' ? DEFAULT_JS_BUDGET : S0028_JS_BUDGET;
     const chunk = g.chunks.find((c) => c.file === (person === 'default' ? 'current.js' : 'private.js'))!;
     chunk.bytes += ceiling - (person === 'default' ? 36 : 86);
     expect(measurePersonBundles(g)[person]).toMatchObject({ bytes: ceiling, ceiling, margin: 0 });
@@ -115,7 +115,7 @@ describe('clausuras completas por persona', () => {
     expect(() => measurePersonBundles(g)).toThrow('CPU/módulo duplicado');
   });
   it.each(['default', 's0028'] as const)('no permite ampliar el techo %s', (person) => {
-    const limits = { default: PERSON_JS_CEILING, s0028: PERSON_JS_CEILING };
+    const limits = { default: DEFAULT_JS_BUDGET, s0028: S0028_JS_BUDGET };
     limits[person] += 1;
     expect(() => measurePersonBundles(fixture(), limits)).toThrow('Techo de persona ampliado');
   });

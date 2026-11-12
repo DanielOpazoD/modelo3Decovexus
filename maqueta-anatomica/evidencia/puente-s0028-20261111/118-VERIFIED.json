@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "scope": "Paquete experimental externo; no prueba instalación, coste ni anatomía clínica.",
+  "int16Nodes": 124151,
+  "certificateBytes": 124151,
+  "atlasPages": 183,
+  "uploadBytes": 749568,
+  "rawBytes": 372453,
+  "gzipBytes": 164780,
+  "rawSha256": "1b952c5390341e76de2ef37c6a20bf815a265ccf0b19e79c85ad3f2e35b6910f",
+  "uploadSha256": "943230e8f4f214b374d0d1d0cff542af0a9072ea13a0bb5cf223b309ade52879",
+  "negativeHashDetected": true
+}

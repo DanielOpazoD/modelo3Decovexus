@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "samples": 1567868,
+  "insideSamples": 1524154,
+  "outsideNegativeDifferences": 20016,
+  "samplesSha256": "8106bd94cdf88f6e03c653fcdcd3110ea1fb6480ff99652539f01dd7e5186f84",
+  "scope": "Equivalencia sólo dentro de cajas; no medición de GPU."
+}

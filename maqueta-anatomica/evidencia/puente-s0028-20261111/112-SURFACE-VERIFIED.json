@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "count": 27770,
+  "maxErrorMm": 2.000778378530299e-07,
+  "signChanges": 44,
+  "negativeChanges": 27745,
+  "scope": "Verificaci\u00f3n de aritm\u00e9tica del sondeo; no prueba paridad del Worker ni cl\u00ednica."
+}

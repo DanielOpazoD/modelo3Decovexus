@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "scope": "Valores del visor 103L en aristas de su propio campo; no es oráculo anatómico.",
+  "count": 27770,
+  "inputSha256": "0dfcc189f1d73e67a528528f16009117e88c77d387efc3c1769c0f2fd18f4432",
+  "referenceSha256": "da02bdf65153e3d8780e9b8472d22d1ed375f6be979771d9c212beac5950d1b5",
+  "scriptSha256": "5bdaa3272ad6ed2ea71aa4e5ece3dbaee74da7d8be0ae6e43d6958f00f838834",
+  "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+  "browserVersion": "153.0.8010.12",
+  "errors": []
+}

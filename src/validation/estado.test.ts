@@ -102,7 +102,7 @@ describe('Páginas de estado vigente (decisión 322, punto 9)', () => {
     expect(m.rows.filter((r) => r.source !== 'tools/ci/bundleBudgets.ts')).toHaveLength(statics.length);
   });
 
-  it('publica las dos clausuras JS y conserva el techo de main para cada una', () => {
+  it('publica las dos clausuras JS y la ampliación acotada de s0028', () => {
     const rows = medidas().rows.filter((r) => r.source === 'tools/ci/personBundles.ts');
     expect(rows.map((r) => [r.what, r.limit])).toEqual([
       ['JS clausura default (Workers y ganchos incluidos)', DEFAULT_JS_BUDGET],
@@ -111,8 +111,8 @@ describe('Páginas de estado vigente (decisión 322, punto 9)', () => {
     for (const row of rows) {
       expect(row.actual).toBeGreaterThan(0);
       expect(row.actual).toBeLessThanOrEqual(row.limit);
-      expect(row.limit).toBe(1_070_080);
     }
+    expect(rows.map((r) => r.limit)).toEqual([1_070_080, 1_071_104]);
   });
 
   it.each([

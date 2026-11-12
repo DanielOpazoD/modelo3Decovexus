@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "count": 27770,
+  "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+  "expectedSha256": "d5553b2b4f1b9490ac3a16d9b254c2eb591d8b105dc99a53d17215df4dfc39d9",
+  "workerNegativeChanges": 26019,
+  "gpuNegativeChanges": 26019,
+  "scope": "Worker y atlas aislados de prueba; no cutMapWorker, aplicaci\u00f3n ni validaci\u00f3n cl\u00ednica."
+}

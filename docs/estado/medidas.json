@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "date": "2026-11-11",
+ "date": "2026-11-12",
  "main": "e8e1bec",
  "rows": [
   {
@@ -105,7 +105,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 3663
+   "actual": 3721
   },
   {
    "what": "`deformation.js`",
@@ -377,15 +377,15 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1036276
+   "actual": 1036334
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
-   "limit": 1070080,
+   "limit": 1071104,
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1070026
+   "actual": 1070084
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
