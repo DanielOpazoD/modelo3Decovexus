@@ -214,10 +214,20 @@ test('manual probe sliders retain the requested pose during an automatic window 
   for (const [i, name] of ['Rotación', 'Inclinación', 'Basculación', 'Presión'].entries()) {
     await page.locator(`[data-window="${i % 2 ? 'intercostal' : 'hepatorenal'}"]`).click();
     await page.getByRole('slider', { name, exact: true }).press('ArrowRight');
+    const requested = await page.evaluate(() => window.__vexusTest!.sim().pose);
+    // La pose pedida cambia al instante, pero su contacto se resuelve después del cuadro en curso (decisión 342): la
+    // primera adquisición que la muestra puede ser la segunda tras el gesto. A partir de ahí debe conservarse.
+    await withinFrames(page, 45, 'adquisición con la pose pedida', async () =>
+      page.evaluate(
+        (pose) => JSON.stringify(window.__vexusTest!.sim().renderer.displayedFrame!.anatomy.pose) === JSON.stringify(pose) || 'pendiente',
+        requested,
+      ),
+    );
     const manual = await page.evaluate(() => {
       const s = window.__vexusTest!.sim();
       return { pose: s.pose, frame: s.frame, n: s.renderer.displayedFrame!.n };
     });
+    expect(manual.pose).toEqual(requested);
     let previous = manual.n;
     // Observe two NEW acquisitions, rather than paying for twenty idle GPU
     // frames. Each ordinary frame runs the animator; a missing cancellation
