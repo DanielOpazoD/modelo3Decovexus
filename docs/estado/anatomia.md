@@ -1,6 +1,6 @@
 # Estado vigente: anatomía
 
-Actualizado: 2026-11-12 sobre main `4eed336`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
+Actualizado: 2026-11-12 sobre main `4660ec7`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
@@ -43,6 +43,7 @@ cubre con legacy. Tras P8, el corte sustituye el default por s0028 cuando pase l
 | P5 (1)   | aorta, tronco portal, ramas portales y esplénica desde sus máscaras       | 345               | en PR          |
 | P8 (1)   | seis ventanas de inicio propias, por búsqueda sobre su anatomía           | 346               | en PR          |
 | P5 (2)   | cava infrahepática y suprahepáticas desde su TAC; ventanas reapuntadas    | 349               | en PR          |
+| P5 (3)   | vasos renales en el marco de su riñón; Doppler renal en su ventana        | 350               | en PR          |
 | P4–P6    | digestivo, gas y capas; cava, suprahepáticas y ramas del mismo hígado     | —                 | pendientes     |
 | P7–P8    | tórax y VCI–AD del caso; diez poses y adquisiciones, lista de relaciones  | —                 | pendientes     |
 
@@ -82,7 +83,7 @@ Todos los techos de la aplicación, con su fuente, están en `docs/estado/presup
 
 <!-- presupuestos s0028: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `4eed336` el 2026-11-12 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `4660ec7` el 2026-11-12 con `tools/docs/estado.ts`.
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |

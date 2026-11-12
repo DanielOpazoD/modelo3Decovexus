@@ -116,7 +116,7 @@ export function classifyInside(
   }
   const curtain = null;
   if (curtain) return curtain;
-  const tube = renal ? null : scene.classifyTubes(m, caliber);
+  const tube = scene.classifyTubes(m, caliber);
   if (tube && tube.interface !== Interface.IvcLumen) return tube;
   const [dDome, slope] = [1e3, 1];
   const floor = heartFloor(dDome, slope);

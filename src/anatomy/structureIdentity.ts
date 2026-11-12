@@ -35,8 +35,14 @@ export function structureIdentity(p: Vec3, tissue: Tissue, iface: Interface, sce
   const { abdominalAtlasSdf, abdominalAtlasValue } = scene.person?.cpu.atlas ?? EMPTY_ATLAS;
   const owner = solids?.owners[0]?.id;
   if (solids?.state === 'conflict') return 17;
-  // s0028: con corteza o médula del rótulo del propio TAC es el riñón; sin rótulo sigue siendo «interior U».
-  const parenchyma = tissue === Tissue.RenalCortex || tissue === Tissue.RenalMedulla;
+  // s0028: con corteza o médula del rótulo del propio TAC es el riñón; sin rótulo sigue siendo «interior U». Sus vasos renales
+  // (decisión 350) están dentro del riñón: la región es el riñón, como en la otra persona; la identidad vascular va aparte.
+  const parenchyma =
+    tissue === Tissue.RenalCortex ||
+    tissue === Tissue.RenalMedulla ||
+    tissue === Tissue.Blood ||
+    tissue === Tissue.VesselWallThin ||
+    tissue === Tissue.ArteryWall;
   if (owner === 'kidney_right') return parenchyma ? 2 : 18;
   if (owner === 'kidney_left' || owner === 'kidney_cyst_left') return parenchyma ? 3 : 19;
   if (tissue === Tissue.Liver || tissue === Tissue.LiverCapsule) return 1;

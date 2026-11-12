@@ -325,7 +325,7 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   subcostal: { phi: 2.35, z: -88.5, yaw: 1.114, rock: 0.325, tilt: -0.345 },
   subxiphoid: { phi: 1.48, z: -30, yaw: -0.156, rock: 0.507, tilt: -0.091 },
   hepatorenal: { phi: 2.8, z: -125, yaw: -0.114, rock: 0.132, tilt: -0.351 },
-  renal: { phi: 3.3, z: -120, yaw: -0.467, rock: 0.088, tilt: 0.094 },
+  renal: { phi: 3.35, z: -115, yaw: -0.498, rock: 0.083, tilt: 0.11 },
 };
 const S0028_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...S0028_POSES[sp.id] }));
 /** Scene-specific presets; legacy tests/torso retain their own poses. */

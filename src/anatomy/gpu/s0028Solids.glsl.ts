@@ -265,10 +265,9 @@ export function s0028SolidsShader(source: string, replace: Replace): string {
   const from = body.search(/int\s+\w+\s*=\s*-1\s*;\s*float\s+\w+\s*=\s*1e9\s*;/),
     to = body.search(/if\s*\(\s*dDome\s*<\s*0\.0\s*\)/);
   if (start < 0 || from < 0 || to < from) throw new Error('Falta la clasificación interior que P3 sustituye');
-  let tubes = body.slice(from, to).replace(/float\s+dDome\s*=\s*sdDome\(m,\s*dn\);/, 'dn=vec3(0.0,0.0,-0.5);float dDome=1000.0;');
+  const tubes = body.slice(from, to).replace(/float\s+dDome\s*=\s*sdDome\(m,\s*dn\);/, 'dn=vec3(0.0,0.0,-0.5);float dDome=1000.0;');
   // La única ivec2 del tramo es la lista de candidatos de la rejilla de tubos.
-  tubes = tubes.replace(/(ivec2\s+(\w+)\s*=\s*\w+\(\w+\);)/, '$1if(renal)$2.y=0;');
-  if (!tubes.includes('dDome=1000.0') || !tubes.includes('if(renal)')) throw new Error('Tubos s0028 sin cúpula o sin riñón');
+  if (!tubes.includes('dDome=1000.0')) throw new Error('Tubos s0028 sin cúpula');
   // El material del páncreas, el bazo, el tubo digestivo y la vejiga sale del dueño P3: sin el bucle de cuatro campos.
   const loop =
     /for\s*\(\s*int\s+(\w+)\s*=\s*0\s*;\s*\1\s*<\s*4\s*;\s*\1\s*\+\+\s*\)\s*\{\s*vec2\s+(\w+)\s*=\s*abdominalAtlasValue\s*\(\s*\w+\s*,\s*\1\s*\)\s*;\s*if\s*\(\s*\2\.x\s*<\s*(\w+)\s*\)\s*\{\s*(\w+)\s*=\s*\1\s*;\s*\3\s*=\s*\2\.x\s*;\s*(\w+)\s*=\s*\2\.y\s*;\s*\}\s*\}/;

@@ -11653,3 +11653,16 @@ centroide de su máscara. Las ventanas intercostal, subcostal y subxifoidea se r
 **Consecuencias.** La subcostal muestra la confluencia de la derecha y la media en la cava. Techo JS de s0028: quedan 238 B; el
 próximo dato de la persona va a un activo binario o exige subir el techo declarándolo.
 **Verificación.** `s0028Vessels.test.ts`: 84 % de los testigos en la luz, 3 % con las venas ajenas; láminas con el TAC; Metal.
+
+## 350. Los vasos renales de s0028 van en el marco de su riñón
+
+**Contexto.** s0028 ocultaba todo tubo dentro del riñón (P3) porque los vasos de la otra persona lo atravesaban. Medido: dos venas
+interlobares quedaban dentro, invisibles, y otra y una arteria se dibujaban fuera, en la grasa. Sin interlobar no hay Doppler renal.
+**Opciones.** Seguir ocultando (s0028 no sirve para VExUS); filtrar por familia en el GLSL (los tubos no llevan su id); o lo decidido.
+**Decisión.** `kidneyFrame` de s0028 sale de sus máscaras (centroide, eje principal y dirección de la muesca hiliar), así que el hilio
+y las interlobares caen en su riñón. Los tubos dejan de anularse dentro del riñón. La arteria esplénica ajena cruzaba el riñón
+izquierdo: ahora acompaña a la vena esplénica de la persona, 5 mm por encima (`accompany`, E). La ventana renal pasa por la
+interlobar media. El techo JS de s0028 sube 8 KiB, a 1.112.064 B (usa 1.104.076): la 349 lo dejó en 238 B.
+**Consecuencias.** La ventana renal de s0028 muestra venas y arterias interlobares en Doppler color. Su trayecto dentro del riñón es
+estimado: no sigue las pirámides del rótulo del TAC.
+**Verificación.** Dentro de las máscaras renales solo hay vasos renales (`s0028SolidsClassify.test.ts`); captura en color; Metal.

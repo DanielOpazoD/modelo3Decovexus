@@ -89,7 +89,7 @@ function brick(name: string, step: number, visit: (p: Vec3, d: number) => void):
       }
 }
 
-it('riñón s0028: dueño propio con borde D; corteza y médula sólo donde lo dice el rótulo del propio TAC, sin cápsula ni vasos simulados', () => {
+it('riñón s0028: dueño propio con borde D; corteza y médula sólo donde lo dice el rótulo del propio TAC, sin cápsula; dentro, sólo sus vasos renales', () => {
   // Contrato sustituido (decisión 341): antes todo el interior era U. Ahora manda el rótulo offline; sin rótulo sigue U.
   // Nodos más profundos de cada máscara.
   for (const [p, id] of [
@@ -113,7 +113,8 @@ it('riñón s0028: dueño propio con borde D; corteza y médula sólo donde lo d
     let inside = 0,
       shell = 0,
       cortex = 0,
-      medulla = 0;
+      medulla = 0,
+      vessels = 0;
     brick(name, 2, (p, d) => {
       if (d >= 12) return;
       const c = at(p),
@@ -124,10 +125,17 @@ it('riñón s0028: dueño propio con borde D; corteza y médula sólo donde lo d
         inside++;
         // Un dueño único toma el tejido de su rótulo (sin rótulo, U); en una lámina de dos máscaras, conflicto conservado.
         expect(ids(c), p.join(',')).toContain(id);
+        // Decisión 350: dentro del riñón sólo existen sus vasos, en el marco de su máscara; ninguno de otro territorio.
+        if (c.vesselHit) {
+          vessels++;
+          // En la pared del vaso no hay identificador de luz: basta con que sea pared vascular.
+          if (c.vessel) expect(c.vessel, p.join(',')).toMatch(/^(interlobar|renal)(Vein|Artery)/);
+          else expect([Tissue.VesselWallThin, Tissue.ArteryWall], `${p.join(',')} ${Tissue[c.tissue]}`).toContain(c.tissue);
+          return;
+        }
         expect(c.tissue, p.join(',')).toBe(
           c.solids?.state === 'conflict' ? Tissue.UnsegmentedSoftTissue : (PARENCHYMA[label] ?? Tissue.UnsegmentedSoftTissue),
         );
-        expect(c.vessel, p.join(',')).toBeNull();
         if (c.tissue === Tissue.RenalCortex) cortex++;
         if (c.tissue === Tissue.RenalMedulla) medulla++;
       } else {
@@ -139,6 +147,8 @@ it('riñón s0028: dueño propio con borde D; corteza y médula sólo donde lo d
     });
     expect(inside).toBeGreaterThan(3000);
     expect(shell).toBeGreaterThan(5000);
+    // Las interlobares del modelo son del riñón derecho: ahí deben verse; el izquierdo sólo recibe su vena y su arteria.
+    if (name === 'kidneyRight') expect(vessels).toBeGreaterThan(5);
     // Corteza 82 % y médula 17 % de la máscara en el exportador; uno de cada ocho nodos aquí.
     expect(cortex).toBeGreaterThan(2000);
     expect(medulla).toBeGreaterThan(300);
@@ -438,6 +448,12 @@ it('Worker real del corte: el riñón lleva su rótulo (corteza o médula, o «i
       // Oráculo fuente: dentro de la máscara renal derecha y de ninguna otra, el tejido de su rótulo con identidad de riñón.
       if (SOURCES.every((f) => s0028SourceValue(m, f.name).d < 0 === (f.name === 'kidneyRight'))) {
         kidney++;
+        // Un vaso renal dentro del riñón (decisión 350) es sangre o pared con la región del riñón.
+        if (c.vesselHit) {
+          expect(STRUCTURE_LABELS[map.structure[i]], `${u},${v}`).toBe('Riñón derecho');
+          expect([Tissue.Blood, Tissue.VesselWallThin, Tissue.ArteryWall], `${u},${v}`).toContain(map.tissue[i]);
+          continue;
+        }
         const tissue = PARENCHYMA[renalLabel(m)];
         if (tissue !== undefined) labelled++;
         expect([map.tissue[i], STRUCTURE_LABELS[map.structure[i]]], `${u},${v}`).toEqual([

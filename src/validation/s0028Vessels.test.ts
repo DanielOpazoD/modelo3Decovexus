@@ -135,7 +135,12 @@ it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue 
     iliacArteryRight: 'aorta',
     iliacArteryLeft: 'aorta',
   };
-  expect([...moved].sort()).toEqual([...Object.keys(S0028_TRUNKS), ...Object.keys(followers)].sort());
+  expect([...moved].sort()).toEqual([...Object.keys(S0028_TRUNKS), ...Object.keys(followers), 'splenicArtery'].sort());
+  // La arteria esplénica, sin máscara, acompaña a la vena esplénica de la persona desde su origen celíaco (decisión 350).
+  const artery = axis(scene, 'splenicArtery');
+  expect(artery[0].p).toEqual(axis(foreign, 'splenicArtery')[0].p);
+  for (const n of artery.slice(1)) expect(toAxis(axis(scene, 'portalSplenic'), n.p)).toBeLessThan(6);
+  expect(artery.map((n) => n.r)).toEqual(axis(foreign, 'splenicArtery').map((n) => n.r));
   for (const [id, parent] of Object.entries(followers)) {
     const nodes = axis(scene, id),
       old = axis(foreign, id),
@@ -151,5 +156,5 @@ it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue 
     ).toEqual(old.map((n) => n.r));
   }
   // Lo demás no se mueve: la lista exacta de arriba ya lo exige; aquí, los testigos más visibles.
-  for (const id of ['interlobarVein1', 'hepaticArtery', 'splenicArtery']) expect(axis(scene, id), id).toEqual(axis(foreign, id));
+  for (const id of ['hepaticArtery', 'commonHepaticArtery', 'leftGastricArtery']) expect(axis(scene, id), id).toEqual(axis(foreign, id));
 });
