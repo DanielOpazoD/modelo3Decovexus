@@ -357,3 +357,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [351](DECISIONS.md#L11670) | Manda lo que se ve: grasa visceral ecogénica, espejo pleural y ventana de la cava en s0028 | vigente |
 | [352](DECISIONS.md#L11683) | La pared de s0028 se lee por capas: fascias a los dos lados, músculo estriado y grasa preperitoneal | vigente |
 | [353](DECISIONS.md#L11696) | Los ejes de los troncos de s0028 reparten el giro entre sus nodos | vigente |
+| [354](DECISIONS.md#L11710) | Los vasos de s0028 son curvas y sus luces no se atraviesan | vigente |

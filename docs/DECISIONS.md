@@ -11706,3 +11706,18 @@ cuadrados sobre la misma proyección. El instalador sigue rechazando un eje a m�
 **Consecuencias.** Giros mayores de 9° a 18° en porta y suprahepáticas (antes 17° a 52°); la cava y el final de la suprahepática
 derecha conservan uno de 26° y 42°. Siguen pendientes las curvas de verdad, la aurícula de s0028 y las luces que se cruzan.
 **Verificación.** Tabla de giros antes y ahora; láminas de las cuatro ventanas vasculares; `s0028Vessels`, `s0028Windows`.
+
+## 354. Los vasos de s0028 son curvas y sus luces no se atraviesan
+
+**Contexto.** Tras la 353 los ejes seguían siendo poligonales de 9 nodos, y la vena mesentérica superior atravesaba la cava (11 mm
+de solape de luces), la arteria renal derecha también (5 mm) y la hepática común cruzaba el tronco portal por su centro: heredaban
+el trayecto de la otra persona.
+**Opciones.** Curvas de verdad en el motor (cambia `tubeQuery` y sus gemelos, y mueve los vasos de la otra persona); o seguir con
+tramos rectos y dar más tramos a s0028, que es lo elegido.
+**Decisión.** `smoothAxis` reparte cada eje sobre la Catmull-Rom centrípeta que pasa por sus nodos, a giro acumulado constante
+(8° por unión, hasta `S0028_TUBE_SEGMENTS` = 24 tramos); el shader de s0028 redefine su techo de tramos y el de la otra persona no
+cambia. La mesentérica superior se siguió corte a corte en el TAC; la arteria mesentérica, la renal derecha y las hepáticas, que
+no se distinguen en esa fase, se trazan por relación anatómica. `vesselOverlap.test.ts` exige que ninguna luz atraviese otra.
+**Consecuencias.** Giros de 8° a 10° en los troncos; 493 nodos de 640. Cuesta un 7–10 % de tiempo de cuadro en las ventanas con
+más vasos (medido en Metal sin cabecera). Sin cambios en la pared portal ni en el final torácico de la cava.
+**Verificación.** Tabla de giros y de solapes antes y ahora; láminas de las ventanas vasculares; paridad CPU/GPU en Metal.

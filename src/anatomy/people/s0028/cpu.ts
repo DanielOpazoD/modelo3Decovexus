@@ -8,7 +8,7 @@ import { installS0028Assets } from './assets';
 import { createSourceQueries } from './atlas';
 import { classifyInside, classifyWall } from './classifier';
 import { createSolidsQueries } from './solids';
-import { placeS0028Vessels } from './vessels';
+import { placeS0028Vessels, smoothS0028Vessels } from './vessels';
 import { createWallQueries } from './wall';
 import { GASTRIC_WALL } from '../../organs/abdomen';
 import { orthonormalBasis } from '../../primitives';
@@ -48,6 +48,7 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     atlas: Object.freeze({ ...createAbdominalQueries(assets), ...createThoracicQueries(assets) }),
     skinMm: 1.5,
     curveVessels: placeS0028Vessels,
+    smoothVessels: smoothS0028Vessels,
     // Marco de cada riñón, de su máscara: centro, eje largo (componente principal) y dirección del hilio (su muesca). Sitúa los
     // vasos del hilio y las interlobares en el riñón de esta persona; el parénquima sigue saliendo del rótulo del TAC.
     kidneyFrame: (side) => {

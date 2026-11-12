@@ -549,3 +549,12 @@ La carta de s0028 da el espesor del panículo y de la banda blanda de la pared. 
 músculo estriado (no hay máscara de rectos ni oblicuos); la fascia superficial se pone al 45 % del espesor de la grasa; y la grasa a
 menos de 15 mm por dentro de la cara interna de la pared se dibuja hipoecoica como preperitoneal. Son reglas para que la pared se
 lea como en una ecografía [EXTRAPOLACIÓN PROPIA]; ninguna es una medida de esta persona.
+
+### s0028: vasos sin máscara, trazados por relación anatómica (354)
+
+La arteria mesentérica superior, la arteria renal derecha y las arterias hepática común y propia de s0028 no tienen máscara ni
+realce suficiente en su TAC. Su trayecto es una tabla escrita a mano (`ROUTES` en `people/s0028/vessels.ts`) que respeta las
+relaciones habituales: la mesentérica nace de la cara anterior de la aorta, pasa por delante de la vena renal izquierda y baja a la
+izquierda de su vena; la renal derecha pasa por detrás de la cava; la hepática común sale por encima de la confluencia portal y
+queda por delante de la porta. La vena mesentérica superior sí es la del TAC. Los ejes de todos los troncos se dibujan como curvas
+que pasan por los nodos medidos: entre nodos, la curva es una interpolación [EXTRAPOLACIÓN PROPIA], no una medida.
