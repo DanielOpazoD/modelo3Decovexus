@@ -347,3 +347,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [341](DECISIONS.md#L11547) | El riñón s0028 lleva el interior de su propio TAC | vigente |
 | [342](DECISIONS.md#L11559) | Mover la sonda no cuesta dos tercios de los cuadros | vigente |
 | [343](DECISIONS.md#L11571) | La grasa de s0028 llega a todo el abdomen superior | vigente |
+| [344](DECISIONS.md#L11582) | La prueba de pared de s0028 lleva una cota por backend | vigente |

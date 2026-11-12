@@ -1203,6 +1203,8 @@ export interface WallNormalStats {
   min: number;
   /** |g_GPU/g_TS − 1| de la norma del gradiente: percentil 95. */
   normErrP95: number;
+  /** |ifd_GPU − ifd_TS| en mm, percentil 95: cuánto se aparta la cara de la GPU de la de la CPU. */
+  ifdErrP95: number;
   worst: string;
 }
 
@@ -1215,7 +1217,7 @@ export function wallNormalStats(sim: Simulator): WallNormalStats {
   const caliber = sim.anatomy.caliberFor(sim.sample);
   const toMaterial = (p: Vec3): Vec3 => sim.anatomy.deformation.toMaterial(p, sim.sample.resp);
   const reach = scene.wallThickness() + 12;
-  const cand: { p: Vec3; face: Interface; normal: Vec3; norm: number }[] = [];
+  const cand: { p: Vec3; face: Interface; ifd: number; normal: Vec3; norm: number }[] = [];
   for (let u = 0; u < tr.lines; u += 2) {
     const theta = -tr.halfSector + (2 * tr.halfSector * (u + 0.5)) / tr.lines;
     for (let r = 0.025; r < reach; r += 0.05) {
@@ -1225,7 +1227,7 @@ export function wallNormalStats(sim: Simulator): WallNormalStats {
       if (!isWallLayerInterface(c.interface) && !isRibInterface(c.interface)) continue;
       if (c.interfaceDistance < FACE_BAND_MM[0] || c.interfaceDistance > FACE_BAND_MM[1]) continue;
       const g = scene.faceGradient(m, caliber);
-      if (g) cand.push({ p, face: c.interface, normal: g.normal, norm: g.norm });
+      if (g) cand.push({ p, face: c.interface, ifd: c.interfaceDistance, normal: g.normal, norm: g.norm });
     }
   }
   const step = Math.max(1, cand.length / WALL_POINTS_MAX);
@@ -1236,6 +1238,7 @@ export function wallNormalStats(sim: Simulator): WallNormalStats {
   const byFace: Record<string, number> = {};
   const dots: { dot: number; i: number }[] = [];
   const errs: number[] = [];
+  const shifts: number[] = [];
   let mismatched = 0;
   chosen.forEach((c, i) => {
     byFace[Interface[c.face]] = (byFace[Interface[c.face]] ?? 0) + 1;
@@ -1244,17 +1247,20 @@ export function wallNormalStats(sim: Simulator): WallNormalStats {
       mismatched++;
       return;
     }
+    shifts.push(Math.abs(gpu.ifd[i] - c.ifd));
     const n = gpu.normal!;
     dots.push({ dot: Math.abs(n[i * 3] * c.normal[0] + n[i * 3 + 1] * c.normal[1] + n[i * 3 + 2] * c.normal[2]), i });
     if (gpu.gradNorm) errs.push(Math.abs(gpu.gradNorm[i] / c.norm - 1));
   });
   dots.sort((a, b) => a.dot - b.dot);
   errs.sort((a, b) => a - b);
+  shifts.sort((a, b) => a - b);
   const w = dots[0];
   return {
     points: dots.length,
     byFace,
     mismatched,
+    ifdErrP95: shifts.length ? shifts[Math.floor(0.95 * shifts.length)] : Number.NaN,
     p05: dots.length ? dots[Math.floor(0.05 * dots.length)].dot : Number.NaN,
     min: w ? w.dot : Number.NaN,
     normErrP95: errs.length ? errs[Math.min(errs.length - 1, Math.floor(0.95 * errs.length))] : Number.NaN,
@@ -1696,6 +1702,10 @@ export interface RespirationParityStats {
   p99WeightDiffU: number;
   /** Máximo |∇GPU − ∇CPU| (1/mm) donde el peso de ambos está en la rampa. */
   maxGradientDiff: number;
+  /** Puntos, D/E o U, con |peso GPU − CPU| > 0,05: la proyección a la piel cayó en otra celda de la carta. */
+  weightOutliers: number;
+  /** Percentil 99 de |∇GPU − ∇CPU| (1/mm): lo que queda al apartar esos puntos aislados. */
+  p99GradientDiff: number;
 }
 
 function respirationParityStats(sim: Simulator): RespirationParityStats {
@@ -1710,6 +1720,7 @@ function respirationParityStats(sim: Simulator): RespirationParityStats {
     }
   const gpu = sim.gpuRespiration(new Float32Array(points));
   const diffsU: number[] = [];
+  const diffsG: number[] = [];
   const stats: RespirationParityStats = {
     points: points.length / 3,
     known: 0,
@@ -1719,11 +1730,14 @@ function respirationParityStats(sim: Simulator): RespirationParityStats {
     maxWeightDiffU: 0,
     p99WeightDiffU: 0,
     maxGradientDiff: 0,
+    weightOutliers: 0,
+    p99GradientDiff: 0,
   };
   for (let i = 0; i < points.length / 3; i++) {
     const m: Vec3 = [points[3 * i], points[3 * i + 1], points[3 * i + 2]];
     const w = scene.respiratoryWeight(m),
       dw = Math.abs(gpu[4 * i] - w);
+    if (dw > 0.05) stats.weightOutliers++;
     if ((scene.person?.cpu.regional?.s0028InsideWall(m) ?? null) === null) {
       stats.u++;
       if (w > 0) stats.movingU++;
@@ -1735,13 +1749,13 @@ function respirationParityStats(sim: Simulator): RespirationParityStats {
     }
     if (w > 0.02 && w < 0.98) {
       const g = respiratoryWeightGradient(scene, m);
-      stats.maxGradientDiff = Math.max(
-        stats.maxGradientDiff,
-        Math.hypot(gpu[4 * i + 1] - g[0], gpu[4 * i + 2] - g[1], gpu[4 * i + 3] - g[2]),
-      );
+      diffsG.push(Math.hypot(gpu[4 * i + 1] - g[0], gpu[4 * i + 2] - g[1], gpu[4 * i + 3] - g[2]));
     }
   }
   diffsU.sort((a, b) => a - b);
+  diffsG.sort((a, b) => a - b);
   stats.p99WeightDiffU = diffsU[Math.floor(0.99 * (diffsU.length - 1))] ?? 0;
+  stats.maxGradientDiff = diffsG[diffsG.length - 1] ?? 0;
+  stats.p99GradientDiff = diffsG[Math.floor(0.99 * (diffsG.length - 1))] ?? 0;
   return stats;
 }
