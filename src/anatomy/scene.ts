@@ -458,6 +458,7 @@ export class AnatomyScene {
     );
     // la forma orgánica de las suprahepáticas y la porta (decisión 90): su semilla es su índice en la lista de la GPU (el H2.w
     // de la textura de escena, la del ruido de su radio) y su clase, la de su sistema
+    person.cpu.smoothVessels?.(parents);
     this.vessels = [...parents, ...branches].map((v, i) => {
       const cls = tubeShapeClassOf(v.id);
       return cls ? { ...v, tube: { ...v.tube, shape: tubeShapeOf(i, cls, v.tube.nodes) } } : v;

@@ -869,8 +869,9 @@ export class UltrasoundRenderer {
       // H4: la forma orgánica (decisión 90) con la escala de radio 1 (por cuadro, con la del instante) o la marca del radio
       // smoothstep de la VCI infrahepática
       this.headerAll.set(tubeShapeTexel(t.tube, 1), (h + 4) * 4);
-      if (t.tube.nodes.length - 1 > MAX_TUBE_SEGMENTS)
-        throw new Error(`Tubo con ${t.tube.nodes.length - 1} segmentos (máximo del shader ${MAX_TUBE_SEGMENTS})`);
+      const segments = this.gpu?.tubeSegments ?? MAX_TUBE_SEGMENTS;
+      if (t.tube.nodes.length - 1 > segments)
+        throw new Error(`Tubo con ${t.tube.nodes.length - 1} segmentos (máximo del shader ${segments})`);
       for (const node of t.tube.nodes) {
         if (n >= MAX_NODES) throw new Error('Demasiados nodos de tubo para el shader');
         this.sceneData.set([node.p[0], node.p[1], node.p[2], node.r], (NODE_BASE + n) * 4);

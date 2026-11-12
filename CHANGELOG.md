@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: los vasos se dibujan como curvas (hasta 24 tramos por tubo) y ninguna luz atraviesa otra: la mesentérica superior sale de su TAC y deja de cruzar la cava; arteria mesentérica, renal derecha y hepáticas se retrazan (354)
+
 - Anatomía s0028: los ejes de la porta, la cava, la aorta y las suprahepáticas reparten el giro entre sus nodos y dejan de quebrarse en esquinas (353)
 
 - Imagen s0028: la pared se lee por capas (fascia superficial, vaina a los dos lados, músculo estriado, grasa preperitoneal hipoecoica), la cápsula renal es una línea continua y la ventana hepatorrenal muestra el riñón tras el hígado, sin colon delante (352)

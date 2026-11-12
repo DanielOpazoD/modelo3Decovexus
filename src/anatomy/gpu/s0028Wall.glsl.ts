@@ -1,5 +1,6 @@
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
 import { S0028_SCARPA_FRACTION } from '../people/s0028/solidsData';
+import { S0028_TUBE_SEGMENTS } from '../people/s0028/vessels';
 import { s0028SolidsShader } from './s0028Solids.glsl';
 
 const offsets = (rows: readonly (readonly number[])[]) => rows.map((v) => `ivec3(${v.join(',')})`).join(',');
@@ -14,6 +15,9 @@ const offsets = (rows: readonly (readonly number[])[]) => rows.map((v) => `ivec3
  */
 const R = B.wallDerived.ramps.placement;
 export const S0028_WALL_GLSL = /* glsl */ `
+// Los ejes de s0028 son curvas repartidas en más tramos que los de la otra persona (decisión 354): su techo por tubo.
+#undef MAX_TUBE_SEGMENTS
+#define MAX_TUBE_SEGMENTS ${S0028_TUBE_SEGMENTS}
 const ivec3 S28_WALL_OFF[16]=ivec3[](${offsets(B.wall.placements)});
 vec2 s28Project(vec3 p,out float depth,out vec3 g,out vec3 s,out vec2 xy){
   depth=torsoDepth(p);g=s28DepthGradient(p);

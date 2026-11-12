@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-12",
- "main": "aaba2fb",
+ "main": "f6f14f7",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -49,7 +49,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 16193
+   "actual": 16218
   },
   {
    "what": "`annotation-capacity.gzip.bin`",
@@ -65,7 +65,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 252662
+   "actual": 252697
   },
   {
    "what": "`candidate-manifest.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 54542
+   "actual": 14398
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14398
+   "actual": 56850
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 22706
+   "actual": 1631
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 22746
   },
   {
    "what": "`series.js`",
@@ -289,7 +289,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 485
+   "actual": 5730
   },
   {
    "what": "`surfaces.js`",
@@ -297,7 +297,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 485
   },
   {
    "what": "`teacherTab.js`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1040332
+   "actual": 1040392
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1106796
+   "actual": 1109204
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -485,7 +485,7 @@
     "branches": 2914,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "8fe78b8770cf61bc5273801ac9fa8e987cf063616d11353fe3e87680b60cad53"
+    "sourceSha256": "d72df55fad69de93b47da892a2f4f0d57299d15a9fa29090ce3151b43f22c2d3"
    }
   },
   {
@@ -504,7 +504,7 @@
     "branches": 1189,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "a99d13dfae51530d65f5eeaf0ebf933659a464da7930d7760aa9ab352598a352"
+    "sourceSha256": "5e8a8d2b5546cd2de393d113b07b7d624427a997eecda4b54af5a2e78c99ec37"
    }
   },
   {
@@ -523,7 +523,7 @@
     "branches": 891,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "94c661be315a0b33fe836b633565315f34d06c2cb294ce1afa4732b078dc15d1"
+    "sourceSha256": "3caa25fcd3bc79c26fb4b7591748c891f3e456afb118377a35508b1d8aa8db1c"
    }
   },
   {
@@ -542,7 +542,7 @@
     "branches": 893,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "27a81f317cd4d9a036089dd61626177f6969931d43fd18f9b16da9b24f3d1aac"
+    "sourceSha256": "15d5c9a58ab3cd74627491ff7d7b837c06719e1a926f3f0447733a1eab794fb1"
    }
   },
   {
@@ -561,7 +561,7 @@
     "branches": 585,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "423c45114cdee1d696e7eb2295f8b1c73e79cdb9566668d0343b1061bb4373d7"
+    "sourceSha256": "66dc062cc81711d03844b83d91700938e49485c47a7156e5fae6ee4676889287"
    }
   },
   {
@@ -580,7 +580,7 @@
     "branches": 1310,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "06f01c855cdfa467f93a1e294efe47cad528c5ac9e1674d1d6a73ce95b986b07"
+    "sourceSha256": "e571f660c5eb8dd203de45089495ff1dad019c3e16afcaa50376014731a3108a"
    }
   },
   {
@@ -599,7 +599,7 @@
     "branches": 635,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "c44900fb98863967cabdaa27c357d260d6b8049ca374059b37b31086d61e13f5"
+    "sourceSha256": "07c8115ec6dd8ccd06ba5a18de9e47f5fb5bbf9937f03b3a93095bd96beea04e"
    }
   },
   {
@@ -618,13 +618,13 @@
     "branches": 592,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "6667e52b6f328b57e84b3fd51a13294655cefcc71539633d5b33422aa284a657"
+    "sourceSha256": "0e68d0c24768d0947c50c28653051222096c551bf2a94d81acbdff1f8170c88a"
    }
   }
  ],
  "s0028DescriptorSha256": "fd1b1d17d634db116f9eb3b27e3c235e47b172c7a30713e7fc502aa3063a9115",
  "tests": {
-  "vitestFiles": 334,
+  "vitestFiles": 335,
   "slowFiles": 34,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,

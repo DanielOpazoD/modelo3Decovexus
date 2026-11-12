@@ -23,6 +23,8 @@ export interface AnatomyPerson {
   readonly skinMm: number;
   /** Construction-only refinement of this person’s registered vascular landmarks. */
   readonly curveVessels?: (vessels: VesselDef[]) => void;
+  /** Tras colocar las ramas procedurales: el eje de los vasos madre como curva (más nodos, mismos extremos). */
+  readonly smoothVessels?: (vessels: VesselDef[]) => void;
   readonly regional?: ReturnType<typeof createSourceQueries> &
     ReturnType<typeof createWallQueries> &
     ReturnType<typeof createSolidsQueries>;
@@ -45,6 +47,8 @@ export interface AtlasUpload {
 export interface PersonGpuPlan {
   readonly specializeFragment: (source: string) => string;
   readonly uploads: readonly AtlasUpload[];
+  /** Tramos por tubo que recorre el shader de esta persona; sin él, `MAX_TUBE_SEGMENTS`. */
+  readonly tubeSegments?: number;
 }
 
 export interface InstalledCpuPerson {
