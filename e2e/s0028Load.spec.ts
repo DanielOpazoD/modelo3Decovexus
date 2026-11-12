@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { PersonBuffers } from '../src/anatomy/personAssets';
-import { bootWithoutErrors, budget, withinFrames } from './support';
+import { bootWithoutErrors, budget, withinSimSeconds } from './support';
 
 interface WorkerEvidence {
   initializations: Array<{ person: unknown; abdominalBytes: number; thoracicBytes: number; wallBytes: number; skinBytes: number }>;
@@ -53,7 +53,9 @@ test('s0028 carga una sola persona, dibuja y rechaza procedencia corrupta', asyn
   });
   const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028');
   expect(await page.evaluate(() => window.__vexusTest!.sim().scene.identity.person)).toBe('s0028');
-  await withinFrames(page, 30, 'el Worker diferido entrega un mapa s0028 real', () =>
+  // El primer mapa espera a que el Worker descargue su chunk y construya la persona: tiempo de CPU, no cuadros. En una GPU
+  // nativa 30 cuadros son medio segundo; 8 s de simulación son al menos 32 cuadros en SwiftShader (≤ 0,25 s por cuadro).
+  await withinSimSeconds(page, 8, 'el Worker diferido entrega un mapa s0028 real', () =>
     page.evaluate(() => window.s0028WorkerEvidence.maps > 0 || 'mapa pendiente'),
   );
   const worker = await page.evaluate(() => window.s0028WorkerEvidence);

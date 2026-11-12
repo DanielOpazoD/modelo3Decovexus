@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import type { CutMapReply } from '../src/ui/cutMapProtocol';
 import type { PersonBundleGraph } from '../tools/ci/personBundles';
-import { BOOT_MS, bootWithoutErrors, budget, withinFrames } from './support';
+import { BOOT_MS, bootWithoutErrors, budget, withinSimSeconds } from './support';
 
 // El grafo lo escribe el build; se lee al ejecutar, no al listar las pruebas (la CI lista sin `dist/`).
 let cached: PersonBundleGraph | undefined;
@@ -20,7 +20,9 @@ test('default carga sus vistas y Worker sin solicitar ningún módulo privado s0
   const requests: string[] = [];
   context.on('request', (request) => requests.push(new URL(request.url()).pathname.slice(1)));
   const errors = await bootWithoutErrors(page, '?e2e=1&docente');
-  await withinFrames(page, 30, 'Worker diferido default entrega un mapa', () =>
+  // El primer mapa espera a que el Worker descargue su chunk y construya la persona: tiempo de CPU, no cuadros. En una GPU
+  // nativa 30 cuadros son medio segundo; 8 s de simulación son al menos 32 cuadros en SwiftShader (≤ 0,25 s por cuadro).
+  await withinSimSeconds(page, 8, 'Worker diferido default entrega un mapa', () =>
     page.evaluate(() => !!document.querySelector('#cutmap')?.getAttribute('data-acquired-frame') || 'mapa pendiente'),
   );
   expect(await page.evaluate(() => window.__vexusTest!.sim().scene.identity.person)).toBe('current');
