@@ -355,3 +355,5 @@ Generado por `npm run docs:index` — no editar a mano.
 | [349](DECISIONS.md#L11644) | La cava y las suprahepáticas de s0028 salen de su TAC | vigente |
 | [350](DECISIONS.md#L11657) | Los vasos renales de s0028 van en el marco de su riñón | vigente |
 | [351](DECISIONS.md#L11670) | Manda lo que se ve: grasa visceral ecogénica, espejo pleural y ventana de la cava en s0028 | vigente |
+| [352](DECISIONS.md#L11683) | La pared de s0028 se lee por capas: fascias a los dos lados, músculo estriado y grasa preperitoneal | vigente |
+| [353](DECISIONS.md#L11696) | Los ejes de los troncos de s0028 reparten el giro entre sus nodos | vigente |

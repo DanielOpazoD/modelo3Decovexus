@@ -1,4 +1,5 @@
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
+import { S0028_SCARPA_FRACTION } from '../people/s0028/solidsData';
 import { s0028SolidsShader } from './s0028Solids.glsl';
 
 const offsets = (rows: readonly (readonly number[])[]) => rows.map((v) => `ivec3(${v.join(',')})`).join(',');
@@ -57,6 +58,22 @@ vec4 s28WallAt(vec3 p,out bool valid){
   valid=s28Valid(g,s,depth,b);
   return vec4(b.xyz,-depth);
 }
+// Cara y distancia de una muestra de la pared conocida: piel, fascia superficial de la grasa (a S28_SCARPA de su espesor), vaina
+// anterior (cara externa de la banda) y vaina posterior con el peritoneo (cara interna). La fascia se ve desde sus dos lados.
+const float S28_SCARPA=${S0028_SCARPA_FRACTION.toFixed(2)};
+void s28WallLayer(vec4 q,inout Cls c){
+  if(q.w<q.x){
+    c.tissue=T_FAT;c.bd=max(0.0,min(q.w-1.5,q.x-q.w));
+    c.iface=IF_SKIN_FAT;c.ifd=q.w-1.5;
+    float ds=abs(q.w-1.5-S28_SCARPA*(q.x-1.5)),df=q.x-q.w;
+    if(ds<c.ifd){c.iface=IF_SCARPA;c.ifd=ds;}
+    if(df<c.ifd){c.iface=IF_DEEP_FASCIA;c.ifd=df;}
+    return;
+  }
+  float da=q.w-q.x,dp=q.y-q.w;
+  c.tissue=T_MUSCLE;c.bd=max(0.0,min(da,dp));
+  c.iface=da<dp?IF_DEEP_FASCIA:IF_PERITONEUM;c.ifd=abs(da<dp?da:dp);
+}
 float s28Inside(vec3 m){bool valid;vec4 q=s28WallAt(m,valid);return valid?q.w-q.z:-1000.0;}
 // ∇(profundidad − frontera k), k: 0 externa, 1 interna, 2 interfaz: −∇τ − P(∂B/∂c·∇c + ∂B/∂f·∇f), P = I − ∇τ∇τᵀ/|∇τ|²;
 // k=3, piel E a 1,5 mm: −∇τ. La pendiente bilineal sale de las mismas cuatro esquinas. Gemelo: s0028WallFaceGradient.
@@ -90,6 +107,28 @@ float s28RespWall(vec3 m){
   if(s28Valid(g,s,depth,b))return smoothstep(0.0,25.0,-depth-b.z);
   vec2 r=s28Ramp(rc.y);
   return smoothstep(r.x,r.y,-depth);
+}
+`;
+
+/**
+ * Estrías del músculo de la pared de s0028 (decisión 352): las del perimisio de `muscleStriation`, apoyadas en la vaina anterior de
+ * la carta de esta persona en lugar de en las capas procedurales, sin las ondas largas ni la pendiente de la fascia de la otra.
+ * Fuera de la banda conocida no hay estría: el músculo posterior fuente sigue liso. La sal de la máscara (83,7) es la de la otra.
+ * @twin textura-pared
+ */
+const S0028_STRIATION_GLSL = /* glsl */ `
+vec4 muscleStriation(vec3 m){
+  bool valid;vec4 q=s28WallAt(m,valid);
+  if(!valid||q.w<q.x||q.w>=q.y)return vec4(0.0,1.0,0.0,0.0);
+  float u=wallArc(m),v=m.z;
+  vec3 noise=striationNoise(vec2(u,v));
+  float jitterGain=WT_STRIA_JITTER*WT_STRIA_SPACING;
+  float s=(q.w-q.x+jitterGain*(noise.x-0.5))/WT_STRIA_SPACING;
+  float mask=smoothstep(WT_STRIA_MASK0,WT_STRIA_MASK1,wallNoise(vec3(u/WT_STRIA_SEGMENT_MM,v/WT_STRIA_SEGMENT_MM,s*1.37),83.7));
+  vec3 gradient=-torsoDepthGrad(m)+jitterGain*(noise.y*wallArcGradient(m)+vec3(0.0,0.0,noise.z));
+  vec2 cell=floor(vec2(u,v)/WT_STRIA_CELL_MM+0.6*noise.x);
+  float x=laminaDistance(s,cell.x,cell.y)*WT_STRIA_SPACING/WT_STRIA_SIGMA;
+  return vec4(normalize(gradient),mask*exp(-0.5*x*x));
 }
 `;
 
@@ -145,7 +184,7 @@ float wallFaceSd(vec3 m,int face){
  bool valid;vec4 q=s28WallAt(m,valid);
  float nan=uintBitsToFloat(0x7fc00000u);
  if(!valid)return nan;
- return q.w-(face==IF_DEEP_FASCIA?q.x:face==IF_TRANSVERSALIS?q.y:face==IF_PERITONEUM?q.z:nan);
+ return q.w-(face==IF_SCARPA?1.5+S28_SCARPA*(q.x-1.5):face==IF_DEEP_FASCIA?q.x:face==IF_TRANSVERSALIS?q.y:face==IF_PERITONEUM?q.z:nan);
 }`,
   );
   changed = replace(
@@ -154,7 +193,7 @@ float wallFaceSd(vec3 m,int face){
     'wallFaceGradient',
     `
 vec3 wallFaceGradient(vec3 m,int face){
- int k=face==IF_SKIN_FAT?3:face==IF_DEEP_FASCIA?0:face==IF_TRANSVERSALIS?1:face==IF_PERITONEUM?2:-1;
+ int k=face==IF_SKIN_FAT||face==IF_SCARPA?3:face==IF_DEEP_FASCIA?0:face==IF_TRANSVERSALIS?1:face==IF_PERITONEUM?2:-1;
  float sd;bool valid;vec3 g=s28FaceGradient(m,max(k,0),sd,valid);
  return valid&&k>=0?g:vec3(uintBitsToFloat(0x7fc00000u));
 }`,
@@ -180,9 +219,7 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
  if(s<0.0){c.tissue=T_CARTILAGE;c.bd=-s;c.iface=IF_PERICHONDRIUM;c.ifd=-s;return true;}
  bool valid;vec4 q=s28WallAt(m,valid);
  if(!valid||q.w>=q.z)return false;
- bool fat=q.w<q.x;float outer=fat?1.5:q.x,inner=fat?q.x:q.y;
- c.tissue=fat?T_FAT:T_UNSEGMENTED;c.bd=max(0.0,min(q.w-outer,inner-q.w));
- c.iface=fat?IF_DEEP_FASCIA:IF_PERITONEUM;c.ifd=abs(inner-q.w);return true;
+ s28WallLayer(q,c);return true;
 }`,
   );
   // P3 (decisión 321, r3): dueños independientes, conflicto U, riñón U con su contorno O, grasa D y tubos; sin cortina
@@ -214,9 +251,8 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
     'exp(-0.5*((r-rk)/1.2)*((r-rk)/1.2))',
   );
   if (/pow\(\s*\(r\s*-\s*rk\)/.test(changed)) throw new Error('Reverberación s0028 con pow de base negativa');
-  // La banda D/E no es músculo identificado y el músculo posterior fuente no tiene capas: sin estriación.
-  if (/vec4\s+muscleStriation\s*\(/.test(changed))
-    changed = replace(changed, 'vec4', 'muscleStriation', 'vec4 muscleStriation(vec3 m){return vec4(0.0,1.0,0.0,0.0);}');
+  // La banda de la pared lleva las estrías sobre su propia carta; el músculo posterior fuente no tiene capas y queda liso.
+  if (/vec4\s+muscleStriation\s*\(/.test(changed)) changed = replace(changed, 'vec4', 'muscleStriation', S0028_STRIATION_GLSL);
   changed = replace(
     changed,
     'float',

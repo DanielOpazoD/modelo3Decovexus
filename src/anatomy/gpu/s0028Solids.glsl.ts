@@ -2,6 +2,7 @@ import { GALLBLADDER_WALL_MM } from '../organs/gallbladder';
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
 import {
   S0028_RENAL_FACE_MM,
+  S0028_PREPERITONEAL_MM,
   S0028_SUBCUTANEOUS_REACH_MM,
   s0028FatPages,
   s0028RenalPages,
@@ -205,7 +206,7 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   }
   else if(k==8&&s28PLA(m,8)>0.0){c.tissue=s28PLA(m,8)<=2.0?T_PSOAS:T_MUSCLE;c.bd=-od;return;}
   // Grasa del TAC: dentro de la cavidad es visceral y ecogénica; solo el panículo conserva el material de la pared.
-  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:!(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?T_FAT:s28PFatIn(m,0)||s28PFatIn(m,1)?T_PERIRENAL:T_MESENTERIC_FAT;c.bd=0.0;}
+  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:!(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?T_FAT:s28PFatIn(m,0)||s28PFatIn(m,1)?T_PERIRENAL:e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}?T_FAT:T_MESENTERIC_FAT;c.bd=0.0;}
   else{
     float dome=s28Dia(m);
     if(dome>=0.0){c.tissue=T_DIAPHRAGM;c.bd=min(min(dome,DIAPHRAGM_MM-dome),e.z);
@@ -238,9 +239,7 @@ Cls classifyWith(vec3 m,bool withCurtain){
     return c;
   }
   if(k==16){
-    bool fat=q.w<q.x;float outer=fat?1.5:q.x,inner=fat?q.x:q.y;
-    c.tissue=fat?T_FAT:T_UNSEGMENTED;c.bd=max(0.0,min(q.w-outer,inner-q.w));
-    c.iface=fat?IF_DEEP_FASCIA:IF_PERITONEUM;c.ifd=abs(inner-q.w);return c;
+    s28WallLayer(q,c);return c;
   }
   classifyInside(m,k,od,vec3(e,valid?q.w-q.z:1e3),c);
   if(b.x>=0.0&&b.x<1.3&&b.x<c.ifd&&c.tissue!=T_LUNG&&c.tissue!=T_FLUID&&c.tissue!=T_BLOOD&&thoracicMaterial(s28PLT(m,0))==0){
@@ -248,8 +247,29 @@ Cls classifyWith(vec3 m,bool withCurtain){
   return c;
 }`;
 
-/** Cara renal s0028: la normal es el gradiente analítico del riñón (`s28PGrad`). @twin s0028-gradiente-renal */
-const RENAL_FACE_GLSL = /* glsl */ `vec3 renalAtlasFaceGradient(vec3 m,bool fat){return (2.0*FACE_GRAD_EPS)*s28PGrad(m);}`;
+/**
+ * Cara renal s0028: la normal media del contorno a 3 mm (cuatro lecturas en tetraedro, gemelo: `s0028KidneyFaceGradient`), como la
+ * cápsula hepática del atlas (decisión 301). Con el gradiente local de la trilineal (`s28PGrad`) la normal seguía el escalón del
+ * vóxel y la cápsula se partía en cuentas (decisión 352). Mezcla continua con el local: donde la media se anula o se da la vuelta
+ * (un borde fino del hilio) manda el local, sin un salto que la CPU y la GPU puedan resolver distinto; junto al borde de la caja,
+ * también.
+ * @twin s0028-gradiente-renal
+ */
+const RENAL_FACE_GLSL = /* glsl */ `
+vec3 renalAtlasFaceGradient(vec3 m,bool fat){
+  int k=m.x<10.0?3:4;vec2 e=vec2(3.0,-3.0);
+  vec3 g=s28PGrad(m),q=(m-S28A_LO[k])/1.5,r=S28A_DIM[k]-1.0-q;
+  // Las cuatro lecturas caen dentro de la caja sólo a más de 3 mm de su borde: la media entra de 3 a 4,5 mm.
+  float wb=smoothstep(3.0,4.5,1.5*min(min(min(q.x,q.y),q.z),min(min(r.x,r.y),r.z)));
+  if(wb>0.0){
+    vec3 v=(e.xyy*s28PA(m+e.xyy,k)+e.yyx*s28PA(m+e.yyx,k)+e.yxy*s28PA(m+e.yxy,k)+e.xxx*s28PA(m+e.xxx,k))/36.0;
+    // Acuerdo entre la media y el local: su coseno; con el local degenerado (un nodo extremo de la trilineal, |g| → 0) vale 1.
+    float lv=length(v),lg=length(g);
+    float agree=dot(v,g)/max(lv*max(lg,0.25),1e-6)+1.0-min(1.0,lg/0.25);
+    g=mix(g,v,wb*smoothstep(0.3,0.7,lv)*smoothstep(0.0,0.5,agree));
+  }
+  return (2.0*FACE_GRAD_EPS)*g;
+}`;
 // Zonas rígidas por dueño en la compresión (par GLSL de `rigidDepth` y `tableAt`): (κ, d₁, L) por nodo, interpolados
 // como la CPU entre los dos nodos del tramo; la pared (d < D) no cambia; bajo ella
 // σ = D + κ·(d − D − clamp(d − d₁, 0, L)).

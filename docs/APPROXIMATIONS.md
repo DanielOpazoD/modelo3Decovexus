@@ -542,3 +542,10 @@ perirrenal (en las cajas de 1,5 mm junto al riñón) o de la visceral (en el res
 «Dentro» es pasada la cara interna de la pared conocida; donde la carta no conoce la celda, a más de 50 mm de la piel, un umbral
 fijo tomado del espesor de la pared de esta persona. Es una regla de aspecto [EXTRAPOLACIÓN PROPIA], no una segmentación de
 compartimentos grasos.
+
+### s0028: capas de la pared que el TAC no resuelve (352)
+
+La carta de s0028 da el espesor del panículo y de la banda blanda de la pared. Lo demás es aspecto estimado: la banda se dibuja como
+músculo estriado (no hay máscara de rectos ni oblicuos); la fascia superficial se pone al 45 % del espesor de la grasa; y la grasa a
+menos de 15 mm por dentro de la cara interna de la pared se dibuja hipoecoica como preperitoneal. Son reglas para que la pared se
+lea como en una ecografía [EXTRAPOLACIÓN PROPIA]; ninguna es una medida de esta persona.

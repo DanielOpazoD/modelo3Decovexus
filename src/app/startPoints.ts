@@ -324,7 +324,7 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   intercostal: { phi: 3.5, z: -105, yaw: -0.826, rock: 0.489, tilt: 0.499 },
   subcostal: { phi: 2.35, z: -88.5, yaw: 1.114, rock: 0.325, tilt: -0.345 },
   subxiphoid: { phi: 1.65, z: -65, yaw: -0.037, rock: 0.063, tilt: -0.115 },
-  hepatorenal: { phi: 2.8, z: -125, yaw: -0.114, rock: 0.132, tilt: -0.351 },
+  hepatorenal: { phi: 3.09, z: -110, yaw: -0.267, rock: 0.136, tilt: -0.213 },
   renal: { phi: 3.35, z: -115, yaw: -0.498, rock: 0.083, tilt: 0.11 },
 };
 const S0028_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...S0028_POSES[sp.id] }));

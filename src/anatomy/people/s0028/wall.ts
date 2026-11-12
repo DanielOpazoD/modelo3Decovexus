@@ -4,6 +4,7 @@ import type { PersonAssets } from '../../personAssets';
 import { S0028_WALL_PACKAGE as P } from '../../s0028WallData';
 import type { createSourceQueries } from './atlas';
 import { S0028_BUNDLE as B } from './descriptor';
+import { S0028_SCARPA_FRACTION } from './solidsData';
 type Provenance = 'U' | 'O' | 'D' | 'E';
 const PROVENANCE: readonly Provenance[] = ['U', 'O', 'D', 'E'];
 export type S0028WallSample =
@@ -12,6 +13,8 @@ export type S0028WallSample =
       kind: 'known';
       depthMm: number;
       outerMm: number;
+      /** Fascia superficial del panículo: estimada a una fracción del espesor de la grasa (`S0028_SCARPA_FRACTION`). */
+      superficialFasciaMm: number;
       innerMm: number;
       interfaceMm: number;
       provenance: readonly [Provenance, Provenance, Provenance, Provenance];
@@ -192,6 +195,7 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
       kind: 'known',
       depthMm,
       outerMm: cell.mix(0, 0),
+      superficialFasciaMm: 1.5 + S0028_SCARPA_FRACTION * (cell.mix(0, 0) - 1.5),
       innerMm: cell.mix(0, 1),
       interfaceMm: cell.mix(1, 0),
       provenance: [

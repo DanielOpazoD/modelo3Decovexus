@@ -11679,3 +11679,30 @@ gradiente de su distancia como normal. La ventana de la cava apunta a su tramo i
 digestivo como obstáculo. `docs/REGLAS.md` recoge el criterio: cada ventana se juzga mirándola.
 **Consecuencias.** Sin halo de «líquido» ni cuñas negras; diafragma brillante con tejido detrás. La cápsula renal sigue «a cuentas».
 **Verificación.** Hojas de las ocho ventanas antes y ahora; oráculo `fatLook` en las pruebas; paridad GPU en Metal.
+
+## 352. La pared de s0028 se lee por capas: fascias a los dos lados, músculo estriado y grasa preperitoneal
+
+**Contexto.** El responsable: «la pared abdominal no tiene sentido» y «la separación entre órganos no es clara». Capa por capa,
+s0028 dibujaba la vaina anterior solo desde la grasa, la banda sin estrías, la grasa preperitoneal brillante sobre el hígado y la
+cápsula renal a cuentas; en la hepatorrenal, entre la pared y el riñón había colon con textura de hígado.
+**Opciones.** No inventar capas que el TAC no resuelve (regla anterior) o dibujar las que todo ecografista ve; se elige lo segundo.
+**Decisión.** La banda es músculo de pared con estrías sobre su propia carta; la vaina se ve desde ambos lados; el panículo lleva
+una fascia superficial estimada (`S0028_SCARPA_FRACTION`); la grasa a menos de `S0028_PREPERITONEAL_MM` de la cara interna es
+hipoecoica; el lóbulo de la cápsula renal mira la normal media a 3 mm; la hepatorrenal se apoya donde el hígado cubre el riñón.
+**Consecuencias.** La pared se parece a la de la persona por defecto. El contenido del colon sigue pareciendo hígado: pendiente.
+**Verificación.** Láminas ampliadas de la pared y hoja de las ocho ventanas; pruebas de clasificación, carta y programas.
+Todo ello es [EXTRAPOLACIÓN PROPIA]. No es validación clínica.
+
+## 353. Los ejes de los troncos de s0028 reparten el giro entre sus nodos
+
+**Contexto.** El responsable: «la forma de los vasos tampoco» tiene sentido. Los troncos del TAC se ajustaban añadiendo cada vez
+el punto más saliente del eje: los nodos caían en las esquinas y la poligonal se quebraba a la vista (giros de 26° en la porta y
+de 52° en una suprahepática). El tubo admite 9 nodos; el motor dibuja tramos rectos entre ellos.
+**Opciones.** Dibujar curvas entre nodos (cambia el motor de tubos en CPU, Worker y GPU, y mueve los vasos de la otra persona);
+o colocar mejor los mismos nodos, que es lo que se hace ahora.
+**Decisión.** `s0028-trunks.py` suaviza el eje por longitud de arco con los extremos fijos y coloca los nodos por mínimos cuadrados
+de la distancia al eje más el giro en cada nodo, mientras la poligonal siga a menos de 1,5 mm del eje; los radios, por mínimos
+cuadrados sobre la misma proyección. El instalador sigue rechazando un eje a más de 2 mm del medido.
+**Consecuencias.** Giros mayores de 9° a 18° en porta y suprahepáticas (antes 17° a 52°); la cava y el final de la suprahepática
+derecha conservan uno de 26° y 42°. Siguen pendientes las curvas de verdad, la aurícula de s0028 y las luces que se cruzan.
+**Verificación.** Tabla de giros antes y ahora; láminas de las cuatro ventanas vasculares; `s0028Vessels`, `s0028Windows`.

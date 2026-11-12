@@ -1468,7 +1468,7 @@ export const TWINS: readonly TwinPair[] = [
         ],
         templates: ['WALL_TEXTURE_GLSL'],
       },
-      { file: 'src/anatomy/gpu/s0028Wall.glsl.ts', symbols: ['muscleStriation'], templates: ['s0028WallShader'] },
+      { file: 'src/anatomy/gpu/s0028Wall.glsl.ts', symbols: ['muscleStriation'], templates: ['S0028_STRIATION_GLSL'] },
     ],
     evidence: [
       {
@@ -1723,7 +1723,7 @@ export const CONSTANTES_COPIADAS: Readonly<Record<string, readonly string[]>> = 
   'src/anatomy/compression.ts': ['warpBound', 'smoothstepSlope'],
   // wallDiffuseLobe: el 1 de tan²θ = (1 − cos²θ)/cos²θ y, en s0028, el lóbulo 1 (Lambert, decisión 327)
   'src/anatomy/gpu/personShader.ts': ['registeredDomeSample', 'hepaticDomeValue', 'digestiveWallMm', 'wallDiffuseLobe'],
-  'src/anatomy/gpu/s0028Wall.glsl.ts': ['visceralHeight', 'muscleStriation'],
+  'src/anatomy/gpu/s0028Wall.glsl.ts': ['visceralHeight'],
   'src/anatomy/organs/abdomen.ts': ['digestiveWallMm', 'digestiveWallTissue', 'digestiveGasPlane'],
   'src/anatomy/organs/bowel.ts': ['bowelGasSdf'],
   // wallRegion toma sus números de WALL.region en TS: wallRegionField y wallTextureParity comprueban sus parámetros y

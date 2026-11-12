@@ -6,6 +6,16 @@ export const S0028_RENAL_FACE_MM = 1.2;
  * esta persona mide 29 mm de mediana y 39 en su percentil 90, y la cara interna de su pared, 38 y 48.
  */
 export const S0028_SUBCUTANEOUS_REACH_MM = 50;
+/**
+ * Fascia superficial del panículo (la capa membranosa que todo ecografista ve como una línea continua dentro de la grasa): el TAC no
+ * la resuelve, así que su profundidad es una fracción estimada del espesor de la grasa de esta persona, no una medida.
+ */
+export const S0028_SCARPA_FRACTION = 0.45;
+/**
+ * La grasa pegada por dentro a la pared (preperitoneal, propia de la pared) es hipoecoica como el panículo; la de más adentro es
+ * visceral y ecogénica. Espesor máximo estimado de esa lámina (mm): en el epigastrio de esta persona mide 10 a 12 mm.
+ */
+export const S0028_PREPERITONEAL_MM = 15;
 /** Colocación xyz de cada página 32×32 RG16F de grasa en el atlas abdominal: x/32 + 6·y/32 + 48·z, tres cifras en base 36. */
 export const s0028FatPages = (): number[][] =>
   Array.from({ length: B.solids.pages.length / 3 }, (_, i) => {

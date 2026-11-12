@@ -654,10 +654,13 @@ vec4 s28WallAt(vec3 p,out bool valid){`,
       if (graph.has('wallDepths')) expect(graph.get('wallDepths'), name).not.toMatch(/0x7fc00000u/);
     }
     // Negativo: la sustitución anterior en NaN vuelve a estar al alcance de la estriación del paso B.
-    const nanLayers = personShader(PASSES.FRAG_RAWFIELD, S0028).replace(
-      'vec4 muscleStriation(vec3 m){return vec4(0.0,1.0,0.0,0.0);}',
-      'vec4 muscleStriation(vec3 m){vec4 w=wallDepths(0.0,m.z);return vec4(0.0,1.0,0.0,w.y);}',
-    );
+    // La estriación de s0028 lee las capas de su carta (decisión 352), nunca las procedurales.
+    const own = glslCallGraph(personShader(PASSES.FRAG_RAWFIELD, S0028)).get('muscleStriation')!;
+    expect(own).toContain('s28WallAt');
+    expect(own).not.toContain('wallDepths');
+    const guard = 'if(!valid||q.w<q.x||q.w>=q.y)';
+    expect(own).toContain(guard);
+    const nanLayers = personShader(PASSES.FRAG_RAWFIELD, S0028).replace(guard, `vec4 w=wallDepths(0.0,m.z);${guard}`);
     expect(glslCallGraph(nanLayers).get('muscleStriation')).toContain('wallDepths');
   });
 

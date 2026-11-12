@@ -6,7 +6,7 @@ import { abdomenQuery } from '../../organs/abdomen';
 import { gallbladderSdf } from '../../organs/gallbladder';
 import { heartFloor, ivcAtrium, thorax } from '../../organs/heart';
 import type { S0028Ownership } from '../../people/s0028/solids';
-import { S0028_RENAL_FACE_MM, S0028_SUBCUTANEOUS_REACH_MM } from '../../people/s0028/solidsData';
+import { S0028_PREPERITONEAL_MM, S0028_RENAL_FACE_MM, S0028_SUBCUTANEOUS_REACH_MM } from '../../people/s0028/solidsData';
 import { sdDiaphragmSlope } from '../../primitives';
 import type { AnatomyScene, Classification, VesselCaliber } from '../../scene';
 import { NONE } from '../../scene';
@@ -61,18 +61,32 @@ export function classifyWall(
   }
   if (q?.kind !== 'known' || q.depthMm >= q.interfaceMm)
     return { final: false, wallMm: d - (q?.kind === 'known' ? q.depthMm - q.interfaceMm : 1e3), solids };
+  // Capas de la pared de esta persona (decisión 352): la grasa y la banda vienen de su TAC; la fascia superficial es estimada. La
+  // vaina anterior se ve desde la grasa y desde el músculo: una cara que solo se dibujaba por un lado quedaba a medio trazo.
   const fat = q.depthMm < q.outerMm;
-  const outer = fat ? 1.5 : q.outerMm,
-    inner = fat ? q.outerMm : q.innerMm;
-  // Banda blanda D/E, no músculo segmentado. No se inventan Scarpa, oblicuos ni grasa preperitoneal.
+  let face = Interface.SkinFat,
+    faceMm = q.depthMm - 1.5;
+  if (fat) {
+    const scarpa = Math.abs(q.depthMm - q.superficialFasciaMm),
+      fascia = q.outerMm - q.depthMm;
+    if (scarpa < faceMm) [face, faceMm] = [Interface.Scarpa, scarpa];
+    if (fascia < faceMm) [face, faceMm] = [Interface.DeepFascia, fascia];
+  } else {
+    const anterior = q.depthMm - q.outerMm,
+      posterior = q.innerMm - q.depthMm;
+    [face, faceMm] = anterior < posterior ? [Interface.DeepFascia, Math.abs(anterior)] : [Interface.Peritoneum, Math.abs(posterior)];
+  }
   return {
     final: true,
     cls: {
       ...NONE,
-      tissue: fat ? Tissue.Fat : Tissue.UnsegmentedSoftTissue,
-      boundaryDistance: Math.max(0, Math.min(q.depthMm - outer, inner - q.depthMm)),
-      interface: fat ? Interface.DeepFascia : Interface.Peritoneum,
-      interfaceDistance: Math.abs(inner - q.depthMm),
+      tissue: fat ? Tissue.Fat : Tissue.Muscle,
+      boundaryDistance: Math.max(
+        0,
+        fat ? Math.min(q.depthMm - 1.5, q.outerMm - q.depthMm) : Math.min(q.depthMm - q.outerMm, q.innerMm - q.depthMm),
+      ),
+      interface: face,
+      interfaceDistance: faceMm,
       wall: fat ? 'fat-D/E' : 'band-D/E',
       solids,
     },
@@ -185,10 +199,13 @@ export function classifyInside(
     // material hipoecoico del panículo el riñón parecía rodeado de líquido. Dentro de la pared conocida ya decidió `classifyWall`.
     if (owner === 'compatible_fat') {
       // «Dentro»: la carta da geometría de pared en este punto (la misma consulta que la GPU), o está muy por debajo de la piel.
-      const visceral = scene.person.cpu.regional!.s0028InsideWall(m) !== null || -depth > S0028_SUBCUTANEOUS_REACH_MM;
+      const inside = scene.person.cpu.regional!.s0028InsideWall(m);
+      const visceral = inside !== null || -depth > S0028_SUBCUTANEOUS_REACH_MM;
       // Junto al riñón (cajas de grasa a 1,5 mm, hasta 30 mm de él) es grasa perirrenal, la más brillante: el riñón resalta.
       const perirenal = scene.person.cpu.regional!.s0028CompatibleFat(m) !== null;
-      const fat = !visceral ? Tissue.Fat : perirenal ? Tissue.PerirenalFat : Tissue.MesentericFat;
+      // Pegada por dentro a la pared es la grasa preperitoneal: hipoecoica como el panículo, no un parche brillante sobre el hígado.
+      const preperitoneal = inside !== null && inside < S0028_PREPERITONEAL_MM;
+      const fat = !visceral ? Tissue.Fat : perirenal ? Tissue.PerirenalFat : preperitoneal ? Tissue.Fat : Tissue.MesentericFat;
       return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? fat, boundaryDistance: 0 }, solids!);
     }
     // Diafragma de esta persona (decisión 348): la máscara de cada órgano ya ganó antes; no corta el hígado.
