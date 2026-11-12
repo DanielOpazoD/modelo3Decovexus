@@ -2,13 +2,13 @@
 export const S0028_WALL_PACKAGE = {
   capacity: {
     rawBytes: 5671296,
-    gzipBytes: 284466,
-    sha256Gzip: '12de9273bd95f78d2a4795f67dc01b7a0221c19ece370fd503883ddbedc4fe0b',
-    sha256Raw: 'b551085384a1588b0b664a9032da49204643805eb77a2ea23c6152f94ddbd729',
+    gzipBytes: 334410,
+    sha256Gzip: '9fbf416baae79f5a93dbe7474a39c25d6069a7a85a55d5f73fcc6eb620915dee',
+    sha256Raw: '6dddc99da7afa46d7aa0b4d608f8a524f996c71cd5ea00e98ab431e3963166ac',
   },
   manifest: {
     bytes: 38309,
-    sha256: '224282500f7a3f0e5dd372d198da10b68d6376cd42b8c0974ef81ebb65328af7',
+    sha256: 'e8447c28934e91518c587a7d178b09207da8f9979d5fca94dbc5fa98be0bdd2d',
   },
   descriptor: {
     format: 's0028-wall-regional-v1',

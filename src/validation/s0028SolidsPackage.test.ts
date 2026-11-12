@@ -77,3 +77,25 @@ it('la tabla de páginas que la GPU lleva como constante es la de la reserva ver
   expect(() => setS0028Solids(r)).toThrow(/Tabla de páginas/);
   setS0028Solids(raw());
 });
+
+it('la grasa del abdomen a 3 mm va tras el bloque P3, dentro de la reserva de pared, sin tocar lo anterior (decisión 343)', () => {
+  const S = B.solids,
+    F = B.wideFat,
+    r = new Uint8Array(raw());
+  expect(F.offsetBytes).toBe(S.offsetBytes + S.encodedBytes + S.pageTableBytes);
+  expect(F.encodedBytes).toBe(Math.ceil(F.byteCount / 2048) * 4096);
+  expect(F.offsetBytes + F.encodedBytes).toBeLessThanOrEqual(344 * 256 * 8 * 3);
+  expect(F.byteCount).toBe(Math.ceil((F.dimensions[0] * F.dimensions[1] * F.dimensions[2]) / 8));
+  // Los bytes de la reserva son los del generador: mismo hash que el `wide-fat.bin` del TAC, y relleno nulo.
+  const words = new Uint16Array(r.buffer, 4096 + F.offsetBytes, F.encodedBytes / 2);
+  const bytes = Uint8Array.from(words.subarray(0, F.byteCount), (w) => HALF[w]);
+  expect(sha(bytes)).toBe(F.sha256);
+  expect(words.subarray(F.byteCount).every((w) => w === 0)).toBe(true);
+  let fat = 0;
+  for (const b of bytes) for (let k = b; k; k >>= 1) fat += k & 1;
+  expect(fat).toBe(F.fatCells);
+  const header = JSON.parse(new TextDecoder().decode(r.subarray(8, 8 + new DataView(r.buffer).getUint32(4, true)))) as {
+    parts: { name: string; wideFatBytes?: number }[];
+  };
+  expect(header.parts.find((p) => p.name === 'wall')?.wideFatBytes).toBe(F.encodedBytes);
+});

@@ -283,7 +283,20 @@ it('un paquete enteramente U mantiene el fondo rotulado y nunca produce una band
     const scene = new AnatomyScene(NORMAL_ADULT);
     const p: Vec3 = [0, 109.03521552681923, -90];
     expect(s0028WallAt(p)).toMatchObject({ kind: 'unknown', reason: 'coverage' });
-    expect(scene.classify(p, BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.UnsegmentedSoftTissue, wall: 'U', boundaryDistance: 0 });
+    // Contrato sustituido (decisión 343): sin carta de pared, este punto del panículo ya no es fondo U, porque el TAC dice
+    // grasa (grasa D del abdomen a 3 mm). El fondo sigue rotulado U donde el TAC no dice grasa ni hay máscara.
+    expect(scene.classify(p, BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.Fat, boundaryDistance: 0 });
+    let background: Vec3 | null = null;
+    for (let y = p[1]; y > 40 && !background; y -= 1.5) {
+      const q: Vec3 = [0, y, -90];
+      if (scene.classify(q, BASELINE_CALIBER).solids?.state === 'U') background = q;
+    }
+    expect(background).not.toBeNull();
+    expect(scene.classify(background!, BASELINE_CALIBER)).toMatchObject({
+      tissue: Tissue.UnsegmentedSoftTissue,
+      wall: 'U',
+      boundaryDistance: 0,
+    });
     expect(s0028InsideWall(p)).toBeNull();
     expect(scene.respiratoryWeight(p)).toBe(0);
   } finally {

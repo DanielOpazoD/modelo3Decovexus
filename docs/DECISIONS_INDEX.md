@@ -346,3 +346,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [340](DECISIONS.md#L11535) | Reglas vigentes en una página y rumbo a una sola anatomía | vigente |
 | [341](DECISIONS.md#L11547) | El riñón s0028 lleva el interior de su propio TAC | vigente |
 | [342](DECISIONS.md#L11559) | Mover la sonda no cuesta dos tercios de los cuadros | vigente |
+| [343](DECISIONS.md#L11571) | La grasa de s0028 llega a todo el abdomen superior | vigente |

@@ -1,5 +1,6 @@
 import { S0028_SOLIDS_PACKAGE } from '../../s0028SolidsData';
 import { S0028_WALL_PACKAGE } from '../../s0028WallData';
+import { S0028_WIDE_FAT } from '../../s0028WideFatData';
 function freeze<T extends object>(value: T): T {
   for (const child of Object.values(value)) if (child && typeof child === 'object') freeze(child);
   return Object.freeze(value);
@@ -194,4 +195,5 @@ export const S0028_BUNDLE = freeze({
   wall: S0028_WALL_PACKAGE.descriptor,
   wallDerived: S0028_WALL_PACKAGE.derived,
   solids: S0028_SOLIDS_PACKAGE,
+  wideFat: S0028_WIDE_FAT,
 } as const);

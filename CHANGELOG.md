@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: la grasa del TAC llega a todo el abdomen superior; el fondo oscuro alrededor del riñón pasa a ser tejido ecogénico (343).
+
 - Rendimiento: mover la sonda ya no baja la imagen de 60 a 20 cuadros por segundo; va aproximadamente al doble, 37–49 en un M4 (342).
 
 - Anatomía s0028: el riñón deja de ser una mancha homogénea. Corteza, médula y seno salen del propio TAC, en la CPU, el corte y la imagen (341).
