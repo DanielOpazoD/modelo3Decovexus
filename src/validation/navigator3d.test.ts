@@ -1,8 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { SRGBColorSpace } from 'three';
 import { describe, expect, it } from 'vitest';
 import { HILUM_NOTCH, kidneyLocal } from '../anatomy/organs/kidney';
 import { windowMenuPoints } from '../app/windowGroups';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
+import { buildStaticTarget } from '../ui/navigator3d';
 import { CM } from '../ui/navigator3d/common';
 import { LABEL_NEAR_CM, LABEL_STEP_CM, windowLabelPositions } from '../ui/navigator3d/labels';
 import { buildKidneyMesh, buildLiverMesh } from '../ui/navigator3d/organs';
@@ -83,5 +86,24 @@ describe('Rótulos de los anillos de las ventanas en el 3D', () => {
         9,
       );
     });
+  });
+});
+
+describe('Escena estática guardada del navegador 3D', () => {
+  it('el destino guardado pide a three el mismo tono y color que la pantalla, y la versión instalada lo sigue cumpliendo', () => {
+    const target = buildStaticTarget(64, 48, 4);
+    expect([target.width, target.height, target.samples]).toEqual([64, 48, 4]);
+    expect(target.depthTexture).not.toBeNull();
+    expect(target.texture.colorSpace).toBe(SRGBColorSpace);
+    // Mismo formato en la textura y en su búfer multimuestra: con formatos distintos la resolución del antialiasing falla.
+    expect(target.texture.internalFormat).toBe('RGBA8');
+    expect((target as unknown as { isXRRenderTarget?: boolean }).isXRRenderTarget).toBe(true);
+    // three solo aplica el mapeo de tono y la codificación sRGB a la pantalla o a un destino con esa marca. Si una
+    // versión nueva lo cambia, el cuerpo guardado saldría sin tono ni gamma: esta prueba obliga a revisarlo al actualizar.
+    const programs = readFileSync('node_modules/three/src/renderers/webgl/WebGLPrograms.js', 'utf8');
+    expect(programs).toContain('currentRenderTarget === null || currentRenderTarget.isXRRenderTarget === true');
+    expect(programs).toContain('currentRenderTarget.isXRRenderTarget === true ? currentRenderTarget.texture.colorSpace');
+    target.depthTexture?.dispose();
+    target.dispose();
   });
 });

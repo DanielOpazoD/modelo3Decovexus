@@ -46,6 +46,63 @@ export interface NavigatorLayers {
   windows: boolean;
 }
 
+/**
+ * Destino de la escena estática. three.js solo aplica el mapeo de tono y la codificación sRGB al dibujar en pantalla o en
+ * un destino marcado `isXRRenderTarget` (WebGLPrograms y WebGLRenderer de three 0.186): con esa marca y la textura en sRGB,
+ * lo guardado tiene los mismos valores que tendría la pantalla y la mezcla del abanico translúcido no cambia.
+ * `navigator3d.test.ts` comprueba que la versión instalada conserva ese comportamiento.
+ */
+export function buildStaticTarget(width: number, height: number, samples: number): THREE.WebGLRenderTarget {
+  const target = new THREE.WebGLRenderTarget(width, height, {
+    samples,
+    depthBuffer: true,
+    depthTexture: new THREE.DepthTexture(width, height, THREE.UnsignedIntType),
+    minFilter: THREE.NearestFilter,
+    magFilter: THREE.NearestFilter,
+    generateMipmaps: false,
+  });
+  target.texture.colorSpace = THREE.SRGBColorSpace;
+  // Mismo formato en la textura y en su búfer multimuestra: sin él three elige SRGB8_ALPHA8 para uno y RGBA8 para la otra,
+  // y la resolución del antialiasing falla. Los valores guardados ya van codificados por el sombreador.
+  target.texture.internalFormat = 'RGBA8';
+  (target as unknown as { isXRRenderTarget: boolean }).isXRRenderTarget = true;
+  return target;
+}
+
+/** Un triángulo que cubre la pantalla y copia tal cual el color y la profundidad de la escena estática guardada. */
+function buildComposite() {
+  const material = new THREE.ShaderMaterial({
+    uniforms: { tColor: { value: null as THREE.Texture | null }, tDepth: { value: null as THREE.Texture | null } },
+    vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}',
+    fragmentShader:
+      'uniform sampler2D tColor;uniform sampler2D tDepth;varying vec2 vUv;void main(){gl_FragColor=texture2D(tColor,vUv);gl_FragDepth=texture2D(tDepth,vUv).r;}',
+    depthTest: true,
+    depthFunc: THREE.AlwaysDepth,
+    depthWrite: true,
+    toneMapped: false,
+    blending: THREE.NoBlending,
+  });
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 2, 0, 0, 2], 2));
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.frustumCulled = false;
+  const scene = new THREE.Scene();
+  scene.add(mesh);
+  return {
+    scene,
+    camera: new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1),
+    setSource(target: THREE.WebGLRenderTarget): void {
+      material.uniforms.tColor.value = target.texture;
+      material.uniforms.tDepth.value = target.depthTexture;
+    },
+    dispose(): void {
+      geometry.dispose();
+      material.dispose();
+    },
+  };
+}
+
 export class Navigator3D {
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
@@ -75,7 +132,16 @@ export class Navigator3D {
   private lastX = 0;
   private lastY = 0;
   private slideScale = { phiPerPixel: 0, zPerPixel: 0 };
+  /** Algo de la escena estática cambió (cámara, capas, anatomía, respiración, tamaño): hay que volver a dibujarla entera. */
   private dirty = true;
+  /** Solo cambiaron la sonda o el abanico: basta recomponer la escena estática guardada y dibujarlos encima. */
+  private poseDirty = true;
+  /**
+   * La escena estática ya dibujada con la cámara actual, color y profundidad. El cuerpo, los órganos y los vasos suman
+   * unos tres millones de triángulos; al mover la sonda solo cambian ella y el abanico, así que no se redibujan.
+   */
+  private staticTarget: THREE.WebGLRenderTarget | null = null;
+  private readonly composite = buildComposite();
   private renderSerial = 0;
   /** Cambia solo al enviar un dibujo real, también con cámara/capas en pausa. */
   get renderRevision(): number {
@@ -188,6 +254,9 @@ export class Navigator3D {
     window.removeEventListener('pointercancel', this.onUp);
     this.respiratoryMotion?.release();
     this.respiratoryMotion = null;
+    this.staticTarget?.depthTexture?.dispose();
+    this.staticTarget?.dispose();
+    this.composite.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }
@@ -381,19 +450,27 @@ export class Navigator3D {
     const key = [...fr.face, ...fr.axial, ...fr.lateral].map((v) => v.toFixed(4)).join('|');
     const resp = this.opts.getRespCaudalMm();
     const depth = this.opts.getDepthMm();
-    if (key !== this.lastPoseKey || Math.abs(resp - this.lastResp) > 0.3 || depth !== this.lastDepth) {
+    if (key !== this.lastPoseKey || depth !== this.lastDepth) {
       this.lastPoseKey = key;
-      this.lastResp = resp;
       this.lastDepth = depth;
+      this.poseDirty = true;
+    }
+    // La respiración mueve órganos y vasos: eso sí cambia la escena estática.
+    if (Math.abs(resp - this.lastResp) > 0.3) {
+      this.lastResp = resp;
       this.dirty = true;
     }
-    if (!this.dirty) return;
+    if (!this.dirty && !this.poseDirty) return;
+    const redrawStatic = this.dirty || !this.staticTarget;
     this.dirty = false;
-    // El mismo peso material que usa la anatomía: inserciones y región paravertebral quietas.
-    // OFF por defecto no crea los buffers; al apagar después se restauran las posiciones exactas.
-    if (resp !== 0 && !this.respiratoryMotion)
-      this.respiratoryMotion = bindRespiratoryMotion([this.organs, this.vessels], (m) => this.anatomy.respiratoryWeight(m));
-    this.respiratoryMotion?.apply(resp);
+    this.poseDirty = false;
+    if (redrawStatic) {
+      // El mismo peso material que usa la anatomía: inserciones y región paravertebral quietas.
+      // OFF por defecto no crea los buffers; al apagar después se restauran las posiciones exactas.
+      if (resp !== 0 && !this.respiratoryMotion)
+        this.respiratoryMotion = bindRespiratoryMotion([this.organs, this.vessels], (m) => this.anatomy.respiratoryWeight(m));
+      this.respiratoryMotion?.apply(resp);
+    }
     // sonda: base (lateral, elevación, axial) → (x, y, z) locales
     this.probe.position.set(fr.face[0] * CM, fr.face[1] * CM, fr.face[2] * CM);
     this.probe.setRotationFromMatrix(
@@ -401,9 +478,53 @@ export class Navigator3D {
     );
     updateFan(this.fan, this.fanEdges, fr, this.transducer, depth);
     this.updateCamera();
-    this.renderer.render(this.scene, this.camera);
+    if (redrawStatic) this.renderStatic();
+    this.renderMoving();
     this.renderSerial++;
     this.releaseRetired();
+  }
+
+  /** Lo que se mueve con la sonda; todo lo demás es la escena estática. */
+  private get moving(): THREE.Object3D[] {
+    return [this.probe, this.fan, this.fanEdges];
+  }
+
+  /** Dibuja la escena sin la sonda ni el abanico en el destino guardado, con el mismo tono y color que la pantalla. */
+  private renderStatic(): void {
+    const size = this.renderer.getDrawingBufferSize(new THREE.Vector2());
+    if (!this.staticTarget || this.staticTarget.width !== size.x || this.staticTarget.height !== size.y) {
+      this.staticTarget?.depthTexture?.dispose();
+      this.staticTarget?.dispose();
+      this.staticTarget = buildStaticTarget(
+        size.x,
+        size.y,
+        this.renderer.getContext().getParameter(WebGL2RenderingContext.SAMPLES) as number,
+      );
+      this.composite.setSource(this.staticTarget);
+    }
+    const moving = this.moving;
+    const shown = moving.map((o) => o.visible);
+    for (const o of moving) o.visible = false;
+    this.renderer.setRenderTarget(this.staticTarget);
+    this.renderer.render(this.scene, this.camera);
+    this.renderer.setRenderTarget(null);
+    moving.forEach((o, i) => (o.visible = shown[i]));
+  }
+
+  /** Copia a la pantalla el color y la profundidad guardados y dibuja encima solo la sonda y el abanico. */
+  private renderMoving(): void {
+    const still = [this.skin, this.skeleton, this.organs, this.vessels, this.windows];
+    const shown = still.map((o) => o.visible);
+    for (const o of still) o.visible = false;
+    this.renderer.autoClear = false;
+    try {
+      this.renderer.clear();
+      this.renderer.render(this.composite.scene, this.composite.camera);
+      this.renderer.render(this.scene, this.camera);
+    } finally {
+      this.renderer.autoClear = true;
+      still.forEach((o, i) => (o.visible = shown[i]));
+    }
   }
 
   private releaseRetired(): void {

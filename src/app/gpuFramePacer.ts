@@ -1,9 +1,16 @@
 type PendingGpuContext = { gl: WebGL2RenderingContext; sync: WebGLSync | null };
 
+/**
+ * RAF de espera a partir de las cuales se cede otra antes de adquirir. Una sola es una GPU real cuyo cuadro terminó justo
+ * después del refresco: ceder ahí convertía 30 cuadros por segundo en 20 al mover la sonda. Dos o más son una cola lenta
+ * (GPU por software, otra vista preparando sus recursos), el caso para el que existe la cesión.
+ */
+export const YIELD_AFTER_WAITS = 2;
+
 /** Una adquisición en vuelo por vista: la CPU no acumula cuadros por delante de la GPU. */
 export class GpuFramePacer {
   #pending: PendingGpuContext[] = [];
-  #waited = false;
+  #waits = 0;
 
   get inFlight(): boolean {
     return this.#pending.length > 0;
@@ -12,6 +19,7 @@ export class GpuFramePacer {
   /** Consulta sin espera; un contexto perdido queda a cargo del controlador de recuperación. */
   ready(): boolean {
     let completed = false;
+    let waiting = false;
     let error = '';
     for (let i = this.#pending.length - 1; i >= 0; i--) {
       const pending = this.#pending[i];
@@ -25,13 +33,13 @@ export class GpuFramePacer {
       if (!pending.sync) this.#fence(pending);
       const { sync } = pending;
       if (!sync) {
-        this.#waited = true;
+        waiting = true;
         error = 'No se pudo crear la valla del cuadro GPU';
         continue;
       }
       const status = gl.clientWaitSync(sync, 0, 0);
       if (status === gl.TIMEOUT_EXPIRED) {
-        this.#waited = true;
+        waiting = true;
         continue;
       }
       pending.sync = null;
@@ -40,14 +48,17 @@ export class GpuFramePacer {
         this.#pending.splice(i, 1);
         completed = true;
       } else {
-        this.#waited = true;
+        waiting = true;
         error = 'No se pudo comprobar la finalización del cuadro GPU';
       }
     }
-    const yieldFrame = this.#waited && completed;
-    if (!this.inFlight) this.#waited = false;
+    if (waiting) this.#waits++;
+    // Un fallo de valla no dice cuánto tardó el cuadro: se trata como una espera larga.
+    if (error) this.#waits = Math.max(this.#waits, YIELD_AFTER_WAITS);
+    const yieldFrame = this.#waits >= YIELD_AFTER_WAITS && completed;
+    if (!this.inFlight) this.#waits = 0;
     if (error) throw new Error(error);
-    // Si hubo espera, ceder una RAF con la cola vacía permite que otra vista
+    // Si la espera fue larga, ceder una RAF con la cola vacía permite que otra vista
     // prepare sus recursos antes de volver a ocupar la GPU. Sin demora fija.
     return !this.inFlight && !yieldFrame;
   }
