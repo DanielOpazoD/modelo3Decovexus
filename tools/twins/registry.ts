@@ -985,6 +985,14 @@ export const TWINS: readonly TwinPair[] = [
     evidence: [{ ...E.s0028Solids, scope: 'tejido del interior renal en los nodos y genéricos renales y en las diez ventanas' }],
   },
   {
+    id: 's0028-grasa-amplia',
+    what: 'Grasa compatible D del abdomen s0028 en celdas de 3 mm (mayoría de sus 8 vóxeles con HU de grasa y sin máscara fuente), fuera de las cajas renales.',
+    kind: 'cpu-glsl',
+    cpu: [{ file: 'src/anatomy/people/s0028/solids.ts', symbols: ['s0028WideFat'] }],
+    gpu: [{ file: 'src/anatomy/gpu/s0028Solids.glsl.ts', symbols: ['s28PWide', 's28PFatIn'], templates: ['S0028_SOLIDS_GLSL'] }],
+    evidence: [{ ...E.s0028Solids, scope: 'tejido en las celdas de la caja amplia y en las diez ventanas' }],
+  },
+  {
     id: 's0028-gradiente-renal',
     what: 'Normal de la cara renal s0028: gradiente analítico de la trilineal del riñón, con los ocho nodos de su celda.',
     kind: 'cpu-glsl',

@@ -1,6 +1,6 @@
 import { GALLBLADDER_WALL_MM } from '../organs/gallbladder';
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
-import { S0028_RENAL_FACE_MM, s0028FatPages, s0028RenalPages } from '../people/s0028/solidsData';
+import { S0028_RENAL_FACE_MM, s0028FatPages, s0028RenalPages, s0028WideFatPages } from '../people/s0028/solidsData';
 import { S0028_RENAL_INTERIOR as R } from '../s0028RenalInteriorData';
 import { RIGID_BASE } from './anatomy.glsl';
 
@@ -64,6 +64,7 @@ float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+fl
  * textura ni sampler nuevos).
  * @twin s0028-duenos
  * @twin s0028-interior-renal
+ * @twin s0028-grasa-amplia
  * @twin s0028-gradiente-renal
  */
 export const S0028_SOLIDS_GLSL = /* glsl */ `
@@ -98,6 +99,25 @@ int s28PRen(vec3 p){
   vec2 t=texelFetch(uAbdominalAtlas,S28N_PAGE[at>>11]+ivec3((h>>1)&31,h>>6,0),0).rg;
   return (int((h&1)==0?t.x:t.y)>>((i&1)<<2))&7;
 }
+const vec3 S28W_LO=${vec(B.wideFat.originMm)};
+const ivec3 S28W_DIM=ivec3(${B.wideFat.dimensions.join(',')});
+const ivec3 S28W_PAGE[${s0028WideFatPages().length}]=ivec3[](${s0028WideFatPages()
+  .map((p) => `ivec3(${p.join(',')})`)
+  .join(',')});
+// Grasa compatible D del abdomen en la celda de 3 mm que contiene p (gemelo: s0028WideFat): un byte exacto por half en
+// páginas 32×32 RG16F, bits little-endian, z rápida. Fuera de su caja no hay grasa.
+bool s28PWide(vec3 p){
+  ivec3 v=ivec3(floor((p-S28W_LO)/3.0)),n=S28W_DIM;
+  if(any(lessThan(v,ivec3(0)))||any(greaterThanEqual(v,n)))return false;
+  int bit=(v.x*n.y+v.y)*n.z+v.z,at=bit>>3,h=at&2047;
+  vec2 t=texelFetch(uAbdominalAtlas,S28W_PAGE[at>>11]+ivec3((h>>1)&31,h>>6,0),0).rg;
+  return ((int((h&1)==0?t.x:t.y)>>(bit&7))&1)==1;
+}
+// ¿Evalúa la grasa P3 este punto? Dentro de la caja b, con la misma regla de dominio que s28PFat.
+bool s28PFatIn(vec3 p,int b){
+  vec3 x=(p-S28F_LO[b])/1.5;
+  return !(any(lessThan(x,vec3(0.0)))||any(greaterThan(x,S28F_DIM[b]-1.0)));
+}
 void s28PAdd(inout int n,inout int k,inout float d,int id,float v){if(v<0.0){if(n==0){k=id;d=v;}n++;}}
 // Dueños independientes de un punto material (gemelo: s0028Owners): cuántos hay; k y d, el primero (con un solo dueño,
 // el único; ids de la tabla CPU: 9 hueso, 16 banda P2, 17 grasa). b: hueso torácico, lumbosacro, sacro y cartílago;
@@ -126,6 +146,8 @@ int s28POwn(vec3 m,vec4 q,bool valid,out int k,out float d,out vec4 b,out vec2 e
   if(valid&&q.w<q.z&&b.x>=0.0&&b.y>=0.0&&b.z>=0.0&&b.w>=0.0){if(n==0){k=16;d=-min(q.w-1.5,q.z-q.w);}n++;}
   // Grasa D sólo donde ninguna máscara reclama el punto, ni la lámina de los vasos fuente.
   if(n==(k==16?1:0)&&(s28PFat(m,0)||s28PFat(m,1))&&s28PA(m,12)>=0.0&&s28PA(m,13)>=0.0&&s28PA(m,14)>=0.0){if(n==0){k=17;d=0.0;}n++;}
+  // Fuera de las cajas renales, la grasa del abdomen a 3 mm: sólo sin ningún dueño (tampoco pared) ni vaso fuente.
+  if(n==0&&!s28PFatIn(m,0)&&!s28PFatIn(m,1)&&s28PWide(m)&&s28PA(m,12)>=0.0&&s28PA(m,13)>=0.0&&s28PA(m,14)>=0.0){k=17;d=0.0;n++;}
   return n;
 }
 // Gradiente analítico de la trilineal del riñón cuya caja contiene p (gemelo: s0028KidneyGradient): los ocho nodos de
@@ -192,6 +214,8 @@ Cls classifyWith(vec3 m,bool withCurtain){
   int k;float od;vec4 b;vec2 e;
   // P3: dos o más dueños son conflicto, U sin material elegido.
   if(s28POwn(m,q,valid,k,od,b,e)>1){c.tissue=T_UNSEGMENTED;c.bd=0.0;return c;}
+  // La grasa del abdomen a 3 mm no pisa la cúpula E de P7: ahí el punto queda sin dueño.
+  if(k==17&&!s28PFatIn(m,0)&&!s28PFatIn(m,1)){vec3 dn;float dome=sdDome(m,dn);if(dome>=0.0&&dome<DIAPHRAGM_MM)k=-1;}
   if(k==9||k==12){
     if(b.x<0.0){c.tissue=thoracicMaterial(s28PLT(m,0))==2?T_VERTEBRA:T_BONE;c.bd=-b.x;}
     else if(b.y<0.0){c.tissue=s28PLA(m,9)<=5.0?T_VERTEBRA:T_BONE;c.bd=-b.y;}

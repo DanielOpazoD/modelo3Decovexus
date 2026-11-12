@@ -495,3 +495,11 @@ hipótesis E (umbral de Otsu del HU suavizado; d′ nativo 1,4 y 1,3, bajo el 2,
 D. Los vasos del hilio y sus interfaces, que el exportador deja U, se muestran como contenido del seno
 (`s0028-renal-sinus-fill.py`): el compartimento es D, tratarlo como material ecogénico del seno es [EXTRAPOLACIÓN PROPIA]. La
 boca hiliar a menos de 3 mm del exterior sigue U. El HU decide dónde está cada tejido, no su brillo. No es validación clínica.
+
+### s0028: grasa del abdomen a 3 mm (343)
+
+Fuera de las cajas renales de la grasa P3, la grasa compatible D sale de celdas de 3 mm: una celda es grasa si al menos 5 de
+sus 8 vóxeles de 1,5 mm tienen HU en [−190, −30] y no pertenecen a ninguna máscara fuente. Es la misma regla a menor resolución:
+los bordes de esa grasa salen escalonados a 3 mm y una lámina de grasa más fina que la celda puede perderse. Solo se aplica donde
+ningún otro dueño reclama el punto, ni la pared, ni un vaso fuente, y nunca sobre la cúpula E del diafragma. Sin carta de pared,
+el panículo también sale como grasa porque el TAC lo dice. El HU decide dónde hay grasa, no su brillo. No es validación clínica.

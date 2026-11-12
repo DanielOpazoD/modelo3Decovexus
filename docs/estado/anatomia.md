@@ -1,6 +1,6 @@
 # Estado vigente: anatomía
 
-Actualizado: 2026-11-12 sobre main `cf69381`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
+Actualizado: 2026-11-12 sobre main `850c995`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
@@ -39,6 +39,7 @@ cubre con legacy. Tras P8, el corte sustituye el default por s0028 cuando pase l
 | P3 r3    | sólidos y posterior en la GPU                                             | 321 (en revisión) | fusionada      |
 | P3 r4    | interior renal desde el propio TAC, offline (se instala en r5)            | 321 (en revisión) | fusionada      |
 | P3 r5    | interior renal instalado en CPU, Worker y GPU, con el seno del hilio      | 341               | en PR          |
+| —        | grasa compatible D en todo el abdomen superior, a 3 mm                    | 343               | en PR          |
 | P4–P6    | digestivo, gas y capas; redes vasculares del mismo hígado                 | —                 | pendientes     |
 | P7–P8    | tórax y VCI–AD del caso; diez poses y adquisiciones, lista de relaciones  | —                 | pendientes     |
 
@@ -69,6 +70,7 @@ U es «desconocido»: el modelo no inventa tejido donde la fuente no lo dice.
 - Riñón: borde D. Su interior lleva el rótulo offline del propio TAC (r5, decisión 341): corteza y médula E dentro de la máscara;
   en el hueco del hilio, seno graso y colector D y vasos e interfaces del seno E. La boca hiliar y lo no rotulado siguen U.
 - Gerota, cuadrado lumbar y diafragma posterior: U en P3; la grasa entra solo como «grasa compatible» D (decisión 321).
+  Desde la decisión 343 esa grasa llega a todo el abdomen superior: a 1,5 mm hasta 30 mm del riñón y a 3 mm en el resto.
 - La zona respaldada por pulmón (portal e intercostal altas) es pared torácica: se difiere a P7–P8.
 
 ## Presupuestos de la persona s0028
@@ -77,16 +79,16 @@ Todos los techos de la aplicación, con su fuente, están en `docs/estado/presup
 
 <!-- presupuestos s0028: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `cf69381` el 2026-11-12 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `850c995` el 2026-11-12 con `tools/docs/estado.ts`.
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |
-| Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.433.526 |  4.566.474 | 318      |
+| Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.483.470 |  4.516.530 | 318      |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.567.375 | 10.942.627 | 317      |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | 317      |
 | Textura torácica s0028 en memoria (RAW)             |  60.413.664 |  60.413.664 |          0 | 317      |
 | `abdominal-direct.gzip.bin`                         |   8.567.375 |   8.567.375 |          0 | 317      |
-| `annotation-capacity.gzip.bin`                      |     856.999 |     284.466 |    572.533 | 320      |
+| `annotation-capacity.gzip.bin`                      |     856.999 |     334.410 |    522.589 | 320      |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | 321      |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | 317      |
 | `surfaces.gzip.bin`                                 |   9.672.026 |   5.340.216 |  4.331.810 | 318      |

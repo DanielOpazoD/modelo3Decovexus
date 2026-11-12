@@ -3,7 +3,7 @@ import { gunzipSync } from 'node:zlib';
 import { expect, it, vi } from 'vitest';
 import { HALF } from '../anatomy/halfFloat';
 import { gpuPlan } from '../anatomy/people/s0028/gpu';
-import { s0028RenalPages } from '../anatomy/people/s0028/solidsData';
+import { s0028RenalPages, s0028WideFatPages } from '../anatomy/people/s0028/solidsData';
 import { createAbdominalTexture } from '../ultrasound/abdominalTexture';
 import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
 import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
@@ -75,7 +75,7 @@ it('sube los 16 tiles RG16F y centros como vistas en el único atlas P1, sin cop
   expect(pages).toHaveLength(77);
   // Interior renal (decisión 341): 46 páginas más, en huecos propios del mismo atlas y fuera de la reserva de pared; cada
   // half es un byte exacto con dos códigos de vóxel válidos (0 U, 3, 4, 9, 10, 13).
-  const renal = allPages.slice(77);
+  const renal = allPages.slice(77, 123);
   expect(renal.map((u) => [u.x, u.y, u.z])).toEqual(s0028RenalPages());
   expect(renal).toHaveLength(46);
   const taken = new Set(s0028FatPages().map((o) => o.join()));
@@ -90,6 +90,16 @@ it('sube los 16 tiles RG16F y centros como vistas en el único atlas P1, sin cop
       expect([0, 3, 4, 9, 10, 13]).toContain(byte >> 4);
     }
   }
+  // Grasa del abdomen a 3 mm (decisión 343): 43 páginas más, vistas de la misma reserva tras el bloque P3, en huecos propios.
+  const wide = allPages.slice(123);
+  expect(wide.map((u) => [u.x, u.y, u.z])).toEqual(s0028WideFatPages());
+  expect(wide).toHaveLength(43);
+  wide.forEach((u, i) => {
+    expect(taken.has([u.x, u.y, u.z].join())).toBe(false);
+    taken.add([u.x, u.y, u.z].join());
+    expect(u.input.buffer).toBe(capacity);
+    expect([u.input.byteOffset, u.input.length]).toEqual([4096 + B.wideFat.offsetBytes + 4096 * i, 2048]);
+  });
   expect(data.every((x) => x === 0)).toBe(true);
 });
 

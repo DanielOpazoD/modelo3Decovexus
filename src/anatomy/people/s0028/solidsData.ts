@@ -13,3 +13,9 @@ export const s0028RenalPages = (): number[][] =>
     const c = parseInt(R.pages.slice(3 * i, 3 * i + 3), 36);
     return [(c % 6) * 32, (Math.floor(c / 6) % 8) * 32, Math.floor(c / 48)];
   });
+/** Colocación xyz de cada página 32×32 RG16F de la grasa del abdomen a 3 mm, con el mismo código que la grasa P3. */
+export const s0028WideFatPages = (): number[][] =>
+  Array.from({ length: B.wideFat.pages.length / 3 }, (_, i) => {
+    const c = parseInt(B.wideFat.pages.slice(3 * i, 3 * i + 3), 36);
+    return [(c % 6) * 32, (Math.floor(c / 6) % 8) * 32, Math.floor(c / 48)];
+  });

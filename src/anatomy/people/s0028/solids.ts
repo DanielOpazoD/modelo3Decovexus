@@ -5,7 +5,7 @@ import { S0028_RENAL_INTERIOR as R } from '../../s0028RenalInteriorData';
 import { S0028_RENAL_INTERIOR_RUNS } from '../../s0028RenalInteriorRuns';
 import { sourceDistance, sourceLabel } from '../../sourceVolume';
 import { S0028_BUNDLE as B } from './descriptor';
-import { s0028FatPages, s0028RenalPages } from './solidsData';
+import { s0028FatPages, s0028RenalPages, s0028WideFatPages } from './solidsData';
 import type { S0028WallSample } from './wall';
 /** O máscara fuente automática; D derivación reproducible; E hipótesis acotada; U desconocido (decisión 321). */
 export type S0028Certainty = 'O' | 'D' | 'E' | 'U';
@@ -115,6 +115,7 @@ export function createSolidsQueries(assets: PersonAssets) {
     VESSELS.some((f) => sourceDistance(f.asset === 'abdominal' ? abdominalAtlas! : thoracicAtlas!, p, f, B[f.asset].textureDimensions) < 0);
 
   let fat: Uint16Array | undefined;
+  let wideFat: Uint16Array | undefined;
   /**
    * Vista del bloque P3 de la reserva verificada (tras el derivado P2): un byte por half exacto, bits little-endian,
    * cajas xyz con z rápida. Ninguna copia; rechaza bytes no enteros, fuera de 0…255, relleno no nulo o una tabla de
@@ -130,7 +131,15 @@ export function createSolidsQueries(assets: PersonAssets) {
     }
     const table = new Uint16Array(capacity, 4096 + S.offsetBytes + S.encodedBytes, S.pageTableBytes / 2);
     if (s0028FatPages().flat().join() !== table.join()) throw new Error('Tabla de páginas P3 distinta');
+    // Grasa del abdomen a 3 mm, tras el bloque P3 en la misma reserva: un byte por half exacto, relleno nulo.
+    const F = B.wideFat;
+    const wide = new Uint16Array(capacity, 4096 + F.offsetBytes, F.encodedBytes / 2);
+    for (let i = 0; i < wide.length; i++) {
+      const v = HALF[wide[i]];
+      if (i < F.byteCount ? !(v >= 0 && v <= 255 && v === Math.floor(v)) : wide[i] !== 0) throw new Error('Grasa amplia corrupta');
+    }
     fat = words;
+    wideFat = wide;
   }
 
   /** Las páginas de grasa en sus colocaciones del atlas abdominal ya asignado: texSubImage, sin textura ni sampler nuevos. */
@@ -139,6 +148,7 @@ export function createSolidsQueries(assets: PersonAssets) {
     return [
       ...s0028FatPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: fat!.subarray(2048 * i, 2048 * (i + 1)) })),
       ...s0028RenalUploads(),
+      ...s0028WideFatPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: wideFat!.subarray(2048 * i, 2048 * (i + 1)) })),
     ];
   }
 
@@ -213,6 +223,23 @@ export function createSolidsQueries(assets: PersonAssets) {
   }
 
   /**
+   * Grasa compatible D del abdomen en celdas de 3 mm (mayoría de sus 8 vóxeles de 1,5 mm con HU [−190, −30] y sin máscara
+   * fuente): la celda que contiene p. Fuera de su caja, o sin la reserva cargada, no hay grasa. Par GLSL: `s28PWide`.
+   * @twin s0028-grasa-amplia
+   */
+  function s0028WideFat(p: Vec3): boolean {
+    if (!wideFat) return false;
+    const F = B.wideFat,
+      [nx, ny, nz] = F.dimensions,
+      x = Math.floor((p[0] - F.originMm[0]) / 3),
+      y = Math.floor((p[1] - F.originMm[1]) / 3),
+      z = Math.floor((p[2] - F.originMm[2]) / 3);
+    if (!(x >= 0 && y >= 0 && z >= 0 && x < nx && y < ny && z < nz)) return false;
+    const bit = (x * ny + y) * nz + z;
+    return ((HALF[wideFat[bit >> 3]] >> (bit & 7)) & 1) === 1;
+  }
+
+  /**
    * Zonas rígidas por dueño en la compresión (r3), a lo largo de la línea E + dir·t del tronco rígido (en apnea, material =
    * rígido): la entrada de cada hueso o cartílago (hasta ocho) y los tramos renales [entrada, salida] (el quiste y el seno
    * no son máscara renal: quedan entre dos tramos). Pasos de 0,75 mm afinados por bisección.
@@ -281,9 +308,21 @@ export function createSolidsQueries(assets: PersonAssets) {
       owners.push({ id: 'wall', d: -Math.min(q.depthMm - 1.5, q.interfaceMm - q.depthMm), certainty: q.depthMm < q.outerMm ? 'D' : 'U' });
     if (!owners.some((o) => o.id !== 'wall') && s0028CompatibleFat(p) && !insideVessel(p))
       owners.push({ id: 'compatible_fat', d: 0, certainty: 'D' });
+    // Fuera de las cajas renales la grasa P3 no está evaluada: ahí vale la del abdomen a 3 mm, sólo donde no hay ningún
+    // dueño (tampoco la pared, que ya tiene su panículo) ni vaso fuente.
+    if (!owners.length && s0028CompatibleFat(p) === null && s0028WideFat(p) && !insideVessel(p))
+      owners.push({ id: 'compatible_fat', d: 0, certainty: 'D' });
     return { state: owners.length > 1 ? 'conflict' : owners.length ? 'known' : 'U', owners, kidneyMm };
   }
 
   if (assets.buffers.capacity) setS0028Solids(assets.buffers.capacity);
-  return Object.freeze({ s0028SolidsUploads, s0028KidneyGradient, s0028CompatibleFat, s0028RenalInterior, s0028RigidSpan, s0028Owners });
+  return Object.freeze({
+    s0028SolidsUploads,
+    s0028KidneyGradient,
+    s0028CompatibleFat,
+    s0028WideFat,
+    s0028RenalInterior,
+    s0028RigidSpan,
+    s0028Owners,
+  });
 }

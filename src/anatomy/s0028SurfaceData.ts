@@ -5,7 +5,7 @@ export const S0028_SURFACE = {
   revision: 's0028-p0e-P0c-direct-v1',
   units: 'mm',
   format: 'indexed-delta32-v1',
-  sourceBundleSha256: '6e58419442c5db05077c290476b68fe4d307c49ad36ead03d0d304eed2ee334f',
+  sourceBundleSha256: '816ee0889e0418e53d74bd2439f476d59e71db438e49f3868a6e81e6d04d0a73',
   rawBytes: 32071200,
   gzipBytes: 5340216,
   sha256Raw: 'e6f329c2be879f18d2af8ea34383baa1d8d17501e5a0cfdcde4a0c817bc2dfd0',

@@ -28,9 +28,15 @@ export function classifyWall(
         wall: 'skin-E',
       },
     };
-  const q = scene.person.cpu.regional!.s0028WallAt(m),
-    solids = scene.person.cpu.regional!.s0028Owners(m, q),
-    owner = solids.owners[0]?.id;
+  const regional = scene.person.cpu.regional!,
+    q = regional.s0028WallAt(m);
+  let solids = regional.s0028Owners(m, q);
+  // La grasa del abdomen a 3 mm no pisa la cúpula E de P7: ahí el punto queda sin dueño y lo dibuja el diafragma.
+  if (solids.owners[0]?.id === 'compatible_fat' && regional.s0028CompatibleFat(m) === null) {
+    const dome = sdDiaphragm(m, scene.diaphragm, scene.torso);
+    if (dome >= 0 && dome < DIAPHRAGM_THICKNESS_MM) solids = { state: 'U', owners: [], kidneyMm: solids.kidneyMm };
+  }
+  const owner = solids.owners[0]?.id;
   // P3: dos o más dueños independientes son conflicto: se conservan todos y no se elige material (U).
   if (solids.state === 'conflict')
     return { final: true, cls: { ...NONE, tissue: Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, solids } };
