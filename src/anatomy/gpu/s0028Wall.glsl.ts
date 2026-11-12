@@ -221,7 +221,7 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
     changed,
     'float',
     'domeSd',
-    'float domeSd(vec3 m){vec3 n;bool valid;vec4 q=s28WallAt(m,valid);float d=sdDome(m,n);return valid?max(d,q.z-q.w):d;}',
+    'float domeSd(vec3 m){bool valid;vec4 q=s28WallAt(m,valid);float d=s28PT(m,2);return valid?max(d,q.z-q.w):d;}',
   );
   changed = replace(changed, 'float', 'ribSd', 'float ribSd(vec3 m,int k){return thoracicSdf(m);}');
   // El pericondrio pertenece al campo de cartílago, no al SDF óseo.

@@ -24,9 +24,10 @@ import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
  * al borde del sector en profundidad. En las diez ventanas y con D = 0/10/20 mm, ninguna vértebra ni el sacro se desplazan
  * bajo la cara interna de la pared. Con la reserva antigua (primera entrada y última salida renales de la línea), la L2
  * del flanco, entre los dos riñones, se trasladaba entera 9–11 mm. Las costillas y cartílagos bajo la cara siguen el
- * contacto P2 (P8) y sólo se mueven en intercostal y portal.
+ * contacto P2 (P8) y sólo se mueven en las ventanas que apoyan entre costillas o sobre el reborde costal. Con las poses propias
+ * de s0028 (decisión 346) son cuatro: intercostal 7,9 mm, tronco portal 8,6, renal 2,4 y porta subcostal 1,1; «portal» ya no.
  */
-const RIBS_UNDER_FACE = new Set(['intercostal', 'portal']);
+const RIBS_UNDER_FACE = new Set(['intercostal', 'portalTrunk', 'renal', 'portalSubcostal']);
 const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, sample: PhysiologySample;
 beforeAll(() => {
@@ -80,8 +81,9 @@ it('compresión rígida s0028: vértebras y sacro quietos en todo el sector de l
       counts[`${pose.id} D${D}`] = axial;
     }
   }
-  // Con dientes: la columna está en el sector de seis ventanas; en el flanco, en su borde profundo, entre los dos riñones.
-  for (const id of ['subxiphoid', 'epigastric', 'subcostal', 'flank', 'portalTrunk', 'hepatorenal'])
+  // Con dientes: la columna está en el sector de ocho ventanas; en el flanco, en su borde profundo, entre los dos riñones. El
+  // tronco portal, ahora intercostal lateral, no la alcanza.
+  for (const id of ['subxiphoid', 'epigastric', 'subcostal', 'flank', 'portal', 'renal', 'hepatorenal', 'portalSubcostal'])
     for (const D of [0, 10, 20]) expect(counts[`${id} D${D}`], `${id} D${D}`).toBeGreaterThan(id === 'flank' ? 50 : 10);
 });
 

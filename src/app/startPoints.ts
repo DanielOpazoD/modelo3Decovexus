@@ -257,7 +257,8 @@ const REFERENCE_POINTS: readonly StartPoint[] = START_POINTS.map((sp) => ({
           ? 'Desde el flanco derecho, afina el eje largo renal y una vena interlobar para PW.'
           : sp.hint,
 }));
-const ABDOMINAL_POSES = {
+/** Poses del abdomen registrado. s0028 las heredó hasta la decisión 346: siguen siendo los planos de referencia de sus pruebas de contacto. */
+export const ABDOMINAL_POSES = {
   // 315: encuadre tras reconciliar cava y bloque cardíaco; cara caudal para
   // alcanzar AD por el hígado, con margen angular en poses vecinas.
   subxiphoid: { phi: 1.6, z: -60, yaw: -0.02516291680704072, rock: 0.3, tilt: -0.1 },
@@ -312,11 +313,23 @@ const DEFAULT_POSES: Partial<Record<StartPoint['id'], Pick<StartPoint, 'phi' | '
   subcostal: { phi: 1.95, z: -100, yaw: 0.688003, rock: 0.07592, tilt: -0.188861 },
 };
 const DEFAULT_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...DEFAULT_POSES[sp.id] }));
+// Decisión 346: s0028 tiene sus propias poses, halladas sobre su anatomía (`tools/anatomy/find-s0028-poses.ts`): con las de la otra
+// persona, «portal» e «intercostal» caían sobre el pulmón y la hepatorrenal perdía contacto. Apuntan a la porta de sus máscaras y a
+// su riñón; la intercostal, a la suprahepática derecha todavía estimada. Subxifoidea, epigástrica y subcostal ya mostraban su hito.
+const S0028_POSES: typeof DEFAULT_POSES = {
+  portal: { phi: 2.8, z: -65, yaw: -0.996, rock: 0.097, tilt: 0.067 },
+  portalTrunk: { phi: 3.25, z: -80, yaw: 0.032, rock: 0.122, tilt: 0.26 },
+  portalSubcostal: { phi: 1.6, z: -50, yaw: -1.602, rock: 0.295, tilt: 0.255 },
+  intercostal: { phi: 3.1, z: -52, yaw: -1.197, rock: 0.215, tilt: 0.282 },
+  hepatorenal: { phi: 2.8, z: -125, yaw: -0.114, rock: 0.132, tilt: -0.351 },
+  renal: { phi: 3.3, z: -120, yaw: -0.467, rock: 0.088, tilt: 0.094 },
+};
+const S0028_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...S0028_POSES[sp.id] }));
 /** Scene-specific presets; legacy tests/torso retain their own poses. */
 export function startPointsFor(
   torso: Pick<Torso, 'a' | 'b' | 'profile'>,
   identity: Pick<AnatomyIdentity, 'person'>,
 ): readonly StartPoint[] {
-  if (identity.person === 's0028') return ABDOMINAL_POINTS;
+  if (identity.person === 's0028') return S0028_POINTS;
   return torso.profile && torso.profile.length !== 520 ? DEFAULT_POINTS : torso.profile ? REFERENCE_POINTS : START_POINTS;
 }

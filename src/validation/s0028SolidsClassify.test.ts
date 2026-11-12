@@ -253,56 +253,70 @@ it('lumbosacro y sacro solapados: un solo dueño óseo, nunca conflicto hueso/hu
 
 it('U nunca se clasifica como tejido conocido en el compartimento posterior y renal, salvo el rótulo renal del propio TAC', () => {
   // Oráculo independiente de la implementación: sin máscara fuente (SDF < 0), sin bit de grasa D y fuera de la banda P2
-  // conocida el punto es U. Caja de ambos riñones con 40 mm de margen, a 3 mm.
+  // conocida el punto es U. Caja de ambos riñones con 40 mm de margen, a 3 mm: 270.000 puntos. Las condiciones se evalúan
+  // en línea y los fallos se reúnen para una sola aserción: un `expect` por punto costaba 30 s de los 60 del plazo.
   let unknown = 0,
     known = 0,
     fatInBand = 0;
+  const failures: string[] = [];
   for (let z = -225; z <= -35; z += 3)
     for (let y = -125; y <= 20; y += 3)
       for (let x = -130; x <= 130; x += 3) {
         const p: Vec3 = [x, y, z];
         if (torsoDepth(p, scene.torso) > -1.5) continue;
         const c = at(p),
-          label = renalLabel(p);
-        expect(NEVER, `${x},${y},${z}`).not.toContain(c.tissue);
+          label = renalLabel(p),
+          owners = ids(c),
+          q = s0028WallAt(p);
+        const fail = (what: string) => failures.length < 20 && failures.push(`${x},${y},${z}: ${what}`);
+        if (NEVER.includes(c.tissue)) fail('compartimento de la otra persona ' + Tissue[c.tissue]);
         // Tejido renal sólo por rótulo: parénquima con dueño renal, seno sin él.
-        if (RENAL.includes(c.tissue))
-          expect(c.tissue, `${x},${y},${z}`).toBe(ids(c).some((id) => id.startsWith('kidney')) ? PARENCHYMA[label] : SINUS[label]);
+        if (RENAL.includes(c.tissue) && c.tissue !== (owners.some((id) => id.startsWith('kidney')) ? PARENCHYMA[label] : SINUS[label]))
+          fail('tejido renal sin su rótulo');
         // La grasa D es el complemento de las máscaras: nunca comparte punto con un dueño fuente ni con un vaso fuente (P5),
         // tampoco en la lámina subvóxel; dentro de la banda P2 conocida es conflicto (dos dueños), nunca pared sin más.
-        if (ids(c).includes('compatible_fat')) {
-          expect(ids(c).filter((id) => id !== 'wall')).toEqual(['compatible_fat']);
-          for (const f of VESSELS) expect(s0028SourceValue(p, f.name).d >= 0, `${x},${y},${z} ${f.name}`).toBe(true);
-          if (ids(c).includes('wall')) {
+        if (owners.includes('compatible_fat')) {
+          if (owners.some((id) => id !== 'wall' && id !== 'compatible_fat')) fail('grasa D con otro dueño fuente');
+          for (const f of VESSELS) if (!(s0028SourceValue(p, f.name).d >= 0)) fail('grasa D dentro de ' + f.name);
+          if (owners.includes('wall')) {
             fatInBand++;
-            expect([c.solids?.state, c.tissue]).toEqual(['conflict', Tissue.UnsegmentedSoftTissue]);
+            if (c.solids?.state !== 'conflict' || c.tissue !== Tissue.UnsegmentedSoftTissue) fail('grasa D en la banda sin conflicto');
           }
         }
         // Certeza de la pared: D hasta la cara externa conocida, U de ahí a la interfaz (mutante D↔U).
         for (const o of c.solids?.owners ?? [])
-          if (o.id === 'wall') {
-            const w = s0028WallAt(p);
-            expect(o.certainty, `${x},${y},${z}`).toBe(w?.kind === 'known' && w.depthMm < w.outerMm ? 'D' : 'U');
-          }
-        const q = s0028WallAt(p);
+          if (o.id === 'wall' && o.certainty !== (q?.kind === 'known' && q.depthMm < q.outerMm ? 'D' : 'U')) fail('certeza de la pared');
         const owned =
-          SOURCES.some((f) => s0028SourceValue(p, f.name).d < 0) ||
           s0028CompatibleFat(p) === true ||
           // Fuera de las cajas renales, la grasa D del abdomen a 3 mm (decisión 343), leída aquí por su cuenta.
           (s0028CompatibleFat(p) === null && wideFatOracle(p)) ||
-          (q?.kind === 'known' && q.depthMm >= 1.5 && q.depthMm < q.interfaceMm);
+          (q?.kind === 'known' && q.depthMm >= 1.5 && q.depthMm < q.interfaceMm) ||
+          SOURCES.some((f) => s0028SourceValue(p, f.name).d < 0);
         if (owned) {
           known++;
           continue;
         }
         unknown++;
         if (!c.vesselHit && c.interface !== Interface.DuctLumen) {
-          // Vasos y conductos procedurales E fuera de los sólidos: P5. La cúpula E de P7 va rotulada.
-          if (c.tissue === Tissue.Diaphragm) expect(c.approximation).toBe('diaphragm-P7');
-          else expect(Tissue[c.tissue], `${x},${y},${z}`).toBe(Tissue[SINUS[label] ?? Tissue.UnsegmentedSoftTissue]);
+          // Vasos y conductos procedurales E fuera de los sólidos: P5. El diafragma E bajo el pulmón va rotulado.
+          if (
+            c.tissue === Tissue.Diaphragm
+              ? c.approximation !== 'diaphragm-lung-base'
+              : c.tissue !== (SINUS[label] ?? Tissue.UnsegmentedSoftTissue)
+          )
+            fail('U clasificado como ' + Tissue[c.tissue]);
         }
-        expect(c.solids, `${x},${y},${z}`).toEqual({ state: 'U', owners: [], kidneyMm: expect.any(Number) as number });
+        const solids = c.solids;
+        if (
+          !solids ||
+          solids.state !== 'U' ||
+          solids.owners.length ||
+          typeof solids.kidneyMm !== 'number' ||
+          Object.keys(solids).length !== 3
+        )
+          fail('U con dueños: ' + JSON.stringify(solids));
       }
+  expect(failures).toEqual([]);
   expect(unknown).toBeGreaterThan(1000);
   expect(fatInBand).toBeGreaterThan(20);
   expect(known).toBeGreaterThan(10000);

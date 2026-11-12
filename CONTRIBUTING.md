@@ -146,8 +146,10 @@ cuando son términos técnicos de programación; comentarios en español.
 
 ## Herramientas locales
 
-- `npm ci` activa el hook `.githooks/pre-push`: `npm run feedback -- --all-fast` antes de empujar (formato y lint de lo
-  cambiado, tipos y todas las pruebas rápidas; ≤3 min sin carga; qué corre dónde en `docs/TESTING.md`).
+- `npm ci` activa el hook `.githooks/pre-push`: `npm run feedback` antes de empujar (formato y lint de lo cambiado, tipos y
+  pruebas en proporción: ninguna si sólo cambia documentación, las relacionadas si cambia código, toda la capa rápida si
+  cambia configuración, herramientas o interfaz; qué corre dónde en `docs/TESTING.md`). Para correrla entera a mano:
+  `npm run feedback -- --all-fast`.
 - `npm run closure -- --evidence <carpeta>`: cierre serial de una ronda con etapas, reanudación (`--resume`), espera y
   muestreo de carga, logs y `closure.json` (decisión 322).
 - Dependabot abre cada lunes una PR agrupada por ecosistema; entra si CI (check + e2e) está verde.

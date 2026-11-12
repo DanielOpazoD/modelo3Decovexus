@@ -8,6 +8,7 @@ import { installS0028Assets } from './assets';
 import { createSourceQueries } from './atlas';
 import { classifyInside, classifyWall } from './classifier';
 import { createSolidsQueries } from './solids';
+import { placeS0028Vessels } from './vessels';
 import { createWallQueries } from './wall';
 import { GASTRIC_WALL } from '../../organs/abdomen';
 
@@ -39,6 +40,7 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     assets,
     atlas: Object.freeze({ ...createAbdominalQueries(assets), ...createThoracicQueries(assets) }),
     skinMm: 1.5,
+    curveVessels: placeS0028Vessels,
     regional,
     fitBody: (profile) => profile,
     digestiveWallMm,

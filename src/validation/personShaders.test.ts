@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
 import { prepareGlslMangle, readSources, transformWithMangle } from '../../tools/build/glslMinify';
@@ -67,6 +68,18 @@ it('conserva los programas de main salvo G334, la anatomía/A0 339 y el interior
       ),
       ...renalRevision[mode],
     };
+    // Mantenimiento: tras un cambio deliberado del GLSL de s0028, `VEXUS_UPDATE_S0028_SHADERS=1 npx vitest run
+    // src/validation/personShaders.test.ts` reescribe la revisión s0028 con los programas que difieren de main. Los default no
+    // se tocan: la aserción de abajo los sigue comparando con los de antes.
+    if (process.env.VEXUS_UPDATE_S0028_SHADERS) {
+      const revision = renalInterior as Record<string, Record<string, { default: string; s0028: string }>>;
+      revision[mode] = Object.fromEntries(
+        Object.entries(result[mode])
+          .filter(([name, value]) => value.s0028 !== previous[name].s0028)
+          .map(([name, value]) => [name, { default: previous[name].default, s0028: value.s0028 }]),
+      );
+      writeFileSync(join(root, 'src/validation/fixtures/s0028-renal-interior-shaders.json'), JSON.stringify(revision, null, 2) + '\n');
+    }
     // El interior renal (decisión 341) sólo cambia los programas s0028 que clasifican: sus default son los de antes.
     for (const [name, value] of Object.entries(renalInterior[mode])) expect(value.default, name).toBe(previous[name].default);
     expect(result[mode]).toEqual({ ...previous, ...renalInterior[mode] });

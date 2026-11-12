@@ -7,7 +7,7 @@ import { Interface } from '../anatomy/interfaces';
 import { AnatomyQuery } from '../anatomy/query';
 import { structureIdentity } from '../anatomy/structureIdentity';
 import { Tissue } from '../anatomy/tissues';
-import { startPointsFor } from '../app/startPoints';
+import { ABDOMINAL_POSES, startPointsFor } from '../app/startPoints';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
 import { PhysiologyEngine, type PhysiologySample } from '../physiology/engine';
@@ -38,7 +38,9 @@ beforeAll(() => {
   scene = new AnatomyScene(NORMAL_ADULT);
   sample = new PhysiologyEngine(NORMAL_ADULT, scene.vesselAreas()).sample;
 });
-const poses = () => startPointsFor(scene.torso, B).map((p) => ({ ...p, rock: p.rock ?? 0, tilt: p.tilt ?? 0 }));
+// Planos de referencia fijos de P2 y P3 (las poses que s0028 heredaba), no las ventanas de inicio del producto: las huellas y
+// los recuentos de esta prueba se midieron sobre ellos, y una ventana puede moverse sin que cambie la mecánica del contacto.
+const poses = () => startPointsFor(scene.torso, B).map((p) => ({ ...p, ...ABDOMINAL_POSES[p.id] }));
 
 it('contacto: P3 conserva la carta P2 y su U; los 30 contactos s0028 son los de main 3c50b18 salvo la tabla rígida (r3)', () => {
   const values = [];

@@ -503,3 +503,19 @@ sus 8 vóxeles de 1,5 mm tienen HU en [−190, −30] y no pertenecen a ninguna 
 los bordes de esa grasa salen escalonados a 3 mm y una lámina de grasa más fina que la celda puede perderse. Solo se aplica donde
 ningún otro dueño reclama el punto, ni la pared, ni un vaso fuente, y nunca sobre la cúpula E del diafragma. Sin carta de pared,
 el panículo también sale como grasa porque el TAC lo dice. El HU decide dónde hay grasa, no su brillo. No es validación clínica.
+
+### s0028: troncos de la aorta y la porta desde sus máscaras (345)
+
+La aorta, el tronco portal, las ramas portales derecha e izquierda y la vena esplénica de s0028 siguen el camino más central de
+sus máscaras (`s0028-trunks.py`), ajustado a nueve nodos como mucho por tubo (se aparta 1,5 mm o menos del eje medido). El tubo es
+circular, con el radio inscrito en la máscara: donde la máscara es más ancha (confluencia, porción umbilical) el vaso sale más
+estrecho que el real. La confluencia con la esplénica es la mayor caída de radio del camino, no una marca anatómica segmentada. Los
+vasos que nacían de esos troncos (ramas portales de segundo orden, mesentérica superior, tronco celíaco, renales, ilíacas) son
+[EXTRAPOLACIÓN PROPIA]: conservan el trayecto de la otra persona con el origen arrastrado al tronco real. No es validación clínica.
+
+### s0028: diafragma bajo la base del pulmón (348)
+
+El diafragma de s0028 no está segmentado. Se dibuja como una lámina de espesor fijo pegada por debajo a la máscara de su pulmón,
+solo donde ninguna otra máscara reclama el punto; donde el hígado toca el pulmón, la cara la dibuja la cápsula hepática. «Por
+debajo» se decide con dos lecturas de la distancia al pulmón. Es [EXTRAPOLACIÓN PROPIA]: sin pilares, hiatos ni inserciones
+costales, y en el mediastino puede rodear estructuras hiliares que el ultrasonido no alcanza. No es validación clínica.

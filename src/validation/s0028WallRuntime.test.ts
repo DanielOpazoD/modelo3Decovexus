@@ -8,7 +8,7 @@ import { wallFaceGradient, wallFaceSd } from '../anatomy/organs/wall';
 import { torsoDepth, torsoDepthGradient, torsoSkinPoint } from '../anatomy/primitives';
 import { respiratoryWeightGradient } from '../anatomy/respiratoryNormals';
 import { sourceDistance } from '../anatomy/sourceVolume';
-import { Tissue } from '../anatomy/tissues';
+import { DIAPHRAGM_THICKNESS_MM, Tissue } from '../anatomy/tissues';
 import { startPointsFor } from '../app/startPoints';
 import { NORMAL_ADULT } from '../cases';
 import { cross, dot, normalize, smoothstep, sub, type Vec3 } from '../core/vec3';
@@ -399,9 +399,41 @@ it('el hígado fuente no se recorta con la W ni la cúpula procedurales de otra 
   }
 });
 
-it('conserva la cúpula E/P7 donde no invade las estructuras fuente', () => {
-  const p: Vec3 = [-11.533855575900514, 71.59107619779334, 9.750919952095462];
-  expect(scene.classify(p, BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.Diaphragm, approximation: 'diaphragm-P7' });
+it('el diafragma de s0028 es la lámina bajo la base de su pulmón, no la cúpula de la otra persona (decisión 348)', () => {
+  // Oráculo independiente: la distancia al pulmón de la máscara, leída aquí. Bajo la base (el pulmón queda encima), a menos del
+  // espesor del diafragma y sin dueño, el punto es diafragma; lejos del pulmón, nunca.
+  const lung = (p: Vec3) => s0028SourceValue(p, 'lung').d;
+  let sheet = 0,
+    faced = 0,
+    away = 0;
+  for (let x = -110; x <= 100; x += 7)
+    for (let y = -70; y <= 70; y += 7)
+      for (let z = -80; z <= 40; z += 1.5) {
+        const p: Vec3 = [x, y, z],
+          d = lung(p),
+          c = scene.classify(p, BASELINE_CALIBER);
+        if (d > DIAPHRAGM_THICKNESS_MM + 0.5 || d < -0.5) {
+          if (d > 0) away++;
+          expect(c.tissue, p.join(',')).not.toBe(Tissue.Diaphragm);
+          continue;
+        }
+        const below = lung([x, y, z + 3]) < d - 1;
+        if (!(d >= 0.2 && d < DIAPHRAGM_THICKNESS_MM - 0.2) || !below || c.solids?.state !== 'U' || c.vesselHit) continue;
+        sheet++;
+        expect(c, p.join(',')).toMatchObject({ tissue: Tissue.Diaphragm, approximation: 'diaphragm-lung-base' });
+        // La mitad abdominal dibuja la cara hepática, a su distancia de la superficie de nivel, salvo que otra cara quede más cerca.
+        if (d > 0.5 * DIAPHRAGM_THICKNESS_MM + 0.2) {
+          expect(c.interfaceDistance, p.join(',')).toBeLessThanOrEqual(DIAPHRAGM_THICKNESS_MM - d + 1e-9);
+          if (c.interface !== Interface.DiaphragmLiver) continue;
+          faced++;
+          expect(c.interfaceDistance, p.join(',')).toBeCloseTo(DIAPHRAGM_THICKNESS_MM - d, 9);
+        }
+      }
+  expect(sheet).toBeGreaterThan(150);
+  expect(faced).toBeGreaterThan(50);
+  expect(away).toBeGreaterThan(10000);
+  // La cara es una superficie de nivel del pulmón de la persona: no depende del espesor de pared del torso analítico.
+  const p: Vec3 = [-60, 0, -20];
   const before = scene.faceSdf(p, BASELINE_CALIBER, 'dome'),
     { fatMm, muscleMm } = scene.torso;
   try {
