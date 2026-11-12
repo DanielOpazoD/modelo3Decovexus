@@ -23,6 +23,7 @@ import { abdominalAtlas, setAbdominalAtlas } from './support/legacyPerson/abdomi
 import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
 import { abdominalBody, setAbdominalBody } from './support/legacyPerson/referenceBody';
 import { s0028CompatibleFat, s0028Owners, setS0028Solids } from './support/legacyPerson/s0028Solids';
+import wideSamples from './fixtures/s0028-wide-fat.json';
 import { s0028SourceValue } from './support/legacyPerson/s0028Source';
 import { s0028WallAt, setS0028Wall } from './support/legacyPerson/s0028Wall';
 import { AnatomyScene, BASELINE_CALIBER, type Classification } from './support/legacyPerson/scene';
@@ -61,6 +62,14 @@ function renalLabel(p: Vec3): number {
     q = p.map((x, k) => Math.round((x - b.originMm[k]) / 1.5));
   if (q.some((x, k) => !(x >= 0 && x < b.dimensions[k]))) return 0;
   return RENAL_LABELS[side][(q[0] * b.dimensions[1] + q[1]) * b.dimensions[2] + q[2]];
+}
+/** Oráculo de la grasa del abdomen a 3 mm: lee el bit de la celda directamente de la reserva, sin el lector de la aplicación. */
+function wideFatOracle(p: Vec3): boolean {
+  const F = B.wideFat,
+    v = p.map((x, k) => Math.floor((x - F.originMm[k]) / 3));
+  if (v.some((x, k) => !(x >= 0 && x < F.dimensions[k]))) return false;
+  const bit = (v[0] * F.dimensions[1] + v[1]) * F.dimensions[2] + v[2];
+  return ((HALF[new Uint16Array(capacity, 4096 + F.offsetBytes, F.byteCount)[bit >> 3]] >> (bit & 7)) & 1) === 1;
 }
 /** Corteza y médula sólo con dueño renal; seno y colector sólo sin él (hueco del hilio, fuera de la máscara). */
 const PARENCHYMA: Record<number, Tissue> = { 1: Tissue.RenalCortex, 2: Tissue.RenalMedulla };
@@ -279,6 +288,8 @@ it('U nunca se clasifica como tejido conocido en el compartimento posterior y re
         const owned =
           SOURCES.some((f) => s0028SourceValue(p, f.name).d < 0) ||
           s0028CompatibleFat(p) === true ||
+          // Fuera de las cajas renales, la grasa D del abdomen a 3 mm (decisión 343), leída aquí por su cuenta.
+          (s0028CompatibleFat(p) === null && wideFatOracle(p)) ||
           (q?.kind === 'known' && q.depthMm >= 1.5 && q.depthMm < q.interfaceMm);
         if (owned) {
           known++;
@@ -571,4 +582,39 @@ it('contorno acústico renal (r3): el borde O de la máscara es la cara de la c�
     expect(outside, name).toBeGreaterThan(800);
     expect(deep, name).toBeGreaterThan(300);
   }
+});
+
+it('grasa del abdomen a 3 mm (decisión 343): reproduce los testigos del TAC y sólo da grasa donde no hay otro dueño', () => {
+  // Testigos independientes: celdas elegidas por `s0028-wide-fat.py` con el valor que calculó desde el TAC.
+  expect(wideSamples.sha256).toBe(B.wideFat.sha256);
+  let fatRows = 0,
+    classifiedFat = 0;
+  for (const row of wideSamples.rows) {
+    const p = row.pointLASmm as Vec3;
+    expect(wideFatOracle(p), JSON.stringify(row.cell)).toBe(row.fat);
+    const c = at(p);
+    if (torsoDepth(p, scene.torso) > -1.5) continue;
+    const owners = ids(c);
+    if (!row.fat) {
+      // Sin bit, la grasa amplia nunca crea un dueño; dentro de una caja renal manda la grasa P3 de 1,5 mm.
+      if (s0028CompatibleFat(p) === null) expect(owners, JSON.stringify(row.cell)).not.toContain('compatible_fat');
+      continue;
+    }
+    fatRows++;
+    if (owners.join() !== 'compatible_fat' || s0028CompatibleFat(p) !== null) continue;
+    // Único dueño y fuera de las cajas renales: grasa D, salvo que un vaso o conducto procedural E pase por ahí.
+    expect(c.solids).toEqual({
+      state: 'known',
+      owners: [{ id: 'compatible_fat', d: 0, certainty: 'D' }],
+      kidneyMm: expect.any(Number) as number,
+    });
+    for (const f of [...SOURCES, ...VESSELS]) expect(s0028SourceValue(p, f.name).d >= 0, `${row.cell.join(',')} ${f.name}`).toBe(true);
+    if (!c.vesselHit && c.interface !== Interface.DuctLumen) {
+      expect(c.tissue, JSON.stringify(row.cell)).toBe(Tissue.Fat);
+      classifiedFat++;
+    }
+  }
+  // 36,5 % de las celdas de la caja son grasa; buena parte es panículo, que ya dibuja la pared.
+  expect(fatRows).toBeGreaterThan(150);
+  expect(classifiedFat).toBeGreaterThan(40);
 });

@@ -37,6 +37,7 @@ const field = (name: string) => B.fields.find((f) => f.name === name)!;
 const ARGS = {
   kidneys: [field('kidneyRight'), field('kidneyLeft')].map((f) => ({ o: f.originMm, n: f.dimensions })),
   fat: B.solids.boxes.map((b) => ({ o: b.originMm, n: b.dimensions })),
+  wide: { o: B.wideFat.originMm, n: B.wideFat.dimensions },
   conflicts: conflicts.points.flatMap((p) => p.slice(0, 3)),
   fatBand: conflicts.fatBand.flat(),
   cysts: cysts.cyst.flat(),
@@ -209,6 +210,16 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
           for (let x = 1; x < b.n[0] - 1; x += 4) pts.push(b.o[0] + 1.5 * x, b.o[1] + 1.5 * y, b.o[2] + 1.5 * z);
       out.push(compare(`grasa ${bi ? 'I' : 'D'}`, 0, NO, pts));
     }
+    // Grasa del abdomen a 3 mm (decisión 343): un punto genérico dentro de una celda de cada tres, sin sonda. El desfase
+    // lo aparta del centro de la celda, que cae en una mitad de celda de la rejilla de 1,5 mm.
+    {
+      const pts: number[] = [];
+      for (let z = 1; z < a.wide.n[2] - 1; z += 3)
+        for (let y = 1; y < a.wide.n[1] - 1; y += 3)
+          for (let x = 1; x < a.wide.n[0] - 1; x += 3)
+            pts.push(a.wide.o[0] + 3 * (x + 0.5) + 0.37, a.wide.o[1] + 3 * (y + 0.5) + 0.29, a.wide.o[2] + 3 * (z + 0.5) + 0.41);
+      out.push(compare('grasa amplia', 0, NO, pts));
+    }
     // Testigos de conflicto (nueve pares del censo, fuera de las mitades de celda): U con los dos dueños, sin elegir material.
     out.push(compare('conflictos', 0, NO, a.conflicts));
     // La banda sola daría Fat en estos puntos; con grasa D superpuesta debe dar conflicto U.
@@ -305,6 +316,10 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
   }
   expect(rows.find((r) => r.id === 'conflictos D=0')!.classes.conflictU).toEqual([conflicts.points.length, conflicts.points.length]);
   expect(rows.reduce((s, r) => s + r.renalCpu, 0)).toBeGreaterThan(2000);
+  // La grasa amplia llega a la GPU: miles de celdas de grasa D fuera de las cajas renales con el mismo tejido que la CPU.
+  const wide = rows.find((r) => r.id === 'grasa amplia D=0')!;
+  expect(wide.classes.fatD[0], tag(wide)).toBeGreaterThan(2000);
+  expect(wide.classes.fatD[1] / wide.classes.fatD[0], tag(wide)).toBeGreaterThanOrEqual(0.99);
   // El rótulo del interior renal llega a la GPU: miles de puntos de corteza, médula y seno, con el mismo tejido que la CPU.
   const labelled = rows.filter((r) => r.id.endsWith('D=0')).reduce((s, r) => [s[0] + r.labelled[0], s[1] + r.labelled[1]], [0, 0]);
   expect(labelled[0]).toBeGreaterThan(3000);

@@ -90,6 +90,8 @@ export default defineConfig({
     include: selected ?? (tier === 'slow' ? SLOW : ['src/**/*.test.ts']),
     exclude: tier === 'fast' ? ['node_modules/**', ...SLOW] : ['node_modules/**'],
     environment: 'node',
+    // Ningún `git` de las pruebas hereda el repositorio de quien las lanza (gancho en un worktree, rebase --exec).
+    setupFiles: ['src/validation/support/gitEnvironment.setup.ts'],
     testTimeout: 60_000,
     coverage: {
       provider: 'v8',

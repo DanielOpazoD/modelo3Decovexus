@@ -1060,13 +1060,13 @@
     "guarantee": "fixed array capacity, not sufficient anatomy or future triangle count",
     "file": "annotation-capacity.gzip.bin",
     "rawBytes": 5671296,
-    "downloadBytes": 284466,
+    "downloadBytes": 334410,
     "abdominalBytes": 4491648,
     "thoracicBytes": 1179648,
-    "sha256": "b551085384a1588b0b664a9032da49204643805eb77a2ea23c6152f94ddbd729",
+    "sha256": "6dddc99da7afa46d7aa0b4d608f8a524f996c71cd5ea00e98ab431e3963166ac",
     "descriptorsDecoded": true,
-    "compressionCredit": 5386830,
-    "sha256Gzip": "12de9273bd95f78d2a4795f67dc01b7a0221c19ece370fd503883ddbedc4fe0b",
+    "compressionCredit": 5336886,
+    "sha256Gzip": "9fbf416baae79f5a93dbe7474a39c25d6069a7a85a55d5f73fcc6eb620915dee",
     "downloadRule": "measure actual gzip again after every annotation phase"
   },
   "files": [
@@ -1082,8 +1082,8 @@
     },
     {
       "file": "annotation-capacity.gzip.bin",
-      "bytes": 284466,
-      "sha256": "12de9273bd95f78d2a4795f67dc01b7a0221c19ece370fd503883ddbedc4fe0b"
+      "bytes": 334410,
+      "sha256": "9fbf416baae79f5a93dbe7474a39c25d6069a7a85a55d5f73fcc6eb620915dee"
     },
     {
       "file": "skin-polar.gzip.bin",

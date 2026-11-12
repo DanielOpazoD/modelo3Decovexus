@@ -11567,3 +11567,14 @@ dibuja sonda y abanico, no tres millones de triángulos. `bodyDepth` evalúa lo 
 **Consecuencias.** Al mover, de 19–21 a 37–49 fps (32–38 con carga ajena). La imagen sigue a la mano con un cuadro de retraso. La
 sonda del 3D tapa los rótulos de ventana cercanos. El techo JS de s0028 pasa a 1.103.872 B (usa 1.097.108).
 **Verificación.** fps del bucle real con dos builds alternados; 19 e2e de navegación en Metal sin cambios; `gpuFramePacer.test.ts`.
+
+## 343. La grasa de s0028 llega a todo el abdomen superior
+
+**Contexto.** La lámina TAC frente a modelo de la ventana hepatorrenal: el 45 % del sector es grasa en el TAC, pero el modelo solo
+la conocía a 30 mm del riñón (grasa P3) y dejaba el resto U, que en la imagen salía como un fondo gris oscuro.
+**Opciones.** Ampliar las cajas de 1,5 mm (679 kB de bits); un activo nuevo con su carga y su memoria; o lo decidido.
+**Decisión.** `s0028-wide-fat.py` aplica la misma regla (HU −190…−30, fuera de las 117 máscaras) a la caja del abdomen superior y
+la reduce a celdas de 3 mm por mayoría. `install-s0028-wide-fat.ts` la escribe en el espacio libre de la reserva de pared, tras el
+bloque P3, y en 43 páginas libres del atlas. Vale solo fuera de las cajas renales, sin ningún dueño ni vaso, y no pisa la cúpula E.
+**Consecuencias.** Sin activos, texturas ni memoria nuevos; la reserva comprimida pasa de 284 a 334 kB. Bordes de grasa a 3 mm.
+**Verificación.** Lámina antes y después junto al TAC; 600 testigos del TAC; paridad CPU = GPU en Metal con más de 2.000 celdas.
