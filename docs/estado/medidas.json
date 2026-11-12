@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 51149
+   "actual": 14398
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14398
+   "actual": 52472
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 21686
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 21686
+   "actual": 1631
   },
   {
    "what": "`series.js`",
@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 10282
+   "actual": 10401
   },
   {
    "what": "`structureIdentity.js`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1040141
+   "actual": 1040260
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1102192
+   "actual": 1103634
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -485,7 +485,7 @@
     "branches": 2848,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "f29621c71e568b860426d1e157ee72a9bd88f40c187434e20a67d09c709fc1f8"
+    "sourceSha256": "06c028711d634e4c4e78a9f00b93560e0270b7755ac8421b23f837b9592e086c"
    }
   },
   {
@@ -504,7 +504,7 @@
     "branches": 1172,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "b2b68fad3f54a4dbbab9c1e47fddf21e642f4bcc3f972f642edfbbec6b166c60"
+    "sourceSha256": "0fe909ca9c613fe5ea68d79a79be197dc99d3c0f789d1901010bbc20a0075114"
    }
   },
   {
@@ -523,7 +523,7 @@
     "branches": 874,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "f232f4ad391c4fbb8c4b6f1eb415fa4ecce14a0c01b334427a9a8261702a013f"
+    "sourceSha256": "06f25a9ab87c742af53e46c7e20ca0b3e8feba7255574fc8062626303dc0b78f"
    }
   },
   {
@@ -542,7 +542,7 @@
     "branches": 876,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "17e59ede270bd0892faee53cfbc0a8aaf9b633da597b6a9d509f6c53adf298ef"
+    "sourceSha256": "cdfdb4ddc70bdf607582ba31123ba8d75efed5ac68594a7d4a8a8cb6558d49c2"
    }
   },
   {
@@ -561,7 +561,7 @@
     "branches": 567,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "00f1f17543fd497ba1178e241338388de0ecbeaa0cdf1572650ae4fd08bf1521"
+    "sourceSha256": "09e3474927b2d2dfa166b16a00837e203fa26dcbf21367baf9feb121bd2ee44c"
    }
   },
   {
@@ -580,7 +580,7 @@
     "branches": 1292,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "d06e57fb3ba2876d176d1c2ff01ab2646e5b9a990687300848709dcd0574e567"
+    "sourceSha256": "0038f38fd5a6cf2f32321633fd05e2e8acef011caa64ffa576e85fc4e5ae9c7f"
    }
   },
   {
@@ -599,7 +599,7 @@
     "branches": 626,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "5c4deafa28aca30c2f0727303b07d27097ef6c578e310c71ca5fce71985117c2"
+    "sourceSha256": "dab924516b2acfb2f866bad18fc0992e90d34eceeb1ac659d4234e011db50d9e"
    }
   },
   {
@@ -618,7 +618,7 @@
     "branches": 583,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "9f1e555f1730b5b8dfdda3ba6c2ac2520eef6f6b124d6e73e5a9e28c7861c550"
+    "sourceSha256": "842c6b0a79fbbd172f6b000c898e3f465004dd2a2d2e429e18c6b32725df25be"
    }
   }
  ],

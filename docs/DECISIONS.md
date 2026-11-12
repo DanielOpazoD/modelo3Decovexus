@@ -11640,3 +11640,16 @@ máscara de pulmón y el pulmón queda encima (3 mm más arriba está al menos 1
 superficie de nivel de esa distancia. La grasa a 3 mm no pisa la lámina. El tórax E del corazón conserva la cúpula analítica.
 **Consecuencias.** Sin lámina ajena; el diafragma acompaña al pulmón de la persona. Sin hiatos ni pilares. Cambio visual pequeño.
 **Verificación.** Oráculo de distancia al pulmón en `s0028WallRuntime.test.ts`; fila «diafragma» de la paridad GPU, en Metal.
+
+## 349. La cava y las suprahepáticas de s0028 salen de su TAC
+
+**Contexto.** Tras la 345 seguían siendo de la otra persona. Ninguna máscara separa las suprahepáticas, pero en este TAC realzan
+(137–145 HU en el eje frente a 110 del parénquima). De 215 vóxeles realzados junto al esqueleto venoso, las venas ajenas pasaban por 6.
+**Opciones.** Segmentarlas con otro modelo (no hace falta); umbral de HU (une cava y porta); o lo decidido.
+**Decisión.** `s0028-trunks.py` toma los ejes del grafo P5 r1 (decisión 323) y mide el radio en el corte perpendicular del TAC. El
+nombre es E, por posición: derecha, el sistema de la cara derecha de la cava; izquierda, el que sale hacia delante; media, el
+esqueleto sin raíz que nace a 16 mm de la izquierda, unido a ella en un tronco común (puente E). La cava infrahepática sigue el
+centroide de su máscara. Las ventanas intercostal, subcostal y subxifoidea se reapuntan a esas venas con `find-s0028-poses.ts`.
+**Consecuencias.** La subcostal muestra la confluencia de la derecha y la media en la cava. Techo JS de s0028: quedan 238 B; el
+próximo dato de la persona va a un activo binario o exige subir el techo declarándolo.
+**Verificación.** `s0028Vessels.test.ts`: 84 % de los testigos en la luz, 3 % con las venas ajenas; láminas con el TAC; Metal.

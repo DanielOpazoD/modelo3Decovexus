@@ -14,7 +14,7 @@ const { scene, anatomy, sample } = loadS0028();
 
 const MARKER: Vec3 = normalize([-0.5, 0, 1]);
 /** Pose en (phi, z) cuyo eje apunta a `pivot` y cuyo plano contiene la dirección `long`. */
-function aimed(phi: number, z: number, pivot: Vec3, long: Vec3): ProbePose | null {
+function aimed(phi: number, z: number, pivot: Vec3, long: Vec3, maxAngle = 0.6): ProbePose | null {
   const pose = { phi, z, lift: 0, yaw: 0, rock: 0, tilt: 0 };
   const f = probeFrame(pose, scene.torso, CONVEX_C35);
   const a = normalize(sub(pivot, f.face));
@@ -25,7 +25,7 @@ function aimed(phi: number, z: number, pivot: Vec3, long: Vec3): ProbePose | nul
   const yaw = Math.atan2(-dot(l, f.elevation), dot(l, f.lateral));
   const afterRock = probeFrame({ ...pose, yaw, rock }, scene.torso, CONVEX_C35);
   const tilt = Math.atan2(-dot(a, afterRock.elevation), dot(a, afterRock.axial));
-  return Math.abs(rock) > 0.6 || Math.abs(tilt) > 0.6 ? null : { ...pose, yaw, rock, tilt };
+  return Math.abs(rock) > maxAngle || Math.abs(tilt) > maxAngle ? null : { ...pose, yaw, rock, tilt };
 }
 const round = (x: number, digits: number) => Math.round(x * 10 ** digits) / 10 ** digits;
 const only = process.argv[2];
@@ -38,7 +38,7 @@ for (const t of s0028WindowTargets(scene).filter((t) => !only || t.id === only))
     if (!best || q.score > best.q.score) best = { pose, q };
   };
   for (let phi = t.phi[0]; phi <= t.phi[1] + 1e-6; phi += 0.05)
-    for (let z = t.z[0]; z <= t.z[1]; z += 5) consider(aimed(phi, z, t.pivot, t.long));
+    for (let z = t.z[0]; z <= t.z[1]; z += 5) consider(aimed(phi, z, t.pivot, t.long, t.maxAngle));
   for (let step = 1, rounds = 0; best && step >= 0.2 && rounds < 40; rounds++) {
     const from: { pose: ProbePose; q: WindowScore } = best;
     for (const [key, size] of [

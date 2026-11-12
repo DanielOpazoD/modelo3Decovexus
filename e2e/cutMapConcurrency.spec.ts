@@ -228,33 +228,30 @@ test('manual probe sliders retain the requested pose during an automatic window 
       return { pose: s.pose, frame: s.frame, n: s.renderer.displayedFrame!.n };
     });
     expect(manual.pose).toEqual(requested);
-    let previous = manual.n;
-    // Observe two NEW acquisitions, rather than paying for twenty idle GPU
-    // frames. Each ordinary frame runs the animator; a missing cancellation
-    // changes the probe immediately. The model separately checks 80 ticks.
-    for (let acquisition = 0; acquisition < 2; acquisition++) {
-      await withinFrames(page, 45, 'nueva adquisición tras el ajuste manual', async () =>
-        page.evaluate((n) => window.__vexusTest!.sim().renderer.displayedFrame!.n > n || 'pendiente', previous),
-      );
-      const actual = await page.evaluate(() => {
-        const s = window.__vexusTest!.sim(),
-          shown = s.renderer.displayedFrame!;
-        // Synchronize the real presented target, not a JS frame counter.
-        const image = s.renderer.readDisplay();
-        return {
-          pose: s.pose,
-          acquiredPose: shown.anatomy.pose,
-          frame: shown.anatomy.frame,
-          n: shown.n,
-          signal: image.gray.some((v) => v > 0),
-        };
-      });
-      expect(actual.pose).toEqual(manual.pose);
-      expect(actual.acquiredPose).toEqual(manual.pose);
-      expect(actual.frame).toEqual(manual.frame);
-      expect(actual.signal).toBe(true);
-      previous = actual.n;
-    }
+    const previous = manual.n;
+    // Dos adquisiciones con la pose pedida, en vez de pagar veinte cuadros ociosos de GPU: la que acaba de mostrarla y una
+    // NUEVA. Cada cuadro corre el animador; una cancelación perdida cambiaría la sonda de inmediato. El modelo comprueba
+    // aparte 80 ticks. Con una tercera adquisición por gesto la prueba pasó de 122 s a 178–240 s en SwiftShader, su plazo.
+    await withinFrames(page, 45, 'nueva adquisición tras el ajuste manual', async () =>
+      page.evaluate((n) => window.__vexusTest!.sim().renderer.displayedFrame!.n > n || 'pendiente', previous),
+    );
+    const actual = await page.evaluate(() => {
+      const s = window.__vexusTest!.sim(),
+        shown = s.renderer.displayedFrame!;
+      // Synchronize the real presented target, not a JS frame counter.
+      const image = s.renderer.readDisplay();
+      return {
+        pose: s.pose,
+        acquiredPose: shown.anatomy.pose,
+        frame: shown.anatomy.frame,
+        n: shown.n,
+        signal: image.gray.some((v) => v > 0),
+      };
+    });
+    expect(actual.pose).toEqual(manual.pose);
+    expect(actual.acquiredPose).toEqual(manual.pose);
+    expect(actual.frame).toEqual(manual.frame);
+    expect(actual.signal).toBe(true);
   }
   expect(errors).toEqual([]);
 });

@@ -703,8 +703,9 @@ cilindro espinal de la otra persona, centro (0, −60) mm y radio 17 mm. La revi
 0,17/0,38/0,52/0,56/0,31 en L1–L5 y 0,77–0,92 en el flanco (desplazamiento respiratorio = peso × D, incluso sin
 presión). Este fallo previo a r3 queda para P4/P7; es distinto del error de compresión B1, corregido en esta PR. Vasos procedurales de la otra persona
 cruzan sólidos s0028 (P5) y el tórax E del corazón da distancias de frontera negativas (P7). Desde la decisión 345 la aorta, el
-tronco portal, sus dos ramas y la esplénica son los de las máscaras de s0028; la cava, las suprahepáticas, las venas renales, las
-arterias viscerales y las ramas portales distales siguen siendo de la otra persona. No es validación clínica.
+tronco portal, sus dos ramas y la esplénica son los de las máscaras de s0028, y desde la 349 también la cava infrahepática y las
+tres suprahepáticas (nombre E por posición). La cava suprahepática, las venas renales, las arterias viscerales y las ramas distales
+siguen siendo de la otra persona. No es validación clínica.
 
 P0 prepara herramientas; P1 r4c carga un candidato local sólo por `?abdomen=s0028`.
 Los identificadores de limitación del producto permanecen vigentes. [Migración](anatomia/migracion-s0028.md)

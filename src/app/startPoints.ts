@@ -315,12 +315,15 @@ const DEFAULT_POSES: Partial<Record<StartPoint['id'], Pick<StartPoint, 'phi' | '
 const DEFAULT_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...DEFAULT_POSES[sp.id] }));
 // Decisión 346: s0028 tiene sus propias poses, halladas sobre su anatomía (`tools/anatomy/find-s0028-poses.ts`): con las de la otra
 // persona, «portal» e «intercostal» caían sobre el pulmón y la hepatorrenal perdía contacto. Apuntan a la porta de sus máscaras y a
-// su riñón; la intercostal, a la suprahepática derecha todavía estimada. Subxifoidea, epigástrica y subcostal ya mostraban su hito.
+// su riñón. Decisión 349: con la cava y las suprahepáticas de su TAC, la intercostal sigue la derecha en eje largo, la subcostal
+// muestra la confluencia de la derecha y la media, y la subxifoidea vuelve al eje de la cava. La epigástrica ya mostraba su hito.
 const S0028_POSES: typeof DEFAULT_POSES = {
   portal: { phi: 2.8, z: -65, yaw: -0.996, rock: 0.097, tilt: 0.067 },
   portalTrunk: { phi: 3.25, z: -80, yaw: 0.032, rock: 0.122, tilt: 0.26 },
   portalSubcostal: { phi: 1.6, z: -50, yaw: -1.602, rock: 0.295, tilt: 0.255 },
-  intercostal: { phi: 3.1, z: -52, yaw: -1.197, rock: 0.215, tilt: 0.282 },
+  intercostal: { phi: 3.5, z: -105, yaw: -0.826, rock: 0.489, tilt: 0.499 },
+  subcostal: { phi: 2.35, z: -88.5, yaw: 1.114, rock: 0.325, tilt: -0.345 },
+  subxiphoid: { phi: 1.48, z: -30, yaw: -0.156, rock: 0.507, tilt: -0.091 },
   hepatorenal: { phi: 2.8, z: -125, yaw: -0.114, rock: 0.132, tilt: -0.351 },
   renal: { phi: 3.3, z: -120, yaw: -0.467, rock: 0.088, tilt: 0.094 },
 };
