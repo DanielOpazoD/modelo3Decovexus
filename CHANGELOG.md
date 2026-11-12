@@ -5,6 +5,10 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Ventanas de s0028: seis poses propias, halladas sobre su anatomía. «Portal» e «intercostal» dejan de caer sobre el pulmón y la hepatorrenal llena el sector (346).
+
+- Pruebas: el primer mapa del Worker se espera en segundos de simulación, no en 30 cuadros; en una GPU nativa eso era medio segundo.
+
 - Anatomía s0028: la aorta, el tronco portal, sus dos ramas y la esplénica salen de las máscaras de la propia persona; la bifurcación portal aparece en el hilio, como en su TAC (345).
 
 - Pruebas: la paridad de la pared de s0028 lleva una cota por backend; en Metal fallaba por el filtro del hardware, no por la regla (344).

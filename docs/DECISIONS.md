@@ -11604,3 +11604,15 @@ y arrastra el origen de los doce vasos que nacían de ellos. Sin GLSL, activos n
 **Consecuencias.** La porta y la aorta de la imagen están donde las tiene esta persona. Cava, suprahepáticas, venas renales y ramas
 distales siguen siendo ajenas. Quedan 2.262 B de margen en el techo JS de s0028.
 **Verificación.** 307 testigos de las máscaras: 91 % (porta) y 100 % (aorta) en la luz, frente a 13 % y 53 % sin el gancho; láminas.
+
+## 346. s0028 tiene sus propias ventanas de inicio
+
+**Contexto.** s0028 heredaba las poses de la otra persona. En la hoja de las ocho ventanas, «portal» e «intercostal» caían sobre el
+pulmón (sector casi negro) y la hepatorrenal perdía contacto; la porta de sus máscaras (345) no entraba en el plano portal.
+**Opciones.** Ajustarlas a mano una a una; mover el pulmón o las costillas (no: la anatomía es la de la persona); o lo decidido.
+**Decisión.** `find-s0028-poses.ts` busca cada pose sobre la anatomía fija: la sonda apunta a un hito de esta persona (porta, riñón
+y, por ahora, la suprahepática estimada), el plano contiene su eje largo y se afina deslizando, rotando y abanicando. Puntúa con
+`scoreWindow` (`s0028Windows.ts`): hito en el sector sin hueso ni pulmón delante, sector acoplado y limpio. Seis poses van a
+`S0028_POSES`; subxifoidea, epigástrica y subcostal ya mostraban su hito. Las pruebas de contacto conservan sus planos de referencia.
+**Consecuencias.** Las ocho ventanas de s0028 muestran su hito. La intercostal se rehará cuando las suprahepáticas salgan del TAC.
+**Verificación.** `s0028Windows.test.ts` con la misma medida y control negativo sobre las poses heredadas; hoja de antes y ahora.

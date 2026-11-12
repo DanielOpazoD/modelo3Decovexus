@@ -41,6 +41,7 @@ cubre con legacy. Tras P8, el corte sustituye el default por s0028 cuando pase l
 | P3 r5    | interior renal instalado en CPU, Worker y GPU, con el seno del hilio      | 341               | fusionada      |
 | —        | grasa compatible D en todo el abdomen superior, a 3 mm                    | 343               | fusionada      |
 | P5 (1)   | aorta, tronco portal, ramas portales y esplénica desde sus máscaras       | 345               | en PR          |
+| P8 (1)   | seis ventanas de inicio propias, por búsqueda sobre su anatomía           | 346               | en PR          |
 | P4–P6    | digestivo, gas y capas; cava, suprahepáticas y ramas del mismo hígado     | —                 | pendientes     |
 | P7–P8    | tórax y VCI–AD del caso; diez poses y adquisiciones, lista de relaciones  | —                 | pendientes     |
 

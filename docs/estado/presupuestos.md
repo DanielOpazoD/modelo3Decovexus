@@ -58,7 +58,7 @@ Medido en el candidato basado en main `000c8eb` el 2026-11-12 con `tools/docs/es
 | `series.js`                                         |     122.880 |        2204 |    120.676 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `sourceVolume.js`                                   |     122.880 |        1582 |    121.298 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `startPoints.js`                                    |     122.880 |        9901 |    112.979 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `startPoints.js`                                    |     122.880 |      10.282 |    112.598 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `structureIdentity.js`                              |     122.880 |        1556 |    121.324 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.gzip.bin`                                 |   9.672.026 |   5.340.216 |  4.331.810 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.js`                                       |     122.880 |         485 |    122.395 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
@@ -72,8 +72,8 @@ Medido en el candidato basado en main `000c8eb` el 2026-11-12 con `tools/docs/es
 | `three.js`                                          |     385.024 |     369.161 |     15.863 | B        | 307      | `tools/ci/bundleBudgets.ts`            |
 | `units.js`                                          |     122.880 |         388 |    122.492 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `vesselTree.js`                                     |     122.880 |     109.205 |     13.675 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.039.734 |     30.346 | B        | 322      | `tools/ci/personBundles.ts`            |
-| JS clausura s0028 (Workers y ganchos incluidos)     |   1.103.872 |   1.101.610 |       2262 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.040.115 |     29.965 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura s0028 (Workers y ganchos incluidos)     |   1.103.872 |   1.101.991 |       1881 | B        | 322      | `tools/ci/personBundles.ts`            |
 | Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.483.470 |  4.516.530 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.567.375 | 10.942.627 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |

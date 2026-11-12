@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 9901
+   "actual": 10282
   },
   {
    "what": "`structureIdentity.js`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1039734
+   "actual": 1040115
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1101610
+   "actual": 1101991
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,7 +624,7 @@
  ],
  "s0028DescriptorSha256": "fd1b1d17d634db116f9eb3b27e3c235e47b172c7a30713e7fc502aa3063a9115",
  "tests": {
-  "vitestFiles": 333,
+  "vitestFiles": 334,
   "slowFiles": 34,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,
