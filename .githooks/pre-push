@@ -17,6 +17,10 @@ if [ "$hook_deletes_only" = yes ]; then
   echo 'El push sólo borra ramas remotas: no hay código que comprobar.'
   exit 0
 fi
+# Git exporta GIT_DIR, GIT_WORK_TREE e índice a los ganchos lanzados desde un worktree enlazado. Las pruebas que crean
+# repositorios temporales no deben heredarlos: escribirían en el repositorio real. El gancho corre en la raíz de la copia
+# de trabajo, así que Git la encuentra sin ellos; la preparación de vitest los retira también.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_PREFIX GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE
 hook_head=$(git rev-parse HEAD)
 hook_index=$(git write-tree)
 hook_config=$(git hash-object "$(git rev-parse --git-common-dir)/config")
