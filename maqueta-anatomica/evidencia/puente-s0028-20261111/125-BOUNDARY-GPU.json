@@ -1,0 +1,54 @@
+{
+  "scope": "Consulta GPU instrumentada de índices y bits P3; sin coste GPU ni validación clínica.",
+  "inputSha256": "01e28cc015ddd6bb121ad30c21fe5a44eb50e07166158c9dc3967faa0509fc17",
+  "errors": [],
+  "patches": [
+    {
+      "box": "right",
+      "kind": "fat",
+      "before": "1c7953885900693a7e49c860939cb0870c3be42ea24a3480d4f8f5354b62fcd6",
+      "after": "bcf0bdc322ceea2997a48fe90ed80f96b36f577d0920ee419e4d20b5ef6a875a"
+    },
+    {
+      "box": "right",
+      "kind": "query",
+      "before": "c8fe7a1cecda9db51b89197b481af0d350a6450ba1d3c0afcf7a0544f04f9e46",
+      "after": "328cd4b5d5847451b02b689b9588a085849ea7a7b6cc154a60669b39c35d6e0a"
+    },
+    {
+      "box": "left",
+      "kind": "fat",
+      "before": "1c7953885900693a7e49c860939cb0870c3be42ea24a3480d4f8f5354b62fcd6",
+      "after": "bcf0bdc322ceea2997a48fe90ed80f96b36f577d0920ee419e4d20b5ef6a875a"
+    },
+    {
+      "box": "left",
+      "kind": "query",
+      "before": "c8fe7a1cecda9db51b89197b481af0d350a6450ba1d3c0afcf7a0544f04f9e46",
+      "after": "ce4b53f65ee7048903ab32cf79f768ce868b13977b1616e8f869e70236dd1ffd"
+    }
+  ],
+  "boxes": {
+    "right": {
+      "person": "s0028",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+      "total": 3839,
+      "insideCount": 3679,
+      "positiveBits": 719,
+      "indexMismatches": 0,
+      "bitMismatches": 0,
+      "mismatches": []
+    },
+    "left": {
+      "person": "s0028",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+      "total": 3853,
+      "insideCount": 3674,
+      "positiveBits": 762,
+      "indexMismatches": 0,
+      "bitMismatches": 0,
+      "mismatches": []
+    }
+  },
+  "passed": true
+}

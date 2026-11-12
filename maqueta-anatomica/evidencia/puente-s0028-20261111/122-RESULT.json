@@ -1,0 +1,109 @@
+{
+  "scope": "Pruebas de coordenadas Float32 finitas; no representa posiciones CPU diferentes ni prueba clínica.",
+  "sourceSha256": "3d510fe55a3af2f3794ef92b535e6661b65a4623ee3a3d5e81e0260ba8049fbe",
+  "policySha256": "fb1b18e7ccdcb21439696e1b5631b5cc1f6bb4bf1f841d9748577b49be1a91a4",
+  "seed": 122,
+  "boxes": [
+    {
+      "box": "right",
+      "axis": 0,
+      "count": 261066,
+      "mismatches": 0,
+      "oldFormulaMismatches": 7036,
+      "constants": {
+        "originTimesTwoInteger": -217,
+        "originTimesTwoFraction": 0.029451374497682536,
+        "lowFloat32": -108.48526763916016,
+        "highFloat32": 11.514725685119629,
+        "thresholdRem1Float32": 0.5294514298439026,
+        "thresholdRem2Float32": -0.4705485999584198
+      },
+      "witnesses": []
+    },
+    {
+      "box": "right",
+      "axis": 1,
+      "count": 261066,
+      "mismatches": 0,
+      "oldFormulaMismatches": 156,
+      "constants": {
+        "originTimesTwoInteger": -179,
+        "originTimesTwoFraction": 0.5704309996045254,
+        "lowFloat32": -89.21478271484375,
+        "highFloat32": 30.785215377807617,
+        "thresholdRem1Float32": 1.070431113243103,
+        "thresholdRem2Float32": 0.07043100148439407
+      },
+      "witnesses": []
+    },
+    {
+      "box": "right",
+      "axis": 2,
+      "count": 261756,
+      "mismatches": 0,
+      "oldFormulaMismatches": 5815,
+      "constants": {
+        "originTimesTwoInteger": -405,
+        "originTimesTwoFraction": 0.02241462235429026,
+        "lowFloat32": -202.48878479003906,
+        "highFloat32": -59.98879623413086,
+        "thresholdRem1Float32": 0.5224146246910095,
+        "thresholdRem2Float32": -0.4775853753089905
+      },
+      "witnesses": []
+    },
+    {
+      "box": "left",
+      "axis": 0,
+      "count": 261066,
+      "mismatches": 0,
+      "oldFormulaMismatches": 75,
+      "constants": {
+        "originTimesTwoInteger": 17,
+        "originTimesTwoFraction": 0.029451374497682536,
+        "lowFloat32": 8.514726638793945,
+        "highFloat32": 128.5147247314453,
+        "thresholdRem1Float32": 0.5294514298439026,
+        "thresholdRem2Float32": -0.4705485999584198
+      },
+      "witnesses": []
+    },
+    {
+      "box": "left",
+      "axis": 1,
+      "count": 260744,
+      "mismatches": 0,
+      "oldFormulaMismatches": 146,
+      "constants": {
+        "originTimesTwoInteger": -167,
+        "originTimesTwoFraction": 0.5704309996045254,
+        "lowFloat32": -83.21478271484375,
+        "highFloat32": 26.285215377807617,
+        "thresholdRem1Float32": 1.070431113243103,
+        "thresholdRem2Float32": 0.07043100148439407
+      },
+      "witnesses": []
+    },
+    {
+      "box": "left",
+      "axis": 2,
+      "count": 262170,
+      "mismatches": 0,
+      "oldFormulaMismatches": 5401,
+      "constants": {
+        "originTimesTwoInteger": -390,
+        "originTimesTwoFraction": 0.02241462235429026,
+        "lowFloat32": -194.98878479003906,
+        "highFloat32": -38.98879623413086,
+        "thresholdRem1Float32": 0.5224146246910095,
+        "thresholdRem2Float32": -0.4775853753089905
+      },
+      "witnesses": []
+    }
+  ],
+  "pointsByAxis": 1567868,
+  "mismatches": 0,
+  "oldFormulaMismatches": 18629,
+  "passed": true,
+  "samplesSha256": "8106bd94cdf88f6e03c653fcdcd3110ea1fb6480ff99652539f01dd7e5186f84"
+}

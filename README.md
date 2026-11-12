@@ -3,8 +3,8 @@
 > **Copia de continuidad.** Este repositorio incluye el simulador completo y una
 > [maqueta anatómica 3D experimental](maqueta-anatomica/README.md). La maqueta 103
 > todavía aumenta el coste GPU y su inserción fascial costal no está completa.
-> La rama `wip/red-renal-73` conserva cambios locales de producto con evidencia
-> local previa, pendientes de CI y de integración.
+> Las mejoras renales de `wip/red-renal-73` están integradas en `main`; la
+> maqueta sigue siendo un prototipo separado del simulador.
 > Para retomar el trabajo, leer primero [CONTEXTO-IA.md](CONTEXTO-IA.md).
 
 Simulador web de VExUS (Venous Excess Ultrasound Score) construido como una **cadena causal**:

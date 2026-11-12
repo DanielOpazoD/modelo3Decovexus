@@ -1,0 +1,425 @@
+{
+  "passed": true,
+  "scope": "Reconstrucci\u00f3n independiente de agregados y coordenadas serializadas; no valida la clasificaci\u00f3n cl\u00ednica ni recalcula la escena.",
+  "sourceSha": "eb4d24bed205f049609dbac0ee0496b0331e026e",
+  "rows": 65568,
+  "mirrorNegativeChanged": 830,
+  "mirrorNegativeTotal": 1000,
+  "rawBuffersUnchanged": true,
+  "labels": {
+    "2": {
+      "U|-|UnsegmentedSoftTissue": 5673,
+      "known|compatible_fat|Fat": 11162,
+      "known|liver|LiverCapsule": 1,
+      "U|-|Blood": 17,
+      "known|compatible_fat|ArteryWall": 5,
+      "known|compatible_fat|Blood": 16,
+      "known|wall|UnsegmentedSoftTissue": 91,
+      "known|wall|Fat": 287,
+      "none|-|Skin": 11,
+      "U|-|Diaphragm": 18,
+      "known|autochthon_left|Muscle": 1,
+      "known|bone|Vertebra": 2,
+      "known|compatible_fat|VesselWallThin": 2,
+      "U|-|ArteryWall": 2,
+      "known|kidney_right|UnsegmentedSoftTissue": 2,
+      "known|iliopsoas_right|Psoas": 1
+    },
+    "27": {
+      "U|-|UnsegmentedSoftTissue": 48,
+      "known|bone|Bone": 687
+    },
+    "20": {
+      "known|autochthon_right|Muscle": 5252,
+      "known|compatible_fat|Fat": 9,
+      "U|-|UnsegmentedSoftTissue": 22
+    },
+    "80": {
+      "known|kidney_right|UnsegmentedSoftTissue": 2543,
+      "U|-|UnsegmentedSoftTissue": 85,
+      "known|compatible_fat|Fat": 21
+    },
+    "6": {
+      "known|liver|Liver": 5315,
+      "known|liver|LiverCapsule": 342,
+      "U|-|UnsegmentedSoftTissue": 30,
+      "known|compatible_fat|Fat": 5,
+      "known|liver|VesselWallPortal": 4,
+      "known|liver|VesselWallThin": 3,
+      "known|liver|Blood": 7
+    },
+    "18": {
+      "known|iliopsoas_right|Psoas": 896,
+      "U|-|UnsegmentedSoftTissue": 11
+    },
+    "1": {
+      "known|iliopsoas_right|Psoas": 28,
+      "U|-|UnsegmentedSoftTissue": 9826,
+      "known|compatible_fat|Fat": 349,
+      "known|bone|Bone": 944,
+      "U|-|ArteryWall": 10,
+      "known|kidney_right|UnsegmentedSoftTissue": 26,
+      "known|autochthon_right|Muscle": 27,
+      "known|bone|Vertebra": 32,
+      "known|liver|LiverCapsule": 56,
+      "U|-|Blood": 25,
+      "U|-|Diaphragm": 10,
+      "known|iliopsoas_left|Blood": 1,
+      "known|iliopsoas_left|Psoas": 6,
+      "known|kidney_left|UnsegmentedSoftTissue": 5,
+      "known|autochthon_left|Muscle": 1,
+      "known|wall|UnsegmentedSoftTissue": 416,
+      "none|-|Skin": 23,
+      "known|wall|Fat": 15,
+      "known|heart|Mediastinum": 2,
+      "known|stomach|SoftCapsule": 2,
+      "U|-|VesselWallThin": 1,
+      "known|bowel|SoftCapsule": 1,
+      "known|lung|Lung": 6
+    },
+    "88": {
+      "U|-|UnsegmentedSoftTissue": 1610,
+      "known|compatible_fat|Fat": 431
+    },
+    "83": {
+      "U|-|UnsegmentedSoftTissue": 68
+    },
+    "97": {
+      "known|kidney_right|UnsegmentedSoftTissue": 4,
+      "known|kidney_left|UnsegmentedSoftTissue": 3
+    },
+    "81": {
+      "known|kidney_right|UnsegmentedSoftTissue": 280
+    },
+    "101": {
+      "known|compatible_fat|Fat": 170,
+      "U|-|UnsegmentedSoftTissue": 46,
+      "known|compatible_fat|ArteryWall": 3
+    },
+    "23": {
+      "known|bone|Vertebra": 63,
+      "U|-|UnsegmentedSoftTissue": 10,
+      "known|compatible_fat|Fat": 3
+    },
+    "47": {
+      "U|-|UnsegmentedSoftTissue": 163,
+      "known|bone|Bone": 943,
+      "known|compatible_fat|Fat": 9
+    },
+    "164": {
+      "known|compatible_fat|Fat": 5965,
+      "U|-|UnsegmentedSoftTissue": 2585
+    },
+    "25": {
+      "known|bone|Vertebra": 151,
+      "U|-|UnsegmentedSoftTissue": 20
+    },
+    "82": {
+      "U|-|UnsegmentedSoftTissue": 33
+    },
+    "24": {
+      "known|bone|Vertebra": 141,
+      "U|-|UnsegmentedSoftTissue": 2
+    },
+    "22": {
+      "known|bone|Vertebra": 214,
+      "U|-|UnsegmentedSoftTissue": 15
+    },
+    "155": {
+      "U|-|UnsegmentedSoftTissue": 258,
+      "known|compatible_fat|Fat": 116,
+      "known|bone|Bone": 1,
+      "known|wall|UnsegmentedSoftTissue": 85
+    },
+    "21": {
+      "known|bone|Vertebra": 320,
+      "U|-|UnsegmentedSoftTissue": 9,
+      "known|compatible_fat|Fat": 1
+    },
+    "159": {
+      "known|compatible_fat|Fat": 7,
+      "U|-|UnsegmentedSoftTissue": 41
+    },
+    "99": {
+      "known|kidney_right|UnsegmentedSoftTissue": 2,
+      "known|kidney_left|UnsegmentedSoftTissue": 2
+    },
+    "71": {
+      "known|lung|Lung": 373,
+      "U|-|UnsegmentedSoftTissue": 18
+    },
+    "165": {
+      "known|compatible_fat|Fat": 3688,
+      "U|-|UnsegmentedSoftTissue": 236
+    },
+    "84": {
+      "known|kidney_left|UnsegmentedSoftTissue": 231,
+      "U|-|UnsegmentedSoftTissue": 4,
+      "known|compatible_fat|Fat": 2
+    },
+    "87": {
+      "U|-|UnsegmentedSoftTissue": 6
+    },
+    "19": {
+      "known|autochthon_left|Muscle": 433,
+      "U|-|UnsegmentedSoftTissue": 2,
+      "known|compatible_fat|Fat": 1
+    },
+    "17": {
+      "known|iliopsoas_left|Psoas": 71,
+      "known|iliopsoas_left|Blood": 7,
+      "U|-|UnsegmentedSoftTissue": 3
+    },
+    "85": {
+      "known|kidney_left|UnsegmentedSoftTissue": 50
+    },
+    "89": {
+      "U|-|UnsegmentedSoftTissue": 127,
+      "known|compatible_fat|Fat": 10
+    },
+    "59": {
+      "known|bone|Vertebra": 118,
+      "U|-|UnsegmentedSoftTissue": 17
+    },
+    "35": {
+      "known|bone|Bone": 7,
+      "U|-|UnsegmentedSoftTissue": 1
+    },
+    "46": {
+      "known|bone|Bone": 51,
+      "U|-|UnsegmentedSoftTissue": 11
+    },
+    "86": {
+      "U|-|UnsegmentedSoftTissue": 13
+    },
+    "160": {
+      "U|-|UnsegmentedSoftTissue": 1
+    },
+    "98": {
+      "U|-|UnsegmentedSoftTissue": 2,
+      "known|kidney_right|UnsegmentedSoftTissue": 1
+    },
+    "9": {
+      "known|kidney_right|UnsegmentedSoftTissue": 8
+    },
+    "96": {
+      "known|kidney_right|UnsegmentedSoftTissue": 2,
+      "known|compatible_fat|Fat": 2
+    },
+    "162": {
+      "known|compatible_fat|Fat": 10,
+      "U|-|UnsegmentedSoftTissue": 3
+    },
+    "33": {
+      "known|bone|Bone": 13
+    },
+    "156": {
+      "U|-|UnsegmentedSoftTissue": 153,
+      "known|compatible_fat|Fat": 18,
+      "known|wall|UnsegmentedSoftTissue": 108,
+      "conflict|compatible_fat+wall|UnsegmentedSoftTissue": 6
+    },
+    "42": {
+      "known|bone|Bone": 22,
+      "known|wall|UnsegmentedSoftTissue": 3
+    },
+    "72": {
+      "known|lung|Lung": 67
+    },
+    "158": {
+      "U|-|UnsegmentedSoftTissue": 15,
+      "known|compatible_fat|Fat": 3
+    },
+    "54": {
+      "known|bone|Bone": 34,
+      "known|wall|UnsegmentedSoftTissue": 3
+    },
+    "69": {
+      "known|cartilage|Cartilage": 34,
+      "known|wall|UnsegmentedSoftTissue": 1
+    },
+    "55": {
+      "known|bone|Bone": 34,
+      "U|-|UnsegmentedSoftTissue": 3,
+      "known|wall|UnsegmentedSoftTissue": 3
+    },
+    "34": {
+      "known|bone|Bone": 18,
+      "known|wall|UnsegmentedSoftTissue": 3
+    },
+    "53": {
+      "known|bone|Bone": 15,
+      "known|wall|UnsegmentedSoftTissue": 6
+    },
+    "45": {
+      "known|wall|UnsegmentedSoftTissue": 3,
+      "known|bone|Bone": 41,
+      "U|-|UnsegmentedSoftTissue": 6
+    },
+    "161": {
+      "U|-|UnsegmentedSoftTissue": 10
+    },
+    "157": {
+      "U|-|UnsegmentedSoftTissue": 9,
+      "U|-|ArteryWall": 9
+    },
+    "43": {
+      "known|bone|Bone": 23
+    },
+    "90": {
+      "U|-|UnsegmentedSoftTissue": 41,
+      "known|lung|Lung": 4
+    },
+    "70": {
+      "U|-|UnsegmentedSoftTissue": 3,
+      "known|lung|Lung": 172
+    },
+    "68": {
+      "known|bone|Bone": 5
+    },
+    "7": {
+      "known|spleen|SoftCapsule": 5,
+      "known|spleen|Spleen": 20
+    },
+    "41": {
+      "known|bone|Bone": 3
+    },
+    "14": {
+      "known|bowel|SoftCapsule": 1,
+      "known|bowel|Fluid": 11,
+      "known|bowel|GutSubmucosa": 1,
+      "known|bowel|Blood": 2,
+      "known|bowel|GutMuscularis": 2,
+      "U|-|UnsegmentedSoftTissue": 1
+    },
+    "0": {
+      "none|-|Air": 171,
+      "none|-|Skin": 3
+    },
+    "29": {
+      "U|-|Blood": 14,
+      "U|-|VesselWallThin": 2,
+      "U|-|UnsegmentedSoftTissue": 6,
+      "U|-|ArteryWall": 1
+    },
+    "16": {
+      "known|bowel|ColonicContents": 61,
+      "known|bowel|SoftCapsule": 7,
+      "known|bowel|GutMuscularis": 14,
+      "known|bowel|GutSubmucosa": 18,
+      "known|bowel|Bowel": 7,
+      "known|bowel|BowelGas": 12,
+      "U|-|UnsegmentedSoftTissue": 1
+    },
+    "75": {
+      "known|heart|Mediastinum": 93,
+      "known|heart|Myocardium": 20,
+      "known|heart|Blood": 12
+    },
+    "15": {
+      "known|bowel|Fluid": 105,
+      "known|bowel|GutMuscularis": 14,
+      "known|bowel|GutSubmucosa": 10,
+      "known|bowel|Bowel": 8,
+      "known|bowel|SoftCapsule": 2,
+      "known|bowel|Blood": 1
+    },
+    "13": {
+      "known|stomach|GastricContents": 129,
+      "known|stomach|Bowel": 13,
+      "known|stomach|GutSubmucosa": 38,
+      "known|stomach|GutMuscularis": 16,
+      "known|stomach|BowelGas": 10,
+      "known|stomach|SoftCapsule": 5
+    },
+    "73": {
+      "known|lung|Lung": 21
+    },
+    "57": {
+      "known|bone|Vertebra": 7
+    },
+    "58": {
+      "known|bone|Vertebra": 17
+    },
+    "8": {
+      "U|-|UnsegmentedSoftTissue": 1,
+      "known|pancreas|Pancreas": 26,
+      "known|pancreas|Blood": 3,
+      "known|pancreas|VesselWallThin": 2,
+      "known|pancreas|BileDuctWall": 1
+    },
+    "79": {
+      "U|-|UnsegmentedSoftTissue": 5,
+      "U|-|Blood": 1
+    },
+    "65": {
+      "known|bone|Vertebra": 6
+    },
+    "26": {
+      "known|bone|Bone": 3
+    },
+    "66": {
+      "known|bone|Vertebra": 7,
+      "U|-|UnsegmentedSoftTissue": 1
+    },
+    "28": {
+      "U|-|ArteryWall": 2,
+      "U|-|UnsegmentedSoftTissue": 7,
+      "U|-|Blood": 8
+    },
+    "153": {
+      "known|liver|Liver": 2
+    },
+    "30": {
+      "U|-|UnsegmentedSoftTissue": 6,
+      "U|-|ArteryWall": 1,
+      "U|-|Blood": 1
+    },
+    "52": {
+      "known|bone|Bone": 2
+    },
+    "50": {
+      "known|bone|Bone": 2
+    },
+    "10": {
+      "known|kidney_left|UnsegmentedSoftTissue": 1
+    },
+    "38": {
+      "known|bone|Bone": 1
+    },
+    "147": {
+      "known|liver|Liver": 3,
+      "known|liver|Blood": 1
+    },
+    "39": {
+      "known|bone|Bone": 2
+    },
+    "3": {
+      "known|heart|Mediastinum": 1
+    },
+    "152": {
+      "U|-|Blood": 1
+    },
+    "78": {
+      "U|-|Blood": 1,
+      "U|-|UnsegmentedSoftTissue": 3
+    },
+    "67": {
+      "known|bone|Vertebra": 10,
+      "U|-|UnsegmentedSoftTissue": 1
+    },
+    "51": {
+      "known|bone|Bone": 1
+    },
+    "148": {
+      "known|liver|Liver": 1
+    },
+    "77": {
+      "U|-|Blood": 1,
+      "U|-|UnsegmentedSoftTissue": 14
+    },
+    "40": {
+      "known|bone|Bone": 1
+    }
+  }
+}

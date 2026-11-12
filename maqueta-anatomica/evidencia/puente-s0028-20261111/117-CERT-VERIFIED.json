@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "scope": "Certificado de signo de celdas; no traza ni coste GPU.",
+  "cells": 96086,
+  "homogeneous": 90540,
+  "probes": 1086480,
+  "randomSeed": 117,
+  "randomHomogeneous": 38048,
+  "negativeChanges": 38048,
+  "fields": [
+    {
+      "name": "qlNew",
+      "validCells": 70550,
+      "counts": [
+        4750,
+        60743,
+        5057
+      ]
+    },
+    {
+      "name": "rib12New",
+      "validCells": 25536,
+      "counts": [
+        796,
+        24668,
+        72
+      ]
+    }
+  ],
+  "certificateSha256": "ca77bf42825ffa8f82cd884b20b631e919ce17b35771e2d0da57837609d06576"
+}

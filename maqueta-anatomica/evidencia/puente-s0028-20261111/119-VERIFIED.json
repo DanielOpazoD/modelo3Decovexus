@@ -1,0 +1,88 @@
+{
+  "labelGatePassed": true,
+  "pointObservations": 73250,
+  "pointDifferences": 0,
+  "unsafePointDifferences": 0,
+  "framebuffers": 38,
+  "framesChanged": 0,
+  "maxChangedPixels": 0,
+  "maxChannelDifference": 0,
+  "negativeChangedFrames": 14,
+  "scope": "Resumen de estadísticas guardadas del visor; no reconstruye píxeles crudos, no prueba simulador ni validación clínica.",
+  "gpuIntervals": 112,
+  "primaryMedianSumRatio": 1.0765826716624922,
+  "views": [
+    {
+      "view": "global",
+      "beforeMedianMs": 17.837097,
+      "afterMedianMs": 18.906416333333333,
+      "medianRatio": 1.0599491796974212,
+      "p95Ratio": 1.073308760413084,
+      "passed": false
+    },
+    {
+      "view": "sternal",
+      "beforeMedianMs": 28.242652666666668,
+      "afterMedianMs": 30.064583,
+      "medianRatio": 1.0645098870434242,
+      "p95Ratio": 1.0679124128935595,
+      "passed": false
+    },
+    {
+      "view": "support",
+      "beforeMedianMs": 32.353291666666664,
+      "afterMedianMs": 35.55733333333333,
+      "medianRatio": 1.0990329422946403,
+      "p95Ratio": 1.0575910606018626,
+      "passed": false
+    },
+    {
+      "view": "crus-vessel",
+      "beforeMedianMs": 29.552097,
+      "afterMedianMs": 31.42126366666667,
+      "medianRatio": 1.0632498826281827,
+      "p95Ratio": 1.0488797049768335,
+      "passed": false
+    },
+    {
+      "view": "fascia-detail",
+      "beforeMedianMs": 37.854847,
+      "afterMedianMs": 40.30465266666667,
+      "medianRatio": 1.0647157725050815,
+      "p95Ratio": 1.061825275594517,
+      "passed": false
+    },
+    {
+      "view": "fascia-right",
+      "beforeMedianMs": 44.980305333333334,
+      "afterMedianMs": 49.17956933333333,
+      "medianRatio": 1.0933578366994336,
+      "p95Ratio": 1.0848404076904843,
+      "passed": false
+    },
+    {
+      "view": "right-ql-rib-near",
+      "beforeMedianMs": 26.068444333333332,
+      "afterMedianMs": 26.95754133333333,
+      "medianRatio": 1.0341062546207687,
+      "p95Ratio": 1.0201389230155722,
+      "passed": false
+    },
+    {
+      "view": "right-insertion-close",
+      "beforeMedianMs": 43.695444333333334,
+      "afterMedianMs": 49.30074966666667,
+      "medianRatio": 1.1282812297449805,
+      "p95Ratio": 1.1604411833900063,
+      "passed": false
+    }
+  ],
+  "gpuGatePassed": false,
+  "sourceHashes": {
+    "sourceSha256": "5bdaa3272ad6ed2ea71aa4e5ece3dbaee74da7d8be0ae6e43d6958f00f838834",
+    "parentCandidateSha256": "5bdaa3272ad6ed2ea71aa4e5ece3dbaee74da7d8be0ae6e43d6958f00f838834",
+    "candidateSha256": "5beee07e4491c15e2db80c057f40de9b87bfe62a34a7f533fc318de02bab435a",
+    "negativeSha256": "fe857a524163eed71b65f4262bc1b22b0e4138b9d5a44bbe2b9137a9e3bd427f"
+  },
+  "note": "Copia de resumen: se omiten rutas locales; los hashes y mediciones permanecen."
+}

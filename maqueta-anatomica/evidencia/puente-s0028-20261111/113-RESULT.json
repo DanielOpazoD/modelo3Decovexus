@@ -1,0 +1,59 @@
+{
+  "scope": "Piloto entero externo frente a 103L; sin GPU, Worker ni validaci\u00f3n cl\u00ednica.",
+  "sourceSha256": "3bb78e5c48bff597b054b2732c88a5e136c57ac7bc20918c4fdb263b7e33341c",
+  "rawInt16Sha256": "bf73972171fee5f3fa9410f045c12dbf967e430cee7cb80e559c35c1d58c4e69",
+  "rawBytes": 248302,
+  "gzipSha256": "30512165f680fc64d9a7b2634bbd304d4ea6d6f653319f47875d02605f0b9605",
+  "gzipBytes": 161142,
+  "scalePerMm": 512,
+  "coordinateScalePerMm": 512,
+  "originFixed": {
+    "ql": [
+      -37496,
+      -36846,
+      -110202
+    ],
+    "rib12": [
+      -37496,
+      -38382,
+      -67962
+    ]
+  },
+  "fields": {
+    "ql": {
+      "points": 23780,
+      "signChangesByOffset": {
+        "0.0": 2817,
+        "-0.001": 1090,
+        "0.001": 1515,
+        "-0.01": 0,
+        "0.01": 0
+      },
+      "negativeChanges": 22327,
+      "maxSampleDistanceErrorMm": 0.008507335558533669,
+      "maxNodeQuantizationErrorMm": 0.0009765625
+    },
+    "rib12": {
+      "points": 3990,
+      "signChangesByOffset": {
+        "0.0": 333,
+        "-0.001": 273,
+        "0.001": 343,
+        "-0.01": 0,
+        "0.01": 0
+      },
+      "negativeChanges": 3692,
+      "maxSampleDistanceErrorMm": 0.006424516439437866,
+      "maxNodeQuantizationErrorMm": 0.0009765625
+    }
+  },
+  "edgeCount": 5554,
+  "unresolvedEdges": 0,
+  "maxEdgeDisplacementUpperMm": 0.005859375,
+  "zeroPointSignChanges": 3150,
+  "offset001SignChanges": 3221,
+  "offset01SignChanges": 0,
+  "fixedSamplesSha256": "d5553b2b4f1b9490ac3a16d9b254c2eb591d8b105dc99a53d17215df4dfc39d9",
+  "thresholdMm": 0.05,
+  "geometricGatePassed": true
+}

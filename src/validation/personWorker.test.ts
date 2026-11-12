@@ -94,6 +94,97 @@ it.each([false, true])('espera CPU, publica ready y conserva sólo el mapa pendi
   if (progress) expect(posted[1]).toEqual({ type: 'progress', id: 12, epoch: 1, assetKey: person.assetKey, rows: 1 });
 });
 
+it('cambia de caso antes de que termine la instalación sin reinstalar ni publicar el epoch anterior', async () => {
+  const loading = deferred(),
+    posted: CutMapReply[] = [],
+    install = vi.fn(() => loading.promise),
+    receive = createWorker((m) => posted.push(m), install);
+  const first = receive(init(1));
+  const next = receive({ ...init(2), type: 'patient', patient: SEVERE_CONGESTION, buffers: undefined });
+  loading.resolve(person);
+  await Promise.all([first, next]);
+  await receive(map(2, 21));
+  expect(install).toHaveBeenCalledExactlyOnceWith(init(1));
+  expect(posted.map((m) => [m.type, m.epoch])).toEqual([
+    ['ready', 2],
+    ['map', 2],
+  ]);
+  expect(posted.some((m) => m.type === 'error')).toBe(false);
+});
+
+it('mantiene sólo el último caso y el último mapa durante la primera instalación', async () => {
+  const loading = deferred(),
+    posted: CutMapReply[] = [],
+    install = vi.fn(() => loading.promise),
+    receive = createWorker((m) => posted.push(m), install);
+  const first = receive(init(1));
+  const second = receive({ ...init(2), type: 'patient', patient: SEVERE_CONGESTION, buffers: undefined });
+  const third = receive({ ...init(3), type: 'patient', patient: NORMAL_ADULT, buffers: undefined });
+  await receive(map(3, 31));
+  await receive(map(3, 32));
+  loading.resolve(person);
+  await Promise.all([first, second, third]);
+  expect(install).toHaveBeenCalledExactlyOnceWith(init(1));
+  expect(posted.map((m) => [m.type, m.id, m.epoch])).toEqual([
+    ['ready', 30, 3],
+    ['map', 32, 3],
+  ]);
+});
+
+it('el fallo de la instalación en vuelo se comunica sólo al último caso', async () => {
+  const loading = deferred(),
+    posted: CutMapReply[] = [],
+    receive = createWorker(
+      (m) => posted.push(m),
+      () => loading.promise,
+    );
+  const first = receive(init(1));
+  const next = receive({ ...init(2), type: 'patient', patient: SEVERE_CONGESTION, buffers: undefined });
+  loading.reject(new Error('atlas no disponible'));
+  await Promise.all([first, next]);
+  expect(posted).toEqual([{ type: 'error', id: 20, epoch: 2, assetKey: person.assetKey, message: 'atlas no disponible' }]);
+});
+
+it('no reutiliza la instalación pendiente para una identidad distinta', async () => {
+  const loading = deferred(),
+    posted: CutMapReply[] = [],
+    install = vi.fn(() => loading.promise),
+    receive = createWorker((m) => posted.push(m), install);
+  const first = receive(init(1));
+  await receive({ ...init(2), type: 'patient', identity: { ...person.identity, manifestSha256: 'foreign' }, buffers: undefined });
+  loading.resolve(person);
+  await first;
+  expect(install).toHaveBeenCalledOnce();
+  expect(posted).toEqual([{ type: 'error', id: 20, epoch: 2, assetKey: person.assetKey, message: 'Worker de otra identidad' }]);
+});
+
+it('no reutiliza la instalación pendiente para un assetKey distinto', async () => {
+  const loading = deferred(),
+    posted: CutMapReply[] = [],
+    install = vi.fn(() => loading.promise),
+    receive = createWorker((m) => posted.push(m), install);
+  const first = receive(init(1));
+  await receive({ ...init(2), type: 'patient', assetKey: 'foreign', buffers: undefined });
+  loading.resolve(person);
+  await first;
+  expect(install).toHaveBeenCalledOnce();
+  expect(posted).toEqual([{ type: 'error', id: 20, epoch: 2, assetKey: 'foreign', message: 'Worker de otra identidad' }]);
+});
+
+it('rechaza una instalación pendiente que devuelve otros activos', async () => {
+  const loading = deferred(),
+    posted: CutMapReply[] = [],
+    receive = createWorker(
+      (m) => posted.push(m),
+      () => loading.promise,
+    );
+  const first = receive(init(1));
+  const next = receive({ ...init(2), type: 'patient', patient: SEVERE_CONGESTION, buffers: undefined });
+  loading.resolve({ ...person, assetKey: 'foreign' });
+  await Promise.all([first, next]);
+  expect(posted).toEqual([{ type: 'error', id: 20, epoch: 2, assetKey: person.assetKey, message: 'Identidad Worker incompatible' }]);
+});
+
 it.each(['resolve', 'reject'] as const)(
   'un import antiguo que termina con %s no publica ni borra el contexto nuevo',
   async (completion) => {

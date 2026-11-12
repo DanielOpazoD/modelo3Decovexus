@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "date": "2026-11-07",
- "main": "8ed26cf",
+ "date": "2026-11-11",
+ "main": "2de528f",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -9,7 +9,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5806258
+   "actual": 6140705
   },
   {
    "what": "`abdominal-body.bin`",
@@ -33,7 +33,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5914463
+   "actual": 6014991
   },
   {
    "what": "`anatomy.glsl.js`",
@@ -41,7 +41,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 23151
+   "actual": 23152
   },
   {
    "what": "`anatomyScene.js`",
@@ -49,7 +49,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 16051
+   "actual": 16163
   },
   {
    "what": "`annotation-capacity.gzip.bin`",
@@ -65,7 +65,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 249512
+   "actual": 252382
   },
   {
    "what": "`candidate-manifest.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 10126
+   "actual": 24241
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 24137
+   "actual": 14398
   },
   {
    "what": "`cutMapView.js`",
@@ -97,7 +97,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 16821
+   "actual": 16838
   },
   {
    "what": "`cutMapWorker.js`",
@@ -105,7 +105,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 3663
+   "actual": 3721
   },
   {
    "what": "`deformation.js`",
@@ -137,7 +137,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 26029
+   "actual": 26155
   },
   {
    "what": "`index.css`",
@@ -217,7 +217,15 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5081
+   "actual": 5328
+  },
+  {
+   "what": "`runtime.js`",
+   "limit": 122880,
+   "unit": "B",
+   "decision": null,
+   "source": "tools/ci/bundleBudgets.ts",
+   "actual": 20293
   },
   {
    "what": "`runtime.js`",
@@ -226,14 +234,6 @@
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
    "actual": 1631
-  },
-  {
-   "what": "`runtime.js`",
-   "limit": 122880,
-   "unit": "B",
-   "decision": null,
-   "source": "tools/ci/bundleBudgets.ts",
-   "actual": 20075
   },
   {
    "what": "`series.js`",
@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 9543
+   "actual": 9901
   },
   {
    "what": "`structureIdentity.js`",
@@ -345,7 +345,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 3122
+   "actual": 3124
   },
   {
    "what": "`three.js`",
@@ -369,7 +369,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 109011
+   "actual": 108778
   },
   {
    "what": "JS clausura default (Workers y ganchos incluidos)",
@@ -377,15 +377,15 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1028504
+   "actual": 1036334
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
-   "limit": 1070080,
+   "limit": 1071104,
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1066204
+   "actual": 1070084
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -474,18 +474,18 @@
    "tokenLimit": 1385000,
    "branchLimit": 11060,
    "current": {
-    "tokens": 1260863,
-    "branches": 10108,
+    "tokens": 1268283,
+    "branches": 10139,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "be1c7be1bca41c8c59e9da5c412233dd4942f8f6143eac0ad8a19c8f59eb2adc"
+    "sourceSha256": "ea5c4b3c288f653e8c66367c369f15840f2a1365483f057e8d4ea45b75d4d27b"
    },
    "s0028": {
-    "tokens": 407897,
-    "branches": 2926,
+    "tokens": 411950,
+    "branches": 2939,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "22863f2ca59544f1a82a7e1190dc40f2575afbcec65b22ee9631d6efb66653a2"
+    "sourceSha256": "f4da637b19975e9e73e01eaf7d98f3bff47475b33e2e593a07046f815a06482f"
    }
   },
   {
@@ -493,18 +493,18 @@
    "tokenLimit": 577000,
    "branchLimit": 4640,
    "current": {
-    "tokens": 525694,
-    "branches": 4239,
+    "tokens": 529303,
+    "branches": 4252,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "22d4821fdeb31b190616e75c73ffdaa140f8c7662c1e69c4724e574738593c90"
+    "sourceSha256": "fa4447e13438604223e3a349b5ded408bbbe0ed48b0ec5be542f30bc6394366f"
    },
    "s0028": {
-    "tokens": 166402,
-    "branches": 1169,
+    "tokens": 169075,
+    "branches": 1177,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "bcb133ebf08201be56402e468b9729733fa8d61d36d198010ec31e7850cd3258"
+    "sourceSha256": "d8d2613b1bd6a95198fa11af1730f7814dd637cdd519d609da2d2a5db00f680e"
    }
   },
   {
@@ -512,18 +512,18 @@
    "tokenLimit": 455000,
    "branchLimit": 3830,
    "current": {
-    "tokens": 414230,
-    "branches": 3503,
+    "tokens": 417797,
+    "branches": 3515,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "77092da6c8e457017f22799b7ad75f119880ae1d7df37f0e87e42715f1349e8f"
+    "sourceSha256": "1477269017954bec787f51a5d45932270fbf0cb5b9a55182a5edf432182e486c"
    },
    "s0028": {
-    "tokens": 120890,
-    "branches": 853,
+    "tokens": 123538,
+    "branches": 860,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "ebccf334d49e3fb113f30188ae2aa0635966b7db59bc5e5eb2f395467cfa977d"
+    "sourceSha256": "120d11048ba1bcfbed739985dd3c4aca2a23ae894e47e167a09d35b5e7d93774"
    }
   },
   {
@@ -531,18 +531,18 @@
    "tokenLimit": 455000,
    "branchLimit": 3830,
    "current": {
-    "tokens": 414370,
-    "branches": 3505,
+    "tokens": 417937,
+    "branches": 3517,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "b90d8c1d1ffeea60cb2d5e3808471705ced3a7ea83dfe50dc8d1fa6fe38c685b"
+    "sourceSha256": "8729a4aa6e24e492a2df63cbc6abc9be5c97199cf0fb39c4cec315d2ffc8e683"
    },
    "s0028": {
-    "tokens": 121030,
-    "branches": 855,
+    "tokens": 123678,
+    "branches": 862,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "fd5e90da33fb5ce8063ad97a2a1e5bb54c54d2b649494f5c6a3d067d6d78a397"
+    "sourceSha256": "ec3a13d71a6d6837ac76b598d02ab5ffa12b7e0323b6cd573c7dfce350eba841"
    }
   },
   {
@@ -550,18 +550,18 @@
    "tokenLimit": 351000,
    "branchLimit": 2760,
    "current": {
-    "tokens": 318190,
-    "branches": 2501,
+    "tokens": 321815,
+    "branches": 2510,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "6dd4ddefed5f3ff4f185b32c729598115fb4600a6879e091aebe243bd2557468"
+    "sourceSha256": "0f701fea3cd9eff8d6448838ccd1a1b37986bcbe74d702325481a5106db50786"
    },
    "s0028": {
-    "tokens": 96635,
-    "branches": 599,
+    "tokens": 99280,
+    "branches": 605,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "b741851b8c98f93a85654253f2d8757ab3bf069c0be0a7b9960ec62456161aa5"
+    "sourceSha256": "d0726ee6fc6ba9d393770a38998ea6aca578ecb371514197132e4c00e2d4693e"
    }
   },
   {
@@ -569,18 +569,18 @@
    "tokenLimit": 513000,
    "branchLimit": 4470,
    "current": {
-    "tokens": 468025,
-    "branches": 4104,
+    "tokens": 468641,
+    "branches": 4110,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "2a0119dd74a9f8bb1a988ac3b387234535e05d5805f227b31ac1cb78a1b3104d"
+    "sourceSha256": "23c4d353785e24f4919f1dd4bec4b93356ec299f4a92f410488350dd28888304"
    },
    "s0028": {
-    "tokens": 168324,
-    "branches": 1262,
+    "tokens": 168330,
+    "branches": 1264,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "57efb0909175be83760247ee5d2b84f2ba47ebef37768aea25221dad1493d505"
+    "sourceSha256": "9f98015c21573c5b4085ede7acfdb97b70253fc21f80785d0327600e68fe5547"
    }
   },
   {
@@ -588,18 +588,18 @@
    "tokenLimit": 252000,
    "branchLimit": 2210,
    "current": {
-    "tokens": 230028,
-    "branches": 2030,
+    "tokens": 230336,
+    "branches": 2033,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "5e62dbe91a7a42302a34ab77d97f7bae55d5943a1361f5fa2de69f96b1086ba5"
+    "sourceSha256": "dc2ec6727d17d35d2af80e6afbd9ca9dc4bf336f250a4ff91c9f48e6a35fe719"
    },
    "s0028": {
-    "tokens": 78134,
-    "branches": 611,
+    "tokens": 78137,
+    "branches": 612,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "98124a0ef549da7585accd1d643137787d8c78d3f857b35e231b229308953be6"
+    "sourceSha256": "874d72d2c4b48845cab4a77628f9b191b514a93ab380555aa5ad0b3ee83b96d4"
    }
   },
   {
@@ -607,27 +607,27 @@
    "tokenLimit": 248000,
    "branchLimit": 2160,
    "current": {
-    "tokens": 226512,
-    "branches": 1987,
+    "tokens": 226820,
+    "branches": 1990,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "79f7aefbdd283981a69295c3ff8a00d0b05295c704bbe7f522f267b63f6ce67f"
+    "sourceSha256": "c713b1d3d2acb77b4de1d2276e8553cc66ebd8db7a854ff87db6040ef3c6fcb1"
    },
    "s0028": {
-    "tokens": 73008,
-    "branches": 568,
+    "tokens": 73011,
+    "branches": 569,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "4cf09483f0a0b2c778227a123d6a21b72a6ac6f0a6551e4a650610a8fa633f66"
+    "sourceSha256": "14bb198399ef3fa765469b37720b7bf05000a542bc8259378d86e3ab0c7df4c1"
    }
   }
  ],
  "s0028DescriptorSha256": "e8921fbedfd3c7322fa950b7b875ce2c49f55fc92ecc1f12af759ebf0b2fec72",
  "tests": {
-  "vitestFiles": 321,
+  "vitestFiles": 331,
   "slowFiles": 34,
-  "e2eSpecs": 85,
-  "e2eTestCalls": 143,
+  "e2eSpecs": 89,
+  "e2eTestCalls": 148,
   "e2eShards": 12,
   "pythonContracts": 20
  }
