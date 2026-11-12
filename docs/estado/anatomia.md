@@ -1,6 +1,6 @@
 # Estado vigente: anatomía
 
-Actualizado: 2026-11-12 sobre main `e8e1bec`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
+Actualizado: 2026-11-12 sobre main `cf69381`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
@@ -38,6 +38,7 @@ cubre con legacy. Tras P8, el corte sustituye el default por s0028 cuando pase l
 | P3 r1–r2 | sólidos y compartimento posterior en CPU y Worker                         | 321 (en revisión) | fusionada      |
 | P3 r3    | sólidos y posterior en la GPU                                             | 321 (en revisión) | fusionada      |
 | P3 r4    | interior renal desde el propio TAC, offline (se instala en r5)            | 321 (en revisión) | fusionada      |
+| P3 r5    | interior renal instalado en CPU, Worker y GPU, con el seno del hilio      | 341               | en PR          |
 | P4–P6    | digestivo, gas y capas; redes vasculares del mismo hígado                 | —                 | pendientes     |
 | P7–P8    | tórax y VCI–AD del caso; diez poses y adquisiciones, lista de relaciones  | —                 | pendientes     |
 
@@ -65,7 +66,8 @@ U es «desconocido»: el modelo no inventa tejido donde la fuente no lo dice.
   el contacto acopla por la piel.
 - Dos dueños independientes en un punto son conflicto: U, conservados en `solids`, sin precedencia (decisión 321). El
   solape hígado/pared de unos 11 mm³ sigue declarado como conflicto.
-- Riñón: borde D (identidad y rótulo) e interior U en la aplicación hasta r5, que instala el rótulo offline de P3 r4.
+- Riñón: borde D. Su interior lleva el rótulo offline del propio TAC (r5, decisión 341): corteza y médula E dentro de la máscara;
+  en el hueco del hilio, seno graso y colector D y vasos e interfaces del seno E. La boca hiliar y lo no rotulado siguen U.
 - Gerota, cuadrado lumbar y diafragma posterior: U en P3; la grasa entra solo como «grasa compatible» D (decisión 321).
 - La zona respaldada por pulmón (portal e intercostal altas) es pared torácica: se difiere a P7–P8.
 
@@ -75,7 +77,7 @@ Todos los techos de la aplicación, con su fuente, están en `docs/estado/presup
 
 <!-- presupuestos s0028: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `e8e1bec` el 2026-11-12 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `cf69381` el 2026-11-12 con `tools/docs/estado.ts`.
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |

@@ -67,10 +67,10 @@ describe('clausuras completas por persona', () => {
     expect(result.s0028.bytes).toBe(86);
     expect(result.totalJsBytes).toBe(106);
   });
-  it('conserva default y limita la ampliación de s0028 a 1 KiB', () => {
+  it('conserva default y limita la ampliación de s0028 a 29 KiB (1 del Worker y 28 del rótulo renal, decisión 341)', () => {
     expect(DEFAULT_JS_BUDGET).toBe(1_070_080);
-    expect(S0028_JS_BUDGET).toBe(1_071_104);
-    expect(PERSON_JS_CEILING).toBe(1_071_104);
+    expect(S0028_JS_BUDGET).toBe(1_099_776);
+    expect(PERSON_JS_CEILING).toBe(1_099_776);
   });
   it.each(['default', 's0028'] as const)('acepta su techo y rechaza +1 B en %s', (person) => {
     const g = fixture();

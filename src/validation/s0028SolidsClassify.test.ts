@@ -5,6 +5,8 @@ import { HALF } from '../anatomy/halfFloat';
 import { Interface } from '../anatomy/interfaces';
 import { torsoDepth } from '../anatomy/primitives';
 import { AnatomyQuery } from '../anatomy/query';
+import { S0028_RENAL_INTERIOR as R } from '../anatomy/s0028RenalInteriorData';
+import { S0028_RENAL_INTERIOR_RUNS as RUNS } from '../anatomy/s0028RenalInteriorRuns';
 import { STRUCTURE_LABELS, structureIdentity } from '../anatomy/structureIdentity';
 import { Tissue } from '../anatomy/tissues';
 import { startPointsFor } from '../app/startPoints';
@@ -41,17 +43,29 @@ beforeAll(() => {
 });
 const at = (p: Vec3) => scene.classify(p, BASELINE_CALIBER);
 const ids = (c: Classification) => c.solids?.owners.map((o) => o.id) ?? [];
-/** Arquitectura renal y compartimentos que P3 no identifica en s0028 (decisión 321). */
-const NEVER = [
-  Tissue.RenalCortex,
-  Tissue.RenalMedulla,
-  Tissue.RenalSinus,
-  Tissue.RenalPelvis,
-  Tissue.RenalCapsule,
-  Tissue.PerirenalFat,
-  Tissue.QuadratusLumborum,
-  Tissue.RetroperitonealFat,
-];
+/** Compartimentos que s0028 no identifica (decisión 321): los de la arquitectura analítica de la otra persona. */
+const NEVER = [Tissue.RenalCapsule, Tissue.PerirenalFat, Tissue.QuadratusLumborum, Tissue.RetroperitonealFat];
+/**
+ * Oráculo del interior renal (decisión 341), independiente del lector de la aplicación: expande por su cuenta los tramos
+ * del exportador offline. 0 U, 1 corteza, 2 médula, 3 seno graso, 4 colector, 5 seno sin subclasificar.
+ */
+const RENAL_LABELS = R.boxes.map((_, i) => {
+  const out: number[] = [];
+  for (const [, symbol, length] of RUNS[i].matchAll(/([A-Z])([0-9a-z]*)/gu))
+    for (let n = length ? parseInt(length, 36) : 1; n > 0; n--) out.push('UCMFPS'.indexOf(symbol));
+  return out;
+});
+function renalLabel(p: Vec3): number {
+  const side = p[0] < 10 ? 0 : 1,
+    b = R.boxes[side],
+    q = p.map((x, k) => Math.round((x - b.originMm[k]) / 1.5));
+  if (q.some((x, k) => !(x >= 0 && x < b.dimensions[k]))) return 0;
+  return RENAL_LABELS[side][(q[0] * b.dimensions[1] + q[1]) * b.dimensions[2] + q[2]];
+}
+/** Corteza y médula sólo con dueño renal; seno y colector sólo sin él (hueco del hilio, fuera de la máscara). */
+const PARENCHYMA: Record<number, Tissue> = { 1: Tissue.RenalCortex, 2: Tissue.RenalMedulla };
+const SINUS: Record<number, Tissue> = { 3: Tissue.RenalSinus, 4: Tissue.RenalPelvis, 5: Tissue.RenalSinus };
+const RENAL = [Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalPelvis];
 /** Máscaras fuente P1 que P3 evalúa como dueños; los vasos fuente son de P5. */
 const SOURCES = B.fields.filter((f) => !['aorta', 'inferior_vena_cava', 'portal_vein_and_splenic_vein'].includes(f.name));
 /** Vasos fuente: no son dueños (P5), pero la grasa D no puede reclamar su interior; las demás máscaras ya excluyen la grasa por dueño. */
@@ -66,14 +80,15 @@ function brick(name: string, step: number, visit: (p: Vec3, d: number) => void):
       }
 }
 
-it('riñón s0028: dueño propio con borde D e interior U, sin corteza, médula, seno, cápsula ni vasos simulados', () => {
-  // Nodos más profundos de cada máscara (main: corteza derecha y médula izquierda de la arquitectura analítica de otra persona).
+it('riñón s0028: dueño propio con borde D; corteza y médula sólo donde lo dice el rótulo del propio TAC, sin cápsula ni vasos simulados', () => {
+  // Contrato sustituido (decisión 341): antes todo el interior era U. Ahora manda el rótulo offline; sin rótulo sigue U.
+  // Nodos más profundos de cada máscara.
   for (const [p, id] of [
     [[-66.48527431275116, -33.71478450019774, -130.48879268882285], 'kidney_right'],
     [[56.51472568724884, -36.71478450019774, -80.98879268882285], 'kidney_left'],
   ] as const) {
     const c = at([...p]);
-    expect(c.tissue, id).toBe(Tissue.UnsegmentedSoftTissue);
+    expect(c.tissue, id).toBe(PARENCHYMA[renalLabel([...p])] ?? Tissue.UnsegmentedSoftTissue);
     // A más de 1,2 mm de su borde O no dibuja la cara de la cápsula (r3: sólo el contorno acústico).
     expect(c.interface).toBe(Interface.None);
     expect(c.solids).toEqual({
@@ -87,22 +102,37 @@ it('riñón s0028: dueño propio con borde D e interior U, sin corteza, médula,
     ['kidneyLeft', 'kidney_left'],
   ] as const) {
     let inside = 0,
-      shell = 0;
+      shell = 0,
+      cortex = 0,
+      medulla = 0;
     brick(name, 2, (p, d) => {
       if (d >= 12) return;
-      const c = at(p);
+      const c = at(p),
+        label = renalLabel(p);
       // Ni dentro ni en la corona de 12 mm: la máscara manda; el estiramiento W de la otra persona dibujaba corteza fuera.
       expect(NEVER, `${name} ${p.join(',')} d=${d}`).not.toContain(c.tissue);
       if (d < 0) {
         inside++;
-        // Un dueño único es U; en una lámina de dos máscaras, conflicto conservado.
+        // Un dueño único toma el tejido de su rótulo (sin rótulo, U); en una lámina de dos máscaras, conflicto conservado.
         expect(ids(c), p.join(',')).toContain(id);
-        expect(c.tissue, p.join(',')).toBe(Tissue.UnsegmentedSoftTissue);
+        expect(c.tissue, p.join(',')).toBe(
+          c.solids?.state === 'conflict' ? Tissue.UnsegmentedSoftTissue : (PARENCHYMA[label] ?? Tissue.UnsegmentedSoftTissue),
+        );
         expect(c.vessel, p.join(',')).toBeNull();
-      } else shell++;
+        if (c.tissue === Tissue.RenalCortex) cortex++;
+        if (c.tissue === Tissue.RenalMedulla) medulla++;
+      } else {
+        shell++;
+        // Fuera de la máscara no hay parénquima; seno y colector sólo donde lo dice el rótulo.
+        expect([Tissue.RenalCortex, Tissue.RenalMedulla], p.join(',')).not.toContain(c.tissue);
+        if (RENAL.includes(c.tissue)) expect(c.tissue, p.join(',')).toBe(SINUS[label]);
+      }
     });
     expect(inside).toBeGreaterThan(3000);
     expect(shell).toBeGreaterThan(5000);
+    // Corteza 82 % y médula 17 % de la máscara en el exportador; uno de cada ocho nodos aquí.
+    expect(cortex).toBeGreaterThan(2000);
+    expect(medulla).toBeGreaterThan(300);
   }
 });
 
@@ -212,7 +242,7 @@ it('lumbosacro y sacro solapados: un solo dueño óseo, nunca conflicto hueso/hu
   }
 });
 
-it('U nunca se clasifica como tejido conocido en el compartimento posterior y renal', () => {
+it('U nunca se clasifica como tejido conocido en el compartimento posterior y renal, salvo el rótulo renal del propio TAC', () => {
   // Oráculo independiente de la implementación: sin máscara fuente (SDF < 0), sin bit de grasa D y fuera de la banda P2
   // conocida el punto es U. Caja de ambos riñones con 40 mm de margen, a 3 mm.
   let unknown = 0,
@@ -223,8 +253,12 @@ it('U nunca se clasifica como tejido conocido en el compartimento posterior y re
       for (let x = -130; x <= 130; x += 3) {
         const p: Vec3 = [x, y, z];
         if (torsoDepth(p, scene.torso) > -1.5) continue;
-        const c = at(p);
+        const c = at(p),
+          label = renalLabel(p);
         expect(NEVER, `${x},${y},${z}`).not.toContain(c.tissue);
+        // Tejido renal sólo por rótulo: parénquima con dueño renal, seno sin él.
+        if (RENAL.includes(c.tissue))
+          expect(c.tissue, `${x},${y},${z}`).toBe(ids(c).some((id) => id.startsWith('kidney')) ? PARENCHYMA[label] : SINUS[label]);
         // La grasa D es el complemento de las máscaras: nunca comparte punto con un dueño fuente ni con un vaso fuente (P5),
         // tampoco en la lámina subvóxel; dentro de la banda P2 conocida es conflicto (dos dueños), nunca pared sin más.
         if (ids(c).includes('compatible_fat')) {
@@ -254,7 +288,7 @@ it('U nunca se clasifica como tejido conocido en el compartimento posterior y re
         if (!c.vesselHit && c.interface !== Interface.DuctLumen) {
           // Vasos y conductos procedurales E fuera de los sólidos: P5. La cúpula E de P7 va rotulada.
           if (c.tissue === Tissue.Diaphragm) expect(c.approximation).toBe('diaphragm-P7');
-          else expect(Tissue[c.tissue], `${x},${y},${z}`).toBe('UnsegmentedSoftTissue');
+          else expect(Tissue[c.tissue], `${x},${y},${z}`).toBe(Tissue[SINUS[label] ?? Tissue.UnsegmentedSoftTissue]);
         }
         expect(c.solids, `${x},${y},${z}`).toEqual({ state: 'U', owners: [], kidneyMm: expect.any(Number) as number });
       }
@@ -263,7 +297,7 @@ it('U nunca se clasifica como tejido conocido en el compartimento posterior y re
   expect(known).toBeGreaterThan(10000);
 });
 
-it('grasa compatible D: vóxel con bit y sin máscara es grasa D; la envolvente renal sigue U', () => {
+it('grasa compatible D: vóxel con bit y sin máscara es grasa D; la envolvente renal sigue U salvo el seno rotulado', () => {
   let fatChecked = 0,
     hull = 0;
   for (const row of fat.rows) {
@@ -276,14 +310,14 @@ it('grasa compatible D: vóxel con bit y sin máscara es grasa D; la envolvente 
     if (row.fat) {
       expect(ids(c), JSON.stringify(row)).toContain('compatible_fat');
       if (c.solids?.state === 'known' && !tube) {
-        expect(c.tissue).toBe(Tissue.Fat);
+        expect(c.tissue).toBe(SINUS[renalLabel(p)] ?? Tissue.Fat);
         expect(c.solids.owners).toEqual([{ id: 'compatible_fat', d: 0, certainty: 'D' }]);
         fatChecked++;
       }
     } else if (row.kind === 'envelope') {
       // Envolvente convexa renal (seno e hilio sin máscara): U aunque la cruce un vaso procedural E.
       expect(c.solids, JSON.stringify(row)).toEqual({ state: 'U', owners: [], kidneyMm: expect.any(Number) as number });
-      if (!tube) expect(c.tissue).toBe(Tissue.UnsegmentedSoftTissue);
+      if (!tube) expect(c.tissue).toBe(SINUS[renalLabel(p)] ?? Tissue.UnsegmentedSoftTissue);
       hull++;
     }
   }
@@ -313,7 +347,7 @@ it('vocabulario cerrado: ningún dueño es Gerota, cuadrado lumbar, diafragma po
   );
 });
 
-it('Worker real del corte: el riñón es U rotulado «Riñón derecho · interior U» y el mapa coincide con la CPU bit a bit', async () => {
+it('Worker real del corte: el riñón lleva su rótulo (corteza o médula, o «interior U») y el mapa coincide con la CPU bit a bit', async () => {
   const posted: unknown[] = [];
   vi.stubGlobal('self', { postMessage: (m: unknown) => posted.push(m) });
   await import('../ui/cutMapWorker');
@@ -362,7 +396,8 @@ it('Worker real del corte: el riñón es U rotulado «Riñón derecho · interio
   const query = new AnatomyQuery(scene);
   const caliber = query.caliberFor(sample);
   const dirs = cutMapDirections(frame, CONVEX_C35, 64);
-  let kidney = 0;
+  let kidney = 0,
+    labelled = 0;
   for (let v = 0; v < 96; v++)
     for (let u = 0; u < 64; u++) {
       const m = query.deformation.toMaterial(
@@ -375,16 +410,19 @@ it('Worker real del corte: el riñón es U rotulado «Riñón derecho · interio
         c.tissue,
         structureIdentity(m, c.tissue, c.interface, scene, c.solids),
       ]);
-      // Oráculo fuente: dentro de la máscara renal derecha y de ninguna otra, U con identidad de riñón.
+      // Oráculo fuente: dentro de la máscara renal derecha y de ninguna otra, el tejido de su rótulo con identidad de riñón.
       if (SOURCES.every((f) => s0028SourceValue(m, f.name).d < 0 === (f.name === 'kidneyRight'))) {
         kidney++;
+        const tissue = PARENCHYMA[renalLabel(m)];
+        if (tissue !== undefined) labelled++;
         expect([map.tissue[i], STRUCTURE_LABELS[map.structure[i]]], `${u},${v}`).toEqual([
-          Tissue.UnsegmentedSoftTissue,
-          'Riñón derecho · interior U',
+          tissue ?? Tissue.UnsegmentedSoftTissue,
+          tissue === undefined ? 'Riñón derecho · interior U' : 'Riñón derecho',
         ]);
       }
     }
   expect(kidney).toBeGreaterThan(100);
+  expect(labelled).toBeGreaterThan(80);
 });
 
 it('grasa compatible D: nunca dentro de la lámina subvóxel de aorta, VCI o porta/esplénica (revisión r2)', () => {

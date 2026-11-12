@@ -3,6 +3,7 @@ import { gunzipSync } from 'node:zlib';
 import { expect, it, vi } from 'vitest';
 import { HALF } from '../anatomy/halfFloat';
 import { gpuPlan } from '../anatomy/people/s0028/gpu';
+import { s0028RenalPages } from '../anatomy/people/s0028/solidsData';
 import { createAbdominalTexture } from '../ultrasound/abdominalTexture';
 import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
 import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
@@ -64,13 +65,31 @@ it('sube los 16 tiles RG16F y centros como vistas en el único atlas P1, sin cop
   expect(uploads.filter((u) => u.w === 65 && u.h === 91)).toHaveLength(16);
   expect(uploads.filter((u) => u.x === 65 && u.z >= 619)).toEqual([]);
   // P3 r3: las 77 páginas de grasa D, vistas de la reserva tras el derivado P2, en las colocaciones de su tabla.
-  const pages = uploads.filter((u) => u.w === 32 && u.h === 32 && u.d === 1);
+  const allPages = uploads.filter((u) => u.w === 32 && u.h === 32 && u.d === 1);
+  const pages = allPages.slice(0, 77);
   expect(pages.map((u) => [u.x, u.y, u.z])).toEqual(s0028FatPages());
   pages.forEach((u, i) => {
     expect(u.input.buffer).toBe(capacity);
     expect([u.input.byteOffset, u.input.length]).toEqual([4096 + B.solids.offsetBytes + 4096 * i, 2048]);
   });
   expect(pages).toHaveLength(77);
+  // Interior renal (decisión 341): 46 páginas más, en huecos propios del mismo atlas y fuera de la reserva de pared; cada
+  // half es un byte exacto con dos códigos de vóxel válidos (0 U, 3, 4, 9, 10, 13).
+  const renal = allPages.slice(77);
+  expect(renal.map((u) => [u.x, u.y, u.z])).toEqual(s0028RenalPages());
+  expect(renal).toHaveLength(46);
+  const taken = new Set(s0028FatPages().map((o) => o.join()));
+  for (const u of renal) {
+    expect(taken.has([u.x, u.y, u.z].join())).toBe(false);
+    taken.add([u.x, u.y, u.z].join());
+    expect(u.input.buffer).not.toBe(capacity);
+    expect(u.input.length).toBe(2048);
+    for (const half of u.input) {
+      const byte = HALF[half];
+      expect([0, 3, 4, 9, 10, 13]).toContain(byte & 15);
+      expect([0, 3, 4, 9, 10, 13]).toContain(byte >> 4);
+    }
+  }
   expect(data.every((x) => x === 0)).toBe(true);
 });
 

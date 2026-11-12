@@ -120,7 +120,7 @@ const E = {
   s0028Solids: {
     kind: 'gpu',
     file: 'e2e/s0028SolidsGpu.spec.ts',
-    title: 'la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños, conflicto, riñón U con contorno, grasa D',
+    title: 'la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños, conflicto, riñón rotulado con contorno, grasa D',
   },
   s0028Wall: {
     kind: 'gpu',
@@ -977,6 +977,14 @@ export const TWINS: readonly TwinPair[] = [
     ],
   },
   {
+    id: 's0028-interior-renal',
+    what: 'Etiqueta del interior renal s0028 en el vóxel nearest de su caja: corteza y médula E, seno graso y colector D, seno sin subclasificar E; lo demás U.',
+    kind: 'cpu-glsl',
+    cpu: [{ file: 'src/anatomy/people/s0028/solids.ts', symbols: ['s0028RenalInterior'] }],
+    gpu: [{ file: 'src/anatomy/gpu/s0028Solids.glsl.ts', symbols: ['s28PRen'], templates: ['S0028_SOLIDS_GLSL'] }],
+    evidence: [{ ...E.s0028Solids, scope: 'tejido del interior renal en los nodos y genéricos renales y en las diez ventanas' }],
+  },
+  {
     id: 's0028-gradiente-renal',
     what: 'Normal de la cara renal s0028: gradiente analítico de la trilineal del riñón, con los ocho nodos de su celda.',
     kind: 'cpu-glsl',
@@ -1021,7 +1029,7 @@ export const TWINS: readonly TwinPair[] = [
       {
         kind: 'worker',
         file: 'src/validation/s0028SolidsClassify.test.ts',
-        title: 'Worker real del corte: el riñón es U rotulado «Riñón derecho · interior U» y el mapa coincide con la CPU bit a bit',
+        title: 'Worker real del corte: el riñón lleva su rótulo (corteza o médula, o «interior U») y el mapa coincide con la CPU bit a bit',
       },
       {
         kind: 'worker',

@@ -11,6 +11,7 @@ import { S0028_BUNDLE } from '../anatomy/people/s0028/descriptor';
 import baseline from './fixtures/person-shaders-main.json';
 import scanConvertRevision from './fixtures/scanconvert-axial-334.json';
 import renalRevision from './fixtures/renal-shaders-339.json';
+import renalInterior from './fixtures/s0028-renal-interior-shaders.json';
 import { loadShaderGraph } from './support/shaderGraph';
 
 const root = process.cwd();
@@ -51,13 +52,13 @@ function programs(privateExtension = false) {
   );
 }
 
-it('conserva los programas de main salvo G334 y la anatomía/A0 339, fuente y transformados', () => {
+it('conserva los programas de main salvo G334, la anatomía/A0 339 y el interior renal s0028, fuente y transformados', () => {
   expect(abi.base).toBe(baseline.base);
   expect(abi.base).toMatch(/^[0-9a-f]{40}$/);
   const result = programs();
   for (const mode of ['source', 'productionTransforms'] as const) {
     expect(Object.keys(result[mode])).toHaveLength(40);
-    expect(result[mode]).toEqual({
+    const previous: Record<string, { default: string; s0028: string }> = {
       ...Object.fromEntries(
         baseline[mode].programs.map((p) => [
           p.name,
@@ -65,7 +66,10 @@ it('conserva los programas de main salvo G334 y la anatomía/A0 339, fuente y tr
         ]),
       ),
       ...renalRevision[mode],
-    });
+    };
+    // El interior renal (decisión 341) sólo cambia los programas s0028 que clasifican: sus default son los de antes.
+    for (const [name, value] of Object.entries(renalInterior[mode])) expect(value.default, name).toBe(previous[name].default);
+    expect(result[mode]).toEqual({ ...previous, ...renalInterior[mode] });
   }
 });
 

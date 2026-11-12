@@ -606,7 +606,8 @@ export class AnatomyScene {
    *
    * s0028 (P3, decisión 321): tras la piel E se reúnen todos los dueños independientes (`s0028Owners`) antes de
    * cualquier orden; dos o más son conflicto, U y conservados en `solids`. Un dueño único da su material, salvo el
-   * riñón (interior U; su borde O es la cara acústica de la cápsula, r3) y la grasa compatible D; sin dueño, U. La GPU
+   * riñón (el rótulo de su interior, r5; su borde O es la cara acústica de la cápsula, r3) y la grasa compatible D; sin
+   * dueño, U o el seno renal rotulado. La GPU
    * hace lo mismo con los mismos dueños (`s0028Solids.glsl.ts`).
    * @twin clasificacion
    */

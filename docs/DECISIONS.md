@@ -11543,3 +11543,15 @@ láminas y CI, techo de coste GPU absoluto, `docs/estado/` como verdad vigente y
 **Consecuencias.** Sin check local obligatorio ni recibos con hash. El coste se acepta si el bucle real sostiene 60 fps (`fps` de
 `npm run fidelity`); `frameCostMs` no lo representa: dio +33 % a la red renal 339, un 30 % más rápida en el bucle real.
 **Verificación.** `docs.test.ts` y `estado.test.ts`; `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md` y `CONTEXTO-IA.md` apuntan a la página.
+
+## 341. El riñón s0028 lleva el interior de su propio TAC
+
+**Contexto.** En `?abdomen=s0028` el riñón era una mancha homogénea: su interior era U en espera de r5 (decisión 321). El rótulo
+offline de r4 ya existía y su payload regenerado coincide con el documentado (`a23b4a77…`).
+**Opciones.** Ampliar la reserva de pared y su manifiesto, como r3; o llevar el rótulo como datos generados en el código. Lo segundo.
+**Decisión.** `install-s0028-renal-interior.ts` escribe cajas, 46 páginas en huecos del atlas abdominal y los códigos por tramos.
+`s0028RenalInterior` y `s28PRen` leen el vóxel nearest: corteza y médula E con dueño renal; seno graso y colector D y vasos e
+interfaces del seno E en el hueco del hilio; lo demás U. Sin sampler ni textura nuevos; los programas default no cambian.
+**Consecuencias.** El techo JS de s0028 sube 28 KiB, a 1.099.776 B (usa 1.094.051). Límites entre tejidos escalonados a 1,5 mm.
+**Verificación.** Lámina hepatorrenal antes y después; paridad CPU = Worker = GPU (`s0028SolidsGpu.spec.ts` en Metal, más de 3.000
+puntos rotulados); `s0028SolidsClassify.test.ts` sustituye «interior U» por un oráculo propio de los tramos. Sin validación clínica.
