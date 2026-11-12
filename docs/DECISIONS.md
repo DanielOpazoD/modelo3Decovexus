@@ -11578,3 +11578,16 @@ la reduce a celdas de 3 mm por mayoría. `install-s0028-wide-fat.ts` la escribe 
 bloque P3, y en 43 páginas libres del atlas. Vale solo fuera de las cajas renales, sin ningún dueño ni vaso, y no pisa la cúpula E.
 **Consecuencias.** Sin activos, texturas ni memoria nuevos; la reserva comprimida pasa de 284 a 334 kB. Bordes de grasa a 3 mm.
 **Verificación.** Lámina antes y después junto al TAC; 600 testigos del TAC; paridad CPU = GPU en Metal con más de 2.000 celdas.
+
+## 344. La prueba de pared de s0028 lleva una cota por backend
+
+**Contexto.** `e2e/s0028WallGpu.spec.ts` pasa en la CI y falla en Metal desde que existe: 27 de 2.255 puntos epigástricos (1,2 %) con
+otra cara en la GPU. Medido: en SwiftShader la cara de la GPU está a 0,0001 mm de la de la CPU; en un M4, a 0,06 mm (p95) y hasta 0,23.
+**Opciones.** Interpolar la EDT a mano en el GLSL (56 lecturas en vez de 7, sin margen de tokens); cambiar el paso del gradiente en
+las tres implementaciones (rompe la carta offline); o lo decidido.
+**Decisión.** La causa es el filtro del hardware (pesos de 8 bits sobre la EDT de 3 mm, siete lecturas por punto), no la regla. En
+SwiftShader la prueba conserva sus cotas y añade la cara a menos de 0,001 mm. En GPU nativa exige 2 % de caras distintas, norma 0,02 y
+cara a 0,1 mm; en el peso respiratorio, menos del 1 % de puntos aislados (9 de 3.264 medidos) y percentiles en vez de máximos.
+**Consecuencias.** En Metal la pared de la imagen se aparta de la que mide la CPU menos de un píxel (0,14 mm a 14 cm), y a 45–60 mm
+algún punto respira con otra celda de la carta. La CI gana una aserción y la prueba puede vigilar la GPU nativa.
+**Verificación.** La prueba en Metal y en SwiftShader con `workspace:e2e`; `ifdErrP95`, `weightOutliers` y `p99GradientDiff`.
