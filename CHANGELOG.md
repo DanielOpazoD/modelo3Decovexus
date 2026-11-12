@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Flujo de trabajo: el gancho de push comprueba en proporción a lo que cambia; un push de documentación tarda segundos y no minutos (347).
+
 - Ventanas de s0028: seis poses propias, halladas sobre su anatomía. «Portal» e «intercostal» dejan de caer sobre el pulmón y la hepatorrenal llena el sector (346).
 
 - Pruebas: el primer mapa del Worker se espera en segundos de simulación, no en 30 cuadros; en una GPU nativa eso era medio segundo.

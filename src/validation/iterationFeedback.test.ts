@@ -138,17 +138,21 @@ describe('Feedback focalizado sin confundirse con aceptación', () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
-  it('el gancho de push corre sólo la capa rápida (decisión 322): el feedback completo de la capa rápida', () => {
+  it('el gancho de push comprueba en proporción a lo que cambia (decisión 347), nunca más que la capa rápida', () => {
     const root = join(import.meta.dirname, '../..');
     const code = readFileSync(join(root, '.githooks/pre-push'), 'utf8')
       .split('\n')
       .map((l) => l.trim())
       .filter((l) => l && !l.startsWith('#'));
-    expect(code.filter((l) => /^npm /.test(l))).toEqual(['npm run feedback --silent -- --all-fast']);
+    expect(code.filter((l) => /^npm /.test(l))).toEqual(['npm run feedback --silent']);
     for (const heavy of ['test:slow', 'test:all', 'test:coverage', 'npm run check', 'npm run build', 'e2e', 'calibrate', 'VITEST_TIER'])
       expect(code.join('\n'), heavy).not.toContain(heavy);
-    // --all-fast: formato y lint de lo cambiado, tipos y toda la capa rápida, sin la lenta.
-    expect(feedbackPlan(root, [], true)).toMatchObject({ mode: 'fast', slow: false });
+    // Sin `--all-fast`: sólo documentación no corre pruebas; el código corre las que lo importan; el gancho mismo, la
+    // configuración y las herramientas siguen corriendo toda la capa rápida, sin la lenta.
+    expect(feedbackPlan(root, ['docs/REGLAS.md', 'CHANGELOG.md']).mode).toBe('docs');
+    expect(feedbackPlan(root, ['src/core/clock.ts', 'docs/REGLAS.md']).mode).toBe('related');
+    expect(feedbackPlan(root, ['.githooks/pre-push'])).toMatchObject({ mode: 'fast', slow: false });
+    expect(feedbackPlan(root, ['tools/ci/personBundles.ts']).mode).toBe('fast');
     const scripts = (JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { scripts: Record<string, string> }).scripts;
     expect(scripts['feedback']).toBe('node --import tsx tools/workspace/feedback.ts');
   });

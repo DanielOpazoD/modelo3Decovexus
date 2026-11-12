@@ -11616,3 +11616,15 @@ y, por ahora, la suprahepática estimada), el plano contiene su eje largo y se a
 `S0028_POSES`; subxifoidea, epigástrica y subcostal ya mostraban su hito. Las pruebas de contacto conservan sus planos de referencia.
 **Consecuencias.** Las ocho ventanas de s0028 muestran su hito. La intercostal se rehará cuando las suprahepáticas salgan del TAC.
 **Verificación.** `s0028Windows.test.ts` con la misma medida y control negativo sobre las poses heredadas; hoja de antes y ahora.
+
+## 347. El gancho de push comprueba en proporción a lo que cambia
+
+**Contexto.** El gancho corría toda la capa rápida en cada push: 6–9 min con el repositorio bloqueado, también para una línea de
+documentación, y fallaba por plazo con la máquina cargada. La CI corre lo mismo y es la puerta de fusión (decisión 340).
+**Opciones.** Quitar el gancho (pierde el aviso barato de formato, lint y tipos); dejarlo opcional; o lo decidido.
+**Decisión.** `.githooks/pre-push` llama a `npm run feedback` sin `--all-fast`. `feedbackPlan` ya elegía: sólo documentación, sin
+pruebas; código, las pruebas que lo importan; configuración, herramientas, interfaz o renderer, toda la capa rápida. Sin cambios
+frente a `origin/main` no corre nada. `npm run feedback -- --all-fast` sigue disponible a mano.
+**Consecuencias.** Un push de documentación tarda segundos. Una prueba que lee un archivo como texto, sin importarlo, puede no
+correr en local: la detecta la CI. La regla 322.7 (el gancho corre toda la capa rápida) queda sustituida.
+**Verificación.** `iterationFeedback.test.ts` fija la línea del gancho y los modos; tiempos medidos en el PR.

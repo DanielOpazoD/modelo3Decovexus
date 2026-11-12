@@ -18,12 +18,12 @@ Ver [criterios de selección, costes observados y recibo CI](engineering/iterati
 
 ## Qué corre dónde (decisión 322, punto 7)
 
-| Dónde                                     | Qué corre                                                                                                      | Tiempo medido en este equipo                                                                                                             |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Gancho de push (`.githooks/pre-push`)     | `npm run feedback -- --all-fast`: formato y lint de lo cambiado frente a `origin/main`, tipos y la capa rápida | pool anterior: 120–122 s en ABBA, pero 230,2 s y timeout en el cierre de d580cac; se acota a cuatro trabajadores como máximo; tope 180 s |
-| `npm run check`                           | formato, índice, lint, tipos, build, presupuesto y todas las pruebas con cobertura (core y matrices)           | 62 min en serie con un trabajador (cierre del punto 8); 75–86 min en los cierres de P2 r2b-U y P3 r2                                     |
-| CI protegida (`.github/workflows/ci.yml`) | lo de `check` repartido en core y matrices, la E2E en doce fragmentos y el tríplex temprano                    | core y matrices con techo de 25 min, E2E de 40; su recibo es la puerta de fusión                                                         |
-| Cierre de ronda (`npm run closure`)       | las etapas de abajo, en serie y con un trabajador                                                              | ≈102 min de etapas en el cierre del punto 8: `check` 62, lentas 29, rápidas 7, gancho 2,3                                                |
+| Dónde                                     | Qué corre                                                                                                     | Tiempo medido en este equipo                                                                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Gancho de push (`.githooks/pre-push`)     | `npm run feedback`: formato y lint de lo cambiado frente a `origin/main`, tipos y pruebas en proporción (347) | segundos si sólo cambia documentación; las pruebas que importan el código cambiado; 2–9 min si toca configuración, herramientas o interfaz |
+| `npm run check`                           | formato, índice, lint, tipos, build, presupuesto y todas las pruebas con cobertura (core y matrices)          | 62 min en serie con un trabajador (cierre del punto 8); 75–86 min en los cierres de P2 r2b-U y P3 r2                                       |
+| CI protegida (`.github/workflows/ci.yml`) | lo de `check` repartido en core y matrices, la E2E en doce fragmentos y el tríplex temprano                   | core y matrices con techo de 25 min, E2E de 40; su recibo es la puerta de fusión                                                           |
+| Cierre de ronda (`npm run closure`)       | las etapas de abajo, en serie y con un trabajador                                                             | ≈102 min de etapas en el cierre del punto 8: `check` 62, lentas 29, rápidas 7, gancho 2,3                                                  |
 
 El gancho adelanta los errores baratos antes de publicar; no acredita nada. Un push que sólo borra ramas remotas
 (`git push --delete`: todas las sha locales que recibe el gancho en ceros) no publica código y no corre nada: 0,02 s
@@ -42,7 +42,8 @@ Presupuestos (`tools/ci/testTiers.ts`), medidos en este equipo (10 núcleos: 4 d
 bajo consumo activo):
 
 - **Gancho completo ≤ 180 s sin carga ajena.** La etapa `push-hook` del cierre corre el gancho real, sin `nice` y con los
-  trabajadores de un push, y lo marca fuera de presupuesto si lo supera aunque termine en 0.
+  trabajadores de un push, y lo marca fuera de presupuesto si lo supera aunque termine en 0. Desde la decisión 347 el gancho
+  es proporcional: ese tope es el de su caso más caro, cuando corre toda la capa rápida.
 - **Cada archivo de la capa rápida ≤ 49 s con un trabajador**: el doble del más lento medido en `main` 8555a2c
   (`equivalenceSweep.test.ts`, 24,5 s). La etapa `tests-fast` guarda el informe JSON de Vitest y `tools/ci/tier-budget.ts`
   rechaza un informe incompleto, paralelo (sus tiempos dependen del reparto entre núcleos) o un archivo por encima. Un
