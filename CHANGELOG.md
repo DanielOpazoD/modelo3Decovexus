@@ -5,7 +5,7 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
-- CI: el reparto de la e2e en doce fragmentos se recalibra con las 208 pruebas actuales; el fragmento más lento baja de 32 a 27 min de pruebas.
+- Pruebas: la paridad de la pared de s0028 lleva una cota por backend; en Metal fallaba por el filtro del hardware, no por la regla (344).
 
 - Anatomía s0028: la grasa del TAC llega a todo el abdomen superior; el fondo oscuro alrededor del riñón pasa a ser tejido ecogénico (343).
 
