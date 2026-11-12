@@ -13,6 +13,8 @@ export const S0028_TISSUE_LOOK = Object.freeze({
   [Tissue.MesentericFat]: { backscatter: 2.6 },
   [Tissue.GastricContents]: { backscatter: 0.45, speckleClump: 3, attenuation: 2.5 },
   [Tissue.ColonicContents]: { backscatter: 3.5, attenuation: 5 },
+  // Manguito periportal: lo que distingue una rama portal de una suprahepática a cualquier ángulo (decisión 357).
+  [Tissue.VesselWallPortal]: { backscatter: 5.5 },
 });
 export function gpuPlan(person: InstalledCpuPerson): PersonGpuPlan {
   return Object.freeze({

@@ -23,6 +23,10 @@ it('s0028: la grasa visceral se distingue del hígado y del riñón, y el conten
     expect(TISSUES[content].alpha1 * (look[content].attenuation ?? 1)).toBeGreaterThan(TISSUES[Tissue.Liver].alpha1);
   }
   expect(look[Tissue.GastricContents].speckleClump).toBeGreaterThan(TISSUES[Tissue.Liver].speckleClump ?? 0);
+  // El manguito periportal se ve a cualquier ángulo (decisión 357): al menos 6 dB sobre el hígado; la tabla común no cambia.
+  expect(db(back(Tissue.VesselWallPortal) / back(Tissue.Liver))).toBeGreaterThan(6);
+  expect(TISSUES[Tissue.VesselWallPortal].backscatter).toBe(2.6);
+  expect(back(Tissue.VesselWallThin)).toBe(TISSUES[Tissue.VesselWallThin].backscatter);
   // Solo aspecto: ningún tejido cambia de velocidad, densidad ni clase (gas, hueso).
   for (const row of Object.values(look))
     expect(Object.keys(row).every((k) => ['backscatter', 'speckleClump', 'attenuation'].includes(k))).toBe(true);

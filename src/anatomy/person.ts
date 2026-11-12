@@ -24,6 +24,8 @@ export interface AnatomyPerson {
   readonly skinMm: number;
   /** Construction-only refinement of this person’s registered vascular landmarks. */
   readonly curveVessels?: (vessels: VesselDef[]) => void;
+  /** Tope de ramas hepáticas procedurales por vaso madre, cuando la persona ya trae ramas propias y los tubos van justos. */
+  readonly hepaticBranchesPerParent?: number;
   /** Tras colocar las ramas procedurales: el eje de los vasos madre como curva (más nodos, mismos extremos). */
   readonly smoothVessels?: (vessels: VesselDef[]) => void;
   readonly regional?: ReturnType<typeof createSourceQueries> &

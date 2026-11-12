@@ -455,6 +455,7 @@ export class AnatomyScene {
       7,
       (m) => Math.min(this.liverInteriorMargin(m), this.ligamentumVenosumSdf(m)),
       this.hasAbdominalAtlas ? SCENE_TUBE_CAPACITY - this.vessels.length - tree.ducts.length : Infinity,
+      person.cpu.hepaticBranchesPerParent,
     );
     // la forma orgánica de las suprahepáticas y la porta (decisión 90): su semilla es su índice en la lista de la GPU (el H2.w
     // de la textura de escena, la del ruido de su radio) y su clase, la de su sistema

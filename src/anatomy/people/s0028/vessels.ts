@@ -1,6 +1,6 @@
 import type { Vec3 } from '../../../core/vec3';
 import type { TubeNode } from '../../primitives';
-import { S0028_TRUNKS } from '../../s0028TrunksData';
+import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../../s0028TrunksData';
 import type { VesselDef } from '../../vesselTree';
 
 /** Un extremo a esta distancia (mm) o menos del eje anterior de un vaso nacía o moría en él. */
@@ -83,6 +83,65 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
   }
   reroute(vessels);
   accompany(vessels, 'splenicArtery', 'portalSplenic');
+  addOwnBranches(vessels);
+  fitJunctions(vessels);
+}
+
+/** Radio (mm) con que se apaga la punta de una rama propia: por debajo de la resolución, sin acabar en una bola. */
+const BRANCH_TIP_MM = 0.6;
+/**
+ * Ramas propias de s0028 que su TAC muestra además de las que tienen nombre: portales (decisión 357, del origen a la punta) y
+ * tributarias suprahepáticas (decisión 358, de la punta a la unión). Como las procedurales, comparten el id de su madre (su
+ * velocidad por `flowFactor`, su pared más fina) y no definen su área; van al final de la lista, tras las madres, y las
+ * procedurales ocupan los tubos que queden.
+ */
+function addOwnBranches(vessels: VesselDef[]): void {
+  const add = (mother: string, nodes: readonly (readonly number[])[], tip: number) => {
+    const parent = vessels.find((v) => v.id === mother && v.flowFactor === undefined);
+    if (!parent) return;
+    vessels.push({
+      id: parent.id,
+      tube: { kind: 'tube', nodes: nodes.map(([x, y, z, r], i) => ({ p: [x, y, z], r: i === tip ? BRANCH_TIP_MM : r })), apScale: 1 },
+      refRadius: nodes[nodes.length - 1 - tip][3],
+      profileN: parent.profileN,
+      wallTissue: parent.wallTissue,
+      wallMm: Math.max(0.4, parent.wallMm * 0.7),
+      flowFactor: 0.85,
+    });
+  };
+  for (const [mother, nodes] of S0028_PORTAL_BRANCHES) add(mother, nodes, nodes.length - 1);
+  for (const [mother, nodes] of S0028_HEPATIC_BRANCHES) add(mother, nodes, 0);
+}
+
+/**
+ * Ninguna vena ni rama portal llega a otra más gruesa que ella en ese punto: el radio de su extremo no pasa del de la luz en la
+ * que desemboca o de la que nace. Con el radio medido en su propio eje, una tributaria de 3,9 mm que desemboca en un tramo de
+ * 2,8 dejaba un nudo oscuro en la unión.
+ */
+function fitJunctions(vessels: VesselDef[]): void {
+  const family = (v: VesselDef) => (v.id.startsWith('hv') ? 'hv' : v.id.startsWith('pv') || v.id.startsWith('portal') ? 'pv' : null);
+  for (const v of vessels) {
+    const kin = family(v);
+    if (!kin) continue;
+    const nodes = v.tube.nodes.map((n) => ({ ...n }));
+    for (const end of [0, nodes.length - 1]) {
+      let limit = Infinity;
+      for (const other of vessels) {
+        if (other === v || family(other) !== kin) continue;
+        const axis = other.tube.nodes,
+          s = arcs(axis),
+          hit = closest(axis, nodes[end].p);
+        // Solo si llega al interior del otro eje: dos extremos que se tocan son hermanos o continuación, no madre e hija.
+        if (hit.d > 2.5 || hit.s < 2 || hit.s > s[s.length - 1] - 2) continue;
+        // Radio de la otra luz en ese punto, lineal entre sus nodos.
+        const i = Math.min(axis.length - 2, Math.max(0, s.findIndex((x) => x > hit.s) - 1)),
+          t = s[i + 1] > s[i] ? Math.min(1, Math.max(0, (hit.s - s[i]) / (s[i + 1] - s[i]))) : 0;
+        limit = Math.min(limit, axis[i].r + (axis[i + 1].r - axis[i].r) * t);
+      }
+      if (limit < nodes[end].r) nodes[end].r = limit;
+    }
+    v.tube = { ...v.tube, nodes };
+  }
 }
 
 /**
@@ -267,6 +326,8 @@ export function smoothAxis(nodes: readonly TubeNode[], maxSegments = S0028_TUBE_
 /** Los troncos de las máscaras y los vasos que los acompañan, con el eje como curva. Las ramas procedurales ya están colocadas. */
 export function smoothS0028Vessels(vessels: VesselDef[]): void {
   for (const v of vessels)
+    // Los troncos medidos, con todos los tramos; los vasos que los acompañan, con la mitad: los nodos de la escena tienen techo
+    // (`MAX_NODES`) y las ramas portales propias, cortas y ya ajustadas a cinco nodos, se quedan como están.
     if (v.flowFactor === undefined && (v.id in S0028_TRUNKS || SMOOTHED.includes(v.id)))
-      v.tube = { ...v.tube, nodes: smoothAxis(v.tube.nodes) };
+      v.tube = { ...v.tube, nodes: smoothAxis(v.tube.nodes, v.id in S0028_TRUNKS ? S0028_TUBE_SEGMENTS : S0028_TUBE_SEGMENTS / 2) };
 }

@@ -3,7 +3,7 @@ import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { MAX_NODES, MAX_TUBE_SEGMENTS } from '../anatomy/gpu/anatomy.glsl';
 import { S0028_TUBE_SEGMENTS } from '../anatomy/people/s0028/vessels';
-import { S0028_TRUNKS } from '../anatomy/s0028TrunksData';
+import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../anatomy/s0028TrunksData';
 import { SCENE_TUBE_CAPACITY } from '../anatomy/tubeCapacity';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
@@ -84,7 +84,8 @@ it('los troncos de s0028 son los de sus máscaras, en el sentido del flujo y den
     for (const n of nodes) expect(toAxis(drawn, n.slice(0, 3) as Vec3), id).toBeLessThan(0.5);
     expect(drawn.length - 1, id).toBeLessThanOrEqual(S0028_TUBE_SEGMENTS);
     expect(maxTurnDeg(drawn), id).toBeLessThan(12);
-    expect(maxTurnDeg(drawn), id).toBeLessThanOrEqual(maxTurnDeg(nodes.map((n) => ({ p: n.slice(0, 3) as Vec3 }))) + 1e-9);
+    // Nunca más quebrado que los nodos medidos, salvo donde ya eran casi rectos (el reparto deja uniones de hasta 8°–9°).
+    expect(maxTurnDeg(drawn), id).toBeLessThanOrEqual(Math.max(9, maxTurnDeg(nodes.map((n) => ({ p: n.slice(0, 3) as Vec3 })))) + 1e-9);
     // El radio es el medido (lineal entre sus nodos), salvo en las madres hepáticas y portales que la escena afila en su punta
     // (decisión 87).
     for (const n of drawn) expect(n.r, id).toBeLessThanOrEqual(Math.max(...radii) + 1e-9);
@@ -119,6 +120,89 @@ it('los troncos de s0028 son los de sus máscaras, en el sentido del flujo y den
   expect([...scene.vessels, ...scene.ducts].reduce((n, v) => n + v.tube.nodes.length, 0)).toBeLessThanOrEqual(MAX_NODES);
 });
 
+it('las ramas portales son las de su TAC: cuatro de segundo orden que nacen de su tronco y catorce más que cuelgan de ellas', () => {
+  // Decisión 357: antes eran las de la otra persona, arrastradas a los troncos de s0028.
+  for (const [child, parent] of [
+    ['pvRightAnterior', 'pvRight'],
+    ['pvRightPosterior', 'pvRight'],
+    ['pvLeftLateral', 'pvLeft'],
+    ['pvLeftMedial', 'pvLeft'],
+  ]) {
+    const nodes = axis(scene, child);
+    expect(toAxis(axis(scene, parent), nodes[0].p), child).toBeLessThan(1);
+    // Largas, y cada vez más finas hacia la periferia.
+    expect(nodes.at(-1)!.r, child).toBeLessThan(nodes[0].r);
+    // (el ajuste de radios por mínimos cuadrados deja como mucho una décima de subida entre nodos; el primero es la unión, que
+    // no pasa del radio de su tronco allí: decisión 358)
+    for (let i = 2; i < nodes.length; i++) expect(nodes[i].r, child).toBeLessThanOrEqual(nodes[i - 1].r + 0.15);
+    expect(Math.hypot(...nodes[0].p.map((v, k) => v - nodes.at(-1)!.p[k])), child).toBeGreaterThan(45);
+  }
+  const own = scene.vessels.filter((v) => v.flowFactor !== undefined && v.tube.nodes.length > 2 && v.id.startsWith('pv'));
+  expect(own).toHaveLength(S0028_PORTAL_BRANCHES.length);
+  expect(S0028_PORTAL_BRANCHES.length).toBeGreaterThanOrEqual(12);
+  own.forEach((v, i) => {
+    const [mother, nodes] = S0028_PORTAL_BRANCHES[i];
+    expect(v.id).toBe(mother);
+    expect(v.tube.nodes[0].p).toEqual(nodes[0].slice(0, 3));
+    // Comparten la pared periportal de su madre, más fina, y su punta se apaga sin bola.
+    expect(v.wallTissue).toBe(scene.vesselById.get(mother)!.wallTissue);
+    expect(v.tube.nodes.at(-1)!.r).toBeLessThan(1);
+    // Su punta está dentro del hígado de esta persona (el origen puede estar en el hilio, fuera del parénquima).
+    expect(scene.person.cpu.regional!.s0028SourceValue(nodes.at(-1)!.slice(0, 3) as unknown as Vec3, 'liver').d).toBeLessThan(2);
+  });
+  // Y siguen cabiendo ramas procedurales de tercer orden en los tubos que quedan.
+  expect(
+    scene.vessels.filter((v) => v.flowFactor !== undefined && v.tube.nodes.length === 2 && v.id.startsWith('pv')).length,
+  ).toBeGreaterThan(10);
+});
+
+it('las tributarias suprahepáticas de su TAC drenan en su vena, sin nudo en la unión, y todas las madres conservan ramas', () => {
+  // Decisión 358: cinco tributarias medidas, de la punta a la unión.
+  const own = scene.vessels.filter((v) => v.flowFactor !== undefined && v.tube.nodes.length > 2 && v.id.startsWith('hv'));
+  expect(own).toHaveLength(S0028_HEPATIC_BRANCHES.length);
+  expect(S0028_HEPATIC_BRANCHES.length).toBeGreaterThanOrEqual(5);
+  own.forEach((v, i) => {
+    const [mother, nodes] = S0028_HEPATIC_BRANCHES[i],
+      drawn = v.tube.nodes;
+    expect(v.id).toBe(mother);
+    // La punta se apaga y la unión cae sobre el eje de su vena, con un radio que no pasa del de esa vena allí.
+    expect(drawn[0].r).toBeLessThan(1);
+    expect(toAxis(axis(scene, mother), drawn.at(-1)!.p), mother).toBeLessThan(2.5);
+    expect(drawn.at(-1)!.r, mother).toBeLessThanOrEqual(Math.max(...axis(scene, mother).map((n) => n.r)) + 1e-9);
+    expect(drawn.at(-1)!.p).toEqual(nodes.at(-1)!.slice(0, 3));
+  });
+  // Ninguna vena con nombre desemboca más gruesa que la luz que la recibe (antes: 3,9 mm sobre un tramo de 2,8).
+  for (const [child, parent] of [
+    ['hvRightAnterior', 'hvRight'],
+    ['hvRightPosterior', 'hvRight'],
+    ['hvMiddleTributary', 'hvMiddle'],
+  ]) {
+    const end = axis(scene, child).at(-1)!,
+      near = axis(scene, parent).reduce((a, b) =>
+        Math.hypot(...b.p.map((x, k) => x - end.p[k])) < Math.hypot(...a.p.map((x, k) => x - end.p[k])) ? b : a,
+      );
+    expect(end.r, child).toBeLessThanOrEqual(near.r + 0.5);
+  }
+  // Con las ramas propias ocupando tubos, el tope por madre deja ramas procedurales a las once, también a la izquierda.
+  for (const id of [
+    'pvRightAnterior',
+    'pvRightPosterior',
+    'pvLeftLateral',
+    'pvLeftMedial',
+    'hvRightAnterior',
+    'hvRightPosterior',
+    'hvMiddleTributary',
+    'hvLeftTributary',
+    'hvRight',
+    'hvMiddle',
+    'hvLeft',
+  ])
+    expect(scene.vessels.filter((v) => v.id === id && v.flowFactor !== undefined).length, id).toBeGreaterThanOrEqual(2);
+  expect(
+    scene.vessels.filter((v) => v.id === 'hvLeft' && v.flowFactor !== undefined && v.tube.nodes.length === 2).length,
+  ).toBeGreaterThanOrEqual(3);
+});
+
 it('los testigos del TAC caen en la luz del vaso; con los troncos de la otra persona, no', () => {
   // Testigos: vóxeles de la máscara a más de 2,2 mm (porta) o 3 mm (aorta) de su borde. El tubo es circular, con el radio inscrito:
   // el 9 % portal que queda fuera está a 4–7 mm del eje, donde la máscara es más ancha (confluencia y porción umbilical).
@@ -144,10 +228,6 @@ it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue 
     iliacVeinRight: 'ivcInfra',
     iliacVeinLeft: 'ivcInfra',
     hvLeftTributary: 'hvLeft',
-    pvRightAnterior: 'pvRight',
-    pvRightPosterior: 'pvRight',
-    pvLeftLateral: 'pvLeft',
-    pvLeftMedial: 'pvLeft',
     portalSmv: 'pvTrunk',
     celiacTrunk: 'aorta',
     sma: 'aorta',

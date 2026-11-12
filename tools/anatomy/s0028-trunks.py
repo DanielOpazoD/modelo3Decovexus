@@ -316,6 +316,122 @@ if candidate:
     hv['hvMiddle'] = (np.vstack([mp, lp[-1]]), np.r_[mr, mr[-1]])
     hv['hvCommonTrunk'] = to_cava(lp[-1:], np.maximum(lr[-1:], mr[-1:]))
     segments.update(hv)
+    # Ramas portales de 2.º orden (decisión 357): los esqueletos `hepatic-portal-*` del candidato son las ramas de esta persona.
+    # Cada grupo nace del punto de su esqueleto más cercano al eje de un tronco de la máscara; su rama principal es el camino a la
+    # hoja que mejor representa su territorio y las demás hojas dan ramas propias desde donde se separan. Sentido del flujo portal:
+    # del tronco a la periferia. El puente recto del tronco al esqueleto (2–19 mm) es E.
+    portal_axes = {k: np.asarray(segments[k][0], float) for k in ('pvRight', 'pvLeft')}
+    def to_portal(q):
+        best = (1e9, None, None)
+        for k, a in portal_axes.items():
+            for i in range(len(a) - 1):
+                ab = a[i + 1] - a[i]; t = np.clip((q - a[i]) @ ab / max(ab @ ab, 1e-9), 0, 1); x = a[i] + t * ab; d = float(np.linalg.norm(q - x))
+                if d < best[0]: best = (d, k, x)
+        return best
+    def branch(ids):
+        """Eje y radio medido de una rama, de su origen a su punta; sin realce medible, 1,5 mm."""
+        try: pts, r = lumen(ids)
+        except SystemExit: pts, r = ndi.gaussian_filter1d(GP[ids], 2, axis=0, mode='nearest'), np.full(len(ids), 1.5)
+        # Una rama portal no se ensancha hacia la periferia: el radio medido no vuelve a subir.
+        return pts, np.minimum.accumulate(np.minimum(r, 4.5))
+    portal_groups = [g for g in manifest['groups'] if g['id'].startswith('hepatic-portal-')]
+    # Territorio de cada rama con nombre: grupo (por su raíz) y hoja preferida (puntuación sobre la posición de la punta, mm LAS).
+    wanted = {
+        'pvRightAnterior': ('pvRight', lambda q, f: f > 0.6, lambda q: q[1] + q[2]),      # sale del final de la derecha, hacia delante y arriba
+        'pvRightPosterior': ('pvRight', lambda q, f: f <= 0.6, lambda q: -q[1] - 0.5 * q[0] - abs(q[2] + 60) * 0.5),  # sale pronto, hacia atrás y a la derecha
+        'pvLeftLateral': ('pvLeft', lambda q, f: True, lambda q: q[0]),                    # hacia la izquierda del paciente
+        'pvLeftMedial': ('pvLeft', lambda q, f: True, lambda q: -q[0] + q[2]),             # segmento IV: hacia la derecha y arriba
+    }
+    rooted = []
+    for g in portal_groups:
+        lo, hi = g['nodeRange']
+        root0 = min(range(lo, hi), key=lambda i: to_portal(GP[i])[0])
+        d, trunk_id, at = to_portal(GP[root0])
+        a = portal_axes[trunk_id]; L = arc(a); k = int(np.argmin(np.linalg.norm(a - at, axis=1)))
+        root, paths = tree(g, GP[root0])
+        paths = [p[::-1] for p in paths]  # de la raíz a la hoja
+        rooted.append({'g': g, 'trunk': trunk_id, 'fraction': float(L[k] / L[-1]), 'at': at, 'bridge': d, 'paths': paths})
+    named, extra, used_groups = {}, [], {}
+    for name, (trunk_id, where, score) in wanted.items():
+        cands = [(score(GP[p[-1]]) + 0.2 * sum(np.linalg.norm(np.diff(GP[p], axis=0), axis=1)), n, j) for n, t in enumerate(rooted) if t['trunk'] == trunk_id and where(t['at'], t['fraction']) and n not in used_groups.values()
+                 for j, p in enumerate(t['paths']) if sum(np.linalg.norm(np.diff(GP[p], axis=0), axis=1)) >= 45]
+        if not cands: raise SystemExit('Sin esqueleto portal para ' + name)
+        _, n, j = max(cands); used_groups[name] = n
+        t = rooted[n]; pts, r = branch(t['paths'][j])
+        named[name] = (np.vstack([t['at'], pts]), np.r_[r[0], r])
+        t['main'] = j
+    # Ramas propias: las demás hojas de cada grupo, desde donde dejan a las ya tomadas; las de grupos sin nombre, desde su tronco.
+    owner_of = {n: name for name, n in used_groups.items()}
+    for n, t in enumerate(rooted):
+        mother = owner_of.get(n) or ('pvRightPosterior' if t['trunk'] == 'pvRight' else 'pvLeftLateral' if t['at'][0] > -25 or t['fraction'] > 0.85 else 'pvLeftMedial')
+        taken = set(t['paths'][t['main']]) if 'main' in t else set()
+        order = sorted(range(len(t['paths'])), key=lambda j: -len(t['paths'][j]))
+        for j in order:
+            if j == t.get('main'): continue
+            p = t['paths'][j]
+            k = max((i for i, node in enumerate(p) if node in taken), default=-1)
+            tail_ids = p[max(k, 0):]
+            if sum(np.linalg.norm(np.diff(GP[tail_ids], axis=0), axis=1)) < 25: continue
+            pts, r = branch(tail_ids)
+            if k < 0: pts, r = np.vstack([t['at'], pts]), np.r_[r[0], r]
+            extra.append((mother, pts, np.minimum(r, 3.0)))
+            taken |= set(p)
+    segments.update(named)
+    report['portalBranches'] = {name: {'group': rooted[n]['g']['id'], 'bridgeMm': round(rooted[n]['bridge'], 1)} for name, n in used_groups.items()}
+    extras_out = []
+    for mother, pts, r in extra:
+        nodes, err, bend = fit(pts, r, max_nodes=5)
+        extras_out.append([mother, [[round(v, 0 if i < 3 else 1) for i, v in enumerate(q)] for q in nodes]])
+    report['portalExtra'] = len(extras_out)
+    # Tributarias suprahepáticas propias (decisión 358): las demás hojas de los tres sistemas ya tomados, desde su punta hasta
+    # donde se unen a una vena con nombre, y los esqueletos sin raíz que acaban junto a una de ellas (su puente recto es E). Sentido
+    # del flujo venoso: de la periferia a la unión. El radio medido no baja hacia la unión.
+    hepatic_named = {'hvRight': trunk, 'hvRightAnterior': anterior, 'hvRightPosterior': posterior, 'hvLeft': left, 'hvMiddle': middle}
+    if 'hvMiddleTributary' in hv: hepatic_named['hvMiddleTributary'] = max(tributaries, key=len)
+    owner_node = {}
+    for name in ('hvRight', 'hvLeft', 'hvMiddle', 'hvRightAnterior', 'hvRightPosterior', 'hvMiddleTributary'):
+        for node in hepatic_named.get(name, []): owner_node.setdefault(node, name)
+    hepatic_extra = []
+    def vein(ids):
+        try: pts, r = lumen(ids)
+        except SystemExit: pts, r = ndi.gaussian_filter1d(GP[ids], 2, axis=0, mode='nearest'), np.full(len(ids), 1.5)
+        return pts, np.maximum.accumulate(np.minimum(r, 3.5))
+    for paths in (right_paths, left_paths, middle_paths):
+        for p in sorted(paths, key=lambda q: -len(q)):
+            k = next((i for i, node in enumerate(p) if node in owner_node), None)
+            if k is None or k == 0: continue
+            ids = p[:k + 1]
+            if sum(np.linalg.norm(np.diff(GP[ids], axis=0), axis=1)) < 20: continue
+            mother = owner_node[p[k]]
+            pts, r = vein(ids)
+            mp = hv[mother][0]; pts[-1] = mp[int(np.argmin(np.linalg.norm(mp - pts[-1], axis=1)))]
+            hepatic_extra.append((mother, pts, r, 0.0))
+            for node in ids[:-1]: owner_node.setdefault(node, mother)
+    # Esqueletos sin raíz: suprahepática si su punto más cercano a una vena con nombre queda a 14 mm o menos de su eje y más cerca
+    # de ella que de la porta; el resto no se asigna.
+    vein_axes = {name: hv[name][0] for name in hv if name != 'hvCommonTrunk'}
+    portal_pts = np.vstack([np.asarray(segments[k][0], float) for k in ('pvTrunk', 'pvRight', 'pvLeft', 'pvRightAnterior', 'pvRightPosterior', 'pvLeftLateral', 'pvLeftMedial')] + [pts for _, pts, _ in extra])
+    used = {right_id, left_id, middle_group['id']}
+    unassigned = []
+    for g in manifest['groups']:
+        if not g['id'].startswith('hepatic-unrooted-') or g['id'] in used or g['lengthMm'] < 30: continue
+        lo, hi = g['nodeRange']
+        best = min(((float(np.min(np.linalg.norm(ax - GP[i], axis=1))), name, i) for name, ax in vein_axes.items() for i in range(lo, hi)))
+        d, mother, root0 = best
+        # La porta y las suprahepáticas se entrecruzan: lo que decide es el extremo que llega a la vena, no el resto del esqueleto.
+        dp = float(np.min(np.linalg.norm(portal_pts - GP[root0], axis=1)))
+        if d > 14 or dp < d: unassigned.append((g['id'], round(d, 1), round(dp, 1))); continue
+        _, paths = tree(g, GP[root0])
+        ids = paths[0]
+        if sum(np.linalg.norm(np.diff(GP[ids], axis=0), axis=1)) < 25: continue
+        pts, r = vein(ids)
+        mp = vein_axes[mother]; end = mp[int(np.argmin(np.linalg.norm(mp - pts[-1], axis=1)))]
+        hepatic_extra.append((mother, np.vstack([pts, end]), np.r_[r, r[-1]], d))
+    report['hepaticExtra'] = {'count': len(hepatic_extra), 'bridgesMm': [round(b, 1) for *_, b in hepatic_extra if b], 'unassigned': unassigned}
+    hepatic_out = []
+    for mother, pts, r, _ in hepatic_extra:
+        nodes, err, bend = fit(pts, r, max_nodes=5)
+        hepatic_out.append([mother, [[round(v, 0 if i < 3 else 1) for i, v in enumerate(q)] for q in nodes]])
     report['hepaticVeins'] = {'right': right_id, 'left': left_id, 'middle': middle_group['id'], 'bridgeMm': round(gap(middle_group), 1), 'parenchymaHU': round(parenchyma, 1), 'candidateSha256': manifest.get('parametersSha256')}
     # Testigos: vóxeles realzados del hígado (HU ≥ parénquima + 23) fuera de toda componente que toque la porta, a 4 mm o menos del
     # esqueleto que el candidato conecta a la cava. No dependen del ajuste de nodos ni del radio medido aquí.
@@ -333,7 +449,7 @@ for name, (p, r) in segments.items():
     nodes, err, bend = fit(np.asarray(p), np.asarray(r))
     result[name] = nodes
     report[name] = {'lengthMm': round(float(arc(np.asarray(p))[-1]), 1), 'nodes': len(nodes), 'fitErrorMm': round(err, 2), 'maxTurnDeg': round(bend, 1), 'radiusMedianMm': round(float(np.median(r)), 2)}
-json.dump({'format': 's0028-trunks-v1', 'person': 's0028', 'frame': meta['frameId'], 'vessels': result, 'report': report, 'witnesses': witnesses}, open(out, 'w'), indent=1)
+json.dump({'format': 's0028-trunks-v1', 'person': 's0028', 'frame': meta['frameId'], 'vessels': result, 'portalBranches': extras_out if candidate else [], 'hepaticBranches': hepatic_out if candidate else [], 'report': report, 'witnesses': witnesses}, open(out, 'w'), indent=1)
 print('testigos', {k: len(v) for k, v in witnesses.items()})
 print(json.dumps(report, indent=1, ensure_ascii=False))
 for k, v in result.items(): print(k, v)

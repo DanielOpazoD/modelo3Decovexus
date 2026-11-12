@@ -67,6 +67,8 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     skinMm: 1.5,
     curveVessels: placeS0028Vessels,
     smoothVessels: smoothS0028Vessels,
+    // Con 23 ramas propias del TAC quedan 55 tubos para las procedurales: seis por madre llegan a las once (decisión 358).
+    hepaticBranchesPerParent: 6,
     heart: S0028_HEART,
     // Marco de cada riñón, de su máscara: centro, eje largo (componente principal) y dirección del hilio (su muesca). Sitúa los
     // vasos del hilio y las interlobares en el riñón de esta persona; el parénquima sigue saliendo del rótulo del TAC.
