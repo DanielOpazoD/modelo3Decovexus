@@ -20,6 +20,8 @@ const source = JSON.parse(readFileSync(path, 'utf8')) as {
   witnesses: Record<string, number[][]>;
   /** Ramas portales propias además de las cuatro con nombre: [vaso madre, nodos x, y, z, r], del origen a la punta. */
   portalBranches?: [string, number[][]][];
+  /** Tributarias suprahepáticas propias: [vena madre, nodos x, y, z, r], de la punta a la unión. */
+  hepaticBranches?: [string, number[][]][];
 };
 if (source.format !== 's0028-trunks-v1' || source.person !== 's0028') throw new Error('Troncos de otro formato o persona');
 const ids = Object.keys(source.vessels);
@@ -46,6 +48,12 @@ for (const [mother, nodes] of branches) {
     throw new Error('Rama portal inválida de ' + mother);
 }
 if (ids.includes('pvRightAnterior') !== branches.length > 0) throw new Error('Ramas portales sin sus madres, o al revés');
+const tributaries = source.hepaticBranches ?? [];
+for (const [mother, nodes] of tributaries) {
+  if (!mother.startsWith('hv') || !ids.includes(mother)) throw new Error('Tributaria de una vena sin tronco propio: ' + mother);
+  if (nodes.length < 2 || nodes.length > 5 || nodes.some((n) => n.length !== 4 || n.some((x) => !Number.isFinite(x)) || n[3] < 1))
+    throw new Error('Tributaria suprahepática inválida de ' + mother);
+}
 writeFileSync(
   'src/anatomy/s0028TrunksData.ts',
   '/** Generado por tools/anatomy/install-s0028-trunks.ts. Troncos de s0028 desde sus máscaras: radio de referencia y nodos x, y, z, r (mm LAS), en el sentido del flujo. */\n' +
@@ -55,6 +63,10 @@ writeFileSync(
     '/** Ramas portales propias de s0028 además de las de segundo orden: vaso madre (su velocidad y su pared) y nodos, del origen a la punta. */\n' +
     'export const S0028_PORTAL_BRANCHES = ' +
     JSON.stringify(branches) +
+    ' as const;\n' +
+    '/** Tributarias suprahepáticas propias de s0028: vena madre y nodos, de la punta a la unión (sentido del flujo). */\n' +
+    'export const S0028_HEPATIC_BRANCHES = ' +
+    JSON.stringify(tributaries) +
     ' as const;\n',
 );
 // Testigos de las máscaras, a más de 2,2 mm (porta) y 3 mm (aorta) de su borde: los lee la prueba, no la aplicación.

@@ -11760,3 +11760,17 @@ tubos que quedan. En s0028 la pared portal sube a 5,5 de retrodispersión (`tiss
 **Consecuencias.** 124 vasos y 579 nodos de 640. El techo de JS de s0028 sube 4 KiB (datos del TAC; lo pasaba en 1,3 KiB). El
 puente recto de cada rama a su tronco (3–18 mm) es estimado. Las suprahepáticas no cambian.
 **Verificación.** Láminas de las ventanas portales antes y ahora; `s0028Vessels`, `vesselOverlap`, `s0028TissueLook`.
+
+## 358. Tributarias suprahepáticas del TAC, uniones sin nudo y ramas repartidas entre todas las venas
+
+**Contexto.** Tras la 357 quedaban las suprahepáticas: sus troncos ya salían del TAC (349), pero sus ramas eran todas generadas;
+una vena de 3,9 mm que desembocaba en un tramo de 2,8 dejaba un nudo oscuro; y al ocupar tubos las ramas portales propias, la
+suprahepática izquierda se quedó sin ninguna rama generada.
+**Opciones.** Solo ramas generadas; o tomar las que el TAC deja ver, que en esta fase son pocas. Se toman.
+**Decisión.** `s0028-trunks.py` añade las tributarias de 20 mm o más de los tres sistemas y los esqueletos sin raíz cuyo extremo
+llega a 14 mm o menos de una vena y está más cerca de ella que de la porta: cinco (`S0028_HEPATIC_BRANCHES`). `fitJunctions`
+limita el radio de un extremo que llega al interior de otro eje al de esa luz. `hepaticBranchesPerParent` (6 en s0028) reparte
+las ramas generadas entre las once madres; la otra persona no cambia.
+**Consecuencias.** 122 vasos y 590 nodos. Cambio pequeño a la vista: el TAC muestra pocas tributarias. Cuatro esqueletos largos
+quedan sin asignar (lejos de toda vena o someros). Los puentes de 8–9 mm de tres tributarias son estimados.
+**Verificación.** Láminas de las ventanas de suprahepáticas; `s0028Vessels`, `vesselOverlap`; paridad CPU/GPU.

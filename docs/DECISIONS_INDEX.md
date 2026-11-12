@@ -361,3 +361,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [355](DECISIONS.md#L11725) | Aspecto propio de los tejidos de s0028: la grasa visceral separa los órganos | vigente |
 | [356](DECISIONS.md#L11738) | s0028 tiene corazón: cavidades encajadas a su TAC y la cava llega a la aurícula | vigente |
 | [357](DECISIONS.md#L11751) | El árbol portal de s0028 sale de su TAC y su pared se ve | vigente |
+| [358](DECISIONS.md#L11764) | Tributarias suprahepáticas del TAC, uniones sin nudo y ramas repartidas entre todas las venas | vigente |

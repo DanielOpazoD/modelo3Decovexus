@@ -631,9 +631,13 @@ export function buildHepaticBranches(
   clearance: (m: Vec3) => number = (m) => -liverSdf(m),
   /** Estimated peripheral branches must fit the shared scene capacity. */
   branchCapacity = Infinity,
+  /** Tope de ramas por vaso madre: con la capacidad justa, las últimas madres de la lista no se quedan sin ninguna. */
+  perParent = Infinity,
 ): { branches: VesselDef[]; parents: VesselDef[] } {
   const rng = new SeededRandom(seed);
   const out: VesselDef[] = [];
+  /** Primera rama de la madre en curso (para `perParent`). */
+  let first = 0;
   const tapered = new Map<VesselDef, VesselDef>();
   /** Ramas madre: [id, ¿extremo periférico es el PRIMER nodo? (suprahepáticas: sí)] */
   const parents: Array<[VesselId, boolean]> = [
@@ -694,9 +698,9 @@ export function buildHepaticBranches(
     depth: number,
     peripheralFirst: boolean,
   ): void => {
-    if (depth > 2 || out.length >= branchCapacity || liverSdf(origin) > -2) return; // el origen también debe estar en el parénquima
+    if (depth > 2 || out.length >= branchCapacity || out.length - first >= perParent || liverSdf(origin) > -2) return; // el origen también debe estar en el parénquima
     for (let k = 0; k < 2; k++) {
-      if (out.length >= branchCapacity) return;
+      if (out.length >= branchCapacity || out.length - first >= perParent) return;
       // eje perpendicular aleatorio; ángulo de bifurcación alterno, y si esa dirección
       // sale del hígado se prueba la simétrica (el árbol real se acomoda a la cápsula)
       const rnd: Vec3 = normalize([rng.float() - 0.5, rng.float() - 0.5, rng.float() - 0.5]);
@@ -746,6 +750,7 @@ export function buildHepaticBranches(
     const prev = peripheralFirst ? nodes[1] : nodes[nodes.length - 2];
     const dir = normalize(sub(tip.p, prev.p));
     const before = out.length;
+    first = before;
     grow(parent, tip.p, dir, tip.r * 0.62, dist(tip.p, prev.p), 0.85, 1, peripheralFirst);
     // el extremo de la madre no acaba en una bola mayor que lo que la continúa (decisión 87): con hijas, su último tramo se
     // afila hasta el radio con que nacen (0,62·r, la unión en «Y»); sin ellas (junto a la cápsula), hasta

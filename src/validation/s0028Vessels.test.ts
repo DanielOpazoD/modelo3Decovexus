@@ -3,7 +3,7 @@ import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { MAX_NODES, MAX_TUBE_SEGMENTS } from '../anatomy/gpu/anatomy.glsl';
 import { S0028_TUBE_SEGMENTS } from '../anatomy/people/s0028/vessels';
-import { S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../anatomy/s0028TrunksData';
+import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../anatomy/s0028TrunksData';
 import { SCENE_TUBE_CAPACITY } from '../anatomy/tubeCapacity';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
@@ -132,11 +132,12 @@ it('las ramas portales son las de su TAC: cuatro de segundo orden que nacen de s
     expect(toAxis(axis(scene, parent), nodes[0].p), child).toBeLessThan(1);
     // Largas, y cada vez más finas hacia la periferia.
     expect(nodes.at(-1)!.r, child).toBeLessThan(nodes[0].r);
-    // (el ajuste de radios por mínimos cuadrados deja como mucho una décima de subida entre nodos)
-    for (let i = 1; i < nodes.length; i++) expect(nodes[i].r, child).toBeLessThanOrEqual(nodes[i - 1].r + 0.15);
+    // (el ajuste de radios por mínimos cuadrados deja como mucho una décima de subida entre nodos; el primero es la unión, que
+    // no pasa del radio de su tronco allí: decisión 358)
+    for (let i = 2; i < nodes.length; i++) expect(nodes[i].r, child).toBeLessThanOrEqual(nodes[i - 1].r + 0.15);
     expect(Math.hypot(...nodes[0].p.map((v, k) => v - nodes.at(-1)!.p[k])), child).toBeGreaterThan(45);
   }
-  const own = scene.vessels.filter((v) => v.flowFactor !== undefined && v.tube.nodes.length > 2);
+  const own = scene.vessels.filter((v) => v.flowFactor !== undefined && v.tube.nodes.length > 2 && v.id.startsWith('pv'));
   expect(own).toHaveLength(S0028_PORTAL_BRANCHES.length);
   expect(S0028_PORTAL_BRANCHES.length).toBeGreaterThanOrEqual(12);
   own.forEach((v, i) => {
@@ -153,6 +154,53 @@ it('las ramas portales son las de su TAC: cuatro de segundo orden que nacen de s
   expect(
     scene.vessels.filter((v) => v.flowFactor !== undefined && v.tube.nodes.length === 2 && v.id.startsWith('pv')).length,
   ).toBeGreaterThan(10);
+});
+
+it('las tributarias suprahepáticas de su TAC drenan en su vena, sin nudo en la unión, y todas las madres conservan ramas', () => {
+  // Decisión 358: cinco tributarias medidas, de la punta a la unión.
+  const own = scene.vessels.filter((v) => v.flowFactor !== undefined && v.tube.nodes.length > 2 && v.id.startsWith('hv'));
+  expect(own).toHaveLength(S0028_HEPATIC_BRANCHES.length);
+  expect(S0028_HEPATIC_BRANCHES.length).toBeGreaterThanOrEqual(5);
+  own.forEach((v, i) => {
+    const [mother, nodes] = S0028_HEPATIC_BRANCHES[i],
+      drawn = v.tube.nodes;
+    expect(v.id).toBe(mother);
+    // La punta se apaga y la unión cae sobre el eje de su vena, con un radio que no pasa del de esa vena allí.
+    expect(drawn[0].r).toBeLessThan(1);
+    expect(toAxis(axis(scene, mother), drawn.at(-1)!.p), mother).toBeLessThan(2.5);
+    expect(drawn.at(-1)!.r, mother).toBeLessThanOrEqual(Math.max(...axis(scene, mother).map((n) => n.r)) + 1e-9);
+    expect(drawn.at(-1)!.p).toEqual(nodes.at(-1)!.slice(0, 3));
+  });
+  // Ninguna vena con nombre desemboca más gruesa que la luz que la recibe (antes: 3,9 mm sobre un tramo de 2,8).
+  for (const [child, parent] of [
+    ['hvRightAnterior', 'hvRight'],
+    ['hvRightPosterior', 'hvRight'],
+    ['hvMiddleTributary', 'hvMiddle'],
+  ]) {
+    const end = axis(scene, child).at(-1)!,
+      near = axis(scene, parent).reduce((a, b) =>
+        Math.hypot(...b.p.map((x, k) => x - end.p[k])) < Math.hypot(...a.p.map((x, k) => x - end.p[k])) ? b : a,
+      );
+    expect(end.r, child).toBeLessThanOrEqual(near.r + 0.5);
+  }
+  // Con las ramas propias ocupando tubos, el tope por madre deja ramas procedurales a las once, también a la izquierda.
+  for (const id of [
+    'pvRightAnterior',
+    'pvRightPosterior',
+    'pvLeftLateral',
+    'pvLeftMedial',
+    'hvRightAnterior',
+    'hvRightPosterior',
+    'hvMiddleTributary',
+    'hvLeftTributary',
+    'hvRight',
+    'hvMiddle',
+    'hvLeft',
+  ])
+    expect(scene.vessels.filter((v) => v.id === id && v.flowFactor !== undefined).length, id).toBeGreaterThanOrEqual(2);
+  expect(
+    scene.vessels.filter((v) => v.id === 'hvLeft' && v.flowFactor !== undefined && v.tube.nodes.length === 2).length,
+  ).toBeGreaterThanOrEqual(3);
 });
 
 it('los testigos del TAC caen en la luz del vaso; con los troncos de la otra persona, no', () => {

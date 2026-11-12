@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: cinco tributarias suprahepáticas de su TAC, uniones entre venas sin nudo y ramas generadas repartidas entre todas las venas (358)
+
 - Anatomía s0028: el árbol portal es el de su TAC (cuatro ramas de segundo orden y catorce más) y su pared periportal se distingue a cualquier ángulo (357)
 
 - Anatomía s0028: tiene corazón (cuatro cavidades encajadas a su TAC) y la cava en eje largo desemboca en la aurícula derecha (356)
