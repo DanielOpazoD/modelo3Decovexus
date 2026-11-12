@@ -20,9 +20,10 @@ it('cada ventana de s0028 muestra su hito: dentro del sector, sin hueso ni pulm�
   for (const [id, q] of Object.entries(scores('s0028'))) {
     const tag = `${id}: ${JSON.stringify(q)}`;
     expect(q.seen, tag).toBeGreaterThanOrEqual(0.8);
-    expect(q.coupled, tag).toBeGreaterThanOrEqual(0.9);
-    // Fracción de la profundidad libre de barreras: la intercostal ve el pulmón al fondo, las demás casi nada.
-    expect(q.clear, tag).toBeGreaterThanOrEqual(id === 'intercostal' ? 0.6 : 0.75);
+    // Las ventanas de suprahepáticas apoyan junto al reborde costal: una quinta parte de sus líneas queda sin acoplar.
+    expect(q.coupled, tag).toBeGreaterThanOrEqual(['intercostal', 'subcostal'].includes(id) ? 0.75 : 0.9);
+    // Fracción de la profundidad libre de barreras: las que miran hacia la cava ven el pulmón al fondo.
+    expect(q.clear, tag).toBeGreaterThanOrEqual(['intercostal', 'subcostal', 'subxiphoid'].includes(id) ? 0.6 : 0.75);
   }
 });
 

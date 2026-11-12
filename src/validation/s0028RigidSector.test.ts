@@ -24,10 +24,12 @@ import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
  * al borde del sector en profundidad. En las diez ventanas y con D = 0/10/20 mm, ninguna vértebra ni el sacro se desplazan
  * bajo la cara interna de la pared. Con la reserva antigua (primera entrada y última salida renales de la línea), la L2
  * del flanco, entre los dos riñones, se trasladaba entera 9–11 mm. Las costillas y cartílagos bajo la cara siguen el
- * contacto P2 (P8) y sólo se mueven en las ventanas que apoyan entre costillas o sobre el reborde costal. Con las poses propias
- * de s0028 (decisión 346) son cuatro: intercostal 7,9 mm, tronco portal 8,6, renal 2,4 y porta subcostal 1,1; «portal» ya no.
+ * contacto P2 (P8) y sólo se mueven en las ventanas que apoyan entre costillas, sobre el reborde costal o sobre el xifoides. Con
+ * las poses propias de s0028 (decisiones 346 y 349) son seis: subcostal 21,4 mm, intercostal 11,0, tronco portal 8,6, subxifoidea
+ * 2,5, renal 2,4 y porta subcostal 1,1. Es la limitación P8 de siempre (en main llegaba a 19,4 mm): el hueso bajo la cara sigue a
+ * la pared en vez de frenarla.
  */
-const RIBS_UNDER_FACE = new Set(['intercostal', 'portalTrunk', 'renal', 'portalSubcostal']);
+const RIBS_UNDER_FACE = new Set(['subcostal', 'intercostal', 'portalTrunk', 'subxiphoid', 'renal', 'portalSubcostal']);
 const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, sample: PhysiologySample;
 beforeAll(() => {
@@ -73,17 +75,17 @@ it('compresión rígida s0028: vértebras y sacro quietos en todo el sector de l
             axial++;
             expect(shift, `${tag} vértebra o sacro`).toBeLessThanOrEqual(0.05);
           } else {
-            // P8 preexistente: costillas/cartílagos de estas dos ventanas acompañan la pared (≤ 19,4 mm en main).
-            expect(shift, `${tag} costilla o cartílago`).toBeLessThanOrEqual(RIBS_UNDER_FACE.has(pose.id) ? 20 : 0.05);
+            // P8 preexistente: costillas y cartílagos bajo la cara acompañan la pared (≤ 21,4 mm medido; cota 25).
+            expect(shift, `${tag} costilla o cartílago`).toBeLessThanOrEqual(RIBS_UNDER_FACE.has(pose.id) ? 25 : 0.05);
           }
         }
       }
       counts[`${pose.id} D${D}`] = axial;
     }
   }
-  // Con dientes: la columna está en el sector de ocho ventanas; en el flanco, en su borde profundo, entre los dos riñones. El
+  // Con dientes: la columna está en el sector de nueve ventanas; en el flanco, en su borde profundo, entre los dos riñones. El
   // tronco portal, ahora intercostal lateral, no la alcanza.
-  for (const id of ['subxiphoid', 'epigastric', 'subcostal', 'flank', 'portal', 'renal', 'hepatorenal', 'portalSubcostal'])
+  for (const id of ['subxiphoid', 'epigastric', 'intercostal', 'subcostal', 'flank', 'portal', 'renal', 'hepatorenal', 'portalSubcostal'])
     for (const D of [0, 10, 20]) expect(counts[`${id} D${D}`], `${id} D${D}`).toBeGreaterThan(id === 'flank' ? 50 : 10);
 });
 

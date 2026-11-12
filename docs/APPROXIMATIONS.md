@@ -519,3 +519,11 @@ El diafragma de s0028 no está segmentado. Se dibuja como una lámina de espesor
 solo donde ninguna otra máscara reclama el punto; donde el hígado toca el pulmón, la cara la dibuja la cápsula hepática. «Por
 debajo» se decide con dos lecturas de la distancia al pulmón. Es [EXTRAPOLACIÓN PROPIA]: sin pilares, hiatos ni inserciones
 costales, y en el mediastino puede rodear estructuras hiliares que el ultrasonido no alcanza. No es validación clínica.
+
+### s0028: cava y suprahepáticas desde su TAC (349)
+
+La cava infrahepática es un tubo elíptico (eje anteroposterior 0,8) con el área del corte de su máscara. Las suprahepáticas no tienen
+máscara: su eje es el esqueleto que el candidato P5 r1 extrajo del TAC y su radio, el del área realzada en el corte perpendicular
+(HU por encima de la mitad entre el eje y el parénquima), entre 1,5 y 6 mm. El nombre de cada vena es [EXTRAPOLACIÓN PROPIA] por
+posición, y la unión de la media con la izquierda en un tronco común es un puente recto de 16 mm sobre un tramo que el candidato no
+conecta. La tributaria de la izquierda y las ramas distales siguen estimadas. El HU dice dónde está la luz, no cómo se ve.

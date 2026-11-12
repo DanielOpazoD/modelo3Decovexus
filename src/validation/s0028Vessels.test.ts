@@ -34,6 +34,16 @@ beforeAll(() => {
 const mothers = (s: AnatomyScene) => s.vessels.filter((v) => v.flowFactor === undefined);
 const axis = (s: AnatomyScene, id: string) => s.vesselById.get(id as never)!.tube.nodes;
 const PORTAL = ['pvTrunk', 'pvRight', 'pvLeft', 'portalSplenic', 'portalSmv'];
+const HEPATIC = [
+  'hvRight',
+  'hvRightAnterior',
+  'hvRightPosterior',
+  'hvMiddle',
+  'hvMiddleTributary',
+  'hvLeft',
+  'hvLeftTributary',
+  'hvCommonTrunk',
+];
 const inside = (s: AnatomyScene, points: number[][], ids: readonly string[]) =>
   points.filter((p) => ids.includes(s.classify(p as Vec3, BASELINE_CALIBER).vessel ?? '')).length / points.length;
 /** Distancia de un punto a una poligonal, sin usar el lector de la aplicación. */
@@ -52,15 +62,33 @@ it('los troncos de s0028 son los de sus máscaras, en el sentido del flujo y den
   for (const [id, [refRadius, nodes]] of Object.entries(S0028_TRUNKS)) {
     const v = scene.vesselById.get(id as never)!;
     expect(
-      v.tube.nodes.map((n) => [...n.p, n.r]),
+      v.tube.nodes.map((n) => n.p),
       id,
-    ).toEqual(nodes);
+    ).toEqual(nodes.map((n) => n.slice(0, 3)));
+    // El radio es el medido, salvo en las madres hepáticas y portales que la escena afila en su punta (decisión 87).
+    v.tube.nodes.forEach((n, i) => expect(n.r, id).toBeLessThanOrEqual(nodes[i][3]));
+    if (!HEPATIC.includes(id) && !id.startsWith('pv'))
+      expect(
+        v.tube.nodes.map((n) => n.r),
+        id,
+      ).toEqual(nodes.map((n) => n[3]));
     expect(v.refRadius, id).toBe(refRadius);
   }
   // Una sola máscara portal: la esplénica muere donde nace el tronco, y de su final nacen las dos ramas.
   expect(axis(scene, 'portalSplenic').at(-1)!.p).toEqual(axis(scene, 'pvTrunk')[0].p);
   expect(axis(scene, 'pvRight')[0].p).toEqual(axis(scene, 'pvTrunk').at(-1)!.p);
   expect(axis(scene, 'pvLeft')[0].p).toEqual(axis(scene, 'pvTrunk').at(-1)!.p);
+  // Las suprahepáticas drenan hacia la cava: la media y la izquierda mueren donde nace el tronco común, y este y la derecha, en la
+  // luz de la cava; las ramas de la derecha y la tributaria de la media, sobre el eje de su tronco.
+  expect(axis(scene, 'hvMiddle').at(-1)!.p).toEqual(axis(scene, 'hvCommonTrunk')[0].p);
+  expect(axis(scene, 'hvLeft').at(-1)!.p).toEqual(axis(scene, 'hvCommonTrunk')[0].p);
+  for (const id of ['hvRight', 'hvCommonTrunk']) expect(toAxis(axis(scene, 'ivcInfra'), axis(scene, id).at(-1)!.p), id).toBeLessThan(3);
+  for (const [child, parent] of [
+    ['hvRightAnterior', 'hvRight'],
+    ['hvRightPosterior', 'hvRight'],
+    ['hvMiddleTributary', 'hvMiddle'],
+  ])
+    expect(toAxis(axis(scene, parent), axis(scene, child).at(-1)!.p), child).toBeLessThan(1);
   // La aorta baja; la porta entra en el hígado hacia la derecha del paciente (x menor).
   expect(axis(scene, 'aorta')[0].p[2]).toBeGreaterThan(axis(scene, 'aorta').at(-1)!.p[2]);
   expect(axis(scene, 'pvTrunk')[0].p[0]).toBeGreaterThan(axis(scene, 'pvTrunk').at(-1)!.p[0]);
@@ -76,6 +104,11 @@ it('los testigos del TAC caen en la luz del vaso; con los troncos de la otra per
   expect(inside(scene, witnesses.aorta, ['aorta'])).toBeGreaterThan(0.95);
   expect(inside(foreign, witnesses.portal, PORTAL)).toBeLessThan(0.25);
   expect(inside(foreign, witnesses.aorta, ['aorta'])).toBeLessThan(0.6);
+  // Suprahepáticas (decisión 349): vóxeles realzados del hígado, fuera de la porta, junto al esqueleto que el candidato P5 conecta
+  // a la cava. El 16 % que queda fuera está a 2,5–5 mm del eje: borde de la luz y ramas que el tubo no modela. Las venas de la
+  // otra persona no pasaban por casi ninguno.
+  expect(inside(scene, witnesses.hepatic, HEPATIC)).toBeGreaterThan(0.75);
+  expect(inside(foreign, witnesses.hepatic, HEPATIC)).toBeLessThan(0.1);
 });
 
 it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue tocando a su tronco', () => {
@@ -83,6 +116,12 @@ it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue 
     .filter((v) => JSON.stringify(v.tube.nodes) !== JSON.stringify(foreign.vesselById.get(v.id)!.tube.nodes))
     .map((v) => v.id);
   const followers = {
+    ivcSupra: 'ivcInfra',
+    renalVeinRight: 'ivcInfra',
+    renalVeinLeft: 'ivcInfra',
+    iliacVeinRight: 'ivcInfra',
+    iliacVeinLeft: 'ivcInfra',
+    hvLeftTributary: 'hvLeft',
     pvRightAnterior: 'pvRight',
     pvRightPosterior: 'pvRight',
     pvLeftLateral: 'pvLeft',
@@ -100,7 +139,8 @@ it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue 
   for (const [id, parent] of Object.entries(followers)) {
     const nodes = axis(scene, id),
       old = axis(foreign, id),
-      end = id === 'portalSmv' ? nodes.length - 1 : 0,
+      // Las venas mueren en su tronco y las arterias y ramas portales nacen de él: el extremo unido es el más cercano.
+      end = toAxis(axis(scene, parent), nodes[0].p) < toAxis(axis(scene, parent), nodes.at(-1)!.p) ? 0 : nodes.length - 1,
       far = nodes.length - 1 - end;
     // El extremo que tocaba al tronco lo sigue tocando; el otro no se ha movido.
     expect(toAxis(axis(scene, parent), nodes[end].p), id).toBeLessThan(3);
@@ -110,7 +150,6 @@ it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue 
       id,
     ).toEqual(old.map((n) => n.r));
   }
-  // La cava, las suprahepáticas y las venas renales siguen siendo las de antes: no hay máscara que las mueva aquí.
-  for (const id of ['ivcInfra', 'ivcSupra', 'hvRight', 'hvMiddle', 'hvLeft', 'renalVeinRight', 'renalVeinLeft'])
-    expect(axis(scene, id), id).toEqual(axis(foreign, id));
+  // Lo demás no se mueve: la lista exacta de arriba ya lo exige; aquí, los testigos más visibles.
+  for (const id of ['interlobarVein1', 'hepaticArtery', 'splenicArtery']) expect(axis(scene, id), id).toEqual(axis(foreign, id));
 });

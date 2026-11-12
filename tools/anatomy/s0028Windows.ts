@@ -49,6 +49,8 @@ export interface WindowTarget {
   long: Vec3;
   /** Tejido que debe ocupar el campo cercano y medio (el hígado como ventana). */
   through?: Tissue;
+  /** Balanceo y abanico máximos (rad); 0,6 si no se indica. La subcostal abanica más hacia la cabeza. */
+  maxAngle?: number;
 }
 export interface WindowScore {
   /** Fracción de los puntos del hito dentro del sector y sin barrera delante, y cuán centrados quedan. */
@@ -120,7 +122,7 @@ function along(nodes: Vec3[], step = 5): Vec3[] {
   return [...out, nodes[nodes.length - 1]];
 }
 
-/** Lo que debe mostrar cada ventana en esta persona: la porta de sus máscaras, su riñón y, por ahora, la suprahepática estimada. */
+/** Lo que debe mostrar cada ventana en esta persona: la porta de sus máscaras, su riñón y sus suprahepáticas (decisión 349). */
 export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
   const tube = (id: VesselId) => along(scene.vesselById.get(id)!.tube.nodes.map((n) => n.p));
   const mid = (p: Vec3[]): Vec3 => p[Math.floor(p.length / 2)];
@@ -133,7 +135,12 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
         .tube.nodes.slice(0, 4)
         .map((n) => n.p),
     ),
-    hv = tube('hvRight');
+    hv = tube('hvRight'),
+    // Confluencia: los últimos 40 mm de la derecha y de la media, que llegan a la cava por un lado y por otro.
+    // Cava en eje largo: sus últimos 90 mm bajo el diafragma y el tramo que entra en la aurícula.
+    cava = [...tube('ivcInfra').slice(-18), ...tube('ivcSupra')],
+    rightEnd = hv.slice(-9),
+    middleEnd = tube('hvMiddle').slice(-9);
   const liver = Tissue.Liver;
   return [
     {
@@ -168,12 +175,33 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
     },
     {
       id: 'intercostal',
-      phi: [2.3, 3.4],
-      z: [-90, 0],
+      phi: [2.2, 3.6],
+      z: [-130, 0],
       depthMm: 180,
       points: hv,
       pivot: mid(hv),
       long: sub(hv.at(-1)!, hv[0]),
+      through: liver,
+    },
+    {
+      id: 'subcostal',
+      phi: [1.5, 2.5],
+      z: [-140, -75],
+      depthMm: 180,
+      points: [...rightEnd, ...middleEnd],
+      pivot: rightEnd.at(-1)!,
+      long: sub(middleEnd[0], rightEnd[0]),
+      through: liver,
+      maxAngle: 1,
+    },
+    {
+      id: 'subxiphoid',
+      phi: [1.4, 1.9],
+      z: [-100, -30],
+      depthMm: 180,
+      points: cava,
+      pivot: mid(cava),
+      long: sub(cava.at(-1)!, cava[0]),
       through: liver,
     },
     {
