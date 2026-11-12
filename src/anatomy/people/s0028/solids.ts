@@ -1,4 +1,4 @@
-import type { Vec3 } from '../../../core/vec3';
+import { smoothstep, type Vec3 } from '../../../core/vec3';
 import { HALF } from '../../halfFloat';
 import type { PersonAssets } from '../../personAssets';
 import { S0028_RENAL_INTERIOR as R } from '../../s0028RenalInteriorData';
@@ -203,6 +203,42 @@ export function createSolidsQueries(assets: PersonAssets) {
   }
 
   /**
+   * Normal de la cara renal para el eco: la media del contorno a 3 mm (cuatro lecturas en los vértices de un tetraedro), que no
+   * sigue el escalón del vóxel, mezclada de forma continua con el gradiente local: manda este donde la media se anula o se da la
+   * vuelta (un borde fino del hilio) y junto al borde de la caja.
+   * Par GLSL: `renalAtlasFaceGradient`.
+   * @twin s0028-gradiente-renal
+   */
+  function s0028KidneyFaceGradient(p: Vec3): Vec3 | null {
+    const local = s0028KidneyGradient(p);
+    if (!local) return null;
+    const f = FIELDS[p[0] < 10 ? 3 : 4];
+    // Las cuatro lecturas caen dentro de la caja sólo a más de 3 mm de su borde: la media entra de 3 a 4,5 mm.
+    const edge = Math.min(...p.map((v, k) => Math.min(v - f.originMm[k], f.originMm[k] + 1.5 * (f.dimensions[k] - 1) - v))),
+      wb = smoothstep(3, 4.5, edge);
+    if (wb <= 0) return local;
+    const mean: Vec3 = [0, 0, 0];
+    for (const k of [
+      [3, -3, -3],
+      [-3, -3, 3],
+      [-3, 3, -3],
+      [3, 3, 3],
+    ]) {
+      const d = sourceDistance(abdominalAtlas!, [p[0] + k[0], p[1] + k[1], p[2] + k[2]], f, B.abdominal.textureDimensions);
+      for (let i = 0; i < 3; i++) mean[i] += (k[i] * d) / 36;
+    }
+    const lm = Math.hypot(...mean),
+      ll = Math.hypot(...local),
+      // Acuerdo entre la media y el local: su coseno; con el local degenerado (un nodo extremo de la trilineal) vale 1.
+      agree =
+        (mean[0] * local[0] + mean[1] * local[1] + mean[2] * local[2]) / Math.max(lm * Math.max(ll, 0.25), 1e-6) +
+        1 -
+        Math.min(1, ll / 0.25),
+      w = wb * smoothstep(0.3, 0.7, lm) * smoothstep(0, 0.5, agree);
+    return local.map((v, i) => v + (mean[i] - v) * w) as Vec3;
+  }
+
+  /**
    * Grasa compatible D del vóxel nearest (HU [−190, −30], ≤30 mm del riñón, sin máscara); null fuera de ambas cajas.
    * @twin s0028-duenos
    */
@@ -319,6 +355,7 @@ export function createSolidsQueries(assets: PersonAssets) {
   return Object.freeze({
     s0028SolidsUploads,
     s0028KidneyGradient,
+    s0028KidneyFaceGradient,
     s0028CompatibleFat,
     s0028WideFat,
     s0028RenalInterior,

@@ -54,8 +54,11 @@ const FATS = [Tissue.Fat, Tissue.MesentericFat, Tissue.PerirenalFat];
  */
 function fatLook(p: Vec3): Tissue {
   // Donde la carta conoce la pared, la grasa con dueño propio ya está pasada su cara interna (dentro de la banda sería conflicto).
-  const visceral = s0028WallAt(p)?.kind === 'known' || -torsoDepth(p, scene.torso) > 50;
-  return !visceral ? Tissue.Fat : s0028CompatibleFat(p) !== null ? Tissue.PerirenalFat : Tissue.MesentericFat;
+  const q = s0028WallAt(p);
+  const visceral = q?.kind === 'known' || -torsoDepth(p, scene.torso) > 50;
+  // Pegada por dentro a la cara interna de la pared (menos de 15 mm) es preperitoneal: se ve como el panículo (decisión 352).
+  const preperitoneal = q?.kind === 'known' && q.depthMm - q.interfaceMm < 15;
+  return !visceral ? Tissue.Fat : s0028CompatibleFat(p) !== null ? Tissue.PerirenalFat : preperitoneal ? Tissue.Fat : Tissue.MesentericFat;
 }
 /**
  * Oráculo del interior renal (decisión 341), independiente del lector de la aplicación: expande por su cuenta los tramos
@@ -576,12 +579,14 @@ it('grasa compatible D: vóxel nearest (redondeo), con las dos cajas en OR donde
   expect(edges).toBeGreaterThan(500);
 });
 
-it('contorno acústico renal (r3): el borde O de la máscara es la cara de la cápsula a ambos lados, con gradiente analítico', () => {
+it('contorno acústico renal (r3): el borde O de la máscara es la cara de la cápsula a ambos lados, con la normal media a 3 mm', () => {
   const off: Vec3 = [0.37, 0.41, 0.29];
   for (const name of ['kidneyRight', 'kidneyLeft']) {
     let inside = 0,
       outside = 0,
-      deep = 0;
+      deep = 0,
+      smoothed = 0,
+      kept = 0;
     brick(name, 1, (node) => {
       const p: Vec3 = [node[0] + off[0], node[1] + off[1], node[2] + off[2]];
       const d = s0028SourceValue(p, name).d;
@@ -607,20 +612,49 @@ it('contorno acústico renal (r3): el borde O de la máscara es la cara de la c�
       expect(c.interfaceDistance, `${p.join(',')} d=${d}`).toBe(Math.abs(d));
       expect(c.solids?.kidneyMm, p.join(',')).toBe(d);
       expect(scene.faceSdf(p, BASELINE_CALIBER, 'kidneyOuter')).toBe(d);
-      // Gradiente analítico de la trilineal frente a diferencias centrales dentro de la misma celda.
+      // Normal de la cara (decisión 352): la media del contorno a 3 mm, cuatro lecturas en tetraedro, para que la cápsula no siga
+      // el escalón del vóxel, mezclada de forma continua con el gradiente local de la trilineal (diferencias centrales dentro de
+      // la misma celda), que manda junto al borde de la caja y donde la media se anula o se da la vuelta.
       const g = scene.faceGradient(p, BASELINE_CALIBER)!;
       const h = 0.01,
-        fd = [0, 1, 2].map((k) => {
+        local = [0, 1, 2].map((k) => {
           const a: Vec3 = [...p],
             b: Vec3 = [...p];
           a[k] += h;
           b[k] -= h;
           return (s0028SourceValue(a, name).d - s0028SourceValue(b, name).d) / (2 * h);
         }),
+        corners = [
+          [3, -3, -3],
+          [-3, -3, 3],
+          [-3, 3, -3],
+          [3, 3, 3],
+        ],
+        taps = corners.map((k) => s0028SourceValue([p[0] + k[0], p[1] + k[1], p[2] + k[2]], name).d),
+        mean = [0, 1, 2].map((i) => corners.reduce((sum, k, j) => sum + (k[i] * taps[j]) / 36, 0)),
+        lm = Math.hypot(...mean),
+        ll = Math.hypot(...local),
+        cosine =
+          (mean[0] * local[0] + mean[1] * local[1] + mean[2] * local[2]) / Math.max(lm * Math.max(ll, 0.25), 1e-6) +
+          1 -
+          Math.min(1, ll / 0.25),
+        step = (a: number, b: number, x: number) => {
+          const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+          return t * t * (3 - 2 * t);
+        },
+        // A menos de 3 mm del borde de la caja alguna lectura cae fuera: ahí la media no entra (de 3 a 4,5 mm, gradual).
+        box = B.fields.find((x) => x.name === name)!,
+        edge = Math.min(...p.map((v, k) => Math.min(v - box.originMm[k], box.originMm[k] + 1.5 * (box.dimensions[k] - 1) - v))),
+        w = step(3, 4.5, edge) * step(0.3, 0.7, lm) * step(0, 0.5, cosine),
+        fd = local.map((v, i) => v + (mean[i] - v) * w),
         n = Math.hypot(...fd);
+      if (w > 0.99) smoothed++;
+      else kept++;
       expect(Math.abs(g.norm - n), p.join(',')).toBeLessThan(1e-6);
       for (let k = 0; k < 3; k++) expect(Math.abs(g.normal[k] - fd[k] / n), p.join(',')).toBeLessThan(1e-6);
     });
+    // La media manda en casi todo el contorno; la reserva local es la excepción.
+    expect(smoothed, name).toBeGreaterThan(5 * Math.max(1, kept));
     expect(inside, name).toBeGreaterThan(800);
     expect(outside, name).toBeGreaterThan(800);
     expect(deep, name).toBeGreaterThan(300);

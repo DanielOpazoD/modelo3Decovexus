@@ -11679,3 +11679,16 @@ gradiente de su distancia como normal. La ventana de la cava apunta a su tramo i
 digestivo como obstáculo. `docs/REGLAS.md` recoge el criterio: cada ventana se juzga mirándola.
 **Consecuencias.** Sin halo de «líquido» ni cuñas negras; diafragma brillante con tejido detrás. La cápsula renal sigue «a cuentas».
 **Verificación.** Hojas de las ocho ventanas antes y ahora; oráculo `fatLook` en las pruebas; paridad GPU en Metal.
+
+## 352. La pared de s0028 se lee por capas: fascias a los dos lados, músculo estriado y grasa preperitoneal
+
+**Contexto.** El responsable: «la pared abdominal no tiene sentido» y «la separación entre órganos no es clara». Capa por capa,
+s0028 dibujaba la vaina anterior solo desde la grasa, la banda sin estrías, la grasa preperitoneal brillante sobre el hígado y la
+cápsula renal a cuentas; en la hepatorrenal, entre la pared y el riñón había colon con textura de hígado.
+**Opciones.** No inventar capas que el TAC no resuelve (regla anterior) o dibujar las que todo ecografista ve; se elige lo segundo.
+**Decisión.** La banda es músculo de pared con estrías sobre su propia carta; la vaina se ve desde ambos lados; el panículo lleva
+una fascia superficial estimada (`S0028_SCARPA_FRACTION`); la grasa a menos de `S0028_PREPERITONEAL_MM` de la cara interna es
+hipoecoica; el lóbulo de la cápsula renal mira la normal media a 3 mm; la hepatorrenal se apoya donde el hígado cubre el riñón.
+**Consecuencias.** La pared se parece a la de la persona por defecto. El contenido del colon sigue pareciendo hígado: pendiente.
+**Verificación.** Láminas ampliadas de la pared y hoja de las ocho ventanas; pruebas de clasificación, carta y programas.
+Todo ello es [EXTRAPOLACIÓN PROPIA]. No es validación clínica.

@@ -396,6 +396,8 @@ export function wallFaceSd(m: Vec3, face: Interface, t: Torso): number {
     const q = t.person.regional.s0028WallAt(m);
     if (q?.kind !== 'known') return NaN;
     switch (face) {
+      case Interface.Scarpa:
+        return q.depthMm - q.superficialFasciaMm;
       case Interface.DeepFascia:
         return q.depthMm - q.outerMm;
       case Interface.Transversalis:
@@ -456,7 +458,7 @@ export function wallFaceGradient(m: Vec3, face: Interface, t: Torso): Vec3 {
   if (t.person?.regional) {
     // Analítico, gemelo de la GLSL: una consulta de pared y dos lecturas de la pendiente de la carta, sin seis consultas.
     // @twin organo-pared
-    if (face === Interface.SkinFat) {
+    if (face === Interface.SkinFat || face === Interface.Scarpa) {
       const g = torsoDepthGradient(m, t);
       return [-g[0], -g[1], -g[2]];
     }

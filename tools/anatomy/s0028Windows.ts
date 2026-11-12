@@ -49,6 +49,8 @@ export interface WindowTarget {
   long: Vec3;
   /** Tejido que debe ocupar el campo cercano y medio (el hígado como ventana). */
   through?: Tissue;
+  /** Peso de esa ventana en la puntuación (1 si no se indica): la hepatorrenal existe para ver el riñón a través del hígado. */
+  throughWeight?: number;
   /** Balanceo y abanico máximos (rad); 0,6 si no se indica. La subcostal abanica más hacia la cabeza. */
   maxAngle?: number;
 }
@@ -63,7 +65,7 @@ export interface WindowScore {
   score: number;
 }
 // Lo que un ecografista evita tener delante: hueso, cartílago, pulmón y gas digestivo (su sombra sucia tapa lo que hay detrás).
-const BLOCK = new Set<Tissue>([Tissue.Bone, Tissue.Vertebra, Tissue.Lung, Tissue.Cartilage, Tissue.BowelGas]);
+const BLOCK = new Set<Tissue>([Tissue.Bone, Tissue.Vertebra, Tissue.Lung, Tissue.Cartilage, Tissue.BowelGas, Tissue.ColonicContents]);
 const LINES = 25;
 
 export function scoreWindow(anatomy: AnatomyQuery, sample: PhysiologySample, pose: ProbePose, t: WindowTarget): WindowScore {
@@ -108,7 +110,10 @@ export function scoreWindow(anatomy: AnatomyQuery, sample: PhysiologySample, pos
     clear: clear / LINES,
     through: samples ? through / samples : 0,
   };
-  return { ...q, score: 4 * q.seen + q.centred + 1.5 * q.clear + q.coupled + (t.through === undefined ? 0 : q.through) };
+  return {
+    ...q,
+    score: 4 * q.seen + q.centred + 1.5 * q.clear + q.coupled + (t.through === undefined ? 0 : (t.throughWeight ?? 1) * q.through),
+  };
 }
 
 /** Riñón derecho de s0028: centro y eje largo de su máscara (componentes principales), en mm LAS. */
@@ -207,15 +212,18 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
       long: sub(cava.at(-1)!, cava[0]),
       through: liver,
     },
+    // Riñón a través del hígado. En esta persona el ángulo hepático del colon queda delante del riñón por la línea axilar anterior
+    // (con contenido, que un ecografista evita): el apoyo se busca entre la axilar media y la posterior, por delante de la renal.
     {
       id: 'hepatorenal',
-      phi: [2.7, 3.5],
+      phi: [2.9, 3.2],
       z: [-180, -80],
       depthMm: 140,
       points: kidney,
       pivot: KIDNEY.center,
       long: KIDNEY.u,
       through: liver,
+      throughWeight: 4,
     },
     // Riñón en eje largo con la vena interlobar media en el plano: es la que se interroga en el Doppler renal de VExUS.
     {

@@ -1,6 +1,6 @@
 # Estado vigente: presupuestos
 
-Actualizado: 2026-11-12 sobre main `0f76ec7`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
+Actualizado: 2026-11-12 sobre main `aaba2fb`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
 su valor actual. Los techos no se suben para obtener verde (decisión 322); subir uno es una decisión propia, declarada en
 la PR y en `docs/DECISIONS.md`.
 
@@ -22,7 +22,7 @@ la PR y en `docs/DECISIONS.md`.
 
 <!-- tabla generada por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `0f76ec7` el 2026-11-12 con `tools/docs/estado.ts`. No se copian a mano.
+Medido en el candidato basado en main `aaba2fb` el 2026-11-12 con `tools/docs/estado.ts`. No se copian a mano.
 
 | Techo                                               |      Límite |      Actual |     Margen | Unidad   | Decisión | Fuente                                 |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- | -------- | -------------------------------------- |
@@ -31,11 +31,11 @@ Medido en el candidato basado en main `0f76ec7` el 2026-11-12 con `tools/docs/es
 | `abdominal-direct.gzip.bin`                         |   8.567.375 |   8.567.375 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `abdominal-surface.gzip.bin`                        |   6.291.456 |   6.014.991 |    276.465 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `anatomy.glsl.js`                                   |     122.880 |      23.152 |     99.728 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `anatomyScene.js`                                   |     122.880 |      16.189 |    106.691 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `anatomyScene.js`                                   |     122.880 |      16.193 |    106.687 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `annotation-capacity.gzip.bin`                      |     856.999 |     334.410 |    522.589 | B        | 320      | `tools/ci/bundleBudgets.ts`            |
 | `bootstrap.js`                                      |     343.040 |     252.662 |     90.378 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | B        | 321      | `tools/ci/bundleBudgets.ts`            |
-| `cpu.js`                                            |     122.880 |      53.134 |     69.746 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `cpu.js`                                            |     122.880 |      54.078 |     68.802 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cpu.js`                                            |     122.880 |      14.398 |    108.482 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cutMapView.js`                                     |     122.880 |      16.838 |    106.042 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cutMapWorker.js`                                   |     122.880 |        3721 |    119.159 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -53,12 +53,12 @@ Medido en el candidato basado en main `0f76ec7` el 2026-11-12 con `tools/docs/es
 | `query.js`                                          |     122.880 |        3703 |    119.177 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `reference-body.bin`                                |        2080 |        2080 |          0 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `retroperitoneum.js`                                |     122.880 |        5328 |    117.552 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `runtime.js`                                        |     122.880 |      22.706 |    100.174 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `runtime.js`                                        |     122.880 |        1631 |    121.249 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `runtime.js`                                        |     122.880 |      21.776 |    101.104 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `series.js`                                         |     122.880 |        2204 |    120.676 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `sourceVolume.js`                                   |     122.880 |        1582 |    121.298 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `startPoints.js`                                    |     122.880 |      10.401 |    112.479 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `startPoints.js`                                    |     122.880 |      10.402 |    112.478 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `structureIdentity.js`                              |     122.880 |        1609 |    121.271 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.gzip.bin`                                 |   9.672.026 |   5.340.216 |  4.331.810 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.js`                                       |     122.880 |         485 |    122.395 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
@@ -71,9 +71,9 @@ Medido en el candidato basado en main `0f76ec7` el 2026-11-12 con `tools/docs/es
 | `thoracicSurfaceData.js`                            |     122.880 |        3124 |    119.756 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `three.js`                                          |     385.024 |     369.161 |     15.863 | B        | 307      | `tools/ci/bundleBudgets.ts`            |
 | `units.js`                                          |     122.880 |         388 |    122.492 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `vesselTree.js`                                     |     122.880 |     109.205 |     13.675 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.040.313 |     29.767 | B        | 322      | `tools/ci/personBundles.ts`            |
-| JS clausura s0028 (Workers y ganchos incluidos)     |   1.112.064 |   1.104.439 |       7625 | B        | 322      | `tools/ci/personBundles.ts`            |
+| `vesselTree.js`                                     |     122.880 |     109.219 |     13.661 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.040.332 |     29.748 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura s0028 (Workers y ganchos incluidos)     |   1.112.064 |   1.106.332 |       5732 | B        | 322      | `tools/ci/personBundles.ts`            |
 | Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.483.470 |  4.516.530 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.567.375 | 10.942.627 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
@@ -89,14 +89,14 @@ Programas especializados (`shaderLimits.test.ts`, decisiones 309 y 320): tokens 
 
 | Programa                  |  Tokens default / s0028 / techo |    Uso | Ramas default / s0028 / techo |    Uso | Ranuras | Samplers |
 | ------------------------- | ------------------------------: | -----: | ----------------------------: | -----: | ------: | -------: |
-| `FRAG_RAWFIELD`           | 1.268.283 / 379.573 / 1.385.000 | 91,6 % |        10.139 / 2869 / 11.060 | 91,7 % |     136 |       10 |
-| `FRAG_RAWFIELD_ECHO`      |     529.303 / 164.668 / 577.000 | 91,7 % |            4252 / 1179 / 4640 | 91,6 % |     137 |       16 |
-| `FRAG_RAWFIELD_CLASS`     |     417.797 / 123.920 / 455.000 | 91,8 % |             3515 / 881 / 3830 | 91,8 % |     136 |       10 |
-| `FRAG_RAWFIELD_ELEVATION` |     417.937 / 124.060 / 455.000 | 91,9 % |             3517 / 883 / 3830 | 91,8 % |     137 |       15 |
-| `FRAG_RAWFIELD_GRADIENT`  |      321.815 / 89.702 / 351.000 | 91,7 % |             2510 / 567 / 2760 | 90,9 % |     138 |       15 |
-| `FRAG_TRANS_HITS`         |     468.641 / 169.094 / 513.000 | 91,4 % |            4110 / 1306 / 4470 | 91,9 % |     101 |        6 |
-| `FRAG_TRANS_HITS_GRID`    |      230.336 / 78.519 / 252.000 | 91,4 % |             2033 / 633 / 2210 | 92,0 % |     102 |       11 |
-| `FRAG_COLOR`              |      226.820 / 73.393 / 248.000 | 91,5 % |             1990 / 590 / 2160 | 92,1 % |     110 |        7 |
+| `FRAG_RAWFIELD`           | 1.268.283 / 399.065 / 1.385.000 | 91,6 % |        10.139 / 2914 / 11.060 | 91,7 % |     136 |       10 |
+| `FRAG_RAWFIELD_ECHO`      |     529.303 / 169.279 / 577.000 | 91,7 % |            4252 / 1189 / 4640 | 91,6 % |     137 |       16 |
+| `FRAG_RAWFIELD_CLASS`     |     417.797 / 128.531 / 455.000 | 91,8 % |             3515 / 891 / 3830 | 91,8 % |     136 |       10 |
+| `FRAG_RAWFIELD_ELEVATION` |     417.937 / 128.671 / 455.000 | 91,9 % |             3517 / 893 / 3830 | 91,8 % |     137 |       15 |
+| `FRAG_RAWFIELD_GRADIENT`  |      321.815 / 95.757 / 351.000 | 91,7 % |             2510 / 585 / 2760 | 90,9 % |     138 |       15 |
+| `FRAG_TRANS_HITS`         |     468.641 / 169.378 / 513.000 | 91,4 % |            4110 / 1310 / 4470 | 91,9 % |     101 |        6 |
+| `FRAG_TRANS_HITS_GRID`    |      230.336 / 78.661 / 252.000 | 91,4 % |             2033 / 635 / 2210 | 92,0 % |     102 |       11 |
+| `FRAG_COLOR`              |      226.820 / 73.535 / 248.000 | 91,5 % |             1990 / 592 / 2160 | 92,1 % |     110 |        7 |
 
 <!-- fin de la tabla generada -->
 

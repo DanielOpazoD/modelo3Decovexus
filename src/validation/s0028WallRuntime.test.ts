@@ -73,7 +73,7 @@ it('proyecta por EDT y lee la carta bilineal v2 con fixtures directos', () => {
   }
 });
 
-it('la banda propia y sus caras sustituyen W global sin llamar músculo a una identidad U', () => {
+it('la banda propia y sus caras sustituyen W global: se dibuja como músculo de pared y conserva su procedencia D/E', () => {
   // Perfil propio v2: límites y profundidad directos; la inversa offline se conserva en el fixture.
   const f = chartFixtures[0];
   const fat: Vec3 = [f.skin[0] - 20 * f.normal[0], f.skin[1] - 20 * f.normal[1], f.skin[2] - 20 * f.normal[2]];
@@ -85,7 +85,19 @@ it('la banda propia y sus caras sustituyen W global sin llamar músculo a una id
   expect(Math.abs(q.innerMm - f.direct.bounds[1])).toBeLessThan(0.005);
   expect(q.provenance[3]).toBe('U');
   expect(scene.classify(fat, BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.Fat, wall: 'fat-D/E' });
-  expect(scene.classify(band, BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.UnsegmentedSoftTissue, wall: 'band-D/E' });
+  // Decisión 352: la banda blanda entre el panículo y la cavidad se ve como lo que es en una ecografía, músculo entre dos vainas.
+  expect(scene.classify(band, BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.Muscle, wall: 'band-D/E' });
+  // La vaina anterior se dibuja desde sus dos lados y la grasa lleva su fascia superficial, estimada dentro del panículo.
+  const along = (mm: number): Vec3 => [f.skin[0] - mm * f.normal[0], f.skin[1] - mm * f.normal[1], f.skin[2] - mm * f.normal[2]];
+  const faces = new Set<Interface>();
+  for (let mm = 2; mm < q.innerMm + 5; mm += 0.25) {
+    const c = scene.classify(along(mm), BASELINE_CALIBER);
+    if (c.wall === 'fat-D/E' || c.wall === 'band-D/E') faces.add(c.interface);
+    if (c.wall === 'band-D/E') expect([Interface.DeepFascia, Interface.Peritoneum]).toContain(c.interface);
+  }
+  expect([...faces].sort()).toEqual([Interface.SkinFat, Interface.Scarpa, Interface.DeepFascia, Interface.Peritoneum].sort());
+  expect(q.superficialFasciaMm).toBeGreaterThan(1.5);
+  expect(q.superficialFasciaMm).toBeLessThan(q.outerMm);
   expect(Math.abs(scene.insideWallMm(band) - (f.direct.depth - f.direct.bounds[1]))).toBeLessThan(0.005);
   const before = [
     scene.classify(band, BASELINE_CALIBER),
@@ -460,7 +472,8 @@ it('conserva los campos fuente sin convertir autóctonos en QL ni rellenar músc
           expect(s0028SourceValue(p, 'posteriorMuscle').d).toBeLessThan(0);
           psoas++;
         }
-        if (c.tissue === Tissue.Muscle) {
+        // El músculo de la banda de la pared (decisión 352) no es un campo fuente: sólo se exige máscara al de dentro.
+        if (c.tissue === Tissue.Muscle && c.wall !== 'band-D/E') {
           expect(s0028SourceValue(p, 'posteriorMuscle').d).toBeLessThan(0);
           autochthon++;
         }

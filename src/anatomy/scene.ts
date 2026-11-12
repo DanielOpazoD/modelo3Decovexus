@@ -811,8 +811,8 @@ export class AnatomyScene {
       return { ...this.numericGradient(m, (p) => spineBodySd(p, this.spine), frame.curvature), axis: frame.axis };
     }
     if (this.identity.person === 's0028' && geometry === 'kidneyOuter') {
-      // El borde O de la máscara renal: gradiente analítico de su trilineal, como la GPU (s28PGrad).
-      const g = this.person.cpu.regional!.s0028KidneyGradient(m),
+      // El borde O de la máscara renal: la normal media a 3 mm de su distancia, como la GPU (renalAtlasFaceGradient).
+      const g = this.person.cpu.regional!.s0028KidneyFaceGradient(m),
         norm = g ? Math.hypot(...g) : 0;
       return norm > 0 ? { normal: scale(g!, 1 / norm), norm, curvature: 0 } : { normal: [0, 1, 0], norm: 1, curvature: 0 };
     }
