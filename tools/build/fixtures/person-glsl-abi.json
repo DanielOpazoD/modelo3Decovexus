@@ -676,7 +676,8 @@
     ["S28W_LO", "rM"],
     ["S28W_PAGE", "rN"],
     ["s28PFatIn", "rO"],
-    ["s28PWide", "rP"]
+    ["s28PWide", "rP"],
+    ["s28Dia", "rQ"]
   ],
   "afterDot": [
     "COMP_NODES",

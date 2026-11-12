@@ -220,6 +220,18 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
             pts.push(a.wide.o[0] + 3 * (x + 0.5) + 0.37, a.wide.o[1] + 3 * (y + 0.5) + 0.29, a.wide.o[2] + 3 * (z + 0.5) + 0.41);
       out.push(compare('grasa amplia', 0, NO, pts));
     }
+    // Diafragma de la persona (decisión 348): los puntos que la CPU da como diafragma bajo la base del pulmón y, de control, el
+    // punto 3 mm más abajo, sin sonda.
+    {
+      const pts: number[] = [],
+        diaphragm = Number(Object.keys(a.names.tissue).find((id) => (a.names.tissue as Record<string, string>)[id] === 'Diaphragm'));
+      for (let x = -110; x <= 100; x += 6)
+        for (let y = -70; y <= 70; y += 6)
+          for (let z = -80; z <= 40; z += 1.5)
+            if (Number(sim.scene.classify([x + 0.31, y + 0.23, z + 0.17], sim.anatomy.caliberFor(sim.sample)).tissue) === diaphragm)
+              pts.push(x + 0.31, y + 0.23, z + 0.17, x + 0.31, y + 0.23, z - 2.83);
+      out.push(compare('diafragma', 0, NO, pts));
+    }
     // Testigos de conflicto (nueve pares del censo, fuera de las mitades de celda): U con los dos dueños, sin elegir material.
     out.push(compare('conflictos', 0, NO, a.conflicts));
     // La banda sola daría Fat en estos puntos; con grasa D superpuesta debe dar conflicto U.
@@ -316,6 +328,8 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
   }
   expect(rows.find((r) => r.id === 'conflictos D=0')!.classes.conflictU).toEqual([conflicts.points.length, conflicts.points.length]);
   expect(rows.reduce((s, r) => s + r.renalCpu, 0)).toBeGreaterThan(2000);
+  // El diafragma de la persona llega a la GPU: cientos de puntos de la lámina bajo el pulmón, con sus controles.
+  expect(rows.find((r) => r.id === 'diafragma D=0')!.points).toBeGreaterThan(400);
   // La grasa amplia llega a la GPU: miles de celdas de grasa D fuera de las cajas renales con el mismo tejido que la CPU.
   const wide = rows.find((r) => r.id === 'grasa amplia D=0')!;
   expect(wide.classes.fatD[0], tag(wide)).toBeGreaterThan(2000);

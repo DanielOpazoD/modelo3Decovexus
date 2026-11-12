@@ -512,3 +512,10 @@ circular, con el radio inscrito en la máscara: donde la máscara es más ancha 
 estrecho que el real. La confluencia con la esplénica es la mayor caída de radio del camino, no una marca anatómica segmentada. Los
 vasos que nacían de esos troncos (ramas portales de segundo orden, mesentérica superior, tronco celíaco, renales, ilíacas) son
 [EXTRAPOLACIÓN PROPIA]: conservan el trayecto de la otra persona con el origen arrastrado al tronco real. No es validación clínica.
+
+### s0028: diafragma bajo la base del pulmón (348)
+
+El diafragma de s0028 no está segmentado. Se dibuja como una lámina de espesor fijo pegada por debajo a la máscara de su pulmón,
+solo donde ninguna otra máscara reclama el punto; donde el hígado toca el pulmón, la cara la dibuja la cápsula hepática. «Por
+debajo» se decide con dos lecturas de la distancia al pulmón. Es [EXTRAPOLACIÓN PROPIA]: sin pilares, hiatos ni inserciones
+costales, y en el mediastino puede rodear estructuras hiliares que el ultrasonido no alcanza. No es validación clínica.

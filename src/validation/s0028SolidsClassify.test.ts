@@ -298,9 +298,11 @@ it('U nunca se clasifica como tejido conocido en el compartimento posterior y re
         }
         unknown++;
         if (!c.vesselHit && c.interface !== Interface.DuctLumen) {
-          // Vasos y conductos procedurales E fuera de los sólidos: P5. La cúpula E de P7 va rotulada.
+          // Vasos y conductos procedurales E fuera de los sólidos: P5. El diafragma E bajo el pulmón va rotulado.
           if (
-            c.tissue === Tissue.Diaphragm ? c.approximation !== 'diaphragm-P7' : c.tissue !== (SINUS[label] ?? Tissue.UnsegmentedSoftTissue)
+            c.tissue === Tissue.Diaphragm
+              ? c.approximation !== 'diaphragm-lung-base'
+              : c.tissue !== (SINUS[label] ?? Tissue.UnsegmentedSoftTissue)
           )
             fail('U clasificado como ' + Tissue[c.tissue]);
         }

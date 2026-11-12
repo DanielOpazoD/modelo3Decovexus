@@ -11628,3 +11628,15 @@ frente a `origin/main` no corre nada. `npm run feedback -- --all-fast` sigue dis
 **Consecuencias.** Un push de documentación tarda segundos. Una prueba que lee un archivo como texto, sin importarlo, puede no
 correr en local: la detecta la CI. La regla 322.7 (el gancho corre toda la capa rápida) queda sustituida.
 **Verificación.** `iterationFeedback.test.ts` fija la línea del gancho y los modos; tiempos medidos en el PR.
+
+## 348. El diafragma de s0028 va bajo la base de su propio pulmón
+
+**Contexto.** Donde ninguna máscara reclamaba el punto, s0028 dibujaba la cúpula analítica de la otra persona («E de P7»). Esa lámina
+no coincide con su pulmón: en el plano subxifoideo cruzaba grasa lejos de la base pulmonar. En el TAC, los 3 mm bajo el pulmón son
+tejido sin máscara (46 %), «grasa» por volumen parcial (27 %) o hígado en contacto directo (14 %).
+**Opciones.** Segmentar el diafragma (no hay máscara ni contraste para ello); quitar la lámina sin más; o lo decidido.
+**Decisión.** `s0028Diaphragm` (GLSL `s28Dia`): un punto sin dueño es diafragma si está a menos de `DIAPHRAGM_THICKNESS_MM` de la
+máscara de pulmón y el pulmón queda encima (3 mm más arriba está al menos 1 mm más cerca). La cara `dome` de s0028 pasa a ser una
+superficie de nivel de esa distancia. La grasa a 3 mm no pisa la lámina. El tórax E del corazón conserva la cúpula analítica.
+**Consecuencias.** Sin lámina ajena; el diafragma acompaña al pulmón de la persona. Sin hiatos ni pilares. Cambio visual pequeño.
+**Verificación.** Oráculo de distancia al pulmón en `s0028WallRuntime.test.ts`; fila «diafragma» de la paridad GPU, en Metal.

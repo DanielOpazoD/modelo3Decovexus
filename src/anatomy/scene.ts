@@ -95,8 +95,8 @@ export type { DuctDef, VesselDef } from './vesselTree';
  */
 
 export interface Classification {
-  /** E heredada, conservada hasta la anotación de cúpula/hiatos en P7. */
-  approximation?: 'diaphragm-P7';
+  /** Diafragma de s0028: lámina E bajo la base de su propio pulmón (decisión 348); sin hiatos ni pilares. */
+  approximation?: 'diaphragm-lung-base';
   /** P2 CPU: geometría de pared; la identidad muscular y subcapas finas siguen U. */
   wall?: 'skin-E' | 'fat-D/E' | 'band-D/E' | 'U';
   /** P3 CPU s0028: todos los dueños y su certeza, antes de elegir material; un conflicto no elige ninguno (U). */
@@ -666,7 +666,7 @@ export class AnatomyScene {
       tissue: Tissue.Diaphragm,
       boundaryDistance: Math.min(d, DIAPHRAGM_THICKNESS_MM - d, inside),
       ...(d > 0.5 * DIAPHRAGM_THICKNESS_MM ? { interface: Interface.DiaphragmLiver, interfaceDistance: DIAPHRAGM_THICKNESS_MM - d } : {}),
-      ...(this.identity.person === 's0028' ? { approximation: 'diaphragm-P7' as const } : {}),
+      ...(this.identity.person === 's0028' ? { approximation: 'diaphragm-lung-base' as const } : {}),
     };
   }
 
@@ -697,7 +697,9 @@ export class AnatomyScene {
       }
       case 'dome':
         if (this.identity.person === 's0028') {
-          return Math.max(sdDiaphragm(m, this.diaphragm, this.torso), -(this.person.cpu.regional!.s0028InsideWall(m) ?? Infinity));
+          // La cara del diafragma de s0028 es una superficie de nivel de la distancia a su pulmón (decisión 348).
+          const regional = this.person.cpu.regional!;
+          return Math.max(regional.s0028SourceValue(m, 'lung').d, -(regional.s0028InsideWall(m) ?? Infinity));
         }
         return sdDiaphragm(m, this.diaphragm, this.torso);
       case 'kidneyOuter':

@@ -50,6 +50,8 @@ float s28P(highp sampler3D t,vec3 p,vec3 lo,vec3 dim,vec3 off){
 }
 float s28PA(vec3 p,int k){return s28P(uAbdominalAtlas,p,S28A_LO[k],S28A_DIM[k],S28A_OFF[k]);}
 float s28PT(vec3 p,int k){return s28P(uThoracicAtlas,p,S28T_LO[k],S28T_DIM[k],S28T_OFF[k]);}
+// Diafragma de esta persona (decisión 348): lámina bajo la base de su pulmón; mm bajo el pulmón o −1. Gemelo: s0028Diaphragm.
+float s28Dia(vec3 m){float d=s28PT(m,2);return d>=0.0&&d<DIAPHRAGM_MM&&s28PT(m+vec3(0.0,0.0,3.0),2)<d-1.0?d:-1.0;}
 // Etiqueta nearest (gemela de sourceLabel): floor(q + 0,5) es Math.round para q ≥ 0.
 float s28PLA(vec3 p,int k){return texelFetch(uAbdominalAtlas,ivec3(S28A_OFF[k]+floor((p-S28A_LO[k])/1.5+0.5)),0).g;}
 float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+floor((p-S28T_LO[k])/1.5+0.5)),0).g;}
@@ -194,8 +196,9 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   else if(k==8&&s28PLA(m,8)>0.0){c.tissue=s28PLA(m,8)<=2.0?T_PSOAS:T_MUSCLE;c.bd=-od;return;}
   else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:T_FAT;c.bd=0.0;}
   else{
-    vec3 dn;float dome=sdDome(m,dn);
-    if(dome>=0.0&&dome<DIAPHRAGM_MM){c.tissue=T_DIAPHRAGM;c.bd=min(min(dome,DIAPHRAGM_MM-dome),e.z);c.n=dn;
+    float dome=s28Dia(m);
+    if(dome>=0.0){c.tissue=T_DIAPHRAGM;c.bd=min(min(dome,DIAPHRAGM_MM-dome),e.z);
+      c.n=normalize(vec3(s28PT(m+vec3(1.5,0.0,0.0),2)-dome,s28PT(m+vec3(0.0,1.5,0.0),2)-dome,s28PT(m+vec3(0.0,0.0,1.5),2)-dome)+vec3(0.0,0.0,-1e-4));
       if(dome>0.5*DIAPHRAGM_MM){c.iface=IF_DIAPHRAGM_LIVER;c.ifd=DIAPHRAGM_MM-dome;}}
     else{c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:T_UNSEGMENTED;c.bd=0.0;}
   }
@@ -215,7 +218,7 @@ Cls classifyWith(vec3 m,bool withCurtain){
   // P3: dos o más dueños son conflicto, U sin material elegido.
   if(s28POwn(m,q,valid,k,od,b,e)>1){c.tissue=T_UNSEGMENTED;c.bd=0.0;return c;}
   // La grasa del abdomen a 3 mm no pisa la cúpula E de P7: ahí el punto queda sin dueño.
-  if(k==17&&!s28PFatIn(m,0)&&!s28PFatIn(m,1)){vec3 dn;float dome=sdDome(m,dn);if(dome>=0.0&&dome<DIAPHRAGM_MM)k=-1;}
+  if(k==17&&!s28PFatIn(m,0)&&!s28PFatIn(m,1)&&s28Dia(m)>=0.0)k=-1;
   if(k==9||k==12){
     if(b.x<0.0){c.tissue=thoracicMaterial(s28PLT(m,0))==2?T_VERTEBRA:T_BONE;c.bd=-b.x;}
     else if(b.y<0.0){c.tissue=s28PLA(m,9)<=5.0?T_VERTEBRA:T_BONE;c.bd=-b.y;}

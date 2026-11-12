@@ -7,7 +7,7 @@ import { gallbladderSdf } from '../../organs/gallbladder';
 import { heartFloor, ivcAtrium, thorax } from '../../organs/heart';
 import type { S0028Ownership } from '../../people/s0028/solids';
 import { S0028_RENAL_FACE_MM } from '../../people/s0028/solidsData';
-import { sdDiaphragm, sdDiaphragmSlope } from '../../primitives';
+import { sdDiaphragmSlope } from '../../primitives';
 import type { AnatomyScene, Classification, VesselCaliber } from '../../scene';
 import { NONE } from '../../scene';
 import { DIAPHRAGM_THICKNESS_MM, Tissue } from '../../tissues';
@@ -31,11 +31,10 @@ export function classifyWall(
   const regional = scene.person.cpu.regional!,
     q = regional.s0028WallAt(m);
   let solids = regional.s0028Owners(m, q);
-  // La grasa del abdomen a 3 mm no pisa la cúpula E de P7: ahí el punto queda sin dueño y lo dibuja el diafragma.
-  if (solids.owners[0]?.id === 'compatible_fat' && regional.s0028CompatibleFat(m) === null) {
-    const dome = sdDiaphragm(m, scene.diaphragm, scene.torso);
-    if (dome >= 0 && dome < DIAPHRAGM_THICKNESS_MM) solids = { state: 'U', owners: [], kidneyMm: solids.kidneyMm };
-  }
+  // La grasa del abdomen a 3 mm no pisa el diafragma: junto a la base del pulmón, un vóxel «graso» es volumen parcial de aire y
+  // músculo. Ahí el punto queda sin dueño y lo dibuja el diafragma.
+  if (solids.owners[0]?.id === 'compatible_fat' && regional.s0028CompatibleFat(m) === null && s0028Diaphragm(regional, m) !== null)
+    solids = { state: 'U', owners: [], kidneyMm: solids.kidneyMm };
   const owner = solids.owners[0]?.id;
   // P3: dos o más dueños independientes son conflicto: se conservan todos y no se elige material (U).
   if (solids.state === 'conflict')
@@ -78,6 +77,16 @@ export function classifyWall(
       solids,
     },
   };
+}
+/**
+ * Diafragma de s0028 (decisión 348): la lámina de `DIAPHRAGM_THICKNESS_MM` pegada por debajo a la base de su propio pulmón, donde
+ * ninguna máscara reclama el punto. Devuelve los mm bajo el pulmón, o null. «Por debajo»: 3 mm más arriba el pulmón queda al
+ * menos 1 mm más cerca. Sustituye a la cúpula analítica de la otra persona, que no coincidía con este pulmón. Gemelo: `s28Dia`.
+ */
+export function s0028Diaphragm(regional: { s0028SourceValue: (p: Vec3, name: string) => { d: number } }, m: Vec3): number | null {
+  const d = regional.s0028SourceValue(m, 'lung').d;
+  if (!(d >= 0 && d < DIAPHRAGM_THICKNESS_MM)) return null;
+  return regional.s0028SourceValue([m[0], m[1], m[2] + 3], 'lung').d < d - 1 ? d : null;
 }
 /** @twin clasificacion */
 export function classifyInside(
@@ -173,11 +182,9 @@ export function classifyInside(
     // Grasa compatible D por vóxel (HU, ≤30 mm del riñón, sin máscara): composición, no compartimento.
     if (owner === 'compatible_fat')
       return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.Fat, boundaryDistance: 0 }, solids!);
-    // Conservar la cúpula E; la máscara de cada órgano ya ganó antes.
-    // No usar esta estimación P7 para cortar el hígado de la persona.
-    const dome = sdDiaphragm(m, scene.diaphragm, scene.torso);
-    if (dome >= 0 && dome < DIAPHRAGM_THICKNESS_MM)
-      return renalFace(scene.classifyDiaphragm(dome, scene.person.cpu.regional!.s0028InsideWall(m) ?? Infinity), solids!);
+    // Diafragma de esta persona (decisión 348): la máscara de cada órgano ya ganó antes; no corta el hígado.
+    const dome = s0028Diaphragm(scene.person.cpu.regional!, m);
+    if (dome !== null) return renalFace(scene.classifyDiaphragm(dome, scene.person.cpu.regional!.s0028InsideWall(m) ?? Infinity), solids!);
     return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' }, solids!);
   }
 }

@@ -351,3 +351,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [345](DECISIONS.md#L11595) | Los troncos de la aorta y la porta de s0028 salen de sus máscaras | vigente |
 | [346](DECISIONS.md#L11608) | s0028 tiene sus propias ventanas de inicio | vigente |
 | [347](DECISIONS.md#L11620) | El gancho de push comprueba en proporción a lo que cambia | vigente |
+| [348](DECISIONS.md#L11632) | El diafragma de s0028 va bajo la base de su propio pulmón | vigente |

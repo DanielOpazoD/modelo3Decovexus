@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: el diafragma deja de ser la cúpula de la otra persona y pasa a ser una lámina bajo la base de su propio pulmón (348).
+
 - Flujo de trabajo: el gancho de push comprueba en proporción a lo que cambia; un push de documentación tarda segundos y no minutos (347).
 
 - Ventanas de s0028: seis poses propias, halladas sobre su anatomía. «Portal» e «intercostal» dejan de caer sobre el pulmón y la hepatorrenal llena el sector (346).
