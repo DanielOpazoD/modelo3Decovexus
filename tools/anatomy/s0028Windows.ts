@@ -137,6 +137,7 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
     ),
     hv = tube('hvRight'),
     // Confluencia: los últimos 40 mm de la derecha y de la media, que llegan a la cava por un lado y por otro.
+    interlobar = scene.vesselById.get('interlobarVein2')!.tube.nodes.map((n) => n.p),
     // Cava en eje largo: sus últimos 90 mm bajo el diafragma y el tramo que entra en la aurícula.
     cava = [...tube('ivcInfra').slice(-18), ...tube('ivcSupra')],
     rightEnd = hv.slice(-9),
@@ -214,6 +215,15 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
       long: KIDNEY.u,
       through: liver,
     },
-    { id: 'renal', phi: [3.0, 4.0], z: [-190, -90], depthMm: 140, points: kidney, pivot: KIDNEY.center, long: KIDNEY.u },
+    // Riñón en eje largo con la vena interlobar media en el plano: es la que se interroga en el Doppler renal de VExUS.
+    {
+      id: 'renal',
+      phi: [3.0, 4.0],
+      z: [-190, -90],
+      depthMm: 140,
+      points: [...interlobar, ...interlobar, ...[-30, -15, 15, 30].map((d) => interlobar[1].map((x, i) => x + d * KIDNEY.u[i]) as Vec3)],
+      pivot: interlobar[1],
+      long: KIDNEY.u,
+    },
   ];
 }

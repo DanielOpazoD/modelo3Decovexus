@@ -59,9 +59,10 @@ it('especializa los programas s0028 después de compactar GLSL para producción'
     const compact = minifyGlslBody([source], [], undefined, 'join');
     const specialized = personShader(compact, { person: 's0028', bundle });
     expect(specialized, name).toContain('s28WallAt');
-    // P3 r3: dueños, tubos con el riñón fuera y material abdominal sin el bucle de cuatro campos, también compactado.
+    // P3 r3: dueños y material abdominal sin el bucle de cuatro campos, también compactado. Desde la decisión 350 los tubos ya no
+    // se anulan dentro del riñón: sus vasos renales están en el marco de su máscara.
     expect(specialized, name).toContain('s28POwn(m,q,valid,k,od,b,e)');
-    expect(specialized, name).toMatch(/tubeCandidates\(m\);if\(renal\)\w+\.y=0;/);
+    expect(specialized, name).not.toMatch(/tubeCandidates\(m\);if\(renal\)/);
     expect(specialized, name).toContain('bool s28PAbdomen(');
     expect(specialized, name).not.toMatch(/uWall\.x\s*\+\s*uWall\.y\s*\+\s*uWall\.z/);
   }

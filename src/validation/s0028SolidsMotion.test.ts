@@ -90,10 +90,12 @@ it('reposo y compresión: dueños evaluados en el material, invariantes de lími
             expect([Tissue.UnsegmentedSoftTissue, Tissue.RenalSinus, Tissue.RenalPelvis]).toContain(c.tissue);
           else if (owners[0]?.id.startsWith('kidney_r')) {
             kidney++;
-            // El material del riñón es el de su rótulo (corteza, médula o U) con y sin presión, sin vasos de otra
-            // persona; la compresión heredada sí lo desplaza (r3).
-            expect([Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.UnsegmentedSoftTissue]).toContain(c.tissue);
-            expect(c.vessel).toBeNull();
+            // El material del riñón es el de su rótulo (corteza, médula o U) con y sin presión, salvo en la luz y la pared de
+            // sus propios vasos renales (decisión 350); la compresión heredada sí lo desplaza (r3).
+            if (c.vesselHit) {
+              if (c.vessel) expect(c.vessel).toMatch(/^(interlobar|renal)(Vein|Artery)/);
+              else expect([Tissue.VesselWallThin, Tissue.ArteryWall]).toContain(c.tissue);
+            } else expect([Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.UnsegmentedSoftTissue]).toContain(c.tissue);
             if (c.tissue !== Tissue.UnsegmentedSoftTissue) labelled++;
           } else if (owners[0]?.id === 'bone') {
             bone++;

@@ -11,6 +11,13 @@ import { createSolidsQueries } from './solids';
 import { placeS0028Vessels } from './vessels';
 import { createWallQueries } from './wall';
 import { GASTRIC_WALL } from '../../organs/abdomen';
+import { orthonormalBasis } from '../../primitives';
+
+/** Riñones de s0028 (0 derecho, 1 izquierdo), medidos en sus máscaras: centroide, eje principal y dirección de la muesca hiliar. */
+export const S0028_KIDNEY_FRAMES: readonly { center: Vec3; long: Vec3; hilum: Vec3 }[] = [
+  { center: [-50.5, -27.7, -128.1], long: [0.2742, -0.4616, 0.8437], hilum: [0.9331, 0.34, -0.1173] },
+  { center: [70.7, -27.3, -112.7], long: [-0.2537, -0.2372, 0.9377], hilum: [-0.896, 0.4229, -0.1354] },
+];
 
 /** s0028 está en pausa: su estómago conserva las capas de la decisión 312 (la 332 engrosa la muscular solo por defecto). */
 export const GASTRIC_312 = { ...GASTRIC_WALL, muscularisMm: 1.2, submucosaMm: 2.8, submucosaFoldMm: 0.4 };
@@ -41,6 +48,12 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     atlas: Object.freeze({ ...createAbdominalQueries(assets), ...createThoracicQueries(assets) }),
     skinMm: 1.5,
     curveVessels: placeS0028Vessels,
+    // Marco de cada riñón, de su máscara: centro, eje largo (componente principal) y dirección del hilio (su muesca). Sitúa los
+    // vasos del hilio y las interlobares en el riñón de esta persona; el parénquima sigue saliendo del rótulo del TAC.
+    kidneyFrame: (side) => {
+      const f = S0028_KIDNEY_FRAMES[side];
+      return { center: [...f.center] as Vec3, ...orthonormalBasis(f.long, f.hilum) };
+    },
     regional,
     fitBody: (profile) => profile,
     digestiveWallMm,

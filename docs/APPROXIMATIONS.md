@@ -527,3 +527,10 @@ máscara: su eje es el esqueleto que el candidato P5 r1 extrajo del TAC y su rad
 (HU por encima de la mitad entre el eje y el parénquima), entre 1,5 y 6 mm. El nombre de cada vena es [EXTRAPOLACIÓN PROPIA] por
 posición, y la unión de la media con la izquierda en un tronco común es un puente recto de 16 mm sobre un tramo que el candidato no
 conecta. La tributaria de la izquierda y las ramas distales siguen estimadas. El HU dice dónde está la luz, no cómo se ve.
+
+### s0028: vasos renales en el marco de su riñón (350)
+
+El riñón de s0028 no tiene vasos segmentados. Sus venas y arterias renales e interlobares son las estimadas del modelo, colocadas
+en el marco de cada máscara renal (centroide, eje principal, muesca hiliar): quedan dentro del riñón, pero su trayecto no sigue las
+pirámides ni las columnas del rótulo del TAC. La arteria esplénica, sin máscara, acompaña a la vena esplénica de la persona a 5 mm.
+Todo ello es [EXTRAPOLACIÓN PROPIA]. No es validación clínica.

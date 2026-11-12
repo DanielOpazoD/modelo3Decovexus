@@ -81,4 +81,25 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
     if (!followers.length) break;
     for (const [v, shift] of followers) moved.set(v, shift);
   }
+  accompany(vessels, 'splenicArtery', 'portalSplenic');
+}
+
+/** Separación entre una arteria sin máscara y la vena de la persona a la que acompaña (mm, hacia la cabeza). */
+const COMPANION_MM = 5;
+
+/**
+ * Una arteria sin máscara acompaña a la vena de esta persona que sí la tiene: conserva su origen y sus radios, y recorre el eje de
+ * la vena en sentido contrario, `COMPANION_MM` por encima. La esplénica de la otra persona atravesaba el riñón izquierdo de s0028;
+ * en la anatomía real corre con su vena por el borde superior del páncreas hasta el hilio esplénico. [EXTRAPOLACIÓN PROPIA]
+ */
+function accompany(vessels: VesselDef[], artery: VesselDef['id'], vein: VesselDef['id']): void {
+  const a = vessels.find((v) => v.id === artery),
+    along = vessels.find((v) => v.id === vein)?.tube.nodes;
+  if (!a || !along) return;
+  const old = a.tube.nodes,
+    path = [...along].reverse().slice(1, old.length);
+  a.tube = {
+    ...a.tube,
+    nodes: [old[0], ...path.map((n, i) => ({ p: add(n.p, [0, 0, COMPANION_MM]), r: old[Math.min(i + 1, old.length - 1)].r }))],
+  };
 }

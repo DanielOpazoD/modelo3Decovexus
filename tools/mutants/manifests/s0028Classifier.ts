@@ -28,11 +28,11 @@ export const s0028Classifier: MutantManifest = {
       tests: ['src/validation/s0028SolidsClassify.test.ts'],
     },
     {
-      name: 'vasos-procedurales-en-rinon-U',
-      origin: 'P3 r2 (decisión 321)',
-      breaks: 'Los vasos procedurales de la otra persona entran en el riñón U de s0028.',
-      from: 'const tube = renal ? null : scene.classifyTubes(m, caliber);',
-      to: 'const tube = scene.classifyTubes(m, caliber);',
+      name: 'rinon-sin-sus-vasos',
+      origin: 'decisión 350 (antes «vasos-procedurales-en-rinon-U», P3 r2: la regla se invirtió)',
+      breaks: 'Los vasos renales de s0028, ya en el marco de su riñón, vuelven a anularse dentro de él: sin Doppler renal.',
+      from: 'const tube = scene.classifyTubes(m, caliber);',
+      to: 'const tube = renal ? null : scene.classifyTubes(m, caliber);',
       tests: ['src/validation/s0028SolidsClassify.test.ts'],
     },
     {

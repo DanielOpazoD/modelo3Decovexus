@@ -112,7 +112,7 @@ describe('Páginas de estado vigente (decisión 322, punto 9)', () => {
       expect(row.actual).toBeGreaterThan(0);
       expect(row.actual).toBeLessThanOrEqual(row.limit);
     }
-    expect(rows.map((r) => r.limit)).toEqual([1_070_080, 1_103_872]);
+    expect(rows.map((r) => r.limit)).toEqual([1_070_080, 1_112_064]);
   });
 
   it.each([

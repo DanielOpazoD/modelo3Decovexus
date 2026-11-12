@@ -23,7 +23,8 @@ export interface PersonBundleGraph {
 // s0028 cuatro bytes sobre el antiguo techo en el build medido; reservamos 1 KiB, sin ampliar default ni GPU.
 // Decisión 341: s0028 sube otros 28 KiB para llevar el rótulo de su interior renal (datos generados del TAC, no código).
 // Decisión 342: y 4 KiB de margen para el código compartido, que había llegado a agotarlo.
-export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 33 * KB;
+// Decisión 350: y 8 KiB más para los vasos y marcos de la persona (345–350), que lo dejaron en 238 B y después lo pasaron en 204 B.
+export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 41 * KB;
 export const DEFAULT_JS_BUDGET = TOTAL_JS_BUDGET;
 export const S0028_JS_BUDGET = PERSON_JS_CEILING;
 
