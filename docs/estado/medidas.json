@@ -21,11 +21,11 @@
   },
   {
    "what": "`abdominal-direct.gzip.bin`",
-   "limit": 8811430,
+   "limit": 8872721,
    "unit": "B",
    "decision": 317,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 8811430
+   "actual": 8872721
   },
   {
    "what": "`abdominal-surface.gzip.bin`",
@@ -281,7 +281,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5458659
+   "actual": 5471032
   },
   {
    "what": "`surfaces.js`",
@@ -393,7 +393,7 @@
    "unit": "B",
    "decision": 318,
    "source": "src/anatomy/people/s0028/surfaces.ts",
-   "actual": 20845968
+   "actual": 20919632
   },
   {
    "what": "Cada `.gzip` fijado del paquete s0028 (por archivo)",
@@ -401,7 +401,7 @@
    "unit": "B",
    "decision": 317,
    "source": "src/anatomy/people/s0028/runtime.ts",
-   "actual": 8811430
+   "actual": 8872721
   },
   {
    "what": "Textura abdominal s0028 en memoria (RAW)",
@@ -622,7 +622,7 @@
    }
   }
  ],
- "s0028DescriptorSha256": "ced3a80def57ec352168ac442d5b1d36c3752ace8f510d3302e5b44a4e5b4340",
+ "s0028DescriptorSha256": "fdd9577a3bfd6ebf67f1d83a7b9cec4128edf0c4f2ba2a6df6188b5518ec4711",
  "tests": {
   "vitestFiles": 337,
   "slowFiles": 34,

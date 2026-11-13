@@ -1,19 +1,19 @@
-"""Borde anterior del hígado de s0028 lineal y liso (decisión 361): cierra la boca de su fisura anterior y alisa esa cara.
+"""Hígado de s0028 idealizado (decisiones 361 y 372): cierra la boca de su fisura anterior y alisa toda su superficie.
 
 El responsable pidió un borde anterior como el de un hígado promedio y un modelo de bordes regulares, aunque el TAC de esta
-persona tenga ahí la fisura del ligamento falciforme y su máscara, ondulaciones de 2 mm. Tres pasos sobre el campo `liver`, solo
-en la cara anterior (sin hígado por delante; y creciente = anterior):
-  1. cierre morfológico de 12 mm: puentea la fisura donde es estrecha;
+persona tenga ahí la fisura del ligamento falciforme y su máscara, ondulaciones de 2 mm. Tres pasos sobre el campo `liver`:
+  1. cierre morfológico de 12 mm, solo donde no hay hígado por delante (y creciente = anterior): puentea la fisura;
   2. cierre de la altura de la cara anterior con un disco de 20 mm (tope 30 mm): rellena el valle que queda;
-  3. alisado gaussiano de 3 mm de la distancia, que se apaga de 6 a 15 mm bajo la cara anterior.
+  3. alisado gaussiano de 3 mm de la distancia junto a toda la superficie (decisión 372; en la 361, solo la cara anterior).
 Lo que pasa a ser hígado se filtra con el clasificador del simulador (`s0028-liver-border-filter.ts`): fuera de la pared y sin
-otro dueño. El borde inferior y las caras hacia el riñón, la vesícula, la cava y el hilio no cambian.
+otro dueño.
 
   python -I s0028-liver-border.py candidates <abdominal-direct.gzip.bin> <candidatos.json>
   node --import tsx tools/anatomy/s0028-liver-border-filter.ts <candidatos.json> <aceptados.json>
   python -I s0028-liver-border.py apply <abdominal-direct.gzip.bin> <aceptados.json> <salida.gzip.bin>
 
-`apply` exige el recurso original (sha256 del crudo) y vuelve a escribir solo los vóxeles cuya distancia cambia.
+Los tres pasos parten del recurso original (sha256 del crudo; el filtro debe correr con él instalado) y `apply` vuelve a escribir
+solo los vóxeles cuya distancia cambia.
 """
 import gzip, hashlib, json, sys
 import numpy as np
@@ -79,11 +79,10 @@ def reshaped(mask):
     grown = mask | additions(mask)
     exact = signed_distance(grown, clip=False)
     smooth = ndi.gaussian_filter(exact, SMOOTH_MM / PITCH)
-    ahead = (np.flip(np.cumsum(np.flip(grown, 1), 1), 1) - grown) * PITCH  # mm de hígado por delante
-    weight = ndi.gaussian_filter(1 - smoothstep(6.0, 15.0, ahead.astype(np.float32)), 1.5)
-    # Solo junto a la superficie (a más de 6 mm la distancia exacta basta) y en pasos de 1/32 mm: el recurso comprime casi igual.
-    weight *= 1 - smoothstep(3.0, 6.0, np.abs(exact))
-    return np.where(weight > 0.01, np.round((exact + weight * (smooth - exact)) * 32) / 32, exact)
+    # Toda la superficie (decisión 372; hasta ella, solo la cara anterior): a más de 6 mm la distancia exacta basta. En pasos de
+    # 1/16 mm, para que el recurso comprima.
+    weight = 1 - smoothstep(3.0, 6.0, np.abs(exact))
+    return np.where(weight > 0.01, np.round((exact + weight * (smooth - exact)) * 16) / 16, exact)
 
 
 def main():

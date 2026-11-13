@@ -584,7 +584,8 @@ separa la grasa (celdas sin datos con cara estimada) se toma el 70 % de la pared
 El campo `liver` ya no es la máscara del TAC en su cara anterior: la boca de la fisura del ligamento falciforme está cerrada y la
 superficie, alisada a 3 mm. Dentro queda la grasa de la fisura como un foco aislado. Entre la pared y el hígado, la cáscara sin
 máscara se dibuja como músculo de pared (rotulada `wall-liver-shell`): es una estimación, no una segmentación. El borde inferior y
-las caras hacia el riñón, la vesícula, la cava y el hilio siguen siendo las del TAC.
+las caras hacia el riñón, la vesícula, la cava y el hilio seguían siendo las del TAC hasta la decisión 372, que alisa a 3 mm toda
+la superficie: desde ella ninguna cara del hígado es exactamente la de su máscara.
 
 ### s0028: espejo pleural solo en la base del pulmón (362)
 
