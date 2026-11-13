@@ -11799,3 +11799,26 @@ tramos que caen dentro de la caída retrasada. La intercostal se vuelve a buscar
 **Consecuencias.** La pared se ve 6–10 mm más fina bajo el centro; a 90 mm el desplazamiento baja de 8–19 a 0–5 mm y la cava
 conserva su forma. El reparto es estimado y el músculo adelgaza en la misma proporción que la grasa. Solo s0028.
 **Verificación.** `s0028UContact` (regla nodo a nodo), `s0028SolidsMotion` (contactos refijados), `s0028Windows`, láminas.
+
+## 361. El borde anterior del hígado de s0028 se idealiza: lineal, liso y con una sola línea
+
+**Contexto.** El responsable fija el rumbo el 12-11-2026: modelo ecográfico idealizado y pedagógico (bordes regulares, anatomía
+promedio estándar) sin perder la apariencia real. El hígado del TAC tenía una fisura anterior, ondulaciones de 2 mm y, entre la
+pared y él, una cáscara sin máscara de 1–7 mm que se dibujaba gris y separaba en dos líneas el peritoneo y la cápsula.
+**Opciones.** Reglas de relleno en el shader (sin cápsula en el borde nuevo), o cambiar el dato; se elige el dato.
+**Decisión.** `tools/anatomy/s0028-liver-border.py` cierra la boca de la fisura y alisa la cara anterior en el campo `liver`
+(+22 ml, −9 ml), filtrado con el clasificador para no entrar en la pared ni en otro dueño. La cáscara es músculo de pared rotulado
+`wall-liver-shell`, nunca a menos de 10 mm del riñón, y el peritoneo se dibuja en la superficie hepática.
+**Consecuencias.** El hígado deja de ser la máscara pura del TAC en su cara anterior; atlas +244 KB, mallas 3D regeneradas.
+**Verificación.** `s0028SolidsClassify`, `s0028SolidsMotion`, `s0028WallRuntime`, `s0028Precomputed`, e2e de paridad en Metal.
+
+## 362. La pleura de s0028 solo refleja como espejo en la base del pulmón
+
+**Contexto.** Junto al corazón el pulmón queda detrás de la cava. La pleura reflejaba como un espejo en todas sus caras y la
+luz de la cava salía repetida en negro detrás de la línea, partida en bloques: la normal del pulmón era la de un vóxel.
+**Opciones.** Quitar el espejo en s0028 (se pierde el del diafragma, que es el signo clásico), o lo decidido.
+**Decisión.** La normal del pulmón es la media de su superficie a 4,5 mm (cuatro lecturas). Solo donde mira hacia los pies (la
+base, sobre el diafragma) hay espejo; las demás caras, pequeñas y convexas, se tratan como gas: sombra sucia con reverberación.
+**Consecuencias.** Detrás de la cava junto al corazón queda una sombra gris tenue y la línea pleural apenas se marca. El umbral
+(componente caudal de la normal > 0,5) es estimado. Solo GPU: la CPU no calcula esa normal.
+**Verificación.** Láminas de la subxifoidea antes y después; `personShaders`, `glslMangle`, `shaderLimits`.

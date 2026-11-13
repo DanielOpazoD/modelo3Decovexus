@@ -173,9 +173,9 @@ export const S0028_BUNDLE = freeze({
   abdominal: {
     textureDimensions: [189, 256, 685],
     rawBytes: 132572160,
-    gzipBytes: 8567375,
-    sha256Gzip: 'd73486d8ed95547375a623647f12d058e2cdb9f59eff4418de3929fa39f39bcd',
-    sha256Raw: 'cb91610c5ad9421d4ceb4f42bd301b7ee7588ae066048e010d665165a4be9a08',
+    gzipBytes: 8811430,
+    sha256Gzip: '5ebb1862a9328ef30e3faae0776af68bbf0290e57ac6067ebcad4a8339de5e30',
+    sha256Raw: 'c1ba89a40be698fa9abde3b24939c69c01767295ac246b3d80307af000a41fa0',
   },
   thoracic: {
     textureDimensions: [193, 139, 552],

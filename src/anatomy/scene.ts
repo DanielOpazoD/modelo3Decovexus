@@ -96,7 +96,7 @@ export type { DuctDef, VesselDef } from './vesselTree';
 
 export interface Classification {
   /** Diafragma de s0028: lámina E bajo la base de su propio pulmón (decisión 348); sin hiatos ni pilares. */
-  approximation?: 'diaphragm-lung-base';
+  approximation?: 'diaphragm-lung-base' | 'wall-liver-shell';
   /** P2 CPU: geometría de pared; la identidad muscular y subcapas finas siguen U. */
   wall?: 'skin-E' | 'fat-D/E' | 'band-D/E' | 'U';
   /** P3 CPU s0028: todos los dueños y su certeza, antes de elegir material; un conflicto no elige ninguno (U). */

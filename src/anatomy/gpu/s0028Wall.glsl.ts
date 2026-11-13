@@ -136,6 +136,15 @@ vec4 muscleStriation(vec3 m){
 }
 `;
 
+/**
+ * Pleura de s0028 (decisión 362): solo la base del pulmón, apoyada en el diafragma (su normal mira hacia los pies), refleja como
+ * un espejo. Sus otras caras son pequeñas y convexas: tras ellas hay sombra sucia con reverberaciones, como tras cualquier gas, no
+ * un duplicado nítido de lo que tienen delante (la cava junto al corazón salía repetida en negro detrás de la pleura).
+ */
+const S0028_PLEURA_GLSL = /* glsl */ `
+      if (c.tissue == T_LUNG && mirrorSeg < 0.0 && c.n.z > -0.5) { if (gasSeg < 0.0) { gasSeg = float(s); gasKind = 2.0; } continue; }
+      `;
+
 type Replace = (source: string, type: string, name: string, replacement: string) => string;
 /**
  * Especializa la fuente por defecto para s0028: pared P2 (regla directa, rampas U), su clasificación ligera, la cortina
@@ -255,6 +264,7 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
     'exp(-0.5*((r-rk)/1.2)*((r-rk)/1.2))',
   );
   if (/pow\(\s*\(r\s*-\s*rk\)/.test(changed)) throw new Error('Reverberación s0028 con pow de base negativa');
+  changed = changed.replace(/if\s*\(\s*c\.tissue\s*==\s*T_LUNG\s*&&\s*\w+\s*<\s*0\.0\s*\)\s*\{/g, (guard) => S0028_PLEURA_GLSL + guard);
   // La banda de la pared lleva las estrías sobre su propia carta; el músculo posterior fuente no tiene capas y queda liso.
   if (/vec4\s+muscleStriation\s*\(/.test(changed)) changed = replace(changed, 'vec4', 'muscleStriation', S0028_STRIATION_GLSL);
   changed = replace(

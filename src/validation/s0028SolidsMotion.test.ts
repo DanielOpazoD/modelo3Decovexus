@@ -86,8 +86,8 @@ it('reposo y compresión: dueños evaluados en el material, invariantes de lími
           for (const o of owners) expect(o.id === 'compatible_fat' ? o.d === 0 : o.d < 0, `${id} ${o.id}`).toBe(true);
           const tube = c.vesselHit || c.interface === Interface.DuctLumen;
           if (state === 'conflict') expect(c.tissue).toBe(Tissue.UnsegmentedSoftTissue);
-          // Sin dueño, U; o el seno renal rotulado en el hueco del hilio (decisión 341).
-          else if (state === 'U' && !tube && c.tissue !== Tissue.Diaphragm)
+          // Sin dueño, U; o el seno renal rotulado en el hueco del hilio (decisión 341); o la cáscara pared–hígado, rotulada (361).
+          else if (state === 'U' && !tube && c.tissue !== Tissue.Diaphragm && c.approximation !== 'wall-liver-shell')
             expect([Tissue.UnsegmentedSoftTissue, Tissue.RenalSinus, Tissue.RenalPelvis]).toContain(c.tissue);
           else if (owners[0]?.id.startsWith('kidney_r')) {
             kidney++;

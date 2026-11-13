@@ -364,3 +364,5 @@ Generado por `npm run docs:index` — no editar a mano.
 | [358](DECISIONS.md#L11764) | Tributarias suprahepáticas del TAC, uniones sin nudo y ramas repartidas entre todas las venas | vigente |
 | [359](DECISIONS.md#L11778) | La ventana hepatorrenal de s0028 gira a lo largo del espacio intercostal | vigente |
 | [360](DECISIONS.md#L11791) | La grasa de la pared de s0028 cede bajo la sonda | vigente |
+| [361](DECISIONS.md#L11803) | El borde anterior del hígado de s0028 se idealiza: lineal, liso y con una sola línea | vigente |
+| [362](DECISIONS.md#L11815) | La pleura de s0028 solo refleja como espejo en la base del pulmón | vigente |

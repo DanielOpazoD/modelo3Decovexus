@@ -2,6 +2,9 @@ import { GALLBLADDER_WALL_MM } from '../organs/gallbladder';
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
 import {
   S0028_RENAL_FACE_MM,
+  S0028_LIVER_GAP_KIDNEY_MM,
+  S0028_LIVER_GAP_MM,
+  S0028_LIVER_SEAM_MM,
   S0028_PREPERITONEAL_MM,
   S0028_SUBCUTANEOUS_REACH_MM,
   s0028FatPages,
@@ -185,8 +188,10 @@ const S0028_CLASSIFY_GLSL = (tubes: string) => /* glsl */ `
 void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   // La pleura refleja como un espejo: necesita la normal de la superficie del pulmón de la persona (gradiente de su distancia).
   // Con la normal fija el reflejo salía en una dirección sin relación con el diafragma: raya saturada y cuñas negras.
-  if(k==14){c.tissue=T_LUNG;c.bd=-od;
-    c.n=normalize(vec3(s28PT(m+vec3(1.5,0.0,0.0),2)-od,s28PT(m+vec3(0.0,1.5,0.0),2)-od,s28PT(m+vec3(0.0,0.0,1.5),2)-od)+vec3(0.0,0.0,1e-4));return;}
+  // La normal es la media de la superficie a 4,5 mm (cuatro lecturas en tetraedro, como la cara renal): con la diferencia de un
+  // vóxel el espejo cambiaba de dirección de vóxel en vóxel y la imagen reflejada salía en bloques (decisión 362).
+  if(k==14){c.tissue=T_LUNG;c.bd=-od;vec2 t=vec2(4.5,-4.5);
+    c.n=normalize(t.xyy*s28PT(m+t.xyy,2)+t.yyx*s28PT(m+t.yyx,2)+t.yxy*s28PT(m+t.yxy,2)+t.xxx*s28PT(m+t.xxx,2)+vec3(0.0,0.0,1e-4));return;}
   bool renal=k==3||k==4||k==13;
   vec3 gn;float dGb=e.x+${GALLBLADDER_WALL_MM.toFixed(3)};
   ${tubes}
@@ -216,7 +221,13 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
     if(dome>=0.0){c.tissue=T_DIAPHRAGM;c.bd=min(min(dome,DIAPHRAGM_MM-dome),e.z);
       c.n=normalize(vec3(s28PT(m+vec3(1.5,0.0,0.0),2)-dome,s28PT(m+vec3(0.0,1.5,0.0),2)-dome,s28PT(m+vec3(0.0,0.0,1.5),2)-dome)+vec3(0.0,0.0,-1e-4));
       if(dome>0.5*DIAPHRAGM_MM){c.iface=IF_DIAPHRAGM_LIVER;c.ifd=DIAPHRAGM_MM-dome;}}
-    else{c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:T_UNSEGMENTED;c.bd=0.0;}
+    else{
+      // La cáscara sin máscara entre la cara interna de la pared y el hígado es músculo de la pared, y su peritoneo, la superficie
+      // hepática (decisión 361).
+      float lv=s28PA(m,0);
+      if(ren<3&&e.z>=0.0&&e.z<${S0028_LIVER_GAP_MM.toFixed(1)}&&lv<${S0028_LIVER_GAP_MM.toFixed(1)}&&e.y>${S0028_LIVER_GAP_KIDNEY_MM.toFixed(1)}){c.tissue=T_MUSCLE;c.bd=lv;c.iface=IF_PERITONEUM;c.ifd=lv;}
+      else{c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:T_UNSEGMENTED;c.bd=0.0;}
+    }
   }
   // Contorno acústico renal: el borde O de la máscara, a ambos lados aunque los dos sean U.
   if(abs(e.y)<${S0028_RENAL_FACE_MM.toFixed(1)}&&abs(e.y)<c.ifd){c.iface=IF_RENAL_CAPSULE;c.ifd=abs(e.y);}
@@ -243,7 +254,10 @@ Cls classifyWith(vec3 m,bool withCurtain){
     return c;
   }
   if(k==16){
-    s28WallLayer(q,c);return c;
+    s28WallLayer(q,c);
+    // Pegada al hígado, la línea del peritoneo va en la superficie hepática, sobre su cápsula: una sola línea, no dos.
+    if(c.iface==IF_PERITONEUM){float lv=s28PA(m,0);if(lv<${S0028_LIVER_SEAM_MM.toFixed(1)})c.ifd=max(lv,0.0);}
+    return c;
   }
   classifyInside(m,k,od,vec3(e,valid?q.w-q.z:1e3),c);
   if(b.x>=0.0&&b.x<1.3&&b.x<c.ifd&&c.tissue!=T_LUNG&&c.tissue!=T_FLUID&&c.tissue!=T_BLOOD&&thoracicMaterial(s28PLT(m,0))==0){
