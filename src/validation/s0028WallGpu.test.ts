@@ -85,7 +85,9 @@ it('el corazón s0028 no se recorta por la cúpula de la otra persona y lleva su
   // Antes: `thorax(m, sdDome(m, …))` dentro de la máscara; la cúpula ajena, más alta, dejaba casi todo como mediastino.
   const source = personShader(PASSES.FRAG_RAWFIELD_CLASS, { person: 's0028', bundle });
   // Suelo a −1000 y sólo dos materiales dentro de la máscara: sangre de una cavidad o miocardio.
-  expect(source).toMatch(/if\(k==15\)\{float ifd;c\.n=vec3\(0\.0,0\.0,-1\.0\);\s*if\(thorax\(m,-1000\.0,c\.bd,ifd,c\.n\)==T_BLOOD\)/);
+  expect(source).toMatch(
+    /if\(k==15\)\{float ifd;c\.n=vec3\(0\.0,0\.0,-1\.0\);\s*if\(thorax\(m,-1000\.0,c\.bd,ifd,c\.n\)==T_BLOOD&&-od>4\.0\)/,
+  );
   expect(source).not.toMatch(/float dome=sdDome\(m,c\.n\)/);
   // La cava, dentro de la máscara, es sangre hasta el final de su eje: la regla va tras la consulta de la aurícula.
   expect(source).toMatch(/if\(k==15\)\w+=vec3\(-1000\.0,0\.0,1000\.0\);/);

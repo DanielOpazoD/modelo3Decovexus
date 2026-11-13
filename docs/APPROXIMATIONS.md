@@ -615,3 +615,8 @@ músculo con retrodispersión 0,24. Son valores de aspecto, elegidos mirando las
 
 La cortical de costillas y vértebras se dibuja con pendiente de rugosidad 0,5 y, en el cuerpo lumbar, como un cilindro de 22 mm
 de radio. Son valores de aspecto para que se vea como un arco continuo; no salen de una medida.
+
+### s0028: pared libre del corazón (369)
+
+Dentro de la máscara del corazón, los 4 mm junto a su contorno son miocardio, con el mismo grosor en las cuatro cavidades. Es una
+cifra de aspecto: los ventrículos reales tienen paredes más gruesas que las aurículas.

@@ -7,6 +7,7 @@ import { gallbladderSdf } from '../../organs/gallbladder';
 import { heartFloor, ivcAtrium, thorax } from '../../organs/heart';
 import type { S0028Ownership } from '../../people/s0028/solids';
 import {
+  S0028_HEART_WALL_MM,
   S0028_LIVER_GAP_KIDNEY_MM,
   S0028_LIVER_GAP_MM,
   S0028_LIVER_SEAM_MM,
@@ -167,8 +168,9 @@ export function classifyInside(
     // Sus cavidades (el esquema encajado a su TAC, `S0028_HEART`) son sangre y el resto de la máscara, miocardio. Con el recorte
     // por la cúpula de la otra persona, más alta, casi toda la máscara quedaba como «mediastino», con textura de hígado.
     const t = thorax(m, -1e3, -1e3, scene.person?.cpu);
-    return t.tissue === Tissue.Blood
-      ? { ...NONE, tissue: Tissue.Blood, boundaryDistance: Math.min(t.bd, -heart.d) }
+    // Toda cavidad lleva su pared libre: a menos de `S0028_HEART_WALL_MM` del contorno es miocardio (decisión 369).
+    return t.tissue === Tissue.Blood && -heart.d > S0028_HEART_WALL_MM
+      ? { ...NONE, tissue: Tissue.Blood, boundaryDistance: Math.min(t.bd, -heart.d - S0028_HEART_WALL_MM) }
       : { ...NONE, tissue: Tissue.Myocardium, boundaryDistance: -heart.d };
   }
   if (dDome < 0) {

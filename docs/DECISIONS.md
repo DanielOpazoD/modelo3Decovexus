@@ -11889,3 +11889,14 @@ rugosidad de la cortical sube a 0,5 en s0028 (`interfaceLook`, dato nuevo por pe
 **Consecuencias.** Arco brillante bajo la aorta y remates sobre cada sombra vertebral; las costillas también ganan su remate.
 Valores de aspecto. El sacro sigue sin cortical.
 **Verificación.** Mapa de caras alrededor de la vértebra; láminas de las ocho ventanas; `personShaders`, `glslMangle`.
+
+## 369. El corazón de s0028 lleva pared libre y miocardio de gris medio
+
+**Contexto.** En la subcostal el corazón eran dos manchas grises: las cavidades del esquema llegaban hasta el contorno de la
+máscara, así que la sangre tocaba la grasa de fuera, y el miocardio era casi tan oscuro como la sangre.
+**Opciones.** Reajustar los elipsoides a mano otra vez, o garantizar la pared desde el contorno; se elige esto.
+**Decisión.** Dentro de la máscara, a menos de 4 mm de su contorno es miocardio aunque el esquema dé cavidad; la cava sigue
+entrando como sangre. El miocardio sube su retrodispersión a 0,9 en el aspecto de s0028.
+**Consecuencias.** Dos cavidades con pared y tabique reconocibles. Sigue sin válvulas, movimiento ni pericardio; la pared tiene
+el mismo grosor en ventrículos y aurículas.
+**Verificación.** `s0028Heart` (el paso de la cava a la aurícula sigue abierto), `s0028WallGpu`, e2e de paridad, lámina subcostal.

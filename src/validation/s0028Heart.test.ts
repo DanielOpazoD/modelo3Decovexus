@@ -55,7 +55,10 @@ it('s0028: la cava llega a la aurícula derecha sin tapón: su eje es sangre has
   const end = scene.vesselById.get('ivcSupra')!.tube.nodes.at(-1)!.p;
   // El extremo del tubo está dentro de la cavidad de la AD (índice 2), y sobre él sigue habiendo sangre de la aurícula.
   expect(heartChambers(end, scene.person.cpu)[2]).toBeLessThan(0);
-  expect(scene.classify([end[0] - 6, end[1] + 8, end[2] + 18], BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.Blood, vessel: null });
+  // 12 mm por encima, a 8 mm del contorno de la máscara: sangre. A 18 mm quedan menos de 4 mm de contorno, que ya es pared
+  // libre de la aurícula (decisión 369), no un tapón: el paso desde la cava sigue abierto.
+  expect(scene.classify([end[0] - 4, end[1] + 5.3, end[2] + 12], BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.Blood, vessel: null });
+  expect(scene.classify([end[0] - 6, end[1] + 8, end[2] + 18], BASELINE_CALIBER).tissue).toBe(Tissue.Myocardium);
   // La forma es la de esta persona, no la del esquema.
   expect(scene.person.cpu.heart).toBe(S0028_HEART);
 });
