@@ -11774,3 +11774,16 @@ las ramas generadas entre las once madres; la otra persona no cambia.
 **Consecuencias.** 122 vasos y 590 nodos. Cambio pequeño a la vista: el TAC muestra pocas tributarias. Cuatro esqueletos largos
 quedan sin asignar (lejos de toda vena o someros). Los puentes de 8–9 mm de tres tributarias son estimados.
 **Verificación.** Láminas de las ventanas de suprahepáticas; `s0028Vessels`, `vesselOverlap`; paridad CPU/GPU.
+
+## 359. La ventana hepatorrenal de s0028 gira a lo largo del espacio intercostal
+
+**Contexto.** Desde la 352 la hepatorrenal de s0028 evitaba el colon, pero un plano coronal a esa altura cruza las costillas
+bajas: una sombra costal partía la imagen entre el hígado y el riñón. El buscador de poses solo probaba planos que contuvieran
+el eje largo del riñón.
+**Opciones.** Bajar la sonda (vuelve a aparecer el colon delante), aceptar la sombra, o dejar el plano libre; se elige esto.
+**Decisión.** Un hito puede ser «un órgano visto detrás de otro» (`WindowTarget.behind`): cuenta las líneas del sector que
+cruzan 12 mm de hígado y llegan al riñón sin barrera, y la búsqueda gira la sonda sobre su eje apuntando al órgano. La pose
+resultante apoya entre la axilar media y la posterior y gira unos 60°, a lo largo del espacio intercostal.
+**Consecuencias.** Hígado sobre el riñón, en corte oblicuo con corteza, pirámides y seno; sonda apoyada entera; la sombra costal
+queda en un borde. No es el eje largo coronal clásico: en esta persona no cabe sin costilla o sin colon.
+**Verificación.** Láminas de las candidatas y de la pose anterior; `s0028Windows` (la anterior ya no cumple: ve 0,7 del hito).

@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Ventana hepatorrenal de s0028: riñón bajo el hígado sin la sombra costal en medio; el buscador de poses admite «un órgano visto detrás de otro» con el plano libre (359)
+
 - Anatomía s0028: cinco tributarias suprahepáticas de su TAC, uniones entre venas sin nudo y ramas generadas repartidas entre todas las venas (358)
 
 - Anatomía s0028: el árbol portal es el de su TAC (cuatro ramas de segundo orden y catorce más) y su pared periportal se distingue a cualquier ángulo (357)
