@@ -384,7 +384,7 @@ it('el cruce informado coincide con la cara interna regional física de cada nod
   expect(checked).toBeGreaterThan(0);
 });
 
-it('rechaza NaN convertido a cero y halos corruptos; un hueco válido queda U sin interpolación', () => {
+it('rechaza NaN convertido a cero y halos corruptos; un hueco cerrado válido se rellena como estimación y el U abierto sigue U', () => {
   const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
   const capacity = raw('annotation-capacity'),
     skin = raw('skin-polar');
@@ -400,7 +400,21 @@ it('rechaza NaN convertido a cero y halos corruptos; un hueco válido queda U si
   new Uint16Array(unknown, 4096 + B.wall.payloadBytes, 512 * 181 * 2).fill(0x7e00, (80 * 512 + 129) * 2, (80 * 512 + 129) * 2 + 2);
   try {
     setS0028Wall(unknown, skin);
-    expect(s0028WallSurface((128.5 * 2 * Math.PI) / 512, -90)).toMatchObject({ kind: 'unknown', reason: 'coverage' });
+    // Decisión 376: un hueco cerrado (aquí, de un nodo) se interpola desde su borde y queda rotulado E, E, E; no es una medida.
+    const filled = s0028WallSurface((129 * 2 * Math.PI) / 512, -90),
+      beside = [128, 130].map((col) => s0028WallSurface((col * 2 * Math.PI) / 512, -90));
+    if (filled.kind !== 'known' || beside[0].kind !== 'known' || beside[1].kind !== 'known') throw new Error('Hueco sin rellenar');
+    expect(filled.provenance.slice(0, 3)).toEqual(['E', 'E', 'E']);
+    expect(filled.estimated).toBe(true);
+    expect(beside[0].provenance[0]).toBe('D');
+    for (const key of ['outerMm', 'innerMm', 'interfaceMm'] as const) {
+      expect(filled[key]).toBeGreaterThan(Math.min(beside[0][key], beside[1][key]) - 1);
+      expect(filled[key]).toBeLessThan(Math.max(beside[0][key], beside[1][key]) + 1);
+    }
+    // La celda vecina tiene una esquina estimada: la pared ahí no disputa un órgano.
+    expect(s0028WallSurface((128.5 * 2 * Math.PI) / 512, -90)).toMatchObject({ kind: 'known', estimated: true });
+    // El U abierto del dorso no es un hueco cerrado: sigue sin carta.
+    expect(s0028WallSurface((384 * 2 * Math.PI) / 512, -90)).toMatchObject({ kind: 'unknown', reason: 'coverage' });
     u[k] = 0;
     expect(() => setS0028Wall(unknown, skin)).toThrow(/U.*cero/);
     const corrupt = capacity.slice(0);

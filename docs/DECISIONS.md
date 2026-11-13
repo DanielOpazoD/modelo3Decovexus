@@ -11966,3 +11966,15 @@ también por delante del pulmón a más de 60 mm de la piel, no solo bajo su bas
 **Consecuencias.** Pared posterior de la cava continua hasta la aurícula; el pulmón pierde 3,3 ml. Atlas torácico +16,6 KB
 (5.268.609 B; techo declarado). Mallas 3D regeneradas.
 **Verificación.** `s0028WallRuntime` (sin pulmón junto a la luz; lámina lejos de la piel y nunca en la pared torácica), paridad en Metal.
+
+## 376. Los huecos cerrados de la carta de pared de s0028 se rellenan como estimación
+
+**Contexto.** La carta tiene 267 huecos sin rotular (2.147 nodos; el mayor, 154) dentro de su zona conocida. En cada uno la capa
+muscular y las fascias se cortaban en mitad de la imagen; el responsable señaló la pared como mal construida.
+**Opciones.** Rehacer la carta desde el TAC, o rellenar al cargar; se elige esto, como en la 373.
+**Decisión.** `setS0028Wall` rellena cada componente U cerrado de hasta 200 nodos por interpolación armónica desde su borde, con
+procedencia E, E, E. Lo medido no se mueve: un nodo medido se alisa solo con vecinos medidos. Una pared estimada (celda con alguna
+esquina E, E, E) no disputa un órgano medido: ahí gana la máscara, en CPU y GLSL.
+**Consecuencias.** Fascias y músculo continuos. Los huecos están donde el intestino toca la pared: sin la regla aparecían 770
+choques intestino–pared a 1,5 mm; con ella, ninguno. El U abierto (dorso, flancos) sigue U. Testigos y hash de contactos rehechos.
+**Verificación.** `s0028WallChart` (oráculo propio de huecos), `s0028SolidsClassify` (regla), paridad en Metal, capa lenta, láminas.

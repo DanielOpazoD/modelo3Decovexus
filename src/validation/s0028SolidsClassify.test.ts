@@ -189,7 +189,7 @@ it('conflicto: los vóxeles de hígado y bazo dentro de la banda P2 conservan lo
   // Puntos de la banda de la carta alisada al cargar (decisión 373): con ella quedan muy pocos vóxeles de hígado dentro.
   for (const [p, organ] of [
     [[-102.48527431275116, -30.714784500197737, -109.48879268882285], 'liver'],
-    [[-101.63, -30.46, -110.09], 'liver'],
+    [[-102.38, -30.21, -109.84], 'liver'],
     [[-102.38, -31.46, -109.09], 'liver'],
     [[-102.13, -30.96, -108.59], 'liver'],
     [[125.51472568724884, -18.714784500197737, -85.48879268882285], 'spleen'],
@@ -202,6 +202,35 @@ it('conflicto: los vóxeles de hígado y bazo dentro de la banda P2 conservan lo
     expect(c.interface).toBe(Interface.None);
     expect(c.wall).toBeUndefined();
   }
+});
+
+it('una pared estimada no disputa un órgano medido (decisión 376): en las celdas interpoladas gana la máscara y, sin ella, hay pared', () => {
+  let yielded = 0,
+    estimatedWall = 0,
+    measuredConflicts = 0;
+  for (let z = -210 + 0.41; z < 60; z += 3)
+    for (let y = -170 + 0.29; y < 170; y += 3)
+      for (let x = -210 + 0.37; x < 210; x += 3) {
+        const p: Vec3 = [x, y, z],
+          q = s0028WallAt(p);
+        if (q?.kind !== 'known' || !(q.depthMm >= 1.5 && q.depthMm < q.interfaceMm)) continue;
+        const o = s0028Owners(p, q),
+          owners = o.owners.map((w) => w.id),
+          organs = owners.filter((id) => id !== 'wall' && id !== 'compatible_fat');
+        if (!q.estimated) {
+          // Control: donde la pared es medida, la regla no se aplica y el choque con un órgano se conserva.
+          if (organs.length && owners.includes('wall')) measuredConflicts++;
+          continue;
+        }
+        if (organs.length) {
+          yielded++;
+          expect(owners, p.join(',')).not.toContain('wall');
+        } else if (owners.includes('wall')) estimatedWall++;
+      }
+  // Medido el 13-11-2026 a 3 mm: 684 puntos donde gana el órgano, 21.211 de pared estimada y 7 choques en pared medida.
+  expect(yielded).toBeGreaterThan(500);
+  expect(estimatedWall).toBeGreaterThan(15000);
+  expect(measuredConflicts).toBeGreaterThan(3);
 });
 
 it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los ocho pares del censo', () => {

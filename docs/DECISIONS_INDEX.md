@@ -379,3 +379,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [373](DECISIONS.md#L11933) | La carta de pared de s0028 se alisa al cargarla | vigente |
 | [374](DECISIONS.md#L11945) | En s0028 acopla todo elemento que toca la piel | vigente |
 | [375](DECISIONS.md#L11957) | El pulmón de s0028 no toca la cava: su pared y el diafragma quedan entre ambos | vigente |
+| [376](DECISIONS.md#L11970) | Los huecos cerrados de la carta de pared de s0028 se rellenan como estimación | vigente |

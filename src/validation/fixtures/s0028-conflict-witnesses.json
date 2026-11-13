@@ -1,5 +1,5 @@
 {
-  "method": "P3 r3: censo s0028Owners a 1,5 mm (+0,37/+0,29/+0,41) bajo la piel; campos a ≥ 0,05 mm de su frontera; banda P2 a ≥ 0,5 mm y ≥ 0,15 celdas de carta; ≤ 30 por par (scripts/conflict-witnesses.mts); fatBand: conflictos grasa D + banda en la sub-banda de grasa de la pared (profundidad < frontera externa, ≥ 0,5 mm de ella), rejilla de 0,75 mm en las cajas de grasa (scripts/witnesses-i1.mts). Rehecho el 13-11-2026 sobre la carta de pared alisada al cargar (decisión 373), con el mismo criterio: se conservan los testigos que siguen cumpliendo sus márgenes y cada par con la pared se completa hasta 30 con un censo a 0,75 mm (el hígado, con una búsqueda local a 0,25 mm; la grasa D, en los centros de vóxel de su rejilla de 0,75 mm). El par bowel+wall deja de existir: el censo no encuentra ningún vóxel de intestino dentro de la banda alisada. En la sub-banda de grasa quedan 14 testigos: son todos los que hay con esos márgenes. Los testigos nuevos quedan además a ≥ 0,75 mm del borde de la zona conocida de la carta",
+  "method": "P3 r3: censo s0028Owners a 1,5 mm (+0,37/+0,29/+0,41) bajo la piel; campos a ≥ 0,05 mm de su frontera; banda P2 a ≥ 0,5 mm y ≥ 0,15 celdas de carta; ≤ 30 por par (scripts/conflict-witnesses.mts); fatBand: conflictos grasa D + banda en la sub-banda de grasa de la pared (profundidad < frontera externa, ≥ 0,5 mm de ella), rejilla de 0,75 mm en las cajas de grasa (scripts/witnesses-i1.mts). Rehecho el 13-11-2026 sobre la carta de pared alisada al cargar (decisión 373), con el mismo criterio: se conservan los testigos que siguen cumpliendo sus márgenes y cada par con la pared se completa hasta 30 con un censo a 0,75 mm (el hígado, con una búsqueda local a 0,25 mm; la grasa D, en los centros de vóxel de su rejilla de 0,75 mm). El par bowel+wall deja de existir: el censo no encuentra ningún vóxel de intestino dentro de la banda alisada. En la sub-banda de grasa quedan 14 testigos: son todos los que hay con esos márgenes. Los testigos nuevos quedan además a ≥ 0,75 mm del borde de la zona conocida de la carta. Con los huecos de la carta rellenados como estimación (decisión 376) se retiran dos testigos, uno de hígado y uno de pulmón, que quedan en una celda estimada: ahí la pared ya no disputa el órgano",
   "pairs": [
     "bone+cartilage",
     "bowel+gallbladder",
@@ -120,7 +120,6 @@
     [-105.87, -25.17, -120.33, 4],
     [119.13, -21.42, -115.83, 4],
     [119.88, -23.67, -109.83, 4],
-    [-101.63, -30.71, -109.59, 5],
     [-102.38, -29.96, -110.59, 5],
     [-102.38, -30.21, -110.34, 5],
     [-102.13, -30.21, -110.34, 5],
@@ -151,7 +150,6 @@
     [-102.13, -30.96, -108.59, 5],
     [-102.13, -30.96, -108.34, 5],
     [-122.63, -20.21, 14.91, 6],
-    [-122.63, -20.21, 16.41, 6],
     [-122.63, -15.71, 22.41, 6],
     [-121.13, -14.21, 26.91, 6],
     [-121.13, -14.21, 28.41, 6],

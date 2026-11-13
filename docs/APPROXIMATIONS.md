@@ -643,3 +643,9 @@ puede deformar algo la pared; antes esas líneas se apagaban para no mostrarlo.
 El pulmón se retira hasta 3,5 mm de la luz de la cava (3,3 ml menos que en el TAC), lo justo para la pared del vaso y una lámina de
 diafragma de 2,5 mm. Esa lámina se dibuja también por delante del pulmón lejos de la piel, con espesor fijo: el pilar real es más
 grueso y de grosor variable.
+
+### s0028: huecos de la carta de pared rellenados (376)
+
+Los 267 huecos cerrados de la carta (2.147 nodos) se rellenan por interpolación desde su borde y quedan rotulados como estimación
+(E, E, E). No es una medida: donde un órgano del TAC ocupa ese sitio, gana el órgano. El U abierto del dorso y los flancos no se
+rellena.

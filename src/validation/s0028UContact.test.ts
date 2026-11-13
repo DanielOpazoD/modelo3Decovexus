@@ -87,6 +87,17 @@ const rampFor = (p: Vec3) => {
     d1: HALF[ramps[2 * lo + 1]] * (1 - t) + HALF[ramps[2 * hi + 1]] * t,
   };
 };
+/**
+ * Poses sobre el borde de la zona conocida de la carta (flanco derecho, tórax y pelvis): desde que los huecos cerrados se
+ * rellenan (decisión 376) las ventanas de inicio casi no pisan celdas U con cara E, y ese caso se ejercita aquí.
+ */
+const BORDER_POSES = [
+  { id: 'borde-flanco', phi: 3.6, z: -70, yaw: 0 },
+  { id: 'borde-flanco-alto', phi: 3.6, z: -50, yaw: 0 },
+  { id: 'borde-torax', phi: 2.25, z: 10, yaw: 1.57 },
+  { id: 'borde-pelvis', phi: 0.15, z: -170, yaw: 0 },
+];
+const contactPoses = () => [...startPointsFor(scene.torso, B), ...BORDER_POSES];
 const spineWeight = (m: Vec3) =>
   smoothstep(scene.spine.r + 5, scene.spine.r + 35, Math.hypot(m[0] - scene.spine.x0, m[1] - scene.spine.y0));
 
@@ -197,7 +208,7 @@ it('E no se trata como D: una celda U con E sigue U para la clasificación, la c
 it('la sonda acopla por la piel sobre celdas U: cada nodo con piel tiene cara D/E, E o sólo piel', () => {
   let uEntry = 0,
     eNodes = 0;
-  for (const sp of startPointsFor(scene.torso, B)) {
+  for (const sp of contactPoses()) {
     const k = probeContact(poseOf(sp), CONVEX_C35, scene.torso);
     const sources = k.summary.wallSourceByNode;
     expect(sources, sp.id).toHaveLength(k.nodes.length);
@@ -235,7 +246,7 @@ it('acopla todo elemento que toca la piel (decisión 374): la pared vista de can
 
 it('un nodo U con vecino conocido a ≤12 mm comprime contra su cara E: D* = E + tolerancia, menos lo que cede su grasa', () => {
   let checked = 0;
-  for (const sp of startPointsFor(scene.torso, B)) {
+  for (const sp of contactPoses()) {
     const k = probeContact(poseOf(sp), CONVEX_C35, scene.torso);
     k.summary.wallSourceByNode!.forEach((source, n) => {
       if (source !== 'E') return;

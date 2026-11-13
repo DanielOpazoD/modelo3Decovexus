@@ -340,7 +340,8 @@ export function createSolidsQueries(assets: PersonAssets) {
       if (owner !== 'bone' || !owners.some((o) => o.id === 'bone')) owners.push({ id: owner, d, certainty });
     }
     const skeleton = owners.some((o) => o.id === 'bone' || o.id === 'cartilage');
-    if (q?.kind === 'known' && q.depthMm >= 1.5 && q.depthMm < q.interfaceMm && !skeleton)
+    // Una pared estimada (celda con alguna esquina interpolada en un hueco de la carta, decisión 376) no disputa un órgano medido.
+    if (q?.kind === 'known' && q.depthMm >= 1.5 && q.depthMm < q.interfaceMm && !skeleton && !(q.estimated && owners.length > 0))
       owners.push({ id: 'wall', d: -Math.min(q.depthMm - 1.5, q.interfaceMm - q.depthMm), certainty: q.depthMm < q.outerMm ? 'D' : 'U' });
     if (!owners.some((o) => o.id !== 'wall') && s0028CompatibleFat(p) && !insideVessel(p))
       owners.push({ id: 'compatible_fat', d: 0, certainty: 'D' });
