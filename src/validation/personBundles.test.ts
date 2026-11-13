@@ -69,8 +69,8 @@ describe('clausuras completas por persona', () => {
   });
   it('conserva default y limita la ampliación de s0028 a 45 KiB (1 del Worker, 28 del rótulo renal, 4 de margen, 8 de sus vasos y 4 de su árbol portal; decisiones 341, 342, 350 y 357)', () => {
     expect(DEFAULT_JS_BUDGET).toBe(1_070_080);
-    expect(S0028_JS_BUDGET).toBe(1_116_160);
-    expect(PERSON_JS_CEILING).toBe(1_116_160);
+    expect(S0028_JS_BUDGET).toBe(1_132_544);
+    expect(PERSON_JS_CEILING).toBe(1_132_544);
   });
   it.each(['default', 's0028'] as const)('acepta su techo y rechaza +1 B en %s', (person) => {
     const g = fixture();

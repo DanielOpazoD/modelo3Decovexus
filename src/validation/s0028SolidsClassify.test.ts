@@ -331,7 +331,9 @@ it('U nunca se clasifica como tejido conocido en el compartimento posterior y re
               ? c.approximation !== 'diaphragm-lung-base'
               : c.tissue === Tissue.Muscle
                 ? c.approximation !== 'wall-liver-shell'
-                : c.tissue !== (SINUS[label] ?? Tissue.UnsegmentedSoftTissue)
+                : c.tissue === Tissue.MesentericFat
+                  ? c.approximation !== 'grasa-estimada' // dentro de la cavidad, rotulado como estimación (decisión 364)
+                  : c.tissue !== (SINUS[label] ?? Tissue.UnsegmentedSoftTissue)
           )
             fail('U clasificado como ' + Tissue[c.tissue]);
         }

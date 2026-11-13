@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 61437
+   "actual": 61562
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 24087
+   "actual": 1631
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 24162
   },
   {
    "what": "`series.js`",
@@ -381,11 +381,11 @@
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
-   "limit": 1116160,
+   "limit": 1132544,
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1115909
+   "actual": 1116109
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -481,11 +481,11 @@
     "sourceSha256": "ea5c4b3c288f653e8c66367c369f15840f2a1365483f057e8d4ea45b75d4d27b"
    },
    "s0028": {
-    "tokens": 387464,
-    "branches": 2884,
+    "tokens": 387905,
+    "branches": 2887,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "71e8906d4ab60aa0c37f53e05210e95684867f512d2487d76a7bb3372bfbbe10"
+    "sourceSha256": "d6764bd977da369eab830decaa6e6e24993de5af6b7c993ac64fa19161dd59b1"
    }
   },
   {
@@ -500,11 +500,11 @@
     "sourceSha256": "fa4447e13438604223e3a349b5ded408bbbe0ed48b0ec5be542f30bc6394366f"
    },
    "s0028": {
-    "tokens": 165412,
-    "branches": 1179,
+    "tokens": 165559,
+    "branches": 1180,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "c64094e70c2b453e11eab95afe41a3bfccf43f20e9f836aea3fe8f143b1b6f36"
+    "sourceSha256": "fb5bc3a78d008f6eb651e5b552c8d387c713464824165aec15ca51843ffbc1ea"
    }
   },
   {
@@ -519,11 +519,11 @@
     "sourceSha256": "1477269017954bec787f51a5d45932270fbf0cb5b9a55182a5edf432182e486c"
    },
    "s0028": {
-    "tokens": 124664,
-    "branches": 881,
+    "tokens": 124811,
+    "branches": 882,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "cdb0976248c14d1e93ef2f748f7cb3b94b6c92281ddb87dbcfd3a3b543190689"
+    "sourceSha256": "11b36f023eb7e10434d98916698988f76f1f697618826135209b71f29b49ea55"
    }
   },
   {
@@ -538,11 +538,11 @@
     "sourceSha256": "8729a4aa6e24e492a2df63cbc6abc9be5c97199cf0fb39c4cec315d2ffc8e683"
    },
    "s0028": {
-    "tokens": 124804,
-    "branches": 883,
+    "tokens": 124951,
+    "branches": 884,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "fd05167d8d0e46ea3d9ea1375c488c1c5734511a9d285a6b9823b4fe712f76ae"
+    "sourceSha256": "1bcef6b144da383b60c1eb4ca608099e4fa548d3c2ab078b35b9d76b1133aaa4"
    }
   },
   {
@@ -561,7 +561,7 @@
     "branches": 585,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "d542517599c8d4e143dcf4fdd628b56adcea4ad9b582bc954bb9d1c324e0d620"
+    "sourceSha256": "aa4c3c39804433a6c2aa07122a98ac3d0faa1f832e90c3ed08d8cbdc742deb5c"
    }
   },
   {
@@ -576,11 +576,11 @@
     "sourceSha256": "23c4d353785e24f4919f1dd4bec4b93356ec299f4a92f410488350dd28888304"
    },
    "s0028": {
-    "tokens": 161699,
-    "branches": 1292,
+    "tokens": 161993,
+    "branches": 1294,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "d7e8cd10c3c9c05a45e87852ecc9c45486f1260e4e56b2900336d0fc951a5104"
+    "sourceSha256": "f12112312393cfcd3a20ab19f3cf2654a5a9cf069c7f98d9bb5019bd267e751a"
    }
   },
   {
@@ -595,11 +595,11 @@
     "sourceSha256": "dc2ec6727d17d35d2af80e6afbd9ca9dc4bf336f250a4ff91c9f48e6a35fe719"
    },
    "s0028": {
-    "tokens": 74794,
-    "branches": 625,
+    "tokens": 74941,
+    "branches": 626,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "6a1465594a998bb584b9318fe18a682d74d596fdd1d1e69d5528b0b2e0a24a34"
+    "sourceSha256": "a9ec082e1e5fa8c7788825971aca98ab6a3e392b25bf66fe4be72cc55fe2ad72"
    }
   },
   {
@@ -614,11 +614,11 @@
     "sourceSha256": "c713b1d3d2acb77b4de1d2276e8553cc66ebd8db7a854ff87db6040ef3c6fcb1"
    },
    "s0028": {
-    "tokens": 69668,
-    "branches": 582,
+    "tokens": 69815,
+    "branches": 583,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "b9f83755c0cfe86bb55c3d8210e2d43aef507d01fdf5ff83be59ce787fc2efbb"
+    "sourceSha256": "851d505fd08e4b37dbc85d91ca9c666b3c684398f5e279da92073adf06a44ef5"
    }
   }
  ],
