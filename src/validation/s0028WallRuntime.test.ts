@@ -5,7 +5,7 @@ import { nodeSin } from '../anatomy/compression';
 import { HALF } from '../anatomy/halfFloat';
 import { Interface } from '../anatomy/interfaces';
 import { wallFaceGradient, wallFaceSd } from '../anatomy/organs/wall';
-import { torsoDepth, torsoDepthGradient, torsoSkinPoint } from '../anatomy/primitives';
+import { torsoDepth, torsoDepthGradient, torsoSkinPoint, tubeQuery } from '../anatomy/primitives';
 import { respiratoryWeightGradient } from '../anatomy/respiratoryNormals';
 import { sourceDistance } from '../anatomy/sourceVolume';
 import { DIAPHRAGM_THICKNESS_MM, Tissue } from '../anatomy/tissues';
@@ -475,6 +475,47 @@ it('el diafragma de s0028 es la lámina bajo la base de su pulmón, no la cúpul
   } finally {
     Object.assign(scene.torso, { fatMm, muscleMm });
   }
+});
+
+it('el pulmón no toca la cava (decisión 375): entre su luz y la pleura quedan la pared del vaso y la lámina del diafragma', () => {
+  const lung = (p: Vec3) => s0028SourceValue(p, 'lung').d;
+  const cava = scene.vessels.filter((v) => v.flowFactor === undefined && String(v.id).startsWith('ivc'));
+  expect(cava).toHaveLength(2);
+  const gap = cava[0].wallMm + DIAPHRAGM_THICKNESS_MM + 0.2;
+  let beside = 0,
+    sheet = 0,
+    chest = 0;
+  for (let x = -60; x <= 20; x += 1.5)
+    for (let y = -40; y <= 110; y += 1.5)
+      for (let z = -60; z <= 45; z += 1.5) {
+        const p: Vec3 = [x, y, z],
+          d = lung(p);
+        if (d > DIAPHRAGM_THICKNESS_MM + 1 || d < -8) continue;
+        const c = Math.min(...cava.map((v) => tubeQuery(p, v.tube).d));
+        // Oráculo independiente: la distancia a la luz del tubo. A menos de la separación (con 1 mm de rejilla) no hay pulmón.
+        if (c < gap - 1) {
+          beside++;
+          expect(d, p.join(',')).toBeGreaterThan(0);
+        }
+        const below = lung([x, y, z + 3]) < d - 1,
+          front = lung([x, y - 3, z]) < d - 1,
+          deep = -torsoDepth(p, scene.torso);
+        if (!(d >= 0.2 && d < DIAPHRAGM_THICKNESS_MM - 0.2) || below || !front) continue;
+        const cls = scene.classify(p, BASELINE_CALIBER);
+        if (cls.solids?.state !== 'U' || cls.vesselHit) continue;
+        // Por delante del pulmón hay lámina sólo lejos de la piel: junto a la pared torácica anterior, nunca.
+        if (deep > 61) {
+          sheet++;
+          expect(cls, p.join(',')).toMatchObject({ tissue: Tissue.Diaphragm, approximation: 'diaphragm-lung-base' });
+        } else if (deep < 59) {
+          chest++;
+          expect(cls.tissue, p.join(',')).not.toBe(Tissue.Diaphragm);
+        }
+      }
+  // Medido el 13-11-2026: 1.468, 1.632 y 1.119.
+  expect(beside).toBeGreaterThan(1000);
+  expect(sheet).toBeGreaterThan(1000);
+  expect(chest).toBeGreaterThan(700);
 });
 
 it('conserva los campos fuente sin convertir autóctonos en QL ni rellenar músculo alrededor del riñón', () => {

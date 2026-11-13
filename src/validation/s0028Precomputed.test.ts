@@ -11,7 +11,7 @@ it('libera al menos 4 MB de descarga sin cambiar el formato residente Float32/Ui
   const raw = new Uint8Array(gunzipSync(readFileSync('src/anatomy/s0028/surfaces.gzip.bin'))).buffer;
   const surfaces = indexedSurfaces(raw);
   // Sin otra copia residente: la descodificación reutiliza el buffer descomprimido.
-  expect(M.rawBytes).toBe(31_884_072);
+  expect(M.rawBytes).toBe(31_883_280);
   for (const f of surfaces) {
     expect(f.positions).toBeInstanceOf(Float32Array);
     expect(f.indices).toBeInstanceOf(Uint32Array);
@@ -52,7 +52,7 @@ it('fija hashes, procedencia, marco, inventario y cada triángulo expandido', as
   expect(hash(new Uint8Array(raw))).toBe(M.sha256DecodedRaw);
   // Huella de la malla descodificada. Hasta la decisión 361 era la de P1 (a9b8…5642); desde ella el hígado lleva la fisura
   // anterior cerrada y, desde la 372, toda su superficie alisada; solo su malla cambia.
-  expect(M.sha256DecodedRaw).toBe('3f4e86593aa9f2848d9ae2742c79a97843e832c645b242d9d95a7b766db21682');
+  expect(M.sha256DecodedRaw).toBe('5c8fff100c97354bd9424da2cde17dc00a4f4ad71a7148e5c51a27d5675dbd30');
   expect(surfaces.map((f) => f.name)).toEqual(B.fields.map((f) => f.name));
   for (const [i, f] of surfaces.entries()) {
     const bits = new Uint32Array(f.positions.buffer, f.positions.byteOffset, f.positions.length);

@@ -180,9 +180,9 @@ export const S0028_BUNDLE = freeze({
   thoracic: {
     textureDimensions: [193, 139, 552],
     rawBytes: 59234016,
-    gzipBytes: 5252011,
-    sha256Gzip: '01ac3e1c81fff7eba99a610026999b9b9e37d8261918590dd0b78b53d3eb9c0d',
-    sha256Raw: '0aef3f322af70ec5dc3f00221ac4710756abc42f31e055d61c05044ccbc92f0e',
+    gzipBytes: 5268609,
+    sha256Gzip: 'f5998150079060d3866bd64c0d5e261a15207706b7c1e7cae4f8af05bb2fb1f5',
+    sha256Raw: '5c89a709627f53d1a2d5d717b2c33f093eb37408e9feb8c94fef8559788f6678',
   },
   capacity: S0028_WALL_PACKAGE.capacity,
   skin: {

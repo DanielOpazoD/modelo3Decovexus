@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 63448
+   "actual": 14398
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14398
+   "actual": 63516
   },
   {
    "what": "`cutMapView.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 24867
+   "actual": 24966
   },
   {
    "what": "`series.js`",
@@ -281,15 +281,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5471032
-  },
-  {
-   "what": "`surfaces.js`",
-   "limit": 122880,
-   "unit": "B",
-   "decision": 318,
-   "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 5475792
   },
   {
    "what": "`surfaces.js`",
@@ -298,6 +290,14 @@
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
    "actual": 485
+  },
+  {
+   "what": "`surfaces.js`",
+   "limit": 122880,
+   "unit": "B",
+   "decision": 318,
+   "source": "tools/ci/bundleBudgets.ts",
+   "actual": 5730
   },
   {
    "what": "`teacherTab.js`",
@@ -325,11 +325,11 @@
   },
   {
    "what": "`thoracic-direct.gzip.bin`",
-   "limit": 5252011,
+   "limit": 5268609,
    "unit": "B",
    "decision": 317,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5252011
+   "actual": 5268609
   },
   {
    "what": "`thoracic-surface.gzip.bin`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1119408
+   "actual": 1119575
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -393,7 +393,7 @@
    "unit": "B",
    "decision": 318,
    "source": "src/anatomy/people/s0028/surfaces.ts",
-   "actual": 20919632
+   "actual": 20940990
   },
   {
    "what": "Cada `.gzip` fijado del paquete s0028 (por archivo)",
@@ -481,11 +481,11 @@
     "sourceSha256": "ea5c4b3c288f653e8c66367c369f15840f2a1365483f057e8d4ea45b75d4d27b"
    },
    "s0028": {
-    "tokens": 392419,
-    "branches": 2942,
+    "tokens": 395353,
+    "branches": 2960,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "adfe725dd258d72c8a0ee2fc892955d0243ba20f3ee79c3f5d5ceb7d1742c6fb"
+    "sourceSha256": "e9abaa87bac3ff0a7471ceecd79d0e9677a647da236ed977eb1b067d5b21bc96"
    }
   },
   {
@@ -500,11 +500,11 @@
     "sourceSha256": "fa4447e13438604223e3a349b5ded408bbbe0ed48b0ec5be542f30bc6394366f"
    },
    "s0028": {
-    "tokens": 162039,
-    "branches": 1171,
+    "tokens": 163017,
+    "branches": 1177,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "189df85c270a168bd5d884f5bb6243c88ff2df8aacebd64564b19db59808f039"
+    "sourceSha256": "bcc9814dd959b8a72e39e297620be7932457823d3b167c5ad3387b034386e105"
    }
   },
   {
@@ -519,11 +519,11 @@
     "sourceSha256": "1477269017954bec787f51a5d45932270fbf0cb5b9a55182a5edf432182e486c"
    },
    "s0028": {
-    "tokens": 123055,
-    "branches": 879,
+    "tokens": 124033,
+    "branches": 885,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "bfe7cd4e0b92ab8d321069ee794f5b15aedbb16b6d7ced47ce3869837df40dec"
+    "sourceSha256": "af576991f6eeca8b5aff721d45fe3bb950b143244b5ae4330c6313b077c98e20"
    }
   },
   {
@@ -538,11 +538,11 @@
     "sourceSha256": "8729a4aa6e24e492a2df63cbc6abc9be5c97199cf0fb39c4cec315d2ffc8e683"
    },
    "s0028": {
-    "tokens": 123195,
-    "branches": 881,
+    "tokens": 124173,
+    "branches": 887,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "b39701e092c1aedaac1ef2450a06a35ae9db058318c0c87304df949158d08b2f"
+    "sourceSha256": "324e781ff3981d7e24ef353faddc42910149edb3158967b2ae58ebadcbe70b4d"
    }
   },
   {
@@ -561,7 +561,7 @@
     "branches": 637,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "51dffcfc4d7a9a8a1b71bd547cc78c29b2300a3a50edfdd0914bed93c84c57e6"
+    "sourceSha256": "c471b8b53fcabafe30306ae7e6907b0b9d5c09f8868fde64e73d5ec011cd4e65"
    }
   },
   {
@@ -576,11 +576,11 @@
     "sourceSha256": "23c4d353785e24f4919f1dd4bec4b93356ec299f4a92f410488350dd28888304"
    },
    "s0028": {
-    "tokens": 162009,
-    "branches": 1300,
+    "tokens": 163965,
+    "branches": 1312,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "dbe298c3003de1a03c3ec867b358c19cebdf6920a9a1a4db2d90cd23dc55121a"
+    "sourceSha256": "3ea3270a071150f0e7e702fc8d4d250d95c6176ae8650a3e4783a16495bb9df3"
    }
   },
   {
@@ -595,11 +595,11 @@
     "sourceSha256": "dc2ec6727d17d35d2af80e6afbd9ca9dc4bf336f250a4ff91c9f48e6a35fe719"
    },
    "s0028": {
-    "tokens": 74949,
-    "branches": 629,
+    "tokens": 75927,
+    "branches": 635,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "5769c2ded24df951c5a8b5e179cec2e0acb244b0044c524a644d3b7d0d9be450"
+    "sourceSha256": "735fcc4cda226341604e6762adbdd6c77e4730cc109e905206c1620131339a80"
    }
   },
   {
@@ -614,15 +614,15 @@
     "sourceSha256": "c713b1d3d2acb77b4de1d2276e8553cc66ebd8db7a854ff87db6040ef3c6fcb1"
    },
    "s0028": {
-    "tokens": 69823,
-    "branches": 586,
+    "tokens": 70801,
+    "branches": 592,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "d1c5f441680ce02acb5f9ae2a57822c5f8a837119763fa1b42a8d62b36321cd2"
+    "sourceSha256": "e99c97556eb01940b955d3c32aaf62a2a2fbfb3b4c50cb1508c494d72e8845a1"
    }
   }
  ],
- "s0028DescriptorSha256": "fdd9577a3bfd6ebf67f1d83a7b9cec4128edf0c4f2ba2a6df6188b5518ec4711",
+ "s0028DescriptorSha256": "60f2f2bd3f29441a731540bbc8a911a550967fb362b393c56b88156ecbadf5d1",
  "tests": {
   "vitestFiles": 338,
   "slowFiles": 34,

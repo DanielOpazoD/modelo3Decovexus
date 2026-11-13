@@ -11953,3 +11953,16 @@ pared doblada queda para las anatomías analíticas.
 **Consecuencias.** Sin bandas negras desde la piel; en la subcostal de suprahepáticas se ven las cavidades derechas junto a la
 cava. Donde la pared se dobla, la tabla interpolada puede deformarla algo: no se aprecia en las láminas. Hash de contactos refijado.
 **Verificación.** `s0028UContact` (pose subcostal: todo nodo hundido acopla; separada, ninguno), `s0028Windows`, láminas.
+
+## 375. El pulmón de s0028 no toca la cava: su pared y el diafragma quedan entre ambos
+
+**Contexto.** En eje largo, junto al corazón, la pared posterior de la cava llevaba pegada la línea pleural y detrás un bloque de
+borde recto; el responsable lo señaló dos veces. La máscara del pulmón pisaba hasta 6 mm el tubo idealizado de la cava y el
+clasificador da el pulmón antes que los vasos.
+**Opciones.** Reordenar el clasificador (CPU y GLSL), o retirar el pulmón en el recurso; se elige esto: todos sus lectores quedan
+de acuerdo sin tocar el orden.
+**Decisión.** `s0028-lung-cava.ts` resta del pulmón la cava dilatada 3,5 mm (pared + lámina). La lámina del diafragma se dibuja
+también por delante del pulmón a más de 60 mm de la piel, no solo bajo su base.
+**Consecuencias.** Pared posterior de la cava continua hasta la aurícula; el pulmón pierde 3,3 ml. Atlas torácico +16,6 KB
+(5.268.609 B; techo declarado). Mallas 3D regeneradas.
+**Verificación.** `s0028WallRuntime` (sin pulmón junto a la luz; lámina lejos de la piel y nunca en la pared torácica), paridad en Metal.
