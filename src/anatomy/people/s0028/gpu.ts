@@ -27,6 +27,8 @@ export const S0028_TISSUE_LOOK = Object.freeze({
   [Tissue.Pancreas]: { backscatter: 1.9 },
   [Tissue.GastricContents]: { backscatter: 0.45, speckleClump: 3, attenuation: 2.5 },
   [Tissue.ColonicContents]: { backscatter: 3.5, attenuation: 5 },
+  // Pared arterial ecogénica: la aorta se distingue de la cava, de pared fina, también por su borde (decisión 370).
+  [Tissue.ArteryWall]: { backscatter: 4.5 },
   // Manguito periportal: lo que distingue una rama portal de una suprahepática a cualquier ángulo (decisión 357).
   [Tissue.VesselWallPortal]: { backscatter: 5.5 },
 });

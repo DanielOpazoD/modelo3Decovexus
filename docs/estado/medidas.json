@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 24807
+   "actual": 24840
   },
   {
    "what": "`series.js`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1117789
+   "actual": 1117822
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
