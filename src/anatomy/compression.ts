@@ -214,7 +214,8 @@ function rigidDepth(d: number, [kappa, d1, L]: RigidNode, D: number): [number, n
  * caída del empuje acaba en Z: el primer hueso bajo la pared al que llega con κ ≤ 3 (queda quieto) o, sin él, donde ya
  * acababa (D + S). El riñón delante de Z, de su primera entrada a su última salida antes de Z, se traslada entero:
  * κ = S/(Z − D − L) y d₁ resuelve d₁ + g(σ(d₁)) = entrada (monótona). Si un tramo renal cruza Z, o el riñón no cabe con
- * κ ≤ 3, la caída se retrasa tras él (κ = 1; el alcance crece en L, que acaba en la salida del tramo que cruza). Los
+ * κ ≤ 3, la caída se retrasa tras él (κ = 1; el alcance crece en L, que acaba en la salida del tramo que cruza o del último que
+ * empiece antes del final de la caída ya retrasada, Z + L: decisión 360). Los
  * tramos más allá de Z no cuentan: con un riñón a cada lado de una vértebra (flanco), la vértebra queda quieta.
  */
 export function rigidNode(n: CompressionNode, bones: readonly number[], renal: readonly number[]): RigidNode {
@@ -234,7 +235,11 @@ export function rigidNode(n: CompressionNode, bones: readonly number[], renal: r
   const cross = renal.findIndex((x, i) => !(i % 2) && x < Z && renal[i + 1] > Z);
   if (cross >= 0 || kappa > RIGID_KAPPA_MAX) {
     kappa = 1;
-    if (cross >= 0) L = renal[cross + 1] - renal[0];
+    if (cross >= 0) {
+      L = renal[cross + 1] - renal[0];
+      // Retrasada en L, la caída acaba en Z + L: un tramo renal que empiece antes también se traslada entero (decisión 360).
+      for (let i = cross + 2; i < renal.length; i += 2) if (renal[i] < Z + L) L = renal[i + 1] - renal[0];
+    }
   }
   if (!L) return [kappa, 0, 0];
   const k1 = renal[0],

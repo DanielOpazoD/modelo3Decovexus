@@ -216,7 +216,7 @@ it('la sonda acopla por la piel sobre celdas U: cada nodo con piel tiene cara D/
   expect(eNodes).toBeGreaterThan(30);
 });
 
-it('un nodo U con vecino conocido a ≤12 mm comprime contra su cara E: D* = E + tolerancia', () => {
+it('un nodo U con vecino conocido a ≤12 mm comprime contra su cara E: D* = E + tolerancia, menos lo que cede su grasa', () => {
   let checked = 0;
   for (const sp of startPointsFor(scene.torso, B)) {
     const k = probeContact(poseOf(sp), CONVEX_C35, scene.torso);
@@ -227,7 +227,9 @@ it('un nodo U con vecino conocido a ≤12 mm comprime contra su cara E: D* = E +
       const face = s0028ContactFace(lineAt(k, n)(rs))!;
       expect(face.source).toBe('E');
       const target = face.interfaceMm + CONTACT.wallTolMm;
-      const D = Math.min(Math.max(rW, Math.min(target, rW - rs)), target + 20);
+      // Decisión 360: sin grasa separada en la carta, cede sobre la parte de la pared que se toma por grasa.
+      const yielded = Math.min(CONTACT.fatYieldShare * -Math.min(0, rs), CONTACT.fatYieldMax * CONTACT.fatShareUnknown * face.interfaceMm);
+      const D = Math.min(Math.max(rW, Math.min(target, rW - rs) - yielded), target + 20);
       expect(k.nodes[n][0]).toBe(Math.min(0, rs));
       expect(k.nodes[n][2]).toBeCloseTo(D, 9);
       expect(k.nodes[n][1]).toBeCloseTo(Math.min(0, rW - D), 9);
@@ -237,6 +239,38 @@ it('un nodo U con vecino conocido a ≤12 mm comprime contra su cara E: D* = E +
     });
   }
   expect(checked).toBeGreaterThan(30);
+});
+
+it('la grasa de la pared cede bajo la cara (decisión 360): más en el centro que en los bordes, nunca más de un tercio, y sólo empuja', () => {
+  let yielding = 0;
+  for (const sp of startPointsFor(scene.torso, B)) {
+    const k = probeContact(poseOf(sp), CONVEX_C35, scene.torso);
+    const yielded: number[] = [];
+    k.summary.wallSourceByNode!.forEach((source, n) => {
+      const [s0, sD, D] = k.nodes[n];
+      // Sólo empuja: la cara interna nunca baja más que la piel ni sube hacia la sonda.
+      expect(sD, `${sp.id} ${n}`).toBeLessThanOrEqual(0);
+      expect(sD, `${sp.id} ${n}`).toBeGreaterThanOrEqual(s0 - 1e-9);
+      if (source !== 'D/E') return;
+      const rs = k.summary.skinAlongMm[n],
+        rW = k.summary.wallAlongMm[n],
+        q = s0028WallAt(lineAt(k, n)(rs))!;
+      if (q.kind !== 'known') return;
+      const fat = Math.max(0, q.outerMm - 1.5),
+        target = s0028ContactFace(lineAt(k, n)(rs))!.interfaceMm + CONTACT.wallTolMm;
+      const cap = Math.min(CONTACT.fatYieldShare * -s0, CONTACT.fatYieldMax * fat);
+      const firm = Math.min(Math.max(rW, Math.min(target, rW - rs)), target + 20);
+      // La pared queda más fina que sin ceder, a lo sumo en lo que cede su grasa; un elemento que no hunde la piel no la aprieta.
+      expect(firm - D, `${sp.id} ${n}`).toBeGreaterThanOrEqual(-1e-9);
+      expect(firm - D, `${sp.id} ${n}`).toBeLessThanOrEqual(cap + 1e-9);
+      if (s0 === 0) expect(D, `${sp.id} ${n}`).toBe(firm);
+      yielded[n] = firm - D;
+    });
+    const most = Math.max(0, ...yielded.filter((y) => y !== undefined));
+    if (most > 3) yielding++;
+  }
+  // En la mayoría de las ventanas el centro de la huella cede más de 3 mm.
+  expect(yielding).toBeGreaterThanOrEqual(6);
 });
 
 it('sin nodo conocido a ≤12 mm: sólo piel, sin resistencia de pared, y la cara acopla', () => {

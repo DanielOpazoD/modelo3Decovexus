@@ -61,6 +61,16 @@ export const CONTACT = {
   pressSoftMm: 20,
   /** Al levantar la sonda (lift > 0) el operador deja de apretar en estos mm. [ESTIMADO] */
   releaseMm: 3,
+  /**
+   * s0028 (decisión 360): la grasa de la pared cede bajo la cara. De lo que el elemento hunde la piel, esta parte la absorbe la
+   * pared en vez de pasarla a lo de debajo… [ESTIMADO: la grasa subcutánea es muy compresible y el hígado cede 12–15 % con presión
+   * ligera; ninguna fuente da el reparto]
+   */
+  fatYieldShare: 0.4,
+  /** …con este tope, como fracción del espesor de grasa del nodo: la grasa no se aplasta más de un tercio. [ESTIMADO] */
+  fatYieldMax: 0.33,
+  /** Donde la carta no separa la grasa (celda U con cara E), esta parte de la pared es grasa: 29 de 38 mm en su mediana. */
+  fatShareUnknown: 0.7,
 } as const;
 
 /** La cara interna de la pared se busca hasta este múltiplo de W a lo largo de la línea. */
@@ -202,6 +212,8 @@ interface NodeGeometry {
   rs: number | null;
   /** Distancia a la cara interna de la pared (mm); la de búsqueda si no llega. */
   rW: number;
+  /** s0028: espesor de grasa de la pared en el punto de piel del nodo (mm); ausente en la otra persona: la pared no cede. */
+  fatMm?: number;
   /** Mayor hueco de los bordes elevacionales de la huella a la piel (mm, por la normal de la piel). */
   gapElevation: number;
 }
@@ -250,9 +262,11 @@ function measureFace(frame: ProbeFrame, tr: Transducer, t: Torso, W: number): Fa
         rs === null || face === null
           ? null
           : firstRegionalWallCrossing((r) => t.person!.regional!.s0028ContactInside(at(r)), rs, rs + WALL_SEARCH_FACTOR * 80);
+      const chart = rs === null || face === null ? undefined : t.person.regional.s0028WallAt(at(rs));
       nodes.push({
         rs,
         rW: crossing ?? Infinity,
+        fatMm: face === null ? 0 : chart?.kind === 'known' ? Math.max(0, chart.outerMm - 1.5) : CONTACT.fatShareUnknown * face.interfaceMm,
         gapElevation: gapE,
         regionalTarget: crossing === null || face === null ? null : face.interfaceMm + CONTACT.wallTolMm,
         wallSource: rs === null ? 'none' : crossing === null || face === null ? 'skin' : face.source,
@@ -396,7 +410,9 @@ export function probeContact(pose: ProbePose, tr: Transducer, t: Torso): ProbeCo
     // línea: se traslada entera) si el empuje alcanza; si no, el empuje se apaga dentro de la pared
     const s0 = Math.min(0, g.rs);
     const T = g.rW - g.rs;
-    const D = Math.min(Math.max(g.rW, Math.min(localTarget, T)), localTarget + WALL_FADE_MAX_MM);
+    // s0028: la grasa cede bajo el elemento y la pared queda más fina; lo de debajo recibe menos empuje (s_D = s₀ + lo cedido ≤ 0)
+    const yielded = Math.min(CONTACT.fatYieldShare * -s0, CONTACT.fatYieldMax * (g.fatMm ?? 0));
+    const D = Math.min(Math.max(g.rW, Math.min(localTarget, T) - yielded), localTarget + WALL_FADE_MAX_MM);
     nodes.push([s0, Math.min(0, g.rW - D), D]);
     hover.push(1 - smoothstep(CONTACT.gelMm, CONTACT.gelMm + CONTACT.gelRampMm, Math.max(g.rs, g.gapElevation)));
     // la pared, respecto de la piel (un hueco de gel la baja entera, sin doblarla)

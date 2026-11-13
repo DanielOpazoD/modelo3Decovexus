@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Sonda sobre s0028: la grasa de la pared cede bajo la cara; la pared se ve más fina, la cava y la porta profundas dejan de deformarse (360)
+
 - Ventana hepatorrenal de s0028: riñón bajo el hígado sin la sombra costal en medio; el buscador de poses admite «un órgano visto detrás de otro» con el plano libre (359)
 
 - Anatomía s0028: cinco tributarias suprahepáticas de su TAC, uniones entre venas sin nudo y ramas generadas repartidas entre todas las venas (358)

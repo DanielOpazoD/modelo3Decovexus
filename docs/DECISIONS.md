@@ -11787,3 +11787,15 @@ resultante apoya entre la axilar media y la posterior y gira unos 60°, a lo lar
 **Consecuencias.** Hígado sobre el riñón, en corte oblicuo con corteza, pirámides y seno; sonda apoyada entera; la sombra costal
 queda en un borde. No es el eje largo coronal clásico: en esta persona no cabe sin costilla o sin colon.
 **Verificación.** Láminas de las candidatas y de la pose anterior; `s0028Windows` (la anterior ya no cumple: ve 0,7 del hito).
+
+## 360. La grasa de la pared de s0028 cede bajo la sonda
+
+**Contexto.** Con presión 0 la cara queda 10–25 mm bajo la piel y la pared se trasladaba entera: 30–50 mm de pared en la imagen y
+toda la compresión repartida entre 6 y 12 cm. La cava en eje corto salía en cacahuete y en eje largo, combada y con escalón.
+**Opciones.** Un perfil por capas en el shader (grasa blanda, músculo firme: cambia el gemelo GLSL), o lo decidido.
+**Decisión.** En cada nodo de la cara la pared cede el 40 % de lo que el elemento hunde la piel, con tope de un tercio de su
+grasa (`CONTACT.fatYield*`): baja D y s_D en la tabla de contacto, sin tocar shaders. El tramo renal rígido abarca también los
+tramos que caen dentro de la caída retrasada. La intercostal se vuelve a buscar con la herramienta.
+**Consecuencias.** La pared se ve 6–10 mm más fina bajo el centro; a 90 mm el desplazamiento baja de 8–19 a 0–5 mm y la cava
+conserva su forma. El reparto es estimado y el músculo adelgaza en la misma proporción que la grasa. Solo s0028.
+**Verificación.** `s0028UContact` (regla nodo a nodo), `s0028SolidsMotion` (contactos refijados), `s0028Windows`, láminas.
