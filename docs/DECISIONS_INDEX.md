@@ -376,3 +376,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [370](DECISIONS.md#L11904) | La pared arterial de s0028 es ecogénica | vigente |
 | [371](DECISIONS.md#L11912) | Lo no rotulado en la pared de s0028 se dibuja como su grasa | vigente |
 | [372](DECISIONS.md#L11922) | Toda la superficie del hígado de s0028 se alisa | vigente |
+| [373](DECISIONS.md#L11933) | La carta de pared de s0028 se alisa al cargarla | vigente |

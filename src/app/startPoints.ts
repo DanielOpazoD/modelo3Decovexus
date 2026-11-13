@@ -318,7 +318,7 @@ const DEFAULT_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ..
 // su riñón. Decisión 349: con la cava y las suprahepáticas de su TAC, la intercostal sigue la derecha en eje largo, la subcostal
 // muestra la confluencia de la derecha y la media, y la subxifoidea vuelve al eje de la cava. La epigástrica ya mostraba su hito.
 const S0028_POSES: typeof DEFAULT_POSES = {
-  portal: { phi: 2.8, z: -65, yaw: -0.996, rock: 0.097, tilt: 0.067 },
+  portal: { phi: 2.8, z: -55, yaw: -0.979, rock: 0.024, tilt: 0.09 },
   portalTrunk: { phi: 3.25, z: -80, yaw: 0.032, rock: 0.122, tilt: 0.26 },
   portalSubcostal: { phi: 1.6, z: -50, yaw: -1.602, rock: 0.295, tilt: 0.255 },
   intercostal: { phi: 3.55, z: -100, yaw: -0.838, rock: 0.488, tilt: 0.456 },

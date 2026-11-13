@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: las fascias de la pared pierden los escalones; la carta de pared se alisa al cargarla (373)
+
 - Anatomía s0028: toda la superficie del hígado queda alisada, no solo su cara anterior (372)
 
 - Imagen s0028: la pared sin carta deja de verse a parches; lo no rotulado se dibuja como su grasa (371)

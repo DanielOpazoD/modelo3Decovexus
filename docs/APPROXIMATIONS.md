@@ -626,3 +626,9 @@ cifra de aspecto: los ventrículos reales tienen paredes más gruesas que las au
 
 Donde la carta de pared no conoce la celda, el tejido sin máscara se dibuja como grasa de pared (rotulado `grasa-estimada`). Es
 una estimación de aspecto: ahí hay también músculo intercostal y posterior que el modelo no separa.
+
+### s0028: carta de pared alisada (373)
+
+Las fronteras de la pared se alisan al cargar la carta (gaussiana de 2 celdas sobre los nodos conocidos). Quita el ruido de vóxel
+del TAC y también rasgos reales de pocos milímetros (una intersección tendinosa, un pliegue): la pared es regular, no la de esa
+persona al milímetro.

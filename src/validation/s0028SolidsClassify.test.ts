@@ -186,13 +186,14 @@ it('hígado s0028: dueño O sin el ligamento venoso analítico de la otra person
 });
 
 it('conflicto: los vóxeles de hígado y bazo dentro de la banda P2 conservan los dos dueños y no eligen material', () => {
+  // Puntos de la banda de la carta alisada al cargar (decisión 373): con ella quedan muy pocos vóxeles de hígado dentro.
   for (const [p, organ] of [
-    [[-100.98527431275116, -27.714784500197737, -113.98879268882285], 'liver'],
-    [[-99.48527431275116, -27.714784500197737, -112.48879268882285], 'liver'],
     [[-102.48527431275116, -30.714784500197737, -109.48879268882285], 'liver'],
-    [[-100.98527431275116, -30.714784500197737, -107.98879268882285], 'liver'],
-    [[115.01472568724884, -29.214784500197737, -92.98879268882285], 'spleen'],
-    [[118.01472568724884, -32.21478450019774, -89.98879268882285], 'spleen'],
+    [[-101.63, -30.46, -110.09], 'liver'],
+    [[-102.38, -31.46, -109.09], 'liver'],
+    [[-102.13, -30.96, -108.59], 'liver'],
+    [[125.51472568724884, -18.714784500197737, -85.48879268882285], 'spleen'],
+    [[125.51472568724884, -20.214784500197737, -79.48879268882285], 'spleen'],
   ] as const) {
     const c = at([...p]);
     expect(c.solids?.state, p.join(',')).toBe('conflict');
@@ -203,8 +204,10 @@ it('conflicto: los vóxeles de hígado y bazo dentro de la banda P2 conservan lo
   }
 });
 
-it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los nueve pares del censo', () => {
-  expect(conflicts.pairs).toHaveLength(9);
+it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los ocho pares del censo', () => {
+  // Eran nueve hasta la decisión 373: con la carta de pared alisada ningún vóxel de intestino queda dentro de la banda.
+  expect(conflicts.pairs).toHaveLength(8);
+  expect(conflicts.pairs).not.toContain('bowel+wall');
   for (const [x, y, z, k] of conflicts.points) {
     const c = at([x, y, z]);
     expect(c.solids?.state, `${x},${y},${z}`).toBe('conflict');
@@ -212,7 +215,8 @@ it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños de
     expect(c.tissue).toBe(Tissue.UnsegmentedSoftTissue);
   }
   // Revisión de #336 (I1): grasa D + banda en la sub-banda de grasa de la pared, donde la banda sola daría Fat.
-  expect(conflicts.fatBand.length).toBeGreaterThan(20);
+  // Eran 29 hasta la decisión 373: con la carta alisada sólo 14 vóxeles de grasa D cumplen los márgenes en la sub-banda.
+  expect(conflicts.fatBand.length).toBeGreaterThanOrEqual(12);
   for (const [x, y, z] of conflicts.fatBand) {
     const c = at([x, y, z]),
       q = s0028WallAt([x, y, z]);
@@ -239,7 +243,7 @@ it('hueso dentro de la banda P2: contenido del complejo de pared (O), no choque'
     [125.51472568724884, -21.714784500197737, -115.48879268882285],
     [116.51472568724884, 59.28521549980226, -52.488792688822855],
     [85.01472568724884, 68.28521549980226, -7.488792688822855],
-    [-112.98527431275116, 45.78521549980226, 19.511207311177145],
+    [-109.98527431275116, 54.78521549980226, 12.011207311177145],
   ] as Vec3[]) {
     const q = s0028WallAt(p);
     expect(q?.kind === 'known' && q.depthMm > q.outerMm && q.depthMm < q.interfaceMm, p.join(',')).toBe(true);

@@ -11929,3 +11929,15 @@ el mismo filtro (fuera de la pared y sin otro dueño). Frente al TAC: +25 ml y �
 **Consecuencias.** Contorno regular en todas las caras; el cambio en la imagen es sutil. El borde inferior queda algo más romo
 (unos milímetros). Atlas +61 KB sobre la 361; mallas 3D regeneradas.
 **Verificación.** `s0028Precomputed` (malla refijada), suite de validación, e2e de paridad en Metal, láminas de las ocho ventanas.
+
+## 373. La carta de pared de s0028 se alisa al cargarla
+
+**Contexto.** Las fronteras de la pared (grasa–músculo, músculo–fascia) salen del TAC nodo a nodo, con ±1 mm de ruido de vóxel;
+en la imagen las fascias se veían con escalones y ondas en «W», y el responsable señaló la pared como mal lograda.
+**Opciones.** Regenerar el recurso con el cuaderno del TAC (pesado, cambia hashes y cupos), o alisar en memoria; se elige esto.
+**Decisión.** `setS0028Wall` alisa las tres fronteras de los nodos conocidos con una gaussiana de 2 celdas (~4 mm de arco, 3 mm
+de alto) sobre sus vecinos conocidos, conserva el orden externa < interna ≤ interfaz y rehace el mapa E. Los nodos U siguen U.
+**Consecuencias.** Fascias continuas; CPU y GPU leen la misma copia y el recurso no cambia. La pared se aparta 0,56 mm de media
+del TAC (8,8 mm en el peor escalón). Testigos de choque rehechos: el par intestino–pared deja de existir. Pose portal rebuscada
+(acoplada 0,96; con la anterior caía a 0,88). Hash de los 30 contactos refijado.
+**Verificación.** `s0028WallChart` (U intacto, orden, halos, rugosidad a menos de un cuarto), paridad en Metal, ocho láminas.

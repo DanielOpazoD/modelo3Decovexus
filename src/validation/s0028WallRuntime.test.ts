@@ -58,8 +58,24 @@ it('s0028 desactiva hepaticCostalBody y la piel E mide 1,5 mm', () => {
   expect(scene.torso.skinMm).toBe(1.5);
 });
 
+/** Lectura bilineal independiente de la carta cargada, que es la del recurso alisada (decisión 373): fila y columna fraccionarias. */
+function chartBounds(row: number, col: number): [number, number] {
+  const band = row < 90 ? 0 : 1,
+    y = row - 90 * band,
+    x = col % 64,
+    data = s0028WallUploads()[band * 8 + Math.floor(col / 64)].data;
+  const y0 = Math.floor(y),
+    x0 = Math.floor(x),
+    fy = y - y0,
+    fx = x - x0;
+  const at = (k: number, dy: number, dx: number) => HALF[data[((y0 + dy) * 65 + x0 + dx) * 2 + k]];
+  const read = (k: number) => (1 - fy) * ((1 - fx) * at(k, 0, 0) + fx * at(k, 0, 1)) + fy * ((1 - fx) * at(k, 1, 0) + fx * at(k, 1, 1));
+  return [read(0), read(1)];
+}
+
 it('proyecta por EDT y lee la carta bilineal v2 con fixtures directos', () => {
-  // Valores regenerados con proyección directa; row/col/depth/bounds originales conservan la inversa offline S−dN.
+  // Valores regenerados con proyección directa; row/col/depth/bounds originales conservan la inversa offline S−dN. Los límites se
+  // leen de la carta alisada al cargar: exactos frente a ella y a menos de 1,5 mm de los del recurso (el fixture).
   for (const f of chartFixtures) {
     const p: Vec3 = [f.point[0], f.point[1], f.point[2]],
       q = s0028WallAt(p);
@@ -68,8 +84,11 @@ it('proyecta por EDT y lee la carta bilineal v2 con fixtures directos', () => {
     expect(Math.abs(q.z - (f.direct.row * 1.5 - 210))).toBeLessThan(0.005);
     expect(Math.abs(q.phi - (f.direct.col * 2 * Math.PI) / 512)).toBeLessThan(0.0001);
     expect(Math.abs(q.depthMm - f.direct.depth)).toBeLessThan(0.005);
-    expect(Math.abs(q.outerMm - f.direct.bounds[0])).toBeLessThan(0.005);
-    expect(Math.abs(q.innerMm - f.direct.bounds[1])).toBeLessThan(0.005);
+    const bounds = chartBounds(f.direct.row, f.direct.col);
+    expect(Math.abs(q.outerMm - bounds[0])).toBeLessThan(0.005);
+    expect(Math.abs(q.innerMm - bounds[1])).toBeLessThan(0.005);
+    expect(Math.abs(bounds[0] - f.direct.bounds[0])).toBeLessThan(1.5);
+    expect(Math.abs(bounds[1] - f.direct.bounds[1])).toBeLessThan(1.5);
   }
 });
 
@@ -81,8 +100,9 @@ it('la banda propia y sus caras sustituyen W global: se dibuja como músculo de 
   const q = s0028WallAt(band);
   expect(q?.kind).toBe('known');
   if (q?.kind !== 'known') throw new Error('Falta el perfil propio');
-  expect(Math.abs(q.outerMm - f.direct.bounds[0])).toBeLessThan(0.005);
-  expect(Math.abs(q.innerMm - f.direct.bounds[1])).toBeLessThan(0.005);
+  const bounds = chartBounds(f.direct.row, f.direct.col);
+  expect(Math.abs(q.outerMm - bounds[0])).toBeLessThan(0.005);
+  expect(Math.abs(q.innerMm - bounds[1])).toBeLessThan(0.005);
   expect(q.provenance[3]).toBe('U');
   expect(scene.classify(fat, BASELINE_CALIBER)).toMatchObject({ tissue: Tissue.Fat, wall: 'fat-D/E' });
   // Decisión 352: la banda blanda entre el panículo y la cavidad se ve como lo que es en una ecografía, músculo entre dos vainas.
@@ -98,7 +118,7 @@ it('la banda propia y sus caras sustituyen W global: se dibuja como músculo de 
   expect([...faces].sort()).toEqual([Interface.SkinFat, Interface.Scarpa, Interface.DeepFascia, Interface.Peritoneum].sort());
   expect(q.superficialFasciaMm).toBeGreaterThan(1.5);
   expect(q.superficialFasciaMm).toBeLessThan(q.outerMm);
-  expect(Math.abs(scene.insideWallMm(band) - (f.direct.depth - f.direct.bounds[1]))).toBeLessThan(0.005);
+  expect(Math.abs(scene.insideWallMm(band) - (f.direct.depth - bounds[1]))).toBeLessThan(0.005);
   const before = [
     scene.classify(band, BASELINE_CALIBER),
     scene.respiratoryWeight(band),
