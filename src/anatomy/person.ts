@@ -28,6 +28,11 @@ export interface AnatomyPerson {
   readonly hepaticBranchesPerParent?: number;
   /** Radio (mm) del cuerpo vertebral lumbar con que su cortical reparte el eco (decisión 368). */
   readonly lumbarBodyRadiusMm?: number;
+  /**
+   * Tejidos de esta persona que, además de la grasa mesentérica y la retroperitoneal, cuentan como grasa al otro lado de la
+   * cápsula hepática y suben su eco (decisión 378). Par de la condición que la GLSL de la persona añade a `interfaceEcho`.
+   */
+  readonly capsuleFatTissues?: readonly number[];
   /** Tras colocar las ramas procedurales: el eje de los vasos madre como curva (más nodos, mismos extremos). */
   readonly smoothVessels?: (vessels: VesselDef[]) => void;
   readonly regional?: ReturnType<typeof createSourceQueries> &

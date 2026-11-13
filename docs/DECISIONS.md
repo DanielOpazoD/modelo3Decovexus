@@ -11991,3 +11991,16 @@ cápsula salía en cuentas).
 **Consecuencias.** Cápsula hepática en arco continuo. La pared se aparta 0,87 mm de media del TAC (9,6 mm el peor nodo). Hígado
 −0,5 ml, pulmón −0,5 ml. Los choques hígado–pared y bazo–pared dejan de existir. Atlas +11,5 KB y +19 KB (techos declarados).
 **Verificación.** `s0028WallChart`, `s0028SolidsClassify`, paridad en Metal, capa lenta, láminas de las ocho ventanas.
+
+## 378. La cápsula hepática de s0028 se ve donde linda con su grasa perirrenal
+
+**Contexto.** En las ventanas renales el hígado no tenía borde frente al riñón: faltaba la línea hepatorrenal. La cápsula refleja
+4,4 veces más cuando al otro lado hay grasa, pero la tabla común solo cuenta la mesentérica y la retroperitoneal (así no enciende
+una rendija residual del atlas de la otra persona). En s0028 la grasa entre hígado y riñón es perirrenal.
+**Opciones.** Subir la reflectividad de toda la cápsula; contar también la grasa de la pared (de cerca encendía la línea a tramos
+en las ventanas anteriores; mirando a 4,5 mm se perdía la hepatorrenal); o contar solo la perirrenal. Se elige esto.
+**Decisión.** La persona declara `capsuleFatTissues` (grasa perirrenal) y su GLSL amplía la condición de `interfaceEcho` con la
+misma ganancia. Las demás personas no cambian.
+**Consecuencias.** Línea hepatorrenal fina en la renal y la hepatorrenal; las ventanas anteriores no cambian. El borde hepático
+bajo una capa gruesa de grasa de pared sigue sin línea propia.
+**Verificación.** `s0028Capsule` (tabla, escena con oráculo propio y forma de los dos programas), paridad en Metal, láminas.

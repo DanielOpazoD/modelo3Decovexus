@@ -184,6 +184,9 @@ vec3 s28PGrad(vec3 p){
 }
 `;
 
+/** Tejidos de esta persona que cuentan como grasa al otro lado de la cápsula hepática, además de los comunes (decisión 378). */
+const S0028_CAPSULE_FAT_GLSL = /* glsl */ `||exterior==T_PERIRENAL`;
+
 /**
  * El resto de la clasificación s0028 con los dueños P3 (par GLSL de `classify`/`classifyInside` de `scene.ts`). Un solo
  * dueño da su material actual; los tubos, el tórax E y la vesícula conservan su código; se retiran el riñón, la grasa
@@ -368,5 +371,11 @@ export function s0028SolidsShader(source: string, replace: Replace): string {
     changed.slice(0, close).replace(profile[0], profile[0].replace(profile[1], profile[1] + '0')) +
     RIGID_PROFILE(profile[1]) +
     changed.slice(close);
+  // Cápsula hepática (decisión 378): en esta persona la grasa perirrenal también es grasa al otro lado de la cápsula. La
+  // sentencia se reconoce por su forma (dos tejidos y la ganancia con siete decimales), sin escribir sus nombres.
+  changed = changed.replace(
+    /(if\s*\(\s*\w+\s*==\s*\w+\s*\|\|\s*\w+\s*==\s*\w+)(\s*\)\s*\w+\s*=\s*\d+\.\d{7}\s*;)/,
+    (_, head: string, tail: string) => head + S0028_CAPSULE_FAT_GLSL + tail,
+  );
   return changed;
 }

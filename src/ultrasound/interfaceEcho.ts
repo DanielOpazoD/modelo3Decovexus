@@ -168,7 +168,9 @@ export function faceSiteGain(face: Interface, m: Vec3, scene: WallAcrossScene): 
   return face === Interface.Peritoneum && fatAcrossWall(m, scene) ? RETRO_PERITONEUM_GAIN : 1;
 }
 /** Actual exterior medium, rather than assuming muscle at every exposed hepatic surface. */
-export function capsuleExteriorGain(tissue: Tissue): number {
+export function capsuleExteriorGain(tissue: Tissue, alsoFat: readonly number[] = []): number {
+  // Grasa propia de una persona (decisión 378): la misma ganancia que la mesentérica, la única constante que lleva la GLSL.
+  if (alsoFat.includes(tissue)) return capsuleExteriorGain(Tissue.MesentericFat);
   // Sin el residuo del atlas: una rendija de 0,5–2,5 mm entre pared e hígado no es grasa, y encendía +12 dB a saltos
   if (tissue !== Tissue.RetroperitonealFat && tissue !== Tissue.MesentericFat) return 1;
   return Math.max(1, Math.abs(reflectionCoefficient(Tissue.LiverCapsule, tissue)) / interfaceReflectivity(Interface.LiverCapsule));
@@ -212,7 +214,7 @@ export function liverCapsuleSiteGain(m: Vec3, scene: AnatomyScene, caliber: Vess
   const offset = c.interfaceDistance / g.norm;
   if (offset > CAPSULE_PROJECTION_MAX_MM) return 1;
   const outside = m.map((v, i) => v + g.normal[i] * (offset + CAPSULE_OUTSIDE_MM)) as Vec3;
-  return capsuleExteriorGain(scene.classify(outside, caliber, withCurtain).tissue);
+  return capsuleExteriorGain(scene.classify(outside, caliber, withCurtain).tissue, scene.person?.cpu.capsuleFatTissues);
 }
 
 /**

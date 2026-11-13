@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-13",
- "main": "b3b9dd9",
+ "main": "993062e",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 64627
+   "actual": 14398
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14398
+   "actual": 64683
   },
   {
    "what": "`cutMapView.js`",
@@ -137,7 +137,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 26463
+   "actual": 26502
   },
   {
    "what": "`index.css`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 25146
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 25016
+   "actual": 1631
   },
   {
    "what": "`series.js`",
@@ -289,7 +289,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 485
   },
   {
    "what": "`surfaces.js`",
@@ -297,7 +297,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 485
+   "actual": 5730
   },
   {
    "what": "`teacherTab.js`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1041878
+   "actual": 1041917
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1120737
+   "actual": 1120962
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -481,11 +481,11 @@
     "sourceSha256": "ea5c4b3c288f653e8c66367c369f15840f2a1365483f057e8d4ea45b75d4d27b"
    },
    "s0028": {
-    "tokens": 396474,
+    "tokens": 396480,
     "branches": 2960,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "a8559b1a58db5c3afee468a2e9e406982510d03599c0ea1c9245da8dd73b9fa8"
+    "sourceSha256": "0122c8c14261d4e76de7d8d48fc8e1085ad01b2595992638559ff1f193e04ac1"
    }
   },
   {
@@ -500,11 +500,11 @@
     "sourceSha256": "fa4447e13438604223e3a349b5ded408bbbe0ed48b0ec5be542f30bc6394366f"
    },
    "s0028": {
-    "tokens": 163556,
+    "tokens": 163562,
     "branches": 1177,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "8ae4826258d8c2c026cc1c7a70c22d7ad22c4a36542351149b38f52b16f8c37b"
+    "sourceSha256": "8c8d3534bee6be37a9e064653accaf7461e6b00da25cb8d74db29c93ff0f1862"
    }
   },
   {
@@ -523,7 +523,7 @@
     "branches": 885,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "1e3648849487419701771f6073f9087c38c182b3d693fb615f59ecadf3b75e84"
+    "sourceSha256": "3b3d54060c591ab301ae777b6bd22bcbf3c0eb07dd7c442403a1bf64477b8aff"
    }
   },
   {
@@ -542,7 +542,7 @@
     "branches": 887,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "ccf675212e91d690d52c2394856728f7fcc6959614314bc1b1c12a37b56f88b1"
+    "sourceSha256": "cbd60a63cf7ddb4774c6ab1d352d70f14053e0ad5c53e7d628258b1d576e73ba"
    }
   },
   {
@@ -561,7 +561,7 @@
     "branches": 637,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "008009bd8db29d8a1849ee173990e7eb80454fa5c4a88f926d3f968092815f7f"
+    "sourceSha256": "6ea371958a4c1312437cde35bbe61c7503b35c6d854e1514d7c9655774433f79"
    }
   },
   {
@@ -624,7 +624,7 @@
  ],
  "s0028DescriptorSha256": "0e60cc0ec6df55de71ffa59227b29b995cb82f1b62a2e26a9b63d8eae3bd65da",
  "tests": {
-  "vitestFiles": 338,
+  "vitestFiles": 339,
   "slowFiles": 34,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,
