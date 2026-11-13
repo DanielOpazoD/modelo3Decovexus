@@ -674,11 +674,13 @@ Corregida `color-absorption-linear-scaling` (174→176): A2 integra α_t(fD) por
 
 `s0028-wall-direct`: P2 r2b integra la pared regional en CPU, Worker del corte, 3D y GPU con la regla directa; se
 usa logical-surface-v2, cobertura offline 90,98 %, aceptada por el propietario el 04-11-2026 (decisión 320); no es pared ni
-adquisición aprobada. Los huecos quedan como tejido no segmentado U, sin cara interna para la clasificación. Para la
+adquisición aprobada. Los 267 huecos cerrados de la carta (hasta 200 nodos) se rellenan al cargarla por interpolación,
+rotulados como estimación, y ceden ante un órgano medido (decisión 376); el U abierto del dorso y los flancos queda como
+tejido no segmentado U, sin cara interna para la clasificación. Para la
 sonda (r2b-U), un nodo U toma la cara E estimada del nodo conocido más cercano a ≤12 mm o acopla sólo por la piel, sin
 compresión; la respiración U es una rampa por fila (p10/p90 de la cara interna conocida), no la cara local, y salta en
-la frontera con la celda D/E. Con la presión en su tope, la pared regional D/E doblada en un borde de la cara deja sin
-acoplar parte de cuatro ventanas por debajo de main (1.607 líneas acopladas de 1.920 en las diez poses; main 1.558).
+la frontera con la celda D/E. Desde la decisión 374 acopla todo elemento que toca la piel: donde la pared se dobla bajo la
+cara, la tabla de compresión interpolada puede deformarla algo.
 La fracción U de celdas, los pliegues
 y las proyecciones sin prueba se registran por ventana en la [migración](anatomia/migracion-s0028.md). Intercostal
 sigue bloqueada/P8; posterior U/P3. En GPU nativa (Metal) el filtro del hardware aparta la cara de la pared de la que mide

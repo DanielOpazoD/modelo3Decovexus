@@ -18,6 +18,8 @@ export type S0028WallSample =
       innerMm: number;
       interfaceMm: number;
       provenance: readonly [Provenance, Provenance, Provenance, Provenance];
+      /** Alguna esquina de la celda es una estimación en sus tres fronteras (E, E, E): un nodo interpolado en un hueco de la carta. */
+      estimated: boolean;
       region: number;
       phi: number;
       z: number;
@@ -55,6 +57,11 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
   const TILE_WORDS = 65 * 91 * 2 * 2;
   /** Sigma (celdas de la carta: ~2 mm de arco × 1,5 mm de alto) del alisado de las fronteras de la pared (decisión 373). */
   const CHART_SMOOTH_CELLS = 2;
+  /** Tamaño máximo (nodos) de un hueco cerrado sin rotular que se rellena por interpolación (decisión 376); el mayor mide 154. */
+  const CHART_HOLE_NODES = 200;
+  const CHART_HOLE_PASSES = 200;
+  /** Procedencia E, E, E (8·3 + 32·3 + 128·3), región 0: el código que la carta ya usa para sus nodos estimados. */
+  const CHART_FILLED_CODE = toHalf(504);
   /** Mapa E por nodo (512×181 RG16F) del bloque derivado offline y su código del propio nodo conocido, (0+8)·32+(0+16). */
   const E_WORDS = 512 * 181 * 2;
   const E_SELF = 272;
@@ -124,10 +131,12 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
   }
 
   /**
-   * Carta de pared idealizada (decisión 373): las tres fronteras de cada nodo conocido se alisan con una gaussiana de
-   * `CHART_SMOOTH_CELLS` celdas sobre sus vecinos conocidos, en una copia; los nodos U siguen U. La carta medida en el TAC trae
-   * ±1 mm de ruido de vóxel de nodo a nodo y las fascias se veían onduladas. El mapa E se rehace con la cara alisada de su nodo
-   * fuente. CPU y GPU usan esta misma copia.
+   * Carta de pared idealizada, en una copia que usan CPU y GPU.
+   * - Decisión 373: las tres fronteras de cada nodo medido se alisan con una gaussiana de `CHART_SMOOTH_CELLS` celdas sobre sus
+   *   vecinos medidos. La carta del TAC trae ±1 mm de ruido de vóxel de nodo a nodo y las fascias se veían onduladas.
+   * - Decisión 376: los huecos cerrados (componentes U de hasta `CHART_HOLE_NODES` nodos que no tocan el borde de la carta) se
+   *   rellenan por interpolación armónica desde su borde y se rotulan E, E, E. Rellenar no mueve lo medido. El U abierto sigue U.
+   * El mapa E se rehace con la cara de su nodo fuente; un nodo rellenado lleva la suya.
    */
   function smoothChart(tiles: Uint16Array, nearest: Uint16Array): { tiles: Uint16Array; nearest: Uint16Array } {
     const ROWS = 181,
@@ -138,6 +147,37 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
       const band = row < 90 ? 0 : 1;
       return (band * 8 + (col >> 6)) * TILE_WORDS + ((page * 91 + row - 90 * band) * 65 + (col & 63)) * 2 + k;
     };
+    // Huecos sin rotular dentro de la zona conocida (decisión 376): componentes U cerrados de hasta `CHART_HOLE_NODES` nodos.
+    const unknown = (i: number) => Number.isNaN(HALF[tiles[cell(Math.floor(i / COLS), i % COLS, 0, 0)]]);
+    const neighbours = (i: number) => {
+      const row = Math.floor(i / COLS),
+        col = i % COLS,
+        out = [row * COLS + ((col + 1) % COLS), row * COLS + ((col + COLS - 1) % COLS)];
+      if (row > 0) out.push(i - COLS);
+      if (row < ROWS - 1) out.push(i + COLS);
+      return out;
+    };
+    const seen = new Uint8Array(ROWS * COLS),
+      holes: number[][] = [];
+    for (let start = 0; start < ROWS * COLS; start++) {
+      if (seen[start] || !unknown(start)) continue;
+      const component = [start];
+      let open = false;
+      seen[start] = 1;
+      for (let head = 0; head < component.length; head++) {
+        const i = component[head],
+          row = Math.floor(i / COLS);
+        if (row === 0 || row === ROWS - 1) open = true;
+        for (const j of neighbours(i))
+          if (!seen[j] && unknown(j)) {
+            seen[j] = 1;
+            component.push(j);
+          }
+      }
+      if (!open && component.length <= CHART_HOLE_NODES) holes.push(component);
+    }
+    const filled = new Uint8Array(ROWS * COLS);
+    for (const hole of holes) for (const i of hole) filled[i] = 1;
     const fields = [
       [0, 0],
       [0, 1],
@@ -148,8 +188,25 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
         out = new Float32Array(ROWS * COLS);
       for (let row = 0; row < ROWS; row++)
         for (let col = 0; col < COLS; col++) source[row * COLS + col] = HALF[tiles[cell(row, col, page, k)]];
-      // Separable, normalizada sobre los vecinos finitos: un nodo U no aporta ni recibe.
-      const blur = (from: Float32Array, to: Float32Array, along: 0 | 1) => {
+      // Huecos cerrados: interpolación armónica desde su borde conocido (Jacobi), antes del alisado.
+      for (const hole of holes) {
+        let mean = 0,
+          count = 0;
+        for (const i of hole)
+          for (const j of neighbours(i))
+            if (!filled[j]) {
+              mean += source[j];
+              count++;
+            }
+        for (const i of hole) source[i] = mean / count;
+        for (let step = 0; step < CHART_HOLE_PASSES; step++)
+          for (const i of hole) {
+            const around = neighbours(i);
+            source[i] = around.reduce((sum, j) => sum + source[j], 0) / around.length;
+          }
+      }
+      // Separable, normalizada sobre los vecinos finitos de `domain`: un nodo U no aporta ni recibe.
+      const blur = (domain: Float32Array, from: Float32Array, to: Float32Array, along: 0 | 1) => {
         for (let row = 0; row < ROWS; row++)
           for (let col = 0; col < COLS; col++) {
             let sum = 0,
@@ -163,11 +220,19 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
               sum += kernel[d + R] * v;
               weight += kernel[d + R];
             }
-            to[row * COLS + col] = Number.isNaN(source[row * COLS + col]) || weight === 0 ? NaN : sum / weight;
+            to[row * COLS + col] = Number.isNaN(domain[row * COLS + col]) || weight === 0 ? NaN : sum / weight;
           }
       };
-      blur(source, pass, 0);
-      blur(pass, out, 1);
+      // Rellenar no mueve lo medido: un nodo medido se alisa sólo con vecinos medidos; uno rellenado, con todos.
+      const measured = source.map((v, i) => (filled[i] ? NaN : v));
+      blur(measured, measured, pass, 0);
+      blur(measured, pass, out, 1);
+      if (holes.length) {
+        const all = new Float32Array(ROWS * COLS);
+        blur(source, source, pass, 0);
+        blur(source, pass, all, 1);
+        for (const hole of holes) for (const i of hole) out[i] = all[i];
+      }
       return out;
     });
     const smooth = tiles.slice();
@@ -185,10 +250,18 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
           if (!Number.isNaN(a)) smooth[at] = toHalf(a);
           if (!Number.isNaN(b)) smooth[at + 1] = toHalf(b);
           if (!Number.isNaN(c)) smooth[at + 91 * 65 * 2] = toHalf(c);
+          // Un nodo rellenado es una estimación en sus tres fronteras: procedencia E, E, E.
+          if (filled[i]) smooth[at + 91 * 65 * 2 + 1] = CHART_FILLED_CODE;
         }
     const face = nearest.slice();
     for (let row = 0; row < ROWS; row++)
       for (let col = 0; col < COLS; col++) {
+        if (filled[row * COLS + col]) {
+          // Ya es un nodo conocido: lleva su propia cara.
+          face[(row * COLS + col) * 2] = smooth[cell(row, col, 1, 0)];
+          face[(row * COLS + col) * 2 + 1] = toHalf(E_SELF);
+          continue;
+        }
         const code = HALF[nearest[(row * COLS + col) * 2 + 1]];
         if (Number.isNaN(code)) continue;
         const r = row + Math.floor(code / 32) - 8,
@@ -282,6 +355,7 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
         PROVENANCE[Math.floor(code / 128) % 4],
         PROVENANCE[Math.floor(code / 512) % 4],
       ],
+      estimated: cell.codes.some((c) => Math.floor(c / 8) % 64 === 63),
       region: code % 8,
       phi,
       z,

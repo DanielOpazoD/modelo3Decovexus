@@ -37,6 +37,10 @@ bool s28WallKnown(vec4 codes){
 // Esquinas 00,10,01,11 de la celda: la misma interpolación y la misma pendiente que chartCell (CPU).
 float s28Mix(vec4 v,vec2 f){float a=v.x+f.x*(v.y-v.x),b=v.z+f.x*(v.w-v.z);return a+f.y*(b-a);}
 vec2 s28Slope(vec4 v,vec2 f){float a=v.x+f.x*(v.y-v.x),b=v.z+f.x*(v.w-v.z);return vec2(v.y-v.x+f.y*((v.w-v.z)-(v.y-v.x)),b-a);}
+// La última celda leída por s28WallSurface tiene alguna esquina estimada: lo consulta el reparto de dueños tras s28WallAt.
+// El nombre va antes de «p» en orden alfabético: la extensión de la ABI GLSL numera los símbolos nuevos por orden y uno posterior
+// movería los nombres de una extensión privada (personShaders.test.ts).
+bool estimatedCell;
 // xyz=fronteras, w=código nearest; U: w=-1 y fronteras NaN, sin fabricar una superficie.
 vec4 s28WallSurface(vec2 rc,out vec4 outer,out vec4 inner,out vec4 iface,out vec2 f){
   float nan=uintBitsToFloat(0x7fc00000u);
@@ -48,6 +52,8 @@ vec4 s28WallSurface(vec2 rc,out vec4 outer,out vec4 inner,out vec4 iface,out vec
   vec4 e0=texelFetch(uAbdominalAtlas,at+ivec3(0,0,1),0),e1=texelFetch(uAbdominalAtlas,at+ivec3(1,0,1),0);
   vec4 e2=texelFetch(uAbdominalAtlas,at+ivec3(0,1,1),0),e3=texelFetch(uAbdominalAtlas,at+ivec3(1,1,1),0);
   vec4 codes=vec4(e0.g,e1.g,e2.g,e3.g);
+  // Código E, E, E (bits 3–8 a uno) en alguna esquina: la celda es una estimación (par de estimated en la CPU).
+  estimatedCell=any(equal(mod(floor(codes/8.0),64.0),vec4(63.0)));
   if(!s28WallKnown(codes))return vec4(nan,nan,nan,-1.0);
   vec4 a=texelFetch(uAbdominalAtlas,at,0),b=texelFetch(uAbdominalAtlas,at+ivec3(1,0,0),0);
   vec4 c=texelFetch(uAbdominalAtlas,at+ivec3(0,1,0),0),d=texelFetch(uAbdominalAtlas,at+ivec3(1,1,0),0);

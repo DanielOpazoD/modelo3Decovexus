@@ -30,8 +30,16 @@ export const s0028Solids: MutantManifest = {
       name: 'hueso-contra-pared-como-choque',
       origin: 'P3 r2 (decisión 321)',
       breaks: 'El hueso dentro de la banda de pared cuenta como segundo dueño (conflicto) en vez de contenido del complejo P2.',
-      from: 'q.depthMm < q.interfaceMm && !skeleton)',
-      to: 'q.depthMm < q.interfaceMm)',
+      from: 'q.depthMm < q.interfaceMm && !skeleton &&',
+      to: 'q.depthMm < q.interfaceMm &&',
+      tests: ['src/validation/s0028SolidsClassify.test.ts'],
+    },
+    {
+      name: 'pared-estimada-disputa-organo',
+      origin: 'decisión 376',
+      breaks: 'La pared interpolada en un hueco de la carta cuenta como segundo dueño frente a un órgano medido (conflicto).',
+      from: '!(q.estimated && owners.length > 0))',
+      to: 'true)',
       tests: ['src/validation/s0028SolidsClassify.test.ts'],
     },
     {

@@ -56,9 +56,10 @@ it('contacto: P3 conserva la carta P2 y su U; los 30 contactos s0028 quedan fija
   // cara (D y s_D cambian en los nodos que hunden la piel); `s0028UContact.test.ts` comprueba esa regla nodo a nodo. Hasta la
   // decisión 373 era 5880…8703: la carta de pared se alisa al cargar (sus caras cambian 0,56 mm de media);
   // `s0028WallChart.test.ts` acota ese cambio. Hasta la 374 era 6f5c…9c7e: cambia sólo `contact` (acopla todo elemento que toca
-  // la piel); `s0028UContact.test.ts` comprueba la regla.
+  // la piel); `s0028UContact.test.ts` comprueba la regla. Hasta la 376 era a8bc…7533: los huecos cerrados de la carta se rellenan y
+  // los nodos que apoyan sobre ellos tienen ahora pared; `s0028WallChart.test.ts` comprueba que lo medido no se mueve.
   expect(createHash('sha256').update(JSON.stringify(values)).digest('hex')).toBe(
-    'a8bc464f11ef379bc1c746453c48f0bcd657990df6e3207746933b3c6b527533',
+    '3d121ebe712db3b9a5bdcb1bd3dcbdede4db38e801aaddb1914c254f6ecf74da',
   );
 });
 

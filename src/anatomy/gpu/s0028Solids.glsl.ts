@@ -161,7 +161,8 @@ int s28POwn(vec3 m,vec4 q,bool valid,out int k,out float d,out vec4 b,out vec2 e
   s28PAdd(n,k,d,14,s28PT(m,2));
   s28PAdd(n,k,d,15,s28PT(m,3));
   // Banda P2 conocida; el hueso dentro de la pared es contenido del complejo, no un choque.
-  if(valid&&q.w<q.z&&b.x>=0.0&&b.y>=0.0&&b.z>=0.0&&b.w>=0.0){if(n==0){k=16;d=-min(q.w-1.5,q.z-q.w);}n++;}
+  // Una pared estimada (celda con alguna esquina interpolada en un hueco de la carta, decisión 376) no disputa un órgano medido.
+  if(valid&&q.w<q.z&&b.x>=0.0&&b.y>=0.0&&b.z>=0.0&&b.w>=0.0&&(n==0||!estimatedCell)){if(n==0){k=16;d=-min(q.w-1.5,q.z-q.w);}n++;}
   // Grasa D sólo donde ninguna máscara reclama el punto, ni la lámina de los vasos fuente.
   if(n==(k==16?1:0)&&(s28PFat(m,0)||s28PFat(m,1))&&s28PA(m,12)>=0.0&&s28PA(m,13)>=0.0&&s28PA(m,14)>=0.0){if(n==0){k=17;d=0.0;}n++;}
   // Fuera de las cajas renales, la grasa del abdomen a 3 mm: sólo sin ningún dueño (tampoco pared) ni vaso fuente.
