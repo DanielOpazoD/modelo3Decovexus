@@ -270,7 +270,8 @@ it('posterior U no es aire, órgano ni anillo muscular; sus interfaces finas est
   const m: Vec3 = [105, -75, -160];
   expect(s0028WallAt(m)).toMatchObject({ kind: 'unknown' });
   const c = scene.classify(m, BASELINE_CALIBER);
-  expect(c).toMatchObject({ tissue: Tissue.UnsegmentedSoftTissue, wall: 'U' });
+  // Sin carta, la pared posterior sigue rotulada U; se dibuja como grasa estimada, no como un gris aparte (decisión 371).
+  expect(c).toMatchObject({ tissue: Tissue.Fat, wall: 'U', approximation: 'grasa-estimada' });
   expect(Number.isNaN(wallFaceSd(m, Interface.Peritoneum, scene.torso))).toBe(true);
   expect(s0028InsideWall(m)).toBeNull();
 });
@@ -304,11 +305,10 @@ it('un paquete enteramente U mantiene el fondo rotulado y nunca produce una band
       if (scene.classify(q, BASELINE_CALIBER).solids?.state === 'U') background = q;
     }
     expect(background).not.toBeNull();
-    expect(scene.classify(background!, BASELINE_CALIBER)).toMatchObject({
-      tissue: Tissue.UnsegmentedSoftTissue,
-      wall: 'U',
-      boundaryDistance: 0,
-    });
+    // El fondo sin dueño sigue rotulado: U en la pared, con su material estimado (grasa de pared o, más adentro, visceral).
+    const fondo = scene.classify(background!, BASELINE_CALIBER);
+    expect(fondo).toMatchObject({ approximation: 'grasa-estimada', boundaryDistance: 0 });
+    expect([Tissue.Fat, Tissue.MesentericFat]).toContain(fondo.tissue);
     expect(s0028InsideWall(p)).toBeNull();
     expect(scene.respiratoryWeight(p)).toBe(0);
   } finally {

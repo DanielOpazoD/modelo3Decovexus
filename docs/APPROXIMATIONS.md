@@ -620,3 +620,8 @@ de radio. Son valores de aspecto para que se vea como un arco continuo; no salen
 
 Dentro de la máscara del corazón, los 4 mm junto a su contorno son miocardio, con el mismo grosor en las cuatro cavidades. Es una
 cifra de aspecto: los ventrículos reales tienen paredes más gruesas que las aurículas.
+
+### s0028: grasa de pared donde no hay carta (371)
+
+Donde la carta de pared no conoce la celda, el tejido sin máscara se dibuja como grasa de pared (rotulado `grasa-estimada`). Es
+una estimación de aspecto: ahí hay también músculo intercostal y posterior que el modelo no separa.

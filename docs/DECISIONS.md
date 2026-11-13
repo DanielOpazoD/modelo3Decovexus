@@ -11908,3 +11908,13 @@ el mismo grosor en ventrículos y aurículas.
 **Decisión.** Retrodispersión 4,5 para la pared arterial en el aspecto de s0028 (antes 1,8). La pared venosa fina no cambia.
 **Consecuencias.** La aorta y sus ramas llevan un anillo brillante y la cava no. Valor de aspecto, sin medida.
 **Verificación.** `s0028TissueLook` (6 dB sobre el hígado y sobre la pared venosa); lámina epigástrica.
+
+## 371. Lo no rotulado en la pared de s0028 se dibuja como su grasa
+
+**Contexto.** Donde la carta de pared no conoce la celda (pared lateral y posterior), el tejido sin dueño salía con el gris de
+«sin rotular», más claro que la grasa de al lado: la pared se veía a parches en la subcostal y la intercostal.
+**Opciones.** Dejarlo (honesto, pero a manchas), o completar la regla de la 364 hacia fuera; se elige esto.
+**Decisión.** Un punto sin dueño que no cae en la cavidad se dibuja como grasa de pared, con su textura de tabiques. Conserva
+el rótulo `U` de pared y el de `grasa-estimada`. A menos de 10 mm del riñón sigue sin rotular.
+**Consecuencias.** Pared uniforme donde no hay carta. Los músculos intercostales y posteriores sin máscara se ven como grasa.
+**Verificación.** `s0028WallRuntime` (el fondo sigue rotulado), `s0028SolidsClassify`, e2e de paridad en Metal, láminas.

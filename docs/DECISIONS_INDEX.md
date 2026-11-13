@@ -374,3 +374,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [368](DECISIONS.md#L11880) | La cortical de las vértebras de s0028 se dibuja, con su arco brillante y su sombra | vigente |
 | [369](DECISIONS.md#L11893) | El corazón de s0028 lleva pared libre y miocardio de gris medio | vigente |
 | [370](DECISIONS.md#L11904) | La pared arterial de s0028 es ecogénica | vigente |
+| [371](DECISIONS.md#L11912) | Lo no rotulado en la pared de s0028 se dibuja como su grasa | vigente |
