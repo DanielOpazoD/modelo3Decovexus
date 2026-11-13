@@ -26,6 +26,8 @@ export interface AnatomyPerson {
   readonly curveVessels?: (vessels: VesselDef[]) => void;
   /** Tope de ramas hepáticas procedurales por vaso madre, cuando la persona ya trae ramas propias y los tubos van justos. */
   readonly hepaticBranchesPerParent?: number;
+  /** Radio (mm) del cuerpo vertebral lumbar con que su cortical reparte el eco (decisión 368). */
+  readonly lumbarBodyRadiusMm?: number;
   /** Tras colocar las ramas procedurales: el eje de los vasos madre como curva (más nodos, mismos extremos). */
   readonly smoothVessels?: (vessels: VesselDef[]) => void;
   readonly regional?: ReturnType<typeof createSourceQueries> &
@@ -61,6 +63,8 @@ export interface PersonGpuPlan {
   readonly tissueLook?: Readonly<
     Record<number, { readonly backscatter?: number; readonly speckleClump?: number; readonly attenuation?: number }>
   >;
+  /** Aspecto por cara de esta persona: pendiente de la rugosidad con que se sube su eco de interfaz (decisión 368). */
+  readonly interfaceLook?: Readonly<Record<number, { slopeRms?: number }>>;
 }
 
 export interface InstalledCpuPerson {

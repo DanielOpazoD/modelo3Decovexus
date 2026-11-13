@@ -43,3 +43,5 @@ export const s0028WideFatPages = (): number[][] =>
     const c = parseInt(B.wideFat.pages.slice(3 * i, 3 * i + 3), 36);
     return [(c % 6) * 32, (Math.floor(c / 6) % 8) * 32, Math.floor(c / 48)];
   });
+/** Radio (mm) del cuerpo vertebral lumbar con que su cortical reparte el eco: un cilindro vertical (decisión 368). [ESTIMADO] */
+export const S0028_LUMBAR_BODY_RADIUS_MM = 22;

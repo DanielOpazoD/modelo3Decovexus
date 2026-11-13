@@ -371,3 +371,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [365](DECISIONS.md#L11849) | Las suprahepáticas de s0028 se abren hacia la cava | vigente |
 | [366](DECISIONS.md#L11860) | La pared de s0028 se lee por capas: fascias continuas y músculo más oscuro que la grasa | vigente |
 | [367](DECISIONS.md#L11872) | El páncreas de s0028 es algo más ecogénico que el hígado | vigente |
+| [368](DECISIONS.md#L11880) | La cortical de las vértebras de s0028 se dibuja, con su arco brillante y su sombra | vigente |

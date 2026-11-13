@@ -11876,3 +11876,16 @@ también se oscurece. Las fascias conservan las pequeñas ondulaciones de la car
 **Decisión.** Retrodispersión 1,9 en el aspecto de s0028: 2,8 dB sobre el hígado y 1,4 bajo la grasa visceral.
 **Consecuencias.** El páncreas se distingue del hígado y de la grasa que lo rodea. Valor de aspecto, sin medida.
 **Verificación.** `s0028TissueLook` (entre hígado y grasa); láminas epigástrica y subxifoidea.
+
+## 368. La cortical de las vértebras de s0028 se dibuja, con su arco brillante y su sombra
+
+**Contexto.** En la epigástrica la aorta se fundía con la sombra de la vértebra y parecía una columna negra: las vértebras de
+s0028 no tenían cara acústica. Solo las costillas dibujaban su cortical.
+**Opciones.** Una cara vertebral propia con su geometría analítica (la de la otra persona, que no encaja), o ampliar la regla
+costal a todo el hueso fuente; se elige esto.
+**Decisión.** El tejido blando a menos de 1,3 mm de una vértebra torácica o lumbar dibuja su cortical como la de una costilla,
+con la normal media de la superficie a 3 mm y, en el cuerpo lumbar, la curvatura de un cilindro de 22 mm. La pendiente de
+rugosidad de la cortical sube a 0,5 en s0028 (`interfaceLook`, dato nuevo por persona): con 0,15 salía en destellos sueltos.
+**Consecuencias.** Arco brillante bajo la aorta y remates sobre cada sombra vertebral; las costillas también ganan su remate.
+Valores de aspecto. El sacro sigue sin cortical.
+**Verificación.** Mapa de caras alrededor de la vértebra; láminas de las ocho ventanas; `personShaders`, `glslMangle`.

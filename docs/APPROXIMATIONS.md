@@ -610,3 +610,8 @@ El calibre de las suprahepáticas es el de su TAC salvo que nunca disminuye haci
 
 Las fascias de la pared se dibujan con reflectividad uniforme (sin la variación a lo largo de la cara de la otra persona) y el
 músculo con retrodispersión 0,24. Son valores de aspecto, elegidos mirando las ventanas.
+
+### s0028: cortical ósea (368)
+
+La cortical de costillas y vértebras se dibuja con pendiente de rugosidad 0,5 y, en el cuerpo lumbar, como un cilindro de 22 mm
+de radio. Son valores de aspecto para que se vea como un arco continuo; no salen de una medida.

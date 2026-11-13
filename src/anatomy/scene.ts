@@ -632,18 +632,24 @@ export class AnatomyScene {
       const q = (this.person?.cpu.atlas ?? EMPTY_ATLAS).thoracicValue(m);
       // Cortex belongs to adjacent soft tissue even when the registered rib
       // is deeper than the estimated wall. Transmission still hides its back.
+      // s0028 (decisión 368): también la cortical de sus vértebras torácicas y lumbares, la más cercana de las dos.
+      const s0028 = this.identity.person === 's0028';
+      const cortex = s0028
+        ? Math.min(q.d, this.person.cpu.regional!.s0028SourceValue(m, 'lumbarSacralBone').d)
+        : (this.person?.cpu.atlas ?? EMPTY_ATLAS).thoracicMaterial(q.label) === 'bone'
+          ? q.d
+          : -1;
       if (
-        (this.person?.cpu.atlas ?? EMPTY_ATLAS).thoracicMaterial(q.label) === 'bone' &&
-        q.d >= 0 &&
-        q.d < 1.3 &&
-        q.d < result.interfaceDistance &&
+        cortex >= 0 &&
+        cortex < 1.3 &&
+        cortex < result.interfaceDistance &&
         ![Tissue.Lung, Tissue.Fluid, Tissue.Blood].includes(result.tissue)
       )
         return {
           ...result,
-          boundaryDistance: Math.min(result.boundaryDistance, q.d),
+          boundaryDistance: Math.min(result.boundaryDistance, cortex),
           interface: Interface.RibCortex,
-          interfaceDistance: q.d,
+          interfaceDistance: cortex,
         };
     }
     return result;
@@ -782,8 +788,18 @@ export class AnatomyScene {
         if (this.identity.person === 's0028' && iface === Interface.Perichondrium)
           return this.numericGradient(m, (p) => this.person.cpu.regional!.s0028SourceValue(p, 'cartilage').d, 0);
         if (this.hasAbdominalAtlas && this.person?.assets.buffers.thoracic) {
-          const f = (this.person?.cpu.atlas ?? EMPTY_ATLAS).thoracicFrame(m);
-          return { ...this.numericGradient(m, (this.person?.cpu.atlas ?? EMPTY_ATLAS).thoracicSdf, f.curvature), axis: f.axis };
+          const atlas = this.person?.cpu.atlas ?? EMPTY_ATLAS,
+            f = atlas.thoracicFrame(m);
+          if (this.identity.person === 's0028') {
+            // La cortical es la del hueso torácico o la del lumbar, la más cercana, con la normal media de su superficie a 3 mm
+            // (decisión 368; la misma distancia que `ribSd` y la rama IF_RIB de s0028 en la GPU). El cuerpo lumbar refleja como un cilindro vertical.
+            const lumbar = (p: Vec3) => this.person.cpu.regional!.s0028SourceValue(p, 'lumbarSacralBone').d,
+              bone = (p: Vec3) => Math.min(atlas.thoracicSdf(p), lumbar(p));
+            return lumbar(m) < atlas.thoracicSdf(m)
+              ? { ...this.numericGradient(m, bone, 1 / (this.person.cpu.lumbarBodyRadiusMm ?? 22), 3), axis: [0, 0, 1] }
+              : { ...this.numericGradient(m, bone, f.curvature, 3), axis: f.axis };
+          }
+          return { ...this.numericGradient(m, atlas.thoracicSdf, f.curvature), axis: f.axis };
         }
         const rib = this.ribs[nearestRib(m, this.ribs, this.torso, this.spine)];
         if (sternumSd(m, this.torso) < ribSd(m, rib, this.torso, this.spine))

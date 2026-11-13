@@ -1,8 +1,16 @@
 import { personShader } from '../../gpu/personShader';
 import type { InstalledCpuPerson, PersonGpuPlan } from '../../person';
+import { Interface } from '../../interfaces';
 import { Tissue } from '../../tissues';
 import { S0028_BUNDLE } from './descriptor';
 import { S0028_TUBE_SEGMENTS } from './vessels';
+/**
+ * Aspecto de las caras de s0028 (decisión 368). La cortical ósea se ve como un arco brillante y continuo aunque el haz no le llegue
+ * de frente: el hueso es rugoso a la escala de la onda. Con la pendiente de 0,15 de la otra persona, la cortical de una vértebra
+ * salía en destellos sueltos. Valor [EXTRAPOLACIÓN PROPIA].
+ */
+export const S0028_INTERFACE_LOOK = Object.freeze({ [Interface.RibCortex]: { slopeRms: 0.5 } });
+
 /**
  * Aspecto de los tejidos de s0028 donde la tabla común no basta para leer la imagen (decisión 355). Su grasa visceral es la del
  * TAC, no una cáscara analítica: con 1,3–2,5 dB sobre el hígado los bordes de hígado, riñón y páncreas no se distinguían. Y su
@@ -26,5 +34,6 @@ export function gpuPlan(person: InstalledCpuPerson): PersonGpuPlan {
     uploads: [...person.cpu.regional!.s0028WallUploads(), ...person.cpu.regional!.s0028SolidsUploads()],
     tubeSegments: S0028_TUBE_SEGMENTS,
     tissueLook: S0028_TISSUE_LOOK,
+    interfaceLook: S0028_INTERFACE_LOOK,
   });
 }
