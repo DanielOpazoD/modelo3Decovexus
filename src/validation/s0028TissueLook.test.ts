@@ -30,6 +30,10 @@ it('s0028: la grasa visceral se distingue del hígado y del riñón, y el conten
   expect(db(back(Tissue.VesselWallPortal) / back(Tissue.Liver))).toBeGreaterThan(6);
   expect(TISSUES[Tissue.VesselWallPortal].backscatter).toBe(2.6);
   expect(back(Tissue.VesselWallThin)).toBe(TISSUES[Tissue.VesselWallThin].backscatter);
+  // La pared arterial es lo que distingue la aorta de la cava en eje corto: al menos 6 dB sobre el hígado y sobre la pared venosa
+  // fina, que conserva su valor (decisión 370).
+  expect(db(back(Tissue.ArteryWall) / back(Tissue.Liver))).toBeGreaterThan(6);
+  expect(db(back(Tissue.ArteryWall) / back(Tissue.VesselWallThin))).toBeGreaterThan(6);
   // Solo aspecto: ningún tejido cambia de velocidad, densidad ni clase (gas, hueso).
   for (const row of Object.values(look))
     expect(Object.keys(row).every((k) => ['backscatter', 'speckleClump', 'attenuation'].includes(k))).toBe(true);

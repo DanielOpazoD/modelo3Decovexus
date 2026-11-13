@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: la aorta se distingue de la cava por su pared ecogénica (370)
+
 - Anatomía s0028: el corazón lleva pared libre de miocardio y sus cavidades se distinguen de ella (369)
 
 - Imagen s0028: las vértebras dibujan su cortical como un arco brillante con sombra; la aorta deja de fundirse con ella (368)

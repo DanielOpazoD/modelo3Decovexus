@@ -11900,3 +11900,11 @@ entrando como sangre. El miocardio sube su retrodispersión a 0,9 en el aspecto 
 **Consecuencias.** Dos cavidades con pared y tabique reconocibles. Sigue sin válvulas, movimiento ni pericardio; la pared tiene
 el mismo grosor en ventrículos y aurículas.
 **Verificación.** `s0028Heart` (el paso de la cava a la aurícula sigue abierto), `s0028WallGpu`, e2e de paridad, lámina subcostal.
+
+## 370. La pared arterial de s0028 es ecogénica
+
+**Contexto.** En la epigástrica la aorta y la cava eran dos círculos negros iguales: nada en el borde decía cuál es la arteria.
+**Opciones.** Engrosar la pared arterial (cambia geometría y áreas), o subir su brillo; se elige esto.
+**Decisión.** Retrodispersión 4,5 para la pared arterial en el aspecto de s0028 (antes 1,8). La pared venosa fina no cambia.
+**Consecuencias.** La aorta y sus ramas llevan un anillo brillante y la cava no. Valor de aspecto, sin medida.
+**Verificación.** `s0028TissueLook` (6 dB sobre el hígado y sobre la pared venosa); lámina epigástrica.
