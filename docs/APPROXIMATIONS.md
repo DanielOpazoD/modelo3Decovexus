@@ -600,3 +600,8 @@ de la persona. El gas del colon y del intestino sí se conserva.
 
 Dentro de la cavidad, un punto sin máscara ni grasa por densidad se dibuja como grasa visceral (rotulado `grasa-estimada`). El TAC no
 lo afirma: es la hipótesis más simple para que el fondo no muestre la rejilla de 3 mm. En la pared no se aplica.
+
+### s0028: calibre idealizado de las suprahepáticas (365)
+
+El calibre de las suprahepáticas es el de su TAC salvo que nunca disminuye hacia la cava y las tres principales llegan a ella con
+8 mm de diámetro al menos. Los 8 mm y los 25 mm del tramo en que se abren son cifras de aspecto, no medidas.

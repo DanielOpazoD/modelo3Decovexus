@@ -11845,3 +11845,14 @@ paquete de s0028 sube 16 KiB (a 1.132.544 B): es la única persona con trabajo n
 **Consecuencias.** Fondo uniforme tras la cava; estómago y páncreas se recortan sobre la grasa. Es una estimación: el TAC no
 dice que todo eso sea grasa.
 **Verificación.** `s0028SolidsClassify` y `s0028SolidsMotion` (lo admiten solo con su rótulo), láminas de las ocho ventanas.
+
+## 365. Las suprahepáticas de s0028 se abren hacia la cava
+
+**Contexto.** En las ventanas subcostal e intercostal las suprahepáticas parecían palos: finas y de calibre casi constante.
+Medido en su TAC, la derecha llegaba a 7,2 mm a medio trayecto y se estrechaba a 5,6 antes de la cava; la media, a 4,8.
+**Opciones.** Dejar el calibre medido (fase portal, venas poco rellenas), o idealizarlo como pide el rumbo de la 361.
+**Decisión.** El calibre de cada vena y tributaria propia nunca disminuye hacia su desembocadura; las tres principales se abren en
+sus últimos 25 mm hasta 8 mm de diámetro al menos, y el tronco común no es más fino que las venas que recibe.
+**Consecuencias.** Confluencia en trompeta, como en la imagen clásica. El radio de referencia (área de flujo) no cambia, así que
+el Doppler es el mismo. El calibre junto a la cava ya no es el medido en el TAC.
+**Verificación.** `s0028Vessels` (calibre no decreciente y boca de 8 mm), `vesselOverlap`, láminas subcostal e intercostal.

@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 61562
+   "actual": 62097
   },
   {
    "what": "`cutMapView.js`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1116109
+   "actual": 1116644
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
