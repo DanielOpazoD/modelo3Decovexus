@@ -32,5 +32,6 @@ it('las poses de la otra persona no sirven en s0028: la porta intrahepática y l
   const foreign = scores('current');
   expect(foreign.portal.seen).toBeLessThan(0.5);
   expect(foreign.intercostal.seen).toBeLessThan(0.5);
-  expect(foreign.hepatorenal.coupled).toBeLessThan(0.9);
+  // Hasta la decisión 374 el control era su acoplamiento (< 0,9): contaba como desacopladas las líneas que ven la pared de canto.
+  expect(foreign.hepatorenal.seen).toBeLessThan(0.5);
 });

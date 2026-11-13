@@ -377,3 +377,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [371](DECISIONS.md#L11912) | Lo no rotulado en la pared de s0028 se dibuja como su grasa | vigente |
 | [372](DECISIONS.md#L11922) | Toda la superficie del hígado de s0028 se alisa | vigente |
 | [373](DECISIONS.md#L11933) | La carta de pared de s0028 se alisa al cargarla | vigente |
+| [374](DECISIONS.md#L11945) | En s0028 acopla todo elemento que toca la piel | vigente |

@@ -216,6 +216,23 @@ it('la sonda acopla por la piel sobre celdas U: cada nodo con piel tiene cara D/
   expect(eNodes).toBeGreaterThan(30);
 });
 
+it('acopla todo elemento que toca la piel (decisión 374): la pared vista de canto no apaga líneas del interior del sector', () => {
+  const sp = startPointsFor(scene.torso, B).find((p) => p.id === 'portalSubcostal')!;
+  const k = probeContact(poseOf(sp), CONVEX_C35, scene.torso);
+  // En esta pose seis nodos del interior ven la pared lateral de canto bajo una cara hundida 6–13 mm; quedaban a 0 y la imagen
+  // llevaba una banda negra recta desde la piel entre dos zonas con imagen.
+  let sunk = 0;
+  k.nodes.forEach((n, i) => {
+    if (n[0] > -5) return;
+    sunk++;
+    expect(k.contact[i], `nodo ${i}`).toBeGreaterThan(0.95);
+  });
+  expect(sunk).toBeGreaterThan(50);
+  // Separada de la piel no acopla ninguno: el acoplamiento sigue siendo el contacto conseguido, no un valor fijo.
+  const lifted = probeContact({ ...poseOf(sp), lift: 30 }, CONVEX_C35, scene.torso);
+  expect(Math.max(...lifted.contact)).toBe(0);
+});
+
 it('un nodo U con vecino conocido a ≤12 mm comprime contra su cara E: D* = E + tolerancia, menos lo que cede su grasa', () => {
   let checked = 0;
   for (const sp of startPointsFor(scene.torso, B)) {

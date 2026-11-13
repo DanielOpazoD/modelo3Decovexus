@@ -55,9 +55,10 @@ it('contacto: P3 conserva la carta P2 y su U; los 30 contactos s0028 quedan fija
   // Hasta la decisión 360 era el SHA de main 3c50b18 (5620…2d1c): la pared se trasladaba entera. Desde ella la grasa cede bajo la
   // cara (D y s_D cambian en los nodos que hunden la piel); `s0028UContact.test.ts` comprueba esa regla nodo a nodo. Hasta la
   // decisión 373 era 5880…8703: la carta de pared se alisa al cargar (sus caras cambian 0,56 mm de media);
-  // `s0028WallChart.test.ts` acota ese cambio.
+  // `s0028WallChart.test.ts` acota ese cambio. Hasta la 374 era 6f5c…9c7e: cambia sólo `contact` (acopla todo elemento que toca
+  // la piel); `s0028UContact.test.ts` comprueba la regla.
   expect(createHash('sha256').update(JSON.stringify(values)).digest('hex')).toBe(
-    '6f5c691f945c0b5dca2d0a7e4a1ae02ade0623bd9e9016f29c60229807f19c7e',
+    'a8bc464f11ef379bc1c746453c48f0bcd657990df6e3207746933b3c6b527533',
   );
 });
 

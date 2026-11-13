@@ -423,7 +423,9 @@ export function probeContact(pose: ProbePose, tr: Transducer, t: Torso): ProbeCo
   // transición ocupa ~4 nodos (12 líneas) y lo que se extiende más allá de la erosión queda ≤ 1/8
   const n = parallel.length;
   const at = (v: number[], k: number): number => v[Math.min(n - 1, Math.max(0, k))];
-  const eroded = hover.map((h, k) => h * Math.min(at(parallel, k - 1), parallel[k], at(parallel, k + 1)));
+  // Con anatomía regional (decisión 374) acopla todo elemento que toca la piel: su pared lateral se ve de canto bajo una cara
+  // hundida varios milímetros, y apagar esas líneas dibujaba una banda negra recta desde la piel en mitad del sector.
+  const eroded = hover.map((h, k) => h * (t.person?.regional ? 1 : Math.min(at(parallel, k - 1), parallel[k], at(parallel, k + 1))));
   const contact = eroded.map((c, k) => 0.25 * at(eroded, k - 1) + 0.5 * c + 0.25 * at(eroded, k + 1));
   const rigidNodes = t.person?.regional ? s0028RigidNodes(frame, tr, nodes, t.person) : undefined;
   return {
