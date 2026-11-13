@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: la cápsula hepática bajo la pared queda en arco continuo, sin el hombro; pared regularizada a mayor escala (377)
+
 - Imagen s0028: las fascias y el músculo de la pared ya no se cortan; los huecos cerrados de la carta se rellenan como estimación (376)
 
 - Anatomía s0028: el pulmón ya no pisa la cava; su pared posterior queda continua hasta la aurícula, con el diafragma detrás (375)

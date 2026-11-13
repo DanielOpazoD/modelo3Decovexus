@@ -55,8 +55,10 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
     ];
   }
   const TILE_WORDS = 65 * 91 * 2 * 2;
-  /** Sigma (celdas de la carta: ~2 mm de arco × 1,5 mm de alto) del alisado de las fronteras de la pared (decisión 373). */
-  const CHART_SMOOTH_CELLS = 2;
+  /** Sigma (celdas de la carta: ~2 mm de arco × 1,5 mm de alto) del alisado de las fronteras de la pared (decisiones 373 y 377). */
+  const CHART_SMOOTH_CELLS = 5;
+  /** Diferencia (mm) entre vecinos a partir de la cual el alisado los trata como lados de un escalón real y deja de mezclarlos. */
+  const CHART_STEP_MM = 7;
   /** Tamaño máximo (nodos) de un hueco cerrado sin rotular que se rellena por interpolación (decisión 376); el mayor mide 154. */
   const CHART_HOLE_NODES = 200;
   const CHART_HOLE_PASSES = 200;
@@ -132,8 +134,9 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
 
   /**
    * Carta de pared idealizada, en una copia que usan CPU y GPU.
-   * - Decisión 373: las tres fronteras de cada nodo medido se alisan con una gaussiana de `CHART_SMOOTH_CELLS` celdas sobre sus
-   *   vecinos medidos. La carta del TAC trae ±1 mm de ruido de vóxel de nodo a nodo y las fascias se veían onduladas.
+   * - Decisiones 373 y 377: las tres fronteras de cada nodo medido se alisan con una gaussiana de `CHART_SMOOTH_CELLS` celdas sobre
+   *   sus vecinos medidos, sin mezclar los que difieren más de `CHART_STEP_MM` (un escalón real, como el reborde costal). La carta
+   *   del TAC trae ±1 mm de ruido de vóxel y ondulaciones de unos milímetros que el borde hepático copiaba.
    * - Decisión 376: los huecos cerrados (componentes U de hasta `CHART_HOLE_NODES` nodos que no tocan el borde de la carta) se
    *   rellenan por interpolación armónica desde su borde y se rotulan E, E, E. Rellenar no mueve lo medido. El U abierto sigue U.
    * El mapa E se rehace con la cara de su nodo fuente; un nodo rellenado lleva la suya.
@@ -211,14 +214,18 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
           for (let col = 0; col < COLS; col++) {
             let sum = 0,
               weight = 0;
+            const here = from[row * COLS + col];
             for (let d = -R; d <= R; d++) {
               const r = along ? row + d : row,
                 c = along ? col : (col + d + COLS) % COLS;
               if (r < 0 || r >= ROWS) continue;
               const v = from[r * COLS + c];
               if (Number.isNaN(v)) continue;
-              sum += kernel[d + R] * v;
-              weight += kernel[d + R];
+              // Bilateral: un vecino al otro lado de un escalón (el reborde costal) apenas pesa y el escalón se conserva.
+              const step = Number.isNaN(here) ? 0 : (v - here) / CHART_STEP_MM,
+                w = kernel[d + R] * Math.exp(-0.5 * step * step);
+              sum += w * v;
+              weight += w;
             }
             to[row * COLS + col] = Number.isNaN(domain[row * COLS + col]) || weight === 0 ? NaN : sum / weight;
           }

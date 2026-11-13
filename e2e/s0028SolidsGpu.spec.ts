@@ -248,7 +248,7 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
           }
       out.push(compare('corazón', 0, NO, pts));
     }
-    // Testigos de conflicto (ocho pares del censo, fuera de las mitades de celda): U con los dos dueños, sin elegir material.
+    // Testigos de conflicto (seis pares del censo, fuera de las mitades de celda): U con los dos dueños, sin elegir material.
     out.push(compare('conflictos', 0, NO, a.conflicts));
     // La banda sola daría Fat en estos puntos; con grasa D superpuesta debe dar conflicto U.
     out.push(compare('conflictos grasa P2', 0, NO, a.fatBand));
@@ -344,7 +344,13 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
     const count = still.reduce((s, r) => s + (r.classes[cls]?.[0] ?? 0), 0);
     const same = still.reduce((s, r) => s + (r.classes[cls]?.[1] ?? 0), 0);
     expect(count, cls).toBeGreaterThan(30);
-    expect(same / count, cls).toBeGreaterThanOrEqual(0.99);
+    // El mensaje nombra las filas que discrepan: un fallo dice dónde mirar.
+    const differing = still.filter((r) => (r.classes[cls]?.[0] ?? 0) !== (r.classes[cls]?.[1] ?? 0));
+    // 1 % de la clase o dos puntos, como en cada fila: desde la decisión 377 la clase de conflicto es pequeña (los órganos ya no
+    // pisan la pared) y en GPU nativa dos puntos sueltos junto al borde de la carta superan el 1 %. En SwiftShader son cero.
+    expect(count - same, `${cls} ${JSON.stringify(differing.map((r) => [r.id, r.classes[cls], r.worst]))}`).toBeLessThanOrEqual(
+      Math.max(2, 0.01 * count),
+    );
   }
   const witnessed = rows.find((r) => r.id === 'conflictos D=0')!;
   expect(witnessed.classes.conflictU, tag(witnessed)).toEqual([conflicts.points.length, conflicts.points.length]);

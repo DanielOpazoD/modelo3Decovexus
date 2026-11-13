@@ -162,8 +162,9 @@ it('la carta alisada conserva el orden de las capas y se aparta poco de la medid
         count++;
       }
     }
-  // Medido el 13-11-2026: 0,56 mm de media y 8,8 mm en el peor nodo, el borde de un escalón de la pared que el alisado redondea.
-  expect(sum / count).toBeLessThan(0.7);
+  // Medido el 13-11-2026 con el alisado de 5 celdas que respeta escalones de más de 7 mm (decisión 377): 0,87 mm de media y
+  // 9,6 mm en el peor nodo. Con el de 2 celdas de la 373 eran 0,56 y 8,8.
+  expect(sum / count).toBeLessThan(1);
   expect(worst).toBeLessThan(10);
 });
 

@@ -173,16 +173,16 @@ export const S0028_BUNDLE = freeze({
   abdominal: {
     textureDimensions: [189, 256, 685],
     rawBytes: 132572160,
-    gzipBytes: 8872721,
-    sha256Gzip: 'cbba7a04d62b9c6193f707174f4936d8be046974856ec890da6392d068c77aea',
-    sha256Raw: '71c84fec75495c41d085d19d868bbe51571cacf606e8e4bf2687da3a5d7bbe4e',
+    gzipBytes: 8884215,
+    sha256Gzip: 'a26a895f96bbd474785a52c9555273cc226485588e1bb7ef18d4512a6bad0fb0',
+    sha256Raw: 'f93e2d2ea1870a345fa971fd1a2237c58152e4aea79a14b3e785f2eb4025c4de',
   },
   thoracic: {
     textureDimensions: [193, 139, 552],
     rawBytes: 59234016,
-    gzipBytes: 5268609,
-    sha256Gzip: 'f5998150079060d3866bd64c0d5e261a15207706b7c1e7cae4f8af05bb2fb1f5',
-    sha256Raw: '5c89a709627f53d1a2d5d717b2c33f093eb37408e9feb8c94fef8559788f6678',
+    gzipBytes: 5287620,
+    sha256Gzip: 'adea1177cdd1031c67ef469ae0a7d5ca6ce7390e86dd5a1e88f23aea19101962',
+    sha256Raw: '669fd2e42b3222474b9185642a0c8a6dc3fb3bc2ce4d41e9f3f6ed3bce4b3c29',
   },
   capacity: S0028_WALL_PACKAGE.capacity,
   skin: {
