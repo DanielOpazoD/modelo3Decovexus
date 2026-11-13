@@ -226,7 +226,8 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
       // hepática (decisión 361).
       float lv=s28PA(m,0);
       if(ren<3&&e.z>=0.0&&e.z<${S0028_LIVER_GAP_MM.toFixed(1)}&&lv<${S0028_LIVER_GAP_MM.toFixed(1)}&&e.y>${S0028_LIVER_GAP_KIDNEY_MM.toFixed(1)}){c.tissue=T_MUSCLE;c.bd=lv;c.iface=IF_PERITONEUM;c.ifd=lv;}
-      else{c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:T_UNSEGMENTED;c.bd=0.0;}
+      // Dentro de la cavidad lo no rotulado es grasa visceral (decisión 364); en la pared y junto al riñón sigue siendo U.
+      else{c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:e.y>${S0028_LIVER_GAP_KIDNEY_MM.toFixed(1)}&&(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?T_MESENTERIC_FAT:T_UNSEGMENTED;c.bd=0.0;}
     }
   }
   // Contorno acústico renal: el borde O de la máscara, a ambos lados aunque los dos sean U.

@@ -367,3 +367,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [361](DECISIONS.md#L11803) | El borde anterior del hígado de s0028 se idealiza: lineal, liso y con una sola línea | vigente |
 | [362](DECISIONS.md#L11815) | La pleura de s0028 solo refleja como espejo en la base del pulmón | vigente |
 | [363](DECISIONS.md#L11826) | El estómago de s0028 no lleva burbuja de gas | vigente |
+| [364](DECISIONS.md#L11837) | Lo no rotulado dentro de la cavidad de s0028 se dibuja como grasa visceral | vigente |

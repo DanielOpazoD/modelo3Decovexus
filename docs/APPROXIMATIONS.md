@@ -595,3 +595,8 @@ de 0,5. No modela la curvatura real de la pleura ni las líneas A.
 
 El gas del estómago que muestra su TAC no se dibuja: ese volumen es contenido gástrico. Es una idealización docente, no un dato
 de la persona. El gas del colon y del intestino sí se conserva.
+
+### s0028: grasa visceral donde el TAC no rotula (364)
+
+Dentro de la cavidad, un punto sin máscara ni grasa por densidad se dibuja como grasa visceral (rotulado `grasa-estimada`). El TAC no
+lo afirma: es la hipótesis más simple para que el fondo no muestre la rejilla de 3 mm. En la pared no se aplica.

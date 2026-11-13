@@ -11833,3 +11833,15 @@ sangre ahí. Delante de ese tramo está la burbuja de gas del estómago lleno de
 **Consecuencias.** La cava se sigue hasta el borde de la imagen y el páncreas queda sin sombra de gas. El estómago ya no es el de
 su TAC en ese punto: un rasgo de la persona (burbuja anterior en decúbito) que se retira por criterio docente.
 **Verificación.** Láminas de la subxifoidea; perfil de tejidos por línea (gas a 45–52 mm solo en las líneas tapadas).
+
+## 364. Lo no rotulado dentro de la cavidad de s0028 se dibuja como grasa visceral
+
+**Contexto.** Detrás de la cava se veía un mosaico de bloques claros y oscuros: la grasa del abdomen va en una rejilla de 3 mm y
+las celdas vecinas sin rótulo se dibujaban con otro gris (2,8 dB menos). El paquete de s0028 tenía 251 B de margen.
+**Opciones.** Dar a todo lo no rotulado el brillo de la grasa (ilumina también los parches sin datos de la pared), o lo decidido.
+**Decisión.** Un punto sin dueño dentro de la cavidad (más allá de la cara interna de la pared, o a más de 50 mm de la piel
+donde la carta no la conoce) es grasa visceral, rotulada `grasa-estimada`. En la pared y a menos de 10 mm del riñón sigue sin rotular. El techo del
+paquete de s0028 sube 16 KiB (a 1.132.544 B): es la única persona con trabajo nuevo y cada mejora añade GLSL propio.
+**Consecuencias.** Fondo uniforme tras la cava; estómago y páncreas se recortan sobre la grasa. Es una estimación: el TAC no
+dice que todo eso sea grasa.
+**Verificación.** `s0028SolidsClassify` y `s0028SolidsMotion` (lo admiten solo con su rótulo), láminas de las ocho ventanas.

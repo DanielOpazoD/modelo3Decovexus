@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: el fondo deja de verse en mosaico; lo no rotulado dentro de la cavidad se dibuja como grasa visceral. Techo del paquete de s0028 +16 KiB (364)
+
 - Anatomía s0028: el estómago no lleva burbuja de gas; la cava en eje largo se ve entera, sin el corte de su sombra (363)
 
 - Imagen s0028: la pleura solo refleja como espejo en la base del pulmón; desaparece el duplicado negro de la cava junto al corazón (362)

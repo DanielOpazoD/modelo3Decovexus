@@ -253,6 +253,15 @@ export function classifyInside(
         interfaceDistance: liverMm,
         approximation: 'wall-liver-shell',
       };
+    // Dentro de la cavidad, lo que el TAC no rotula es grasa y tejido conectivo: se dibuja como la grasa visceral de al lado, no como
+    // un gris aparte que dejaba ver en mosaico la rejilla de 3 mm de esa grasa (decisión 364). En la pared y a menos de 10 mm del
+    // riñón sigue siendo U: su envolvente no recibe grasa inventada.
+    if (
+      !SINUS_TISSUE[interior] &&
+      solids!.kidneyMm > S0028_LIVER_GAP_KIDNEY_MM &&
+      (inside !== null || -depth > S0028_SUBCUTANEOUS_REACH_MM)
+    )
+      return renalFace({ ...NONE, tissue: Tissue.MesentericFat, boundaryDistance: 0, approximation: 'grasa-estimada' }, solids!);
     return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' }, solids!);
   }
 }

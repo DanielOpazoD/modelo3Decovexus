@@ -21,7 +21,7 @@ export const S0028_PREPERITONEAL_MM = 15;
  * TAC). Hasta esta distancia de ambos se dibuja como músculo de la pared: sin ella el borde hepático quedaba tras una franja gris.
  */
 export const S0028_LIVER_GAP_MM = 8;
-/** …y solo a más de esto del riñón: su contorno y el receso hepatorrenal no reciben músculo estimado. */
+/** …y solo a más de esto del riñón: su contorno y el receso hepatorrenal no reciben músculo ni grasa estimados (361, 364). */
 export const S0028_LIVER_GAP_KIDNEY_MM = 10;
 /** A menos de esto del hígado la pared no dibuja su línea de peritoneo: la cápsula hepática es esa misma línea, no una segunda. */
 export const S0028_LIVER_SEAM_MM = 4;
