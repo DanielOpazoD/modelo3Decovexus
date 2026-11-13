@@ -22,6 +22,7 @@ on:
       - 'src/validation/s0028WallGpu.test.ts'
       - 'src/validation/shaderLimits.test.ts'
       - 'src/validation/s0028SolidsClassify.test.ts'
+      - 'src/validation/s0028Capsule.test.ts'
       - 'src/validation/s0028SolidsPackage.test.ts'
       - 'tools/mutants/**'
       - 'vite.config.ts'
