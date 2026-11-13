@@ -2,6 +2,7 @@ import { GALLBLADDER_WALL_MM } from '../organs/gallbladder';
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
 import {
   S0028_RENAL_FACE_MM,
+  S0028_HEART_WALL_MM,
   S0028_LIVER_GAP_KIDNEY_MM,
   S0028_LIVER_GAP_MM,
   S0028_LIVER_SEAM_MM,
@@ -198,8 +199,9 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   ${tubes}
   // Corazón (decisión 356): dentro de la máscara, las cavidades de esta persona son sangre y el resto, miocardio; sin el recorte
   // por la cúpula de la otra (suelo a −1000).
+  // Toda cavidad lleva su pared libre: a menos de la pared mínima del contorno es miocardio (decisión 369).
   if(k==15){float ifd;c.n=vec3(0.0,0.0,-1.0);
-    if(thorax(m,-1000.0,c.bd,ifd,c.n)==T_BLOOD){c.tissue=T_BLOOD;c.bd=min(c.bd,-od);}else{c.tissue=T_MYOCARDIUM;c.bd=-od;}
+    if(thorax(m,-1000.0,c.bd,ifd,c.n)==T_BLOOD&&-od>${S0028_HEART_WALL_MM.toFixed(1)}){c.tissue=T_BLOOD;c.bd=min(c.bd,-od-${S0028_HEART_WALL_MM.toFixed(1)});}else{c.tissue=T_MYOCARDIUM;c.bd=-od;}
     c.n=vec3(0.0,1.0,0.0);return;}
   if(dGb<0.0||dGb<uGbExtra.y)gn=abdominalAtlasGradient(m,7);
   if(dGb<0.0){c.tissue=T_FLUID;c.bd=-dGb;c.n=gn;c.iface=IF_GALLBLADDER;c.ifd=-dGb;return;}

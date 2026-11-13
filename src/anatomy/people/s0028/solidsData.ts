@@ -45,3 +45,8 @@ export const s0028WideFatPages = (): number[][] =>
   });
 /** Radio (mm) del cuerpo vertebral lumbar con que su cortical reparte el eco: un cilindro vertical (decisión 368). [ESTIMADO] */
 export const S0028_LUMBAR_BODY_RADIUS_MM = 22;
+/**
+ * Pared libre mínima del corazón (mm): por dentro del contorno de su máscara, lo que no llega a esta profundidad es miocardio aunque
+ * el esquema de cavidades lo alcance. Sin ella la sangre de una cavidad tocaba la grasa de fuera (decisión 369). [ESTIMADO]
+ */
+export const S0028_HEART_WALL_MM = 4;

@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: el corazón lleva pared libre de miocardio y sus cavidades se distinguen de ella (369)
+
 - Imagen s0028: las vértebras dibujan su cortical como un arco brillante con sombra; la aorta deja de fundirse con ella (368)
 
 - Imagen s0028: el páncreas es algo más ecogénico que el hígado y se distingue de él y de la grasa que lo rodea (367)
