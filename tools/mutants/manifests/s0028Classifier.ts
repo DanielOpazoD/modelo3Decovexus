@@ -51,5 +51,21 @@ export const s0028Classifier: MutantManifest = {
       to: '        tissue: RENAL_TISSUE[interior] ?? Tissue.UnsegmentedSoftTissue,',
       tests: ['src/validation/s0028SolidsClassify.test.ts'],
     },
+    {
+      name: 'grasa-preperitoneal-sin-peritoneo',
+      origin: 'decisión 379',
+      breaks: 'La grasa preperitoneal pegada al hígado deja de llevar la línea del peritoneo sobre él.',
+      from: 'const peritoneum = liverMm < S0028_LIVER_SEAM_MM ?',
+      to: 'const peritoneum = liverMm < -1e9 ?',
+      tests: ['src/validation/s0028Capsule.test.ts'],
+    },
+    {
+      name: 'peritoneo-en-grasa-sin-carta',
+      origin: 'decisión 379',
+      breaks: 'La línea del peritoneo se dibuja también en la grasa sin carta de pared, donde no hay cara de la que tomar la normal.',
+      from: "const liverMm = preperitoneal && !SINUS_TISSUE[interior] ? scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d : Infinity;",
+      to: "const liverMm = !SINUS_TISSUE[interior] ? scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d : Infinity;",
+      tests: ['src/validation/s0028Capsule.test.ts'],
+    },
   ],
 };

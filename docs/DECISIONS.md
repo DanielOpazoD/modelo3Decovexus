@@ -12004,3 +12004,16 @@ misma ganancia. Las demás personas no cambian.
 **Consecuencias.** Línea hepatorrenal fina en la renal y la hepatorrenal; las ventanas anteriores no cambian. El borde hepático
 bajo una capa gruesa de grasa de pared sigue sin línea propia.
 **Verificación.** `s0028Capsule` (tabla, escena con oráculo propio y forma de los dos programas), paridad en Metal, láminas.
+
+## 379. En s0028 el peritoneo se dibuja sobre el hígado también donde hay grasa preperitoneal
+
+**Contexto.** En la hepatorrenal el borde superior del hígado no tenía línea: entre la pared y el hígado hay 5 mm de grasa del
+TAC, y la línea del peritoneo solo se llevaba a la superficie hepática donde no hay grasa entre ambos (decisión 361). La
+anatomía dice lo contrario: la grasa preperitoneal queda por fuera del peritoneo.
+**Opciones.** Subir el eco de la cápsula frente a la grasa de la pared (probado en la 378: encendía la línea a tramos), o dibujar
+el peritoneo desde el lado de la grasa; se elige esto.
+**Decisión.** La grasa preperitoneal (grasa del TAC a menos de 15 mm de la cara interna de la pared conocida) a menos de 4 mm del
+hígado lleva la cara del peritoneo a su distancia del hígado, en CPU y GLSL. Sin carta de pared no se dibuja: no hay normal.
+**Consecuencias.** Línea continua en el borde hepático de la hepatorrenal; las ventanas anteriores no cambian a la vista. La cara
+interna del músculo conserva su propia línea, que ahí es la fascia.
+**Verificación.** `s0028Capsule` (1.752 puntos con la línea a su distancia; lejos del hígado y sin carta, ninguno), dos mutantes.

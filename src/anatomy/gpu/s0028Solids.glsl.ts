@@ -225,7 +225,9 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   }
   else if(k==8&&s28PLA(m,8)>0.0){c.tissue=s28PLA(m,8)<=2.0?T_PSOAS:T_MUSCLE;c.bd=-od;return;}
   // Grasa del TAC: dentro de la cavidad es visceral y ecogénica; solo el panículo conserva el material de la pared.
-  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:!(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?T_FAT:s28PFatIn(m,0)||s28PFatIn(m,1)?T_PERIRENAL:e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}?T_FAT:T_MESENTERIC_FAT;c.bd=0.0;}
+  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:!(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?T_FAT:s28PFatIn(m,0)||s28PFatIn(m,1)?T_PERIRENAL:e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}?T_FAT:T_MESENTERIC_FAT;c.bd=0.0;
+    // La grasa preperitoneal queda por fuera del peritoneo: su línea va sobre el hígado, también del lado de la grasa (379).
+    if(ren<3&&e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}){float lv=s28PA(m,0);if(lv<${S0028_LIVER_SEAM_MM.toFixed(1)}){c.iface=IF_PERITONEUM;c.ifd=max(lv,0.0);}}}
   else{
     float dome=s28Dia(m);
     if(dome>=0.0){c.tissue=T_DIAPHRAGM;c.bd=min(min(dome,DIAPHRAGM_MM-dome),e.z);
