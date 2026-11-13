@@ -240,7 +240,9 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
       for (let z = -16; z <= 104; z += 5)
         for (let y = -32; y <= 73; y += 5)
           for (let x = -47; x <= 84; x += 5) {
-            // Solo la máscara y su entorno inmediato: la pared torácica anterior tiene sus propias filas.
+            // Solo la máscara y su entorno inmediato. En la grasa bajo la pared torácica anterior, a 40–50 mm de la piel, el filtro
+            // del hardware (decisión 344) lleva la proyección a la celda vecina de la carta en 10 de 609 puntos en Metal: bordes
+            // desplazados menos de una muestra de la imagen, que las filas de las ventanas ya acotan.
             const p: [number, number, number] = [x + 0.31, y + 0.23, z + 0.17];
             if (sim.scene.person.cpu.regional!.s0028SourceValue(p, 'heart').d < 4) pts.push(...p);
           }
