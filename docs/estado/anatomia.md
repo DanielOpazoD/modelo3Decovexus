@@ -87,7 +87,7 @@ Medido en el candidato basado en main `1ded5c8` el 2026-11-13 con `tools/docs/es
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |
-| Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.919.632 |  4.080.368 | 318      |
+| Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.940.990 |  4.059.010 | 318      |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.872.721 | 10.637.281 | 317      |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | 317      |
 | Textura torácica s0028 en memoria (RAW)             |  60.413.664 |  60.413.664 |          0 | 317      |
@@ -95,8 +95,8 @@ Medido en el candidato basado en main `1ded5c8` el 2026-11-13 con `tools/docs/es
 | `annotation-capacity.gzip.bin`                      |     856.999 |     334.410 |    522.589 | 320      |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | 321      |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | 317      |
-| `surfaces.gzip.bin`                                 |   9.672.026 |   5.471.032 |  4.200.994 | 318      |
-| `thoracic-direct.gzip.bin`                          |   5.252.011 |   5.252.011 |          0 | 317      |
+| `surfaces.gzip.bin`                                 |   9.672.026 |   5.475.792 |  4.196.234 | 318      |
+| `thoracic-direct.gzip.bin`                          |   5.268.609 |   5.268.609 |          0 | 317      |
 
 <!-- fin de presupuestos s0028 -->
 

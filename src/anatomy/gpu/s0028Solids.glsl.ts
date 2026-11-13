@@ -8,6 +8,7 @@ import {
   S0028_LIVER_SEAM_MM,
   S0028_LUMBAR_BODY_RADIUS_MM,
   S0028_PREPERITONEAL_MM,
+  S0028_DIAPHRAGM_DEEP_MM,
   S0028_SUBCUTANEOUS_REACH_MM,
   s0028FatPages,
   s0028RenalPages,
@@ -63,8 +64,10 @@ float s28P(highp sampler3D t,vec3 p,vec3 lo,vec3 dim,vec3 off){
 }
 float s28PA(vec3 p,int k){return s28P(uAbdominalAtlas,p,S28A_LO[k],S28A_DIM[k],S28A_OFF[k]);}
 float s28PT(vec3 p,int k){return s28P(uThoracicAtlas,p,S28T_LO[k],S28T_DIM[k],S28T_OFF[k]);}
-// Diafragma de esta persona (decisión 348): lámina bajo la base de su pulmón; mm bajo el pulmón o −1 (par de s0028Diaphragm).
-float s28Dia(vec3 m){float d=s28PT(m,2);return d>=0.0&&d<DIAPHRAGM_MM&&s28PT(m+vec3(0.0,0.0,3.0),2)<d-1.0?d:-1.0;}
+// Diafragma de esta persona (decisión 348): lámina bajo la base de su pulmón y, lejos de la piel, por delante de él (375); mm al
+// pulmón o −1 (par de s0028Diaphragm).
+float s28Dia(vec3 m){float d=s28PT(m,2);if(!(d>=0.0&&d<DIAPHRAGM_MM))return -1.0;
+  return s28PT(m+vec3(0.0,0.0,3.0),2)<d-1.0||(-torsoDepth(m)>${S0028_DIAPHRAGM_DEEP_MM.toFixed(1)}&&s28PT(m+vec3(0.0,-3.0,0.0),2)<d-1.0)?d:-1.0;}
 // Etiqueta nearest (gemela de sourceLabel): floor(q + 0,5) es Math.round para q ≥ 0.
 float s28PLA(vec3 p,int k){return texelFetch(uAbdominalAtlas,ivec3(S28A_OFF[k]+floor((p-S28A_LO[k])/1.5+0.5)),0).g;}
 float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+floor((p-S28T_LO[k])/1.5+0.5)),0).g;}

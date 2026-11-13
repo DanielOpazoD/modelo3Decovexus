@@ -13,6 +13,7 @@ import {
   S0028_LIVER_SEAM_MM,
   S0028_PREPERITONEAL_MM,
   S0028_RENAL_FACE_MM,
+  S0028_DIAPHRAGM_DEEP_MM,
   S0028_SUBCUTANEOUS_REACH_MM,
 } from '../../people/s0028/solidsData';
 import type { AnatomyScene, Classification, VesselCaliber } from '../../scene';
@@ -40,7 +41,7 @@ export function classifyWall(
   let solids = regional.s0028Owners(m, q);
   // La grasa del abdomen a 3 mm no pisa el diafragma: junto a la base del pulmón, un vóxel «graso» es volumen parcial de aire y
   // músculo. Ahí el punto queda sin dueño y lo dibuja el diafragma.
-  if (solids.owners[0]?.id === 'compatible_fat' && regional.s0028CompatibleFat(m) === null && s0028Diaphragm(regional, m) !== null)
+  if (solids.owners[0]?.id === 'compatible_fat' && regional.s0028CompatibleFat(m) === null && s0028Diaphragm(regional, m, d) !== null)
     solids = { state: 'U', owners: [], kidneyMm: solids.kidneyMm };
   const owner = solids.owners[0]?.id;
   // P3: dos o más dueños independientes son conflicto: se conservan todos y no se elige material (U).
@@ -107,13 +108,20 @@ export function classifyWall(
 /**
  * Diafragma de s0028 (decisión 348): la lámina de `DIAPHRAGM_THICKNESS_MM` pegada por debajo a la base de su propio pulmón, donde
  * ninguna máscara reclama el punto. Devuelve los mm bajo el pulmón, o null. «Por debajo»: 3 mm más arriba el pulmón queda al
- * menos 1 mm más cerca. Sustituye a la cúpula analítica de la otra persona, que no coincidía con este pulmón.
+ * menos 1 mm más cerca. Sustituye a la cúpula analítica de la otra persona, que no coincidía con este pulmón. También por delante
+ * del pulmón (3 mm más atrás queda más cerca), lejos de la piel: es el diafragma entre el hígado o la cava y el receso posterior
+ * (decisión 375); junto a la pared torácica anterior no hay lámina.
  * @twin s0028-diafragma
  */
-export function s0028Diaphragm(regional: { s0028SourceValue: (p: Vec3, name: string) => { d: number } }, m: Vec3): number | null {
+export function s0028Diaphragm(
+  regional: { s0028SourceValue: (p: Vec3, name: string) => { d: number } },
+  m: Vec3,
+  belowSkinMm: number,
+): number | null {
   const d = regional.s0028SourceValue(m, 'lung').d;
   if (!(d >= 0 && d < DIAPHRAGM_THICKNESS_MM)) return null;
-  return regional.s0028SourceValue([m[0], m[1], m[2] + 3], 'lung').d < d - 1 ? d : null;
+  if (regional.s0028SourceValue([m[0], m[1], m[2] + 3], 'lung').d < d - 1) return d;
+  return belowSkinMm > S0028_DIAPHRAGM_DEEP_MM && regional.s0028SourceValue([m[0], m[1] - 3, m[2]], 'lung').d < d - 1 ? d : null;
 }
 /** @twin clasificacion */
 export function classifyInside(
@@ -233,7 +241,7 @@ export function classifyInside(
       return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? fat, boundaryDistance: 0 }, solids!);
     }
     // Diafragma de esta persona (decisión 348): la máscara de cada órgano ya ganó antes; no corta el hígado.
-    const dome = s0028Diaphragm(scene.person.cpu.regional!, m);
+    const dome = s0028Diaphragm(scene.person.cpu.regional!, m, -depth);
     if (dome !== null) return renalFace(scene.classifyDiaphragm(dome, scene.person.cpu.regional!.s0028InsideWall(m) ?? Infinity), solids!);
     // La cáscara sin máscara entre la cara interna de la pared y el hígado es músculo de la pared, y su peritoneo, la superficie
     // hepática (decisión 361).

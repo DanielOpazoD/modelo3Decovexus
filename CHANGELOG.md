@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: el pulmón ya no pisa la cava; su pared posterior queda continua hasta la aurícula, con el diafragma detrás (375)
+
 - Imagen s0028: desaparecen las bandas negras rectas que nacían en la piel en las subcostales; acopla todo elemento que toca la piel (374)
 
 - Imagen s0028: las fascias de la pared pierden los escalones; la carta de pared se alisa al cargarla (373)

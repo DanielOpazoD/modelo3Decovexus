@@ -6,6 +6,8 @@ export const S0028_RENAL_FACE_MM = 1.2;
  * esta persona mide 29 mm de mediana y 39 en su percentil 90, y la cara interna de su pared, 38 y 48.
  */
 export const S0028_SUBCUTANEOUS_REACH_MM = 50;
+/** Profundidad bajo la piel (mm) desde la que la cara anterior del pulmón lleva lámina de diafragma (decisión 375). */
+export const S0028_DIAPHRAGM_DEEP_MM = 60;
 /**
  * Fascia superficial del panículo (la capa membranosa que todo ecografista ve como una línea continua dentro de la grasa): el TAC no
  * la resuelve, así que su profundidad es una fracción estimada del espesor de la grasa de esta persona, no una medida.

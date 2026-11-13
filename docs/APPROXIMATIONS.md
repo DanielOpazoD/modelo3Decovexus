@@ -637,3 +637,9 @@ persona al milímetro.
 
 Un elemento acopla si toca la piel, aunque su línea recorra la pared de canto. La tabla de compresión interpola entre nodos y ahí
 puede deformar algo la pared; antes esas líneas se apagaban para no mostrarlo.
+
+### s0028: pulmón retirado de la cava y diafragma por delante del pulmón (375)
+
+El pulmón se retira hasta 3,5 mm de la luz de la cava (3,3 ml menos que en el TAC), lo justo para la pared del vaso y una lámina de
+diafragma de 2,5 mm. Esa lámina se dibuja también por delante del pulmón lejos de la piel, con espesor fijo: el pilar real es más
+grueso y de grosor variable.
