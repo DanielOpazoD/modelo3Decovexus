@@ -11868,3 +11868,11 @@ hipoecoica entre fascias); y lo no rotulado a menos de 15 mm por dentro de la pa
 **Consecuencias.** Piel, fascia superficial, vaina, músculo, peritoneo y cápsula se siguen de lado a lado. El músculo posterior
 también se oscurece. Las fascias conservan las pequeñas ondulaciones de la carta.
 **Verificación.** Mapa de caras y láminas de las ocho ventanas; `s0028TissueLook`, `personShaders`, e2e de paridad.
+
+## 367. El páncreas de s0028 es algo más ecogénico que el hígado
+
+**Contexto.** En la evaluación del 12-11-2026 el páncreas se confundía con el hígado: 1,3 dB de diferencia.
+**Opciones.** Dejarlo, o darle el aspecto habitual del adulto (iso o ligeramente hiperecogénico respecto del hígado).
+**Decisión.** Retrodispersión 1,9 en el aspecto de s0028: 2,8 dB sobre el hígado y 1,4 bajo la grasa visceral.
+**Consecuencias.** El páncreas se distingue del hígado y de la grasa que lo rodea. Valor de aspecto, sin medida.
+**Verificación.** `s0028TissueLook` (entre hígado y grasa); láminas epigástrica y subxifoidea.

@@ -370,3 +370,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [364](DECISIONS.md#L11837) | Lo no rotulado dentro de la cavidad de s0028 se dibuja como grasa visceral | vigente |
 | [365](DECISIONS.md#L11849) | Las suprahepáticas de s0028 se abren hacia la cava | vigente |
 | [366](DECISIONS.md#L11860) | La pared de s0028 se lee por capas: fascias continuas y músculo más oscuro que la grasa | vigente |
+| [367](DECISIONS.md#L11872) | El páncreas de s0028 es algo más ecogénico que el hígado | vigente |
