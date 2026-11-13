@@ -16,6 +16,15 @@ export const S0028_SCARPA_FRACTION = 0.45;
  * visceral y ecogénica. Espesor máximo estimado de esa lámina (mm): en el epigastrio de esta persona mide 10 a 12 mm.
  */
 export const S0028_PREPERITONEAL_MM = 15;
+/**
+ * Entre la cara interna de la pared y el hígado queda una cáscara sin máscara, casi toda de menos de 2 mm (volumen parcial del
+ * TAC). Hasta esta distancia de ambos se dibuja como músculo de la pared: sin ella el borde hepático quedaba tras una franja gris.
+ */
+export const S0028_LIVER_GAP_MM = 8;
+/** …y solo a más de esto del riñón: su contorno y el receso hepatorrenal no reciben músculo estimado. */
+export const S0028_LIVER_GAP_KIDNEY_MM = 10;
+/** A menos de esto del hígado la pared no dibuja su línea de peritoneo: la cápsula hepática es esa misma línea, no una segunda. */
+export const S0028_LIVER_SEAM_MM = 4;
 /** Colocación xyz de cada página 32×32 RG16F de grasa en el atlas abdominal: x/32 + 6·y/32 + 48·z, tres cifras en base 36. */
 export const s0028FatPages = (): number[][] =>
   Array.from({ length: B.solids.pages.length / 3 }, (_, i) => {

@@ -5,6 +5,10 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: la pleura solo refleja como espejo en la base del pulmón; desaparece el duplicado negro de la cava junto al corazón (362)
+
+- Anatomía s0028: borde anterior del hígado lineal y liso, con una sola línea de cápsula y sin franja gris bajo la pared; rumbo de modelo idealizado (361)
+
 - Sonda sobre s0028: la grasa de la pared cede bajo la cara; la pared se ve más fina, la cava y la porta profundas dejan de deformarse (360)
 
 - Ventana hepatorrenal de s0028: riñón bajo el hígado sin la sombra costal en medio; el buscador de poses admite «un órgano visto detrás de otro» con el plano libre (359)

@@ -472,8 +472,11 @@ it('conserva los campos fuente sin convertir autóctonos en QL ni rellenar músc
           expect(s0028SourceValue(p, 'posteriorMuscle').d).toBeLessThan(0);
           psoas++;
         }
-        // El músculo de la banda de la pared (decisión 352) no es un campo fuente: sólo se exige máscara al de dentro.
-        if (c.tissue === Tissue.Muscle && c.wall !== 'band-D/E') {
+        // El músculo de la banda de la pared (decisión 352) no es un campo fuente: sólo se exige máscara al de dentro. La cáscara
+        // pared–hígado (decisión 361) va rotulada y nunca a menos de 10 mm del riñón.
+        if (c.approximation === 'wall-liver-shell')
+          expect(Math.min(s0028SourceValue(p, 'kidneyRight').d, s0028SourceValue(p, 'kidneyLeft').d)).toBeGreaterThan(10);
+        if (c.tissue === Tissue.Muscle && c.wall !== 'band-D/E' && c.approximation !== 'wall-liver-shell') {
           expect(s0028SourceValue(p, 'posteriorMuscle').d).toBeLessThan(0);
           autochthon++;
         }

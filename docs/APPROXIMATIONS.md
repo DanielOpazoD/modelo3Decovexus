@@ -578,3 +578,15 @@ La pared cede el 40 % de lo que la cara hunde la piel, con tope de un tercio del
 literatura dice que la grasa subcutánea es muy compresible y que el hígado cede un 12–15 % con presión ligera, pero no da el
 reparto. El perfil es lineal en toda la pared, así que el músculo adelgaza en la misma proporción que la grasa. Donde la carta no
 separa la grasa (celdas sin datos con cara estimada) se toma el 70 % de la pared.
+
+### s0028: hígado idealizado en su cara anterior (361)
+
+El campo `liver` ya no es la máscara del TAC en su cara anterior: la boca de la fisura del ligamento falciforme está cerrada y la
+superficie, alisada a 3 mm. Dentro queda la grasa de la fisura como un foco aislado. Entre la pared y el hígado, la cáscara sin
+máscara se dibuja como músculo de pared (rotulada `wall-liver-shell`): es una estimación, no una segmentación. El borde inferior y
+las caras hacia el riñón, la vesícula, la cava y el hilio siguen siendo las del TAC.
+
+### s0028: espejo pleural solo en la base del pulmón (362)
+
+El umbral que separa la base (espejo) de las demás caras (sombra sucia) es de aspecto: componente caudal de la normal media mayor
+de 0,5. No modela la curvatura real de la pleura ni las líneas A.

@@ -324,11 +324,14 @@ it('U nunca se clasifica como tejido conocido en el compartimento posterior y re
         }
         unknown++;
         if (!c.vesselHit && c.interface !== Interface.DuctLumen) {
-          // Vasos y conductos procedurales E fuera de los sólidos: P5. El diafragma E bajo el pulmón va rotulado.
+          // Vasos y conductos procedurales E fuera de los sólidos: P5. El diafragma E bajo el pulmón va rotulado, y también la
+          // cáscara entre la pared y el hígado, que se dibuja como músculo de pared (decisión 361).
           if (
             c.tissue === Tissue.Diaphragm
               ? c.approximation !== 'diaphragm-lung-base'
-              : c.tissue !== (SINUS[label] ?? Tissue.UnsegmentedSoftTissue)
+              : c.tissue === Tissue.Muscle
+                ? c.approximation !== 'wall-liver-shell'
+                : c.tissue !== (SINUS[label] ?? Tissue.UnsegmentedSoftTissue)
           )
             fail('U clasificado como ' + Tissue[c.tissue]);
         }

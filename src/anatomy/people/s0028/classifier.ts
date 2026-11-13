@@ -6,7 +6,14 @@ import { abdomenQuery } from '../../organs/abdomen';
 import { gallbladderSdf } from '../../organs/gallbladder';
 import { heartFloor, ivcAtrium, thorax } from '../../organs/heart';
 import type { S0028Ownership } from '../../people/s0028/solids';
-import { S0028_PREPERITONEAL_MM, S0028_RENAL_FACE_MM, S0028_SUBCUTANEOUS_REACH_MM } from '../../people/s0028/solidsData';
+import {
+  S0028_LIVER_GAP_KIDNEY_MM,
+  S0028_LIVER_GAP_MM,
+  S0028_LIVER_SEAM_MM,
+  S0028_PREPERITONEAL_MM,
+  S0028_RENAL_FACE_MM,
+  S0028_SUBCUTANEOUS_REACH_MM,
+} from '../../people/s0028/solidsData';
 import type { AnatomyScene, Classification, VesselCaliber } from '../../scene';
 import { NONE } from '../../scene';
 import { DIAPHRAGM_THICKNESS_MM, Tissue } from '../../tissues';
@@ -74,6 +81,11 @@ export function classifyWall(
     const anterior = q.depthMm - q.outerMm,
       posterior = q.innerMm - q.depthMm;
     [face, faceMm] = anterior < posterior ? [Interface.DeepFascia, Math.abs(anterior)] : [Interface.Peritoneum, Math.abs(posterior)];
+  }
+  // Pegada al hígado, la línea del peritoneo va en la superficie hepática, sobre su cápsula: una sola línea, no dos (decisión 361).
+  if (face === Interface.Peritoneum) {
+    const liverMm = regional.s0028SourceValue(m, 'liver').d;
+    if (liverMm < S0028_LIVER_SEAM_MM) faceMm = Math.max(liverMm, 0);
   }
   return {
     final: true,
@@ -221,6 +233,26 @@ export function classifyInside(
     // Diafragma de esta persona (decisión 348): la máscara de cada órgano ya ganó antes; no corta el hígado.
     const dome = s0028Diaphragm(scene.person.cpu.regional!, m);
     if (dome !== null) return renalFace(scene.classifyDiaphragm(dome, scene.person.cpu.regional!.s0028InsideWall(m) ?? Infinity), solids!);
+    // La cáscara sin máscara entre la cara interna de la pared y el hígado es músculo de la pared, y su peritoneo, la superficie
+    // hepática (decisión 361).
+    const inside = scene.person.cpu.regional!.s0028InsideWall(m),
+      liverMm = scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d;
+    if (
+      !SINUS_TISSUE[interior] &&
+      inside !== null &&
+      inside >= 0 &&
+      inside < S0028_LIVER_GAP_MM &&
+      liverMm < S0028_LIVER_GAP_MM &&
+      solids!.kidneyMm > S0028_LIVER_GAP_KIDNEY_MM
+    )
+      return {
+        ...NONE,
+        tissue: Tissue.Muscle,
+        boundaryDistance: liverMm,
+        interface: Interface.Peritoneum,
+        interfaceDistance: liverMm,
+        approximation: 'wall-liver-shell',
+      };
     return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' }, solids!);
   }
 }

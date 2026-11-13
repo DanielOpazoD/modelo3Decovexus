@@ -21,11 +21,11 @@
   },
   {
    "what": "`abdominal-direct.gzip.bin`",
-   "limit": 8567375,
+   "limit": 8811430,
    "unit": "B",
    "decision": 317,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 8567375
+   "actual": 8811430
   },
   {
    "what": "`abdominal-surface.gzip.bin`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 61061
+   "actual": 61423
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 23505
+   "actual": 1631
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 23971
   },
   {
    "what": "`series.js`",
@@ -281,15 +281,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5340216
-  },
-  {
-   "what": "`surfaces.js`",
-   "limit": 122880,
-   "unit": "B",
-   "decision": 318,
-   "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 5458659
   },
   {
    "what": "`surfaces.js`",
@@ -298,6 +290,14 @@
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
    "actual": 485
+  },
+  {
+   "what": "`surfaces.js`",
+   "limit": 122880,
+   "unit": "B",
+   "decision": 318,
+   "source": "tools/ci/bundleBudgets.ts",
+   "actual": 5730
   },
   {
    "what": "`teacherTab.js`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1114951
+   "actual": 1115779
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -393,7 +393,7 @@
    "unit": "B",
    "decision": 318,
    "source": "src/anatomy/people/s0028/surfaces.ts",
-   "actual": 20483470
+   "actual": 20845968
   },
   {
    "what": "Cada `.gzip` fijado del paquete s0028 (por archivo)",
@@ -401,7 +401,7 @@
    "unit": "B",
    "decision": 317,
    "source": "src/anatomy/people/s0028/runtime.ts",
-   "actual": 8567375
+   "actual": 8811430
   },
   {
    "what": "Textura abdominal s0028 en memoria (RAW)",
@@ -481,11 +481,11 @@
     "sourceSha256": "ea5c4b3c288f653e8c66367c369f15840f2a1365483f057e8d4ea45b75d4d27b"
    },
    "s0028": {
-    "tokens": 384029,
-    "branches": 2857,
+    "tokens": 387284,
+    "branches": 2884,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "fefca31575da848ad482cd06bfbf49753bec871b48bdb31935c50e53d61a9c1d"
+    "sourceSha256": "b7660f9652a18c902ac50701ba7cb678880c77562fb0dfa654ec10c6ac0e7125"
    }
   },
   {
@@ -500,11 +500,11 @@
     "sourceSha256": "fa4447e13438604223e3a349b5ded408bbbe0ed48b0ec5be542f30bc6394366f"
    },
    "s0028": {
-    "tokens": 164267,
-    "branches": 1170,
+    "tokens": 165352,
+    "branches": 1179,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "88343aeb8bc0231587049390f9ebb1d30c42e15970cdf897bcda83a60c4979b7"
+    "sourceSha256": "c24d1177bc2f83a410e4976cd544bc785c3ad9cd91e78bc185c1e5001061006f"
    }
   },
   {
@@ -519,11 +519,11 @@
     "sourceSha256": "1477269017954bec787f51a5d45932270fbf0cb5b9a55182a5edf432182e486c"
    },
    "s0028": {
-    "tokens": 123519,
-    "branches": 872,
+    "tokens": 124604,
+    "branches": 881,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "aabdb0d5b4eba77819a9d072b1d7fc0a9bb08788f4fbf734ff1f8f98d32df126"
+    "sourceSha256": "405a47ba74f653d964247c29a5427660e05c6c9ddf3e056b3221c12594d98203"
    }
   },
   {
@@ -538,11 +538,11 @@
     "sourceSha256": "8729a4aa6e24e492a2df63cbc6abc9be5c97199cf0fb39c4cec315d2ffc8e683"
    },
    "s0028": {
-    "tokens": 123659,
-    "branches": 874,
+    "tokens": 124744,
+    "branches": 883,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "43c5dd7d6fe4bf9c83f9b6cc5e5136249c41ed9200dcdc6c9bcf46d882fcde89"
+    "sourceSha256": "5372264bdc2aa0a1eeff4b875784cd4df0fbd851aed40d3e3adbb470d62a5775"
    }
   },
   {
@@ -561,7 +561,7 @@
     "branches": 585,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "f48545cb7d250101f909f7ff23b366f359c2fa5f5338b62fed7e18b29ed2f0fc"
+    "sourceSha256": "5500a3a43d9ac02d53d96fb8aba1edac09c674e6e08cec7fe66a8eab07dde6a4"
    }
   },
   {
@@ -576,11 +576,11 @@
     "sourceSha256": "23c4d353785e24f4919f1dd4bec4b93356ec299f4a92f410488350dd28888304"
    },
    "s0028": {
-    "tokens": 159354,
-    "branches": 1272,
+    "tokens": 161579,
+    "branches": 1292,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "5eeedc431744609e74a43af1b94309697faf07e31f5df3ca4e0b8b37e3ef1140"
+    "sourceSha256": "dce105341b16fba75a514ef5bf33ea98ec8d72e91a0aef14c4d09577ed49228c"
    }
   },
   {
@@ -595,11 +595,11 @@
     "sourceSha256": "dc2ec6727d17d35d2af80e6afbd9ca9dc4bf336f250a4ff91c9f48e6a35fe719"
    },
    "s0028": {
-    "tokens": 73649,
-    "branches": 616,
+    "tokens": 74734,
+    "branches": 625,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "f43f7055379fc7f8188a9c00768cbf9ee09bc1d0f32da7bc2bd66fcc3c8b5d5a"
+    "sourceSha256": "1478999935af4bb8354b03a4994072faffe39671a58c474b6c265a043a2350be"
    }
   },
   {
@@ -614,15 +614,15 @@
     "sourceSha256": "c713b1d3d2acb77b4de1d2276e8553cc66ebd8db7a854ff87db6040ef3c6fcb1"
    },
    "s0028": {
-    "tokens": 68523,
-    "branches": 573,
+    "tokens": 69608,
+    "branches": 582,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "d2a979d50f228a27a318267b4fc5b266bf71513fe799ac83a011d9fc882f67df"
+    "sourceSha256": "1cc309c7dc0671b409046b724d91ae1942efe3993d3787fa70a22891fbfc2928"
    }
   }
  ],
- "s0028DescriptorSha256": "fd1b1d17d634db116f9eb3b27e3c235e47b172c7a30713e7fc502aa3063a9115",
+ "s0028DescriptorSha256": "ced3a80def57ec352168ac442d5b1d36c3752ace8f510d3302e5b44a4e5b4340",
  "tests": {
   "vitestFiles": 337,
   "slowFiles": 34,

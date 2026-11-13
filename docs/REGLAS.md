@@ -12,6 +12,10 @@ pantalla a propósito. Si otro documento del repositorio la contradice, manda es
 3. **La maqueta 103 queda congelada** como visor de consulta. No se integra ni se le añade anatomía.
 4. **Antes de más trabajo de textura o moteado**, una sesión con ecografistas reales. Los jueces por agentes no cuentan como
    evaluación.
+5. **Modelo idealizado** (responsable, 12-11-2026): el simulador enseña con modelos ecográficos idealizados. Bordes pedagógicos y
+   regulares, anatomía promedio estándar; se evita un borde complejo donde un modelo promedio admite regularidad, sin quitar la
+   apariencia real. El TAC de `s0028` sigue diciendo dónde está cada cosa y qué tiene al lado; deja de mandar en el detalle del
+   contorno. Corrige la decisión 311 en ese punto (decisión 361).
 
 ## Alcance
 

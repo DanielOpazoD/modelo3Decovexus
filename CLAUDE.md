@@ -20,8 +20,9 @@ en `docs/engineering/workspace.md`. No uses un prompt histórico como estado act
 
 ## Fidelidad anatómica
 
-El modelo debe mantener las relaciones habituales de un humano real, no parecerse a un promedio (decisión 311). Uno o dos TAC
-bastan: sin paneles ni percentiles. Antes de ajustar imagen o anatomía, compara el mismo plano en el modelo y en el TAC, y
+El modelo debe mantener las relaciones habituales de un humano real (decisión 311) con bordes y formas idealizados y pedagógicos:
+donde un modelo promedio admite regularidad, se regulariza sin quitar la apariencia real (decisión 361, `docs/REGLAS.md`). Uno o
+dos TAC bastan: sin paneles ni percentiles. Antes de ajustar imagen o anatomía, compara el mismo plano en el modelo y en el TAC, y
 mira las láminas; una tabla no recoge lo que ahí se ve. La aceptación es la lista de `docs/anatomia/relaciones-tac.md`.
 
 ## Invariantes que se rompen fácil
