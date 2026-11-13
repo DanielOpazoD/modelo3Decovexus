@@ -265,6 +265,12 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
   );
   if (/pow\(\s*\(r\s*-\s*rk\)/.test(changed)) throw new Error('Reverberación s0028 con pow de base negativa');
   changed = changed.replace(/if\s*\(\s*c\.tissue\s*==\s*T_LUNG\s*&&\s*\w+\s*<\s*0\.0\s*\)\s*\{/g, (guard) => S0028_PLEURA_GLSL + guard);
+  // Fascias continuas (decisión 366): sin la variación de reflectividad a lo largo de la cara, que las dibujaba a trazos sueltos.
+  // La función se localiza por su firma y su primera guarda, sin nombrarla (el build renombra el GLSL).
+  changed = changed.replace(
+    /(float\s+\w+\s*\(\s*vec3\s+m\s*,\s*int\s+face\s*\)\s*)\{\s*if\s*\(\s*face\s*<\s*\w+\s*\|\|\s*face\s*>\s*\w+\s*\)\s*return\s+1\.0;[^}]*\}/,
+    '$1{return 1.0;}',
+  );
   // La banda de la pared lleva las estrías sobre su propia carta; el músculo posterior fuente no tiene capas y queda liso.
   if (/vec4\s+muscleStriation\s*\(/.test(changed)) changed = replace(changed, 'vec4', 'muscleStriation', S0028_STRIATION_GLSL);
   changed = replace(

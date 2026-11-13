@@ -11,6 +11,8 @@ import { S0028_TUBE_SEGMENTS } from './vessels';
 export const S0028_TISSUE_LOOK = Object.freeze({
   [Tissue.PerirenalFat]: { backscatter: 3 },
   [Tissue.MesentericFat]: { backscatter: 2.6 },
+  // El músculo de la pared se ve más oscuro que su grasa, como una lente hipoecoica entre fascias (decisión 366).
+  [Tissue.Muscle]: { backscatter: 0.24 },
   [Tissue.GastricContents]: { backscatter: 0.45, speckleClump: 3, attenuation: 2.5 },
   [Tissue.ColonicContents]: { backscatter: 3.5, attenuation: 5 },
   // Manguito periportal: lo que distingue una rama portal de una suprahepática a cualquier ángulo (decisión 357).

@@ -605,3 +605,8 @@ lo afirma: es la hipótesis más simple para que el fondo no muestre la rejilla 
 
 El calibre de las suprahepáticas es el de su TAC salvo que nunca disminuye hacia la cava y las tres principales llegan a ella con
 8 mm de diámetro al menos. Los 8 mm y los 25 mm del tramo en que se abren son cifras de aspecto, no medidas.
+
+### s0028: aspecto de la pared (366)
+
+Las fascias de la pared se dibujan con reflectividad uniforme (sin la variación a lo largo de la cara de la otra persona) y el
+músculo con retrodispersión 0,24. Son valores de aspecto, elegidos mirando las ventanas.

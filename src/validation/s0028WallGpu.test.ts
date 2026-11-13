@@ -44,6 +44,17 @@ it('s0028 sustituye W global en todos los consumidores alcanzables y lee cuatro 
   expect(() => personShader(legacy, { person: 's0028', bundle })).toThrow(/W global/);
 });
 
+it('s0028 dibuja las fascias de la pared con reflectividad uniforme y solo refleja como espejo la base del pulmón (366, 362)', () => {
+  const echo = personShader(PASSES.FRAG_RAWFIELD, { person: 's0028', bundle });
+  // La ganancia por cara de la otra persona varía a lo largo de la fascia (exp de un ruido); la de s0028 es constante.
+  expect(echo.match(/\(vec3 m,\s*int face\)\s*\{return 1\.0;\}/g)).toHaveLength(1);
+  expect(PASSES.FRAG_RAWFIELD).toMatch(/\(vec3 m,\s*int face\)\s*\{\s*if \(face </);
+  // El espejo pleural queda detrás de una guarda propia: una cara que no mira hacia los pies se trata como gas.
+  const hits = personShader(PASSES.FRAG_TRANS_HITS, { person: 's0028', bundle });
+  expect(hits).toMatch(/c\.n\.z > -0\.5\) \{ if \(gasSeg < 0\.0\)/);
+  expect(PASSES.FRAG_TRANS_HITS).not.toMatch(/c\.n\.z > -0\.5/);
+});
+
 it('rechaza el sampler 17 en ECHO usando el contrato real intacto', () => {
   const rows = shaderCosts((source) => {
     const changed = personShader(source, { person: 's0028', bundle });

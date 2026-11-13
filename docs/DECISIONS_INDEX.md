@@ -369,3 +369,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [363](DECISIONS.md#L11826) | El estómago de s0028 no lleva burbuja de gas | vigente |
 | [364](DECISIONS.md#L11837) | Lo no rotulado dentro de la cavidad de s0028 se dibuja como grasa visceral | vigente |
 | [365](DECISIONS.md#L11849) | Las suprahepáticas de s0028 se abren hacia la cava | vigente |
+| [366](DECISIONS.md#L11860) | La pared de s0028 se lee por capas: fascias continuas y músculo más oscuro que la grasa | vigente |

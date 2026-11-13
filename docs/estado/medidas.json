@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 62097
+   "actual": 62118
   },
   {
    "what": "`cutMapView.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 24162
+   "actual": 24390
   },
   {
    "what": "`series.js`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1116644
+   "actual": 1116893
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -481,11 +481,11 @@
     "sourceSha256": "ea5c4b3c288f653e8c66367c369f15840f2a1365483f057e8d4ea45b75d4d27b"
    },
    "s0028": {
-    "tokens": 387905,
-    "branches": 2887,
+    "tokens": 384413,
+    "branches": 2878,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "d6764bd977da369eab830decaa6e6e24993de5af6b7c993ac64fa19161dd59b1"
+    "sourceSha256": "1a49cda87952ad3e5c0b04b3dfc79f173c041a85e2ecf85413e6664940e63d0b"
    }
   },
   {
@@ -500,11 +500,11 @@
     "sourceSha256": "fa4447e13438604223e3a349b5ded408bbbe0ed48b0ec5be542f30bc6394366f"
    },
    "s0028": {
-    "tokens": 165559,
-    "branches": 1180,
+    "tokens": 162043,
+    "branches": 1169,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "fb5bc3a78d008f6eb651e5b552c8d387c713464824165aec15ca51843ffbc1ea"
+    "sourceSha256": "cf1d72a2881163c0f1384c8f25f69c7a2b16bf7f0fb27b273ec52bcc5162aab0"
    }
   },
   {
@@ -519,11 +519,11 @@
     "sourceSha256": "1477269017954bec787f51a5d45932270fbf0cb5b9a55182a5edf432182e486c"
    },
    "s0028": {
-    "tokens": 124811,
-    "branches": 882,
+    "tokens": 123059,
+    "branches": 877,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "11b36f023eb7e10434d98916698988f76f1f697618826135209b71f29b49ea55"
+    "sourceSha256": "208f0c45af97440f7813e35330c1c5203850798f341f172b6bf8ad7af4d3db54"
    }
   },
   {
@@ -538,11 +538,11 @@
     "sourceSha256": "8729a4aa6e24e492a2df63cbc6abc9be5c97199cf0fb39c4cec315d2ffc8e683"
    },
    "s0028": {
-    "tokens": 124951,
-    "branches": 884,
+    "tokens": 123199,
+    "branches": 879,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "1bcef6b144da383b60c1eb4ca608099e4fa548d3c2ab078b35b9d76b1133aaa4"
+    "sourceSha256": "63975e69cc925b295e856074d71553102e4011142d728f2668616d1f425568c5"
    }
   },
   {
@@ -557,11 +557,11 @@
     "sourceSha256": "0f701fea3cd9eff8d6448838ccd1a1b37986bcbe74d702325481a5106db50786"
    },
    "s0028": {
-    "tokens": 95757,
-    "branches": 585,
+    "tokens": 93993,
+    "branches": 579,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "aa4c3c39804433a6c2aa07122a98ac3d0faa1f832e90c3ed08d8cbdc742deb5c"
+    "sourceSha256": "009b5bd80a0858add11ab101c5a7e798a0fa815b9b48fd427906ef5bb44fed10"
    }
   },
   {
@@ -576,11 +576,11 @@
     "sourceSha256": "23c4d353785e24f4919f1dd4bec4b93356ec299f4a92f410488350dd28888304"
    },
    "s0028": {
-    "tokens": 161993,
-    "branches": 1294,
+    "tokens": 162017,
+    "branches": 1296,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "f12112312393cfcd3a20ab19f3cf2654a5a9cf069c7f98d9bb5019bd267e751a"
+    "sourceSha256": "a407dd859bbee3a812d8ccf629d430b8f9b182f5e9b2a66c321c475a50602132"
    }
   },
   {
@@ -595,11 +595,11 @@
     "sourceSha256": "dc2ec6727d17d35d2af80e6afbd9ca9dc4bf336f250a4ff91c9f48e6a35fe719"
    },
    "s0028": {
-    "tokens": 74941,
-    "branches": 626,
+    "tokens": 74953,
+    "branches": 627,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "a9ec082e1e5fa8c7788825971aca98ab6a3e392b25bf66fe4be72cc55fe2ad72"
+    "sourceSha256": "03028929561bd11fa574927d77c33d7104c3117aaf35c6dcf76413ad370371d8"
    }
   },
   {
@@ -614,11 +614,11 @@
     "sourceSha256": "c713b1d3d2acb77b4de1d2276e8553cc66ebd8db7a854ff87db6040ef3c6fcb1"
    },
    "s0028": {
-    "tokens": 69815,
-    "branches": 583,
+    "tokens": 69827,
+    "branches": 584,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "851d505fd08e4b37dbc85d91ca9c666b3c684398f5e279da92073adf06a44ef5"
+    "sourceSha256": "6ba1521459f4e9fc7c714c66eaa34c4dbbd32ac76c678f30d282569b388d9bd6"
    }
   }
  ],

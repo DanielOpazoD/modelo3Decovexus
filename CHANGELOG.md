@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: la pared se lee por capas, con fascias continuas de lado a lado y el músculo más oscuro que la grasa (366)
+
 - Anatomía s0028: las suprahepáticas se abren en trompeta hacia la cava, sin estrecharse antes de desembocar (365)
 
 - Imagen s0028: el fondo deja de verse en mosaico; lo no rotulado dentro de la cavidad se dibuja como grasa visceral. Techo del paquete de s0028 +16 KiB (364)
