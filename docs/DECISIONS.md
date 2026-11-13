@@ -11938,8 +11938,8 @@ en la imagen las fascias se veían con escalones y ondas en «W», y el responsa
 **Decisión.** `setS0028Wall` alisa las tres fronteras de los nodos conocidos con una gaussiana de 2 celdas (~4 mm de arco, 3 mm
 de alto) sobre sus vecinos conocidos, conserva el orden externa < interna ≤ interfaz y rehace el mapa E. Los nodos U siguen U.
 **Consecuencias.** Fascias continuas; CPU y GPU leen la misma copia y el recurso no cambia. La pared se aparta 0,56 mm de media
-del TAC (8,8 mm en el peor escalón). Testigos de choque rehechos: el par intestino–pared deja de existir. Pose portal rebuscada
-(acoplada 0,96; con la anterior caía a 0,88). Hash de los 30 contactos refijado.
+del TAC (8,8 mm en el peor escalón). Testigos de choque rehechos: el par intestino–pared deja de existir. Hash de los 30
+contactos refijado. Se probó otra pose portal: dejaba un cartílago bajo la cara y se retiró; la 374 la hace innecesaria.
 **Verificación.** `s0028WallChart` (U intacto, orden, halos, rugosidad a menos de un cuarto), paridad en Metal, ocho láminas.
 
 ## 374. En s0028 acopla todo elemento que toca la piel
