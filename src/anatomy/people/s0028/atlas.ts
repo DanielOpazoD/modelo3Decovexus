@@ -33,10 +33,15 @@ export function createSourceQueries(assets: PersonAssets) {
     ];
   }
 
+  /**
+   * Gas digestivo del TAC, salvo el del estómago (rótulo 1): el modelo idealizado no lleva burbuja gástrica, que en esta persona
+   * queda delante de la cava infrahepática y la tapaba en su eje largo (decisión 363). @twin s0028-lector
+   */
   function sourceGas(p: Vec3): boolean {
     if (!abdominalAtlas) return false;
     const f = B.fields.find((f) => f.name === 'digestiveTract')!;
-    return sourceLabel(abdominalAtlas, p, f, B.abdominal.textureDimensions) >= 128;
+    const label = sourceLabel(abdominalAtlas, p, f, B.abdominal.textureDimensions);
+    return label >= 128 && label % 128 !== 1;
   }
 
   /** Consulta CPU de los campos P1 separados; cartílago y pulmón no son una cola ósea. @twin s0028-lector */

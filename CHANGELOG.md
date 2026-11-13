@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: el estómago no lleva burbuja de gas; la cava en eje largo se ve entera, sin el corte de su sombra (363)
+
 - Imagen s0028: la pleura solo refleja como espejo en la base del pulmón; desaparece el duplicado negro de la cava junto al corazón (362)
 
 - Anatomía s0028: borde anterior del hígado lineal y liso, con una sola línea de cápsula y sin franja gris bajo la pared; rumbo de modelo idealizado (361)
