@@ -1,3 +1,4 @@
+import { Tissue } from '../../tissues';
 import { S0028_RENAL_INTERIOR as R } from '../../s0028RenalInteriorData';
 import { S0028_BUNDLE as B } from './descriptor';
 export const S0028_RENAL_FACE_MM = 1.2;
@@ -47,6 +48,12 @@ export const s0028WideFatPages = (): number[][] =>
   });
 /** Radio (mm) del cuerpo vertebral lumbar con que su cortical reparte el eco: un cilindro vertical (decisión 368). [ESTIMADO] */
 export const S0028_LUMBAR_BODY_RADIUS_MM = 22;
+/**
+ * Grasa de esta persona al otro lado de la cápsula hepática (decisión 378): la perirrenal, que da la interfase hepatorrenal. La
+ * tabla común solo cuenta la mesentérica y la retroperitoneal. La grasa de la pared no entra: mirando de cerca, una lámina de
+ * 1–3 mm entre pared e hígado encendía la línea a tramos; mirando a 4,5 mm se perdía la hepatorrenal.
+ */
+export const S0028_CAPSULE_FAT_TISSUES = Object.freeze([Tissue.PerirenalFat]);
 /**
  * Pared libre mínima del corazón (mm): por dentro del contorno de su máscara, lo que no llega a esta profundidad es miocardio aunque
  * el esquema de cavidades lo alcance. Sin ella la sangre de una cavidad tocaba la grasa de fuera (decisión 369). [ESTIMADO]

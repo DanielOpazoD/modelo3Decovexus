@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: aparece la línea hepatorrenal; la cápsula hepática se ve donde linda con la grasa perirrenal (378)
+
 - Imagen s0028: la cápsula hepática bajo la pared queda en arco continuo, sin el hombro; pared regularizada a mayor escala (377)
 
 - Imagen s0028: las fascias y el músculo de la pared ya no se cortan; los huecos cerrados de la carta se rellenan como estimación (376)

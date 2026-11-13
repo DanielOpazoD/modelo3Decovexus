@@ -5,7 +5,7 @@ import type { AnatomyPerson, InstalledCpuPerson } from '../../person';
 import type { PersonBuffers } from '../../personAssets';
 import { createAbdominalQueries, createThoracicQueries } from '../../personAtlas';
 import { installS0028Assets } from './assets';
-import { S0028_LUMBAR_BODY_RADIUS_MM } from './solidsData';
+import { S0028_CAPSULE_FAT_TISSUES, S0028_LUMBAR_BODY_RADIUS_MM } from './solidsData';
 import { createSourceQueries } from './atlas';
 import { classifyInside, classifyWall } from './classifier';
 import { createSolidsQueries } from './solids';
@@ -71,6 +71,7 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     // Con 23 ramas propias del TAC quedan 55 tubos para las procedurales: seis por madre llegan a las once (decisión 358).
     hepaticBranchesPerParent: 6,
     lumbarBodyRadiusMm: S0028_LUMBAR_BODY_RADIUS_MM,
+    capsuleFatTissues: S0028_CAPSULE_FAT_TISSUES,
     heart: S0028_HEART,
     // Marco de cada riñón, de su máscara: centro, eje largo (componente principal) y dirección del hilio (su muesca). Sitúa los
     // vasos del hilio y las interlobares en el riñón de esta persona; el parénquima sigue saliendo del rótulo del TAC.

@@ -655,3 +655,8 @@ rellena.
 La carta de pared se alisa con 5 celdas (unos 10 mm de arco), sin mezclar vecinos que difieren más de 7 mm: se pierden las
 ondulaciones de hasta esa altura, también las reales (el vientre de un músculo), y se conservan los escalones grandes como el
 reborde costal. El hígado, el bazo y el pulmón se recortan donde pisaban esa pared (0,5 ml, 0,03 ml y 0,5 ml).
+
+### s0028: cápsula hepática frente a grasa perirrenal (378)
+
+La cápsula sube su eco donde el tejido de fuera es grasa perirrenal, con la misma ganancia que frente a la mesentérica (el salto
+hígado–grasa). Frente a la grasa de la pared no sube: donde esa capa es gruesa, el borde hepático queda sin línea propia.
