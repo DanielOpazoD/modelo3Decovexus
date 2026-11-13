@@ -49,8 +49,12 @@ export interface WindowTarget {
   long: Vec3;
   /** Tejido que debe ocupar el campo cercano y medio (el hígado como ventana). */
   through?: Tissue;
-  /** Peso de esa ventana en la puntuación (1 si no se indica): la hepatorrenal existe para ver el riñón a través del hígado. */
-  throughWeight?: number;
+  /**
+   * Órgano que debe verse detrás de `through` (la hepatorrenal: el riñón tras el hígado). Con él, el hito no son puntos de un eje
+   * sino las líneas del sector que cruzan al menos `BEHIND_MM` de `through` y llegan al órgano sin barrera delante, y el plano es
+   * libre: la búsqueda gira la sonda sobre su eje en vez de alinear el plano con `long`.
+   */
+  behind?: ReadonlySet<Tissue>;
   /** Balanceo y abanico máximos (rad); 0,6 si no se indica. La subcostal abanica más hacia la cabeza. */
   maxAngle?: number;
 }
@@ -67,6 +71,9 @@ export interface WindowScore {
 // Lo que un ecografista evita tener delante: hueso, cartílago, pulmón y gas digestivo (su sombra sucia tapa lo que hay detrás).
 const BLOCK = new Set<Tissue>([Tissue.Bone, Tissue.Vertebra, Tissue.Lung, Tissue.Cartilage, Tissue.BowelGas, Tissue.ColonicContents]);
 const LINES = 25;
+/** Espesor mínimo del tejido ventana delante del órgano (mm) y fracción de líneas que basta para darlo por visto entero. */
+const BEHIND_MM = 12;
+const BEHIND_LINES = 0.4;
 
 export function scoreWindow(anatomy: AnatomyQuery, sample: PhysiologySample, pose: ProbePose, t: WindowTarget): WindowScore {
   const contact = probeContact(pose, TR, anatomy.scene.torso);
@@ -89,30 +96,44 @@ export function scoreWindow(anatomy: AnatomyQuery, sample: PhysiologySample, pos
   let coupled = 0,
     clear = 0,
     through = 0,
-    samples = 0;
+    samples = 0,
+    behind = 0,
+    behindCentred = 0;
   for (let i = 0; i < LINES; i++) {
     const theta = -TR.halfSector + (2 * TR.halfSector * (i + 0.5)) / LINES;
     if (contactCoupling(contact, theta) < 0.5) continue;
     coupled++;
-    let r = 3;
+    let r = 3,
+      windowMm = 0,
+      reached = false;
     for (; r < t.depthMm; r += 4) {
       const tissue = tissueAt(theta, r);
       if (BLOCK.has(tissue)) break;
       samples++;
-      if (tissue === t.through) through++;
+      if (tissue === t.through) {
+        through++;
+        windowMm += 4;
+      }
+      if (t.behind?.has(tissue) && !reached) {
+        reached = true;
+        if (windowMm >= BEHIND_MM) {
+          behind++;
+          behindCentred += 1 - Math.abs(theta) / TR.halfSector;
+        }
+      }
     }
     clear += Math.min(1, r / t.depthMm);
   }
   const q = {
-    seen: seen / t.points.length,
-    centred: centred / t.points.length,
+    seen: t.behind ? Math.min(1, behind / (BEHIND_LINES * LINES)) : seen / t.points.length,
+    centred: t.behind ? (behind ? behindCentred / behind : 0) : centred / t.points.length,
     coupled: coupled / LINES,
     clear: clear / LINES,
     through: samples ? through / samples : 0,
   };
   return {
     ...q,
-    score: 4 * q.seen + q.centred + 1.5 * q.clear + q.coupled + (t.through === undefined ? 0 : (t.throughWeight ?? 1) * q.through),
+    score: 4 * q.seen + q.centred + 1.5 * q.clear + q.coupled + (t.through === undefined ? 0 : q.through),
   };
 }
 
@@ -212,18 +233,20 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
       long: sub(cava.at(-1)!, cava[0]),
       through: liver,
     },
-    // Riñón a través del hígado. En esta persona el ángulo hepático del colon queda delante del riñón por la línea axilar anterior
-    // (con contenido, que un ecografista evita): el apoyo se busca entre la axilar media y la posterior, por delante de la renal.
+    // Riñón a través del hígado, con el plano libre. En esta persona el ángulo hepático del colon queda delante del riñón por la
+    // línea axilar anterior (con contenido, que un ecografista evita) y las costillas bajas cruzan un plano coronal: la sonda se
+    // apoya entre la axilar media y la posterior y gira a lo largo del espacio intercostal.
     {
       id: 'hepatorenal',
-      phi: [2.9, 3.2],
-      z: [-180, -80],
+      phi: [2.9, 3.5],
+      z: [-130, -60],
       depthMm: 140,
       points: kidney,
       pivot: KIDNEY.center,
       long: KIDNEY.u,
       through: liver,
-      throughWeight: 4,
+      behind: new Set([Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalPelvis]),
+      maxAngle: 0.7,
     },
     // Riñón en eje largo con la vena interlobar media en el plano: es la que se interroga en el Doppler renal de VExUS.
     {
