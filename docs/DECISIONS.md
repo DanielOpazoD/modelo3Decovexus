@@ -11978,3 +11978,16 @@ esquina E, E, E) no disputa un órgano medido: ahí gana la máscara, en CPU y G
 **Consecuencias.** Fascias y músculo continuos. Los huecos están donde el intestino toca la pared: sin la regla aparecían 770
 choques intestino–pared a 1,5 mm; con ella, ninguno. El U abierto (dorso, flancos) sigue U. Testigos y hash de contactos rehechos.
 **Verificación.** `s0028WallChart` (oráculo propio de huecos), `s0028SolidsClassify` (regla), paridad en Metal, capa lenta, láminas.
+
+## 377. La pared de s0028 se regulariza a mayor escala y los órganos se recortan contra ella
+
+**Contexto.** Con el alisado de 2 celdas (373) el borde hepático seguía subiendo en un hombro de unos 6 mm donde el músculo de la
+pared se adelgaza; el responsable lo había señalado como borde mal construido.
+**Opciones.** Gaussiana de 5 celdas (quita el hombro pero mueve hasta 16 mm el reborde costal), bilateral con umbral de 3 mm (no
+mueve nada y conserva el hombro), o bilateral con umbral de 7 mm; se elige esto.
+**Decisión.** La carta se alisa con 5 celdas y un peso que deja de mezclar vecinos que difieren más de 7 mm.
+`s0028-organs-off-wall.ts` resta la banda medida de hígado, bazo y pulmón con una unión suave de 2 mm (con el máximo seco la
+cápsula salía en cuentas).
+**Consecuencias.** Cápsula hepática en arco continuo. La pared se aparta 0,87 mm de media del TAC (9,6 mm el peor nodo). Hígado
+−0,5 ml, pulmón −0,5 ml. Los choques hígado–pared y bazo–pared dejan de existir. Atlas +11,5 KB y +19 KB (techos declarados).
+**Verificación.** `s0028WallChart`, `s0028SolidsClassify`, paridad en Metal, capa lenta, láminas de las ocho ventanas.

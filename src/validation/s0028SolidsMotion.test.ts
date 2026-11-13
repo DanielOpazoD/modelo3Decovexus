@@ -58,8 +58,10 @@ it('contacto: P3 conserva la carta P2 y su U; los 30 contactos s0028 quedan fija
   // `s0028WallChart.test.ts` acota ese cambio. Hasta la 374 era 6f5c…9c7e: cambia sólo `contact` (acopla todo elemento que toca
   // la piel); `s0028UContact.test.ts` comprueba la regla. Hasta la 376 era a8bc…7533: los huecos cerrados de la carta se rellenan y
   // los nodos que apoyan sobre ellos tienen ahora pared; `s0028WallChart.test.ts` comprueba que lo medido no se mueve.
+  // Hasta la 377 era 3d12…74da: el alisado de la carta pasa a 5 celdas respetando escalones de más de 7 mm y sus caras cambian
+  // 0,87 mm de media.
   expect(createHash('sha256').update(JSON.stringify(values)).digest('hex')).toBe(
-    '3d121ebe712db3b9a5bdcb1bd3dcbdede4db38e801aaddb1914c254f6ecf74da',
+    '05f55e97c051a284e8611d9ae4b6b24acea18c014abc689ad90250f65dc20f15',
   );
 });
 

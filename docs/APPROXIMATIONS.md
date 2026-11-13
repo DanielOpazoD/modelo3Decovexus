@@ -649,3 +649,9 @@ grueso y de grosor variable.
 Los 267 huecos cerrados de la carta (2.147 nodos) se rellenan por interpolación desde su borde y quedan rotulados como estimación
 (E, E, E). No es una medida: donde un órgano del TAC ocupa ese sitio, gana el órgano. El U abierto del dorso y los flancos no se
 rellena.
+
+### s0028: pared regularizada a mayor escala y órganos recortados contra ella (377)
+
+La carta de pared se alisa con 5 celdas (unos 10 mm de arco), sin mezclar vecinos que difieren más de 7 mm: se pierden las
+ondulaciones de hasta esa altura, también las reales (el vientre de un músculo), y se conservan los escalones grandes como el
+reborde costal. El hígado, el bazo y el pulmón se recortan donde pisaban esa pared (0,5 ml, 0,03 ml y 0,5 ml).

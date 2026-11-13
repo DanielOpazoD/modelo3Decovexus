@@ -38,8 +38,8 @@ describe('selección anterior a escena y carga de una persona', () => {
       expect(fetched).toHaveLength(6);
       expect(fetched.filter((p) => p.endsWith('annotation-capacity.gzip.bin'))).toHaveLength(1);
       expect(person.assets.buffers.capacity?.byteLength).toBe(5_671_296);
-      // El nodo (fila 80, columna 128) de la carta alisada al cargar (decisión 373); en el recurso mide 34,0625 y 39,9375.
-      expect(s0028WallSurface(Math.PI / 2, -90)).toMatchObject({ kind: 'known', outerMm: 34.3125, innerMm: 39.6875 });
+      // El nodo (fila 80, columna 128) de la carta alisada al cargar (decisiones 373 y 377); en el recurso mide 34,0625 y 39,9375.
+      expect(s0028WallSurface(Math.PI / 2, -90)).toMatchObject({ kind: 'known', outerMm: 34.1875, innerMm: 39.9375 });
       expect(Math.abs(s0028Depth(s0028SkinPoint(Math.PI / 2, -90)!)!)).toBeLessThan(0.00001);
     } finally {
       vi.unstubAllGlobals();

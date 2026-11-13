@@ -1,6 +1,6 @@
 # Estado vigente: anatomía
 
-Actualizado: 2026-11-13 sobre main `6b0b7ad`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
+Actualizado: 2026-11-13 sobre main `b3b9dd9`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
@@ -83,20 +83,20 @@ Todos los techos de la aplicación, con su fuente, están en `docs/estado/presup
 
 <!-- presupuestos s0028: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `6b0b7ad` el 2026-11-13 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `b3b9dd9` el 2026-11-13 con `tools/docs/estado.ts`.
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |
-| Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.940.990 |  4.059.010 | 318      |
-| Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.872.721 | 10.637.281 | 317      |
+| Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.980.238 |  4.019.762 | 318      |
+| Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.884.215 | 10.625.787 | 317      |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | 317      |
 | Textura torácica s0028 en memoria (RAW)             |  60.413.664 |  60.413.664 |          0 | 317      |
-| `abdominal-direct.gzip.bin`                         |   8.872.721 |   8.872.721 |          0 | 317      |
+| `abdominal-direct.gzip.bin`                         |   8.884.215 |   8.884.215 |          0 | 317      |
 | `annotation-capacity.gzip.bin`                      |     856.999 |     334.410 |    522.589 | 320      |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | 321      |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | 317      |
-| `surfaces.gzip.bin`                                 |   9.672.026 |   5.475.792 |  4.196.234 | 318      |
-| `thoracic-direct.gzip.bin`                          |   5.268.609 |   5.268.609 |          0 | 317      |
+| `surfaces.gzip.bin`                                 |   9.672.026 |   5.484.535 |  4.187.491 | 318      |
+| `thoracic-direct.gzip.bin`                          |   5.287.620 |   5.287.620 |          0 | 317      |
 
 <!-- fin de presupuestos s0028 -->
 

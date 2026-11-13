@@ -185,15 +185,14 @@ it('hígado s0028: dueño O sin el ligamento venoso analítico de la otra person
   }
 });
 
-it('conflicto: los vóxeles de hígado y bazo dentro de la banda P2 conservan los dos dueños y no eligen material', () => {
-  // Puntos de la banda de la carta alisada al cargar (decisión 373): con ella quedan muy pocos vóxeles de hígado dentro.
+it('conflicto: un órgano dentro de la banda P2 medida conserva los dos dueños y no elige material', () => {
+  // Desde la decisión 377 el hígado y el bazo se recortan contra la pared y ya no la pisan; el caso se ejercita con el pulmón,
+  // que aún entra en la banda junto al borde de la carta.
   for (const [p, organ] of [
-    [[-102.48527431275116, -30.714784500197737, -109.48879268882285], 'liver'],
-    [[-102.38, -30.21, -109.84], 'liver'],
-    [[-102.38, -31.46, -109.09], 'liver'],
-    [[-102.13, -30.96, -108.59], 'liver'],
-    [[125.51472568724884, -18.714784500197737, -85.48879268882285], 'spleen'],
-    [[125.51472568724884, -20.214784500197737, -79.48879268882285], 'spleen'],
+    [[-120.38, -21.21, 13.16], 'lung'],
+    [[-118.88, -20.46, 13.91], 'lung'],
+    [[-120.38, -18.96, 16.16], 'lung'],
+    [[-122.63, -18.21, 17.66], 'lung'],
   ] as const) {
     const c = at([...p]);
     expect(c.solids?.state, p.join(',')).toBe('conflict');
@@ -206,8 +205,7 @@ it('conflicto: los vóxeles de hígado y bazo dentro de la banda P2 conservan lo
 
 it('una pared estimada no disputa un órgano medido (decisión 376): en las celdas interpoladas gana la máscara y, sin ella, hay pared', () => {
   let yielded = 0,
-    estimatedWall = 0,
-    measuredConflicts = 0;
+    estimatedWall = 0;
   for (let z = -210 + 0.41; z < 60; z += 3)
     for (let y = -170 + 0.29; y < 170; y += 3)
       for (let x = -210 + 0.37; x < 210; x += 3) {
@@ -216,27 +214,27 @@ it('una pared estimada no disputa un órgano medido (decisión 376): en las celd
         if (q?.kind !== 'known' || !(q.depthMm >= 1.5 && q.depthMm < q.interfaceMm)) continue;
         const o = s0028Owners(p, q),
           owners = o.owners.map((w) => w.id),
-          organs = owners.filter((id) => id !== 'wall' && id !== 'compatible_fat');
-        if (!q.estimated) {
-          // Control: donde la pared es medida, la regla no se aplica y el choque con un órgano se conserva.
-          if (organs.length && owners.includes('wall')) measuredConflicts++;
-          continue;
-        }
+          // El hueso y el cartílago no cuentan: dentro de la pared son contenido suyo, nunca un segundo dueño.
+          organs = owners.filter((id) => !['wall', 'compatible_fat', 'bone', 'cartilage'].includes(id));
+        if (!q.estimated || owners.some((id) => id === 'bone' || id === 'cartilage')) continue;
         if (organs.length) {
           yielded++;
           expect(owners, p.join(',')).not.toContain('wall');
+          // Control en el mismo punto: con la misma pared tomada por medida, el órgano y la pared chocan.
+          expect(s0028Owners(p, { ...q, estimated: false }).owners.map((w) => w.id)).toContain('wall');
         } else if (owners.includes('wall')) estimatedWall++;
       }
-  // Medido el 13-11-2026 a 3 mm: 684 puntos donde gana el órgano, 21.211 de pared estimada y 7 choques en pared medida.
-  expect(yielded).toBeGreaterThan(500);
+  // Medido el 13-11-2026 a 3 mm: 109 puntos donde gana un órgano blando y 21.513 de pared estimada. El control va en cada punto:
+  // en pared medida casi no quedan choques que contar desde que los órganos se recortan contra ella (decisión 377).
+  expect(yielded).toBeGreaterThan(80);
   expect(estimatedWall).toBeGreaterThan(15000);
-  expect(measuredConflicts).toBeGreaterThan(3);
 });
 
-it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los ocho pares del censo', () => {
-  // Eran nueve hasta la decisión 373: con la carta de pared alisada ningún vóxel de intestino queda dentro de la banda.
-  expect(conflicts.pairs).toHaveLength(8);
-  expect(conflicts.pairs).not.toContain('bowel+wall');
+it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los seis pares del censo', () => {
+  // Eran nueve hasta la decisión 373 (el intestino deja de pisar la banda alisada) y ocho hasta la 377, que recorta el hígado y el
+  // bazo contra la pared: esos órganos ya no tienen vóxeles dentro de la banda.
+  expect(conflicts.pairs).toHaveLength(6);
+  for (const gone of ['bowel+wall', 'liver+wall', 'spleen+wall']) expect(conflicts.pairs).not.toContain(gone);
   for (const [x, y, z, k] of conflicts.points) {
     const c = at([x, y, z]);
     expect(c.solids?.state, `${x},${y},${z}`).toBe('conflict');

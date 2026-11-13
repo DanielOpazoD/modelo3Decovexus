@@ -27,9 +27,11 @@ import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
  * contacto P2 (P8) y sólo se mueven en las ventanas que apoyan entre costillas, sobre el reborde costal o sobre el xifoides. Con
  * las poses propias de s0028 (decisiones 346 y 349) son seis: subcostal 21,4 mm, intercostal 11,0, tronco portal 8,6, subxifoidea
  * 2,5, renal 2,4 y porta subcostal 1,1. Es la limitación P8 de siempre (en main llegaba a 19,4 mm): el hueso bajo la cara sigue a
- * la pared en vez de frenarla.
+ * la pared en vez de frenarla. Desde la decisión 377 se cuenta también el flanco (11,4 mm): su costilla bajo el borde de la cara ya
+ * acompañaba a la pared (12,9 mm con la carta anterior), pero quedaba entera por encima de la profundidad comprimida D y esta
+ * prueba, que mira desde D, no la veía; con la pared 1 mm más fina asoman 0,4 mm por debajo.
  */
-const RIBS_UNDER_FACE = new Set(['subcostal', 'intercostal', 'portalTrunk', 'subxiphoid', 'renal', 'portalSubcostal']);
+const RIBS_UNDER_FACE = new Set(['subcostal', 'intercostal', 'portalTrunk', 'subxiphoid', 'renal', 'portalSubcostal', 'flank']);
 const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, sample: PhysiologySample;
 beforeAll(() => {

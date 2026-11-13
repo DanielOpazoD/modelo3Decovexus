@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-13",
- "main": "6b0b7ad",
+ "main": "b3b9dd9",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -21,11 +21,11 @@
   },
   {
    "what": "`abdominal-direct.gzip.bin`",
-   "limit": 8872721,
+   "limit": 8884215,
    "unit": "B",
    "decision": 317,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 8872721
+   "actual": 8884215
   },
   {
    "what": "`abdominal-surface.gzip.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14398
+   "actual": 64627
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 64552
+   "actual": 14398
   },
   {
    "what": "`cutMapView.js`",
@@ -281,7 +281,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5475792
+   "actual": 5484535
   },
   {
    "what": "`surfaces.js`",
@@ -325,11 +325,11 @@
   },
   {
    "what": "`thoracic-direct.gzip.bin`",
-   "limit": 5268609,
+   "limit": 5287620,
    "unit": "B",
    "decision": 317,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5268609
+   "actual": 5287620
   },
   {
    "what": "`thoracic-surface.gzip.bin`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1120662
+   "actual": 1120737
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -393,7 +393,7 @@
    "unit": "B",
    "decision": 318,
    "source": "src/anatomy/people/s0028/surfaces.ts",
-   "actual": 20940990
+   "actual": 20980238
   },
   {
    "what": "Cada `.gzip` fijado del paquete s0028 (por archivo)",
@@ -401,7 +401,7 @@
    "unit": "B",
    "decision": 317,
    "source": "src/anatomy/people/s0028/runtime.ts",
-   "actual": 8872721
+   "actual": 8884215
   },
   {
    "what": "Textura abdominal s0028 en memoria (RAW)",
@@ -622,7 +622,7 @@
    }
   }
  ],
- "s0028DescriptorSha256": "60f2f2bd3f29441a731540bbc8a911a550967fb362b393c56b88156ecbadf5d1",
+ "s0028DescriptorSha256": "0e60cc0ec6df55de71ffa59227b29b995cb82f1b62a2e26a9b63d8eae3bd65da",
  "tests": {
   "vitestFiles": 338,
   "slowFiles": 34,
