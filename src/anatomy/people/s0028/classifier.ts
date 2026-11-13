@@ -273,6 +273,10 @@ export function classifyInside(
         },
         solids!,
       );
+    // En la pared, donde la carta no conoce la celda, lo no rotulado se dibuja como su grasa (decisión 371): con el gris de «sin
+    // rotular» la pared lateral salía a parches. Junto al riñón sigue siendo U.
+    if (!SINUS_TISSUE[interior] && solids!.kidneyMm > S0028_LIVER_GAP_KIDNEY_MM)
+      return renalFace({ ...NONE, tissue: Tissue.Fat, boundaryDistance: 0, wall: 'U', approximation: 'grasa-estimada' }, solids!);
     return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' }, solids!);
   }
 }

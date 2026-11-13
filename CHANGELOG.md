@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: la pared sin carta deja de verse a parches; lo no rotulado se dibuja como su grasa (371)
+
 - Imagen s0028: la aorta se distingue de la cava por su pared ecogénica (370)
 
 - Anatomía s0028: el corazón lleva pared libre de miocardio y sus cavidades se distinguen de ella (369)
