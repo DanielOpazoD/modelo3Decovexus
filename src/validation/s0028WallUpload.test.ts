@@ -11,7 +11,7 @@ import { s0028FatPages, setS0028Solids } from './support/legacyPerson/s0028Solid
 import { s0028WallUploads, setS0028Wall } from './support/legacyPerson/s0028Wall';
 import { fixturePerson } from './support/legacyPerson/state';
 
-it('sube los 16 tiles RG16F y centros como vistas en el único atlas P1, sin copiar el atlas ni derivar la carta S−dN', () => {
+it('sube los 16 tiles RG16F y centros como vistas de la carta cargada en el único atlas P1, sin copiar el atlas ni derivar la carta S−dN', () => {
   installAnatomyBundle(B);
   const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
   const data = new Uint16Array(B.abdominal.rawBytes / 2),
@@ -52,14 +52,18 @@ it('sube los 16 tiles RG16F y centros como vistas en el único atlas P1, sin cop
   const person = fixturePerson();
   createAbdominalTexture(gl as unknown as WebGL2RenderingContext, true, false, person, gpuPlan(person));
   expect(storage).toHaveBeenCalledExactlyOnceWith(gl.TEXTURE_3D, 1, gl.RG16F, ...B.abdominal.textureDimensions);
+  const chart = s0028WallUploads()[0].data.buffer;
   for (const [tile, offset] of B.wall.placements.entries()) {
     const u = uploads.find((u) => u.x === offset[0] && u.y === offset[1] && u.z === offset[2] && u.w === 65 && u.h === 91 && u.d === 2);
     expect(u, `tile ${tile}`).toBeDefined();
-    expect(u?.input.buffer).toBe(capacity);
-    expect(u?.input.byteOffset).toBe(4096 + tile * 65 * 91 * 2 * 4);
+    // La carta cargada es una sola copia alisada del recurso (decisión 373); cada tesela es una vista suya, sin más copias.
+    // Se compara la identidad, no el contenido: un fallo no debe volcar megabytes en el informe.
+    expect(u?.input.buffer === chart).toBe(true);
+    expect(chart === capacity).toBe(false);
+    expect(u?.input.byteOffset).toBe(tile * 65 * 91 * 2 * 4);
   }
   const centre = uploads.find((u) => u.x === 48 && u.y === 0 && u.z === 398 && u.w === 1 && u.h === 181);
-  expect(centre?.input.buffer).toBe(capacity);
+  expect(centre?.input.buffer === chart).toBe(true);
   expect(centre?.input.byteLength).toBe(724);
   // Regla directa: sólo pared y centros; la carta S−dN del Newton descartado ya no se deriva ni se sube.
   expect(uploads.filter((u) => u.w === 65 && u.h === 91)).toHaveLength(16);

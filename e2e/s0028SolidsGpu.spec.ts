@@ -248,7 +248,7 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
           }
       out.push(compare('corazón', 0, NO, pts));
     }
-    // Testigos de conflicto (nueve pares del censo, fuera de las mitades de celda): U con los dos dueños, sin elegir material.
+    // Testigos de conflicto (ocho pares del censo, fuera de las mitades de celda): U con los dos dueños, sin elegir material.
     out.push(compare('conflictos', 0, NO, a.conflicts));
     // La banda sola daría Fat en estos puntos; con grasa D superpuesta debe dar conflicto U.
     out.push(compare('conflictos grasa P2', 0, NO, a.fatBand));
@@ -311,12 +311,13 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
   }, ARGS);
   await test.info().attach('paridad-solidos-s0028', { body: JSON.stringify(rows, null, 1), contentType: 'application/json' });
   const tag = (r: Row) => `${r.id}: ${JSON.stringify(r)}`;
-  for (const [id, cls, count] of [
-    ['quiste E D=0', 'cystE', cysts.cyst.length],
-    ['conflictos grasa P2 D=0', 'conflictU', conflicts.fatBand.length],
+  // La sub-banda de grasa tiene 14 testigos desde la decisión 373 (eran 29): la carta alisada deja menos grasa D dentro.
+  for (const [id, cls, count, least] of [
+    ['quiste E D=0', 'cystE', cysts.cyst.length, 20],
+    ['conflictos grasa P2 D=0', 'conflictU', conflicts.fatBand.length, 12],
   ] as const) {
     const r = rows.find((r) => r.id === id)!;
-    expect(count, id).toBeGreaterThanOrEqual(20);
+    expect(count, id).toBeGreaterThanOrEqual(least);
     expect(r.classes[cls], tag(r)).toEqual([count, count]);
   }
   for (const r of rows) {
@@ -345,7 +346,8 @@ test('la GPU s0028 clasifica los sólidos con la política P3 de la CPU: dueños
     expect(count, cls).toBeGreaterThan(30);
     expect(same / count, cls).toBeGreaterThanOrEqual(0.99);
   }
-  expect(rows.find((r) => r.id === 'conflictos D=0')!.classes.conflictU).toEqual([conflicts.points.length, conflicts.points.length]);
+  const witnessed = rows.find((r) => r.id === 'conflictos D=0')!;
+  expect(witnessed.classes.conflictU, tag(witnessed)).toEqual([conflicts.points.length, conflicts.points.length]);
   expect(rows.reduce((s, r) => s + r.renalCpu, 0)).toBeGreaterThan(2000);
   // El diafragma de la persona llega a la GPU: cientos de puntos de la lámina bajo el pulmón, con sus controles.
   expect(rows.find((r) => r.id === 'diafragma D=0')!.points).toBeGreaterThan(400);

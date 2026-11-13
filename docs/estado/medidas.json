@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-13",
- "main": "f276c06",
+ "main": "1ded5c8",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 62255
+   "actual": 63448
   },
   {
    "what": "`cpu.js`",
@@ -137,7 +137,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 26440
+   "actual": 26463
   },
   {
    "what": "`index.css`",
@@ -257,7 +257,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1582
+   "actual": 1821
   },
   {
    "what": "`startPoints.js`",
@@ -289,7 +289,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 485
+   "actual": 5730
   },
   {
    "what": "`surfaces.js`",
@@ -297,7 +297,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 485
   },
   {
    "what": "`teacherTab.js`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1041616
+   "actual": 1041878
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1117954
+   "actual": 1119409
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,7 +624,7 @@
  ],
  "s0028DescriptorSha256": "fdd9577a3bfd6ebf67f1d83a7b9cec4128edf0c4f2ba2a6df6188b5518ec4711",
  "tests": {
-  "vitestFiles": 337,
+  "vitestFiles": 338,
   "slowFiles": 34,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,

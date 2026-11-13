@@ -1,5 +1,5 @@
 import { smoothstep, type Vec3 } from '../../../core/vec3';
-import { HALF } from '../../halfFloat';
+import { HALF, toHalf } from '../../halfFloat';
 import type { PersonAssets } from '../../personAssets';
 import { S0028_WALL_PACKAGE as P } from '../../s0028WallData';
 import type { createSourceQueries } from './atlas';
@@ -53,6 +53,8 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
     ];
   }
   const TILE_WORDS = 65 * 91 * 2 * 2;
+  /** Sigma (celdas de la carta: ~2 mm de arco × 1,5 mm de alto) del alisado de las fronteras de la pared (decisión 373). */
+  const CHART_SMOOTH_CELLS = 2;
   /** Mapa E por nodo (512×181 RG16F) del bloque derivado offline y su código del propio nodo conocido, (0+8)·32+(0+16). */
   const E_WORDS = 512 * 181 * 2;
   const E_SELF = 272;
@@ -117,7 +119,83 @@ export function createWallQueries(assets: PersonAssets, source: ReturnType<typeo
     for (let row = 0; row < 181; row++)
       if (!(HALF[ramps[2 * row]] > 1.5 && HALF[ramps[2 * row + 1]] > HALF[ramps[2 * row]] && HALF[ramps[2 * row + 1]] <= 80))
         throw new Error('Rampa respiratoria por fila inválida');
-    buffers = { tiles, skin: new Uint16Array(skin), nearest, ramps };
+    const smooth = smoothChart(tiles, nearest);
+    buffers = { tiles: smooth.tiles, skin: new Uint16Array(skin), nearest: smooth.nearest, ramps };
+  }
+
+  /**
+   * Carta de pared idealizada (decisión 373): las tres fronteras de cada nodo conocido se alisan con una gaussiana de
+   * `CHART_SMOOTH_CELLS` celdas sobre sus vecinos conocidos, en una copia; los nodos U siguen U. La carta medida en el TAC trae
+   * ±1 mm de ruido de vóxel de nodo a nodo y las fascias se veían onduladas. El mapa E se rehace con la cara alisada de su nodo
+   * fuente. CPU y GPU usan esta misma copia.
+   */
+  function smoothChart(tiles: Uint16Array, nearest: Uint16Array): { tiles: Uint16Array; nearest: Uint16Array } {
+    const ROWS = 181,
+      COLS = 512,
+      R = Math.ceil(3 * CHART_SMOOTH_CELLS);
+    const kernel = Array.from({ length: 2 * R + 1 }, (_, i) => Math.exp(-0.5 * ((i - R) / CHART_SMOOTH_CELLS) ** 2));
+    const cell = (row: number, col: number, page: number, k: number) => {
+      const band = row < 90 ? 0 : 1;
+      return (band * 8 + (col >> 6)) * TILE_WORDS + ((page * 91 + row - 90 * band) * 65 + (col & 63)) * 2 + k;
+    };
+    const fields = [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+    ].map(([page, k]) => {
+      const source = new Float32Array(ROWS * COLS),
+        pass = new Float32Array(ROWS * COLS),
+        out = new Float32Array(ROWS * COLS);
+      for (let row = 0; row < ROWS; row++)
+        for (let col = 0; col < COLS; col++) source[row * COLS + col] = HALF[tiles[cell(row, col, page, k)]];
+      // Separable, normalizada sobre los vecinos finitos: un nodo U no aporta ni recibe.
+      const blur = (from: Float32Array, to: Float32Array, along: 0 | 1) => {
+        for (let row = 0; row < ROWS; row++)
+          for (let col = 0; col < COLS; col++) {
+            let sum = 0,
+              weight = 0;
+            for (let d = -R; d <= R; d++) {
+              const r = along ? row + d : row,
+                c = along ? col : (col + d + COLS) % COLS;
+              if (r < 0 || r >= ROWS) continue;
+              const v = from[r * COLS + c];
+              if (Number.isNaN(v)) continue;
+              sum += kernel[d + R] * v;
+              weight += kernel[d + R];
+            }
+            to[row * COLS + col] = Number.isNaN(source[row * COLS + col]) || weight === 0 ? NaN : sum / weight;
+          }
+      };
+      blur(source, pass, 0);
+      blur(pass, out, 1);
+      return out;
+    });
+    const smooth = tiles.slice();
+    for (let tile = 0; tile < 16; tile++)
+      for (let y = 0; y < 91; y++)
+        for (let x = 0; x < 65; x++) {
+          const row = (tile >> 3) * 90 + y,
+            col = ((tile & 7) * 64 + x) % COLS,
+            i = row * COLS + col;
+          // Mismo orden que la carta medida: externa < interna ≤ interfaz.
+          const a = fields[0][i],
+            b = Math.max(fields[1][i], a + 0.05),
+            c = Math.max(fields[2][i], b);
+          const at = tile * TILE_WORDS + (y * 65 + x) * 2;
+          if (!Number.isNaN(a)) smooth[at] = toHalf(a);
+          if (!Number.isNaN(b)) smooth[at + 1] = toHalf(b);
+          if (!Number.isNaN(c)) smooth[at + 91 * 65 * 2] = toHalf(c);
+        }
+    const face = nearest.slice();
+    for (let row = 0; row < ROWS; row++)
+      for (let col = 0; col < COLS; col++) {
+        const code = HALF[nearest[(row * COLS + col) * 2 + 1]];
+        if (Number.isNaN(code)) continue;
+        const r = row + Math.floor(code / 32) - 8,
+          c = (col + (code % 32) - 16 + COLS) % COLS;
+        face[(row * COLS + col) * 2] = smooth[cell(r, c, 1, 0)];
+      }
+    return { tiles: smooth, nearest: face };
   }
 
   /** Perfil polar nativo de la misma persona; fuera de su Z se prolonga, sin certificar anatomía. */
