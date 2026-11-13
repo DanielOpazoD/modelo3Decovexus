@@ -590,3 +590,8 @@ las caras hacia el riñón, la vesícula, la cava y el hilio siguen siendo las d
 
 El umbral que separa la base (espejo) de las demás caras (sombra sucia) es de aspecto: componente caudal de la normal media mayor
 de 0,5. No modela la curvatura real de la pleura ni las líneas A.
+
+### s0028: estómago sin gas (363)
+
+El gas del estómago que muestra su TAC no se dibuja: ese volumen es contenido gástrico. Es una idealización docente, no un dato
+de la persona. El gas del colon y del intestino sí se conserva.

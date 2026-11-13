@@ -11822,3 +11822,14 @@ base, sobre el diafragma) hay espejo; las demás caras, pequeñas y convexas, se
 **Consecuencias.** Detrás de la cava junto al corazón queda una sombra gris tenue y la línea pleural apenas se marca. El umbral
 (componente caudal de la normal > 0,5) es estimado. Solo GPU: la CPU no calcula esa normal.
 **Verificación.** Láminas de la subxifoidea antes y después; `personShaders`, `glslMangle`, `shaderLimits`.
+
+## 363. El estómago de s0028 no lleva burbuja de gas
+
+**Contexto.** En la cava en eje largo la luz se cortaba en seco a la derecha de la imagen. No era el vaso: el clasificador daba
+sangre ahí. Delante de ese tramo está la burbuja de gas del estómago lleno de esta persona, y su sombra sucia tapaba la cava.
+**Opciones.** Mover la ventana (el antro queda delante de la cava en cualquier plano sagital), o lo decidido.
+**Decisión.** Con el rumbo de modelo idealizado (361), el gas digestivo del TAC se conserva salvo el del estómago (rótulo 1):
+`sourceGas` y `s28Gas` lo dejan como contenido gástrico. El colon y el resto del tubo siguen con su gas.
+**Consecuencias.** La cava se sigue hasta el borde de la imagen y el páncreas queda sin sombra de gas. El estómago ya no es el de
+su TAC en ese punto: un rasgo de la persona (burbuja anterior en decúbito) que se retira por criterio docente.
+**Verificación.** Láminas de la subxifoidea; perfil de tejidos por línea (gas a 45–52 mm solo en las líneas tapadas).

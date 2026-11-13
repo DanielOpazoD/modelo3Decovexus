@@ -49,7 +49,9 @@ vec2 abdominalAtlasValue(vec3 p,int k){
 float s28Gas(vec3 p){
   vec3 q=(p-S28_LO[1])/1.5;
   if(any(lessThan(q,vec3(0.0)))||any(greaterThan(q,S28_DIM[1]-1.0)))return 0.0;
-  return texelFetch(uAbdominalAtlas,ivec3(S28_OFF[1]+floor(q+0.5)),0).g>=128.0?1.0:0.0;
+  // Sin la burbuja del estómago (rótulo 1): gemelo de sourceGas (decisión 363).
+  float v=texelFetch(uAbdominalAtlas,ivec3(S28_OFF[1]+floor(q+0.5)),0).g;
+  return v>=128.0&&mod(v,128.0)!=1.0?1.0:0.0;
 }
 vec2 thoracicValue(vec3 p){
   if(uAbdominalAtlasEnabled==0)return vec2(16.0,0.0);
