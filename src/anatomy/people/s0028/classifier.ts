@@ -261,7 +261,16 @@ export function classifyInside(
       solids!.kidneyMm > S0028_LIVER_GAP_KIDNEY_MM &&
       (inside !== null || -depth > S0028_SUBCUTANEOUS_REACH_MM)
     )
-      return renalFace({ ...NONE, tissue: Tissue.MesentericFat, boundaryDistance: 0, approximation: 'grasa-estimada' }, solids!);
+      // Pegada por dentro a la pared es preperitoneal, hipoecoica como la grasa D de esa franja (decisión 366).
+      return renalFace(
+        {
+          ...NONE,
+          tissue: inside !== null && inside < S0028_PREPERITONEAL_MM ? Tissue.Fat : Tissue.MesentericFat,
+          boundaryDistance: 0,
+          approximation: 'grasa-estimada',
+        },
+        solids!,
+      );
     return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, wall: 'U' }, solids!);
   }
 }

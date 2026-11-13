@@ -11856,3 +11856,15 @@ sus últimos 25 mm hasta 8 mm de diámetro al menos, y el tronco común no es m�
 **Consecuencias.** Confluencia en trompeta, como en la imagen clásica. El radio de referencia (área de flujo) no cambia, así que
 el Doppler es el mismo. El calibre junto a la cava ya no es el medido en el TAC.
 **Verificación.** `s0028Vessels` (calibre no decreciente y boca de 8 mm), `vesselOverlap`, láminas subcostal e intercostal.
+
+## 366. La pared de s0028 se lee por capas: fascias continuas y músculo más oscuro que la grasa
+
+**Contexto.** El responsable insiste en que la pared se ve mal lograda. El mapa de caras muestra que las fascias del modelo son
+continuas, pero una variación de reflectividad a lo largo de cada cara las dibujaba a trazos sueltos; el músculo salía más claro
+que la grasa; y la grasa estimada de la 364 dejaba parches brillantes en la franja preperitoneal.
+**Opciones.** Alisar la carta de pared (cambia el recurso; queda para después), o lo decidido, que no toca datos.
+**Decisión.** En s0028 la ganancia de las caras de la pared es uniforme; el músculo baja su retrodispersión a 0,24 (lente
+hipoecoica entre fascias); y lo no rotulado a menos de 15 mm por dentro de la pared es grasa hipoecoica, como la grasa D de ahí.
+**Consecuencias.** Piel, fascia superficial, vaina, músculo, peritoneo y cápsula se siguen de lado a lado. El músculo posterior
+también se oscurece. Las fascias conservan las pequeñas ondulaciones de la carta.
+**Verificación.** Mapa de caras y láminas de las ocho ventanas; `s0028TissueLook`, `personShaders`, e2e de paridad.
