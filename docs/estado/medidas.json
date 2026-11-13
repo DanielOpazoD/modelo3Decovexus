@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-13",
- "main": "e413620",
+ "main": "a46e9c9",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -137,7 +137,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 26155
+   "actual": 26424
   },
   {
    "what": "`index.css`",
@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 10400
+   "actual": 10401
   },
   {
    "what": "`structureIdentity.js`",
@@ -369,7 +369,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 109555
+   "actual": 109612
   },
   {
    "what": "JS clausura default (Workers y ganchos incluidos)",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1040842
+   "actual": 1041169
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1114624
+   "actual": 1114951
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",

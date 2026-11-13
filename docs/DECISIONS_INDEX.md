@@ -363,3 +363,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [357](DECISIONS.md#L11751) | El árbol portal de s0028 sale de su TAC y su pared se ve | vigente |
 | [358](DECISIONS.md#L11764) | Tributarias suprahepáticas del TAC, uniones sin nudo y ramas repartidas entre todas las venas | vigente |
 | [359](DECISIONS.md#L11778) | La ventana hepatorrenal de s0028 gira a lo largo del espacio intercostal | vigente |
+| [360](DECISIONS.md#L11791) | La grasa de la pared de s0028 cede bajo la sonda | vigente |

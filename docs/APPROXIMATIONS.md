@@ -571,3 +571,10 @@ El corazón de s0028 es el esquema de cuatro cavidades elipsoidales con sus pare
 los cortes de su TAC. La máscara `heart` limita el conjunto; dentro de ella, lo que no es cavidad se dibuja como miocardio, así que
 donde el elipsoide se queda corto la pared sale más gruesa que la real. No hay válvulas, ni movimiento de las cavidades, ni saco
 pericárdico. Sirve para que la cava termine en una aurícula; no para evaluar el corazón.
+
+### s0028: cuánto cede la pared bajo la sonda (360)
+
+La pared cede el 40 % de lo que la cara hunde la piel, con tope de un tercio del espesor de su grasa. Son cifras estimadas: la
+literatura dice que la grasa subcutánea es muy compresible y que el hígado cede un 12–15 % con presión ligera, pero no da el
+reparto. El perfil es lineal en toda la pared, así que el músculo adelgaza en la misma proporción que la grasa. Donde la carta no
+separa la grasa (celdas sin datos con cara estimada) se toma el 70 % de la pared.

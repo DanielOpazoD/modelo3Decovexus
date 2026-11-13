@@ -42,7 +42,7 @@ beforeAll(() => {
 // los recuentos de esta prueba se midieron sobre ellos, y una ventana puede moverse sin que cambie la mecánica del contacto.
 const poses = () => startPointsFor(scene.torso, B).map((p) => ({ ...p, ...ABDOMINAL_POSES[p.id] }));
 
-it('contacto: P3 conserva la carta P2 y su U; los 30 contactos s0028 son los de main 3c50b18 salvo la tabla rígida (r3)', () => {
+it('contacto: P3 conserva la carta P2 y su U; los 30 contactos s0028 quedan fijados, con la grasa que cede (decisión 360)', () => {
   const values = [];
   for (const pose of poses())
     for (const lift of [-3, 0, 10]) {
@@ -52,9 +52,10 @@ it('contacto: P3 conserva la carta P2 y su U; los 30 contactos s0028 son los de 
       expect(contact.reachMm).toBe(compressionReachMm(contact.nodes) + Math.max(0, ...rigid!.map((r) => r[2])));
       values.push({ id: pose.id, lift, contact: { ...contact, reachMm: compressionReachMm(contact.nodes) } });
     }
-  // SHA de main (script contact-s0028.mts de la evidencia P3 r2 sobre git archive 3c50b18).
+  // Hasta la decisión 360 era el SHA de main 3c50b18 (5620…2d1c): la pared se trasladaba entera. Desde ella la grasa cede bajo la
+  // cara (D y s_D cambian en los nodos que hunden la piel); `s0028UContact.test.ts` comprueba esa regla nodo a nodo.
   expect(createHash('sha256').update(JSON.stringify(values)).digest('hex')).toBe(
-    '56201065819f134067b4fbf53feb17cc43285558cd409731e6fb8d40b4a92d1c',
+    '5880fbbf4576d6289cc07d04117441dd7d6c7fc957853bd965b145df65d58703',
   );
 });
 

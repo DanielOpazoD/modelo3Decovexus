@@ -683,7 +683,10 @@ La fracción U de celdas, los pliegues
 y las proyecciones sin prueba se registran por ventana en la [migración](anatomia/migracion-s0028.md). Intercostal
 sigue bloqueada/P8; posterior U/P3. En GPU nativa (Metal) el filtro del hardware aparta la cara de la pared de la que mide
 la CPU 0,06 mm (p95) y hasta 0,23 mm, menos de un píxel, y a 45–60 mm de la piel 9 de 3.264 puntos respiran con otra celda de
-la carta; en SwiftShader coinciden (decisión 344). No es validación clínica.
+la carta; en SwiftShader coinciden (decisión 344). Medido el 12-11-2026 en un M4: la GPU lee la profundidad bajo la piel con
+hasta 0,008 mm de error y a 40–50 mm la proyección cae hasta 0,3 mm al lado; en los planos de imagen de tres ventanas anteriores
+(172.800 puntos cada uno, a 0,3 mm) el 0,05–0,12 % da otro tejido que la CPU, todos a una muestra de un borde. No se corrige: la
+lectura exacta sube la consulta de pared de 17 a 30 lecturas sin cambio visible. No es validación clínica.
 
 `s0028-solids-p3` (321, pendiente): P3 clasifica sólidos y compartimento posterior con la misma política en CPU, Worker
 del corte y GPU (r3); la GPU coincide con la CPU salvo bordes subpíxel (empates nearest Float32/double y la carta P2 a
