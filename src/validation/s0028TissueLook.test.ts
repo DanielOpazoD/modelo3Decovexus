@@ -23,6 +23,9 @@ it('s0028: la grasa visceral se distingue del hígado y del riñón, y el conten
     expect(TISSUES[content].alpha1 * (look[content].attenuation ?? 1)).toBeGreaterThan(TISSUES[Tissue.Liver].alpha1);
   }
   expect(look[Tissue.GastricContents].speckleClump).toBeGreaterThan(TISSUES[Tissue.Liver].speckleClump ?? 0);
+  // El páncreas queda entre el hígado y la grasa que lo rodea: al menos 2 dB sobre el uno y 1 bajo la otra (decisión 367).
+  expect(db(back(Tissue.Pancreas) / back(Tissue.Liver))).toBeGreaterThan(2);
+  expect(db(back(Tissue.MesentericFat) / back(Tissue.Pancreas))).toBeGreaterThan(1);
   // El manguito periportal se ve a cualquier ángulo (decisión 357): al menos 6 dB sobre el hígado; la tabla común no cambia.
   expect(db(back(Tissue.VesselWallPortal) / back(Tissue.Liver))).toBeGreaterThan(6);
   expect(TISSUES[Tissue.VesselWallPortal].backscatter).toBe(2.6);

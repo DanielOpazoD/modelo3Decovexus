@@ -13,6 +13,8 @@ export const S0028_TISSUE_LOOK = Object.freeze({
   [Tissue.MesentericFat]: { backscatter: 2.6 },
   // El músculo de la pared se ve más oscuro que su grasa, como una lente hipoecoica entre fascias (decisión 366).
   [Tissue.Muscle]: { backscatter: 0.24 },
+  // Páncreas algo más ecogénico que el hígado y menos que la grasa que lo rodea: se distingue de los dos (decisión 367).
+  [Tissue.Pancreas]: { backscatter: 1.9 },
   [Tissue.GastricContents]: { backscatter: 0.45, speckleClump: 3, attenuation: 2.5 },
   [Tissue.ColonicContents]: { backscatter: 3.5, attenuation: 5 },
   // Manguito periportal: lo que distingue una rama portal de una suprahepática a cualquier ángulo (decisión 357).
