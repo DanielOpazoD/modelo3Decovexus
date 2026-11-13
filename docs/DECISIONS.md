@@ -11918,3 +11918,14 @@ el mismo grosor en ventrículos y aurículas.
 el rótulo `U` de pared y el de `grasa-estimada`. A menos de 10 mm del riñón sigue sin rotular.
 **Consecuencias.** Pared uniforme donde no hay carta. Los músculos intercostales y posteriores sin máscara se ven como grasa.
 **Verificación.** `s0028WallRuntime` (el fondo sigue rotulado), `s0028SolidsClassify`, e2e de paridad en Metal, láminas.
+
+## 372. Toda la superficie del hígado de s0028 se alisa
+
+**Contexto.** La 361 alisó solo la cara anterior. En la hepatorrenal, las caras posterior e inferior seguían con el contorno en
+cuentas de la máscara del TAC (ondulaciones de 2 mm y escalones de vóxel).
+**Opciones.** Dejarlas como en el TAC, o aplicar el mismo criterio de bordes regulares a todo el órgano; se elige esto.
+**Decisión.** `s0028-liver-border.py` alisa a 3 mm la distancia junto a toda la superficie, partiendo del recurso original y con
+el mismo filtro (fuera de la pared y sin otro dueño). Frente al TAC: +25 ml y −21 ml de 1.346.
+**Consecuencias.** Contorno regular en todas las caras; el cambio en la imagen es sutil. El borde inferior queda algo más romo
+(unos milímetros). Atlas +61 KB sobre la 361; mallas 3D regeneradas.
+**Verificación.** `s0028Precomputed` (malla refijada), suite de validación, e2e de paridad en Metal, láminas de las ocho ventanas.

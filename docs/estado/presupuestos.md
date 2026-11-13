@@ -28,7 +28,7 @@ Medido en el candidato basado en main `f276c06` el 2026-11-13 con `tools/docs/es
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- | -------- | -------------------------------------- |
 | `abdominal-atlas.gzip.bin`                          |   6.291.456 |   6.140.705 |    150.751 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `abdominal-body.bin`                                |        3640 |        3640 |          0 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `abdominal-direct.gzip.bin`                         |   8.811.430 |   8.811.430 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
+| `abdominal-direct.gzip.bin`                         |   8.872.721 |   8.872.721 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `abdominal-surface.gzip.bin`                        |   6.291.456 |   6.014.991 |    276.465 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `anatomy.glsl.js`                                   |     122.880 |      23.152 |     99.728 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `anatomyScene.js`                                   |     122.880 |      16.656 |    106.224 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -60,7 +60,7 @@ Medido en el candidato basado en main `f276c06` el 2026-11-13 con `tools/docs/es
 | `sourceVolume.js`                                   |     122.880 |        1582 |    121.298 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `startPoints.js`                                    |     122.880 |      10.401 |    112.479 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `structureIdentity.js`                              |     122.880 |        1609 |    121.271 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `surfaces.gzip.bin`                                 |   9.672.026 |   5.458.659 |  4.213.367 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
+| `surfaces.gzip.bin`                                 |   9.672.026 |   5.471.032 |  4.200.994 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.js`                                       |     122.880 |         485 |    122.395 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.js`                                       |     122.880 |        5730 |    117.150 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `teacherTab.js`                                     |     122.880 |      46.687 |     76.193 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -74,8 +74,8 @@ Medido en el candidato basado en main `f276c06` el 2026-11-13 con `tools/docs/es
 | `vesselTree.js`                                     |     122.880 |     109.612 |     13.268 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.041.616 |     28.464 | B        | 322      | `tools/ci/personBundles.ts`            |
 | JS clausura s0028 (Workers y ganchos incluidos)     |   1.132.544 |   1.117.954 |     14.590 | B        | 322      | `tools/ci/personBundles.ts`            |
-| Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.845.968 |  4.154.032 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
-| Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.811.430 | 10.698.572 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
+| Descarga del paquete s0028 (gzip)                   |  25.000.000 |  20.919.632 |  4.080.368 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
+| Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   8.872.721 | 10.637.281 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura torácica s0028 en memoria (RAW)             |  60.413.664 |  60.413.664 |          0 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Samplers por programa (las dos personas)            |          16 |          16 |          0 | samplers | 317      | `tools/ci/shaderBudgets.ts`            |

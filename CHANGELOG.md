@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: toda la superficie del hígado queda alisada, no solo su cara anterior (372)
+
 - Imagen s0028: la pared sin carta deja de verse a parches; lo no rotulado se dibuja como su grasa (371)
 
 - Imagen s0028: la aorta se distingue de la cava por su pared ecogénica (370)
