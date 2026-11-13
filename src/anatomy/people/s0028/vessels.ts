@@ -84,7 +84,42 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
   reroute(vessels);
   accompany(vessels, 'splenicArtery', 'portalSplenic');
   addOwnBranches(vessels);
+  flareHepaticVeins(vessels);
   fitJunctions(vessels);
+}
+
+/** Calibre mínimo (radio, mm) con que una suprahepática principal llega a la cava, y tramo final en que se abre hasta él. */
+const HEPATIC_MOUTH_MM = 4;
+const HEPATIC_FLARE_MM = 25;
+/**
+ * Suprahepáticas idealizadas (decisión 365): el calibre de cada vena y de cada tributaria propia nunca disminuye hacia su
+ * desembocadura, y las tres principales se abren en sus últimos 25 mm hasta 8 mm de diámetro al menos. Medido en su TAC, la
+ * derecha llegaba a 7,2 mm a medio trayecto y se estrechaba a 5,6 antes de la cava: en la imagen, un palo en lugar de una vena que
+ * se abre al confluir. El tronco común no es más fino que las venas que recibe. Los nodos van de la punta a la unión. El radio de
+ * referencia (el área de flujo) no cambia: el Doppler es el mismo.
+ */
+function flareHepaticVeins(vessels: VesselDef[]): void {
+  const main = new Set(['hvRight', 'hvMiddle', 'hvLeft']);
+  let mouth = 0;
+  for (const v of vessels) {
+    if (!v.id.startsWith('hv') || v.id === 'hvCommonTrunk') continue;
+    const nodes = v.tube.nodes,
+      s = arcs(nodes),
+      length = s[s.length - 1],
+      open = main.has(v.id) && v.flowFactor === undefined;
+    let widest = 0;
+    v.tube = {
+      ...v.tube,
+      nodes: nodes.map((n, k) => {
+        const t = Math.min(1, (length - s[k]) / HEPATIC_FLARE_MM),
+          flared = open ? HEPATIC_MOUTH_MM + (n.r - HEPATIC_MOUTH_MM) * t * t * (3 - 2 * t) : n.r;
+        return { ...n, r: (widest = Math.max(widest, n.r, flared)) };
+      }),
+    };
+    if (open && v.id !== 'hvRight') mouth = Math.max(mouth, widest);
+  }
+  for (const v of vessels)
+    if (v.id === 'hvCommonTrunk') v.tube = { ...v.tube, nodes: v.tube.nodes.map((n) => ({ ...n, r: Math.max(n.r, mouth) })) };
 }
 
 /** Radio (mm) con que se apaga la punta de una rama propia: por debajo de la resolución, sin acabar en una bola. */

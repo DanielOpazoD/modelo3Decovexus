@@ -88,7 +88,16 @@ it('los troncos de s0028 son los de sus máscaras, en el sentido del flujo y den
     expect(maxTurnDeg(drawn), id).toBeLessThanOrEqual(Math.max(9, maxTurnDeg(nodes.map((n) => ({ p: n.slice(0, 3) as Vec3 })))) + 1e-9);
     // El radio es el medido (lineal entre sus nodos), salvo en las madres hepáticas y portales que la escena afila en su punta
     // (decisión 87).
-    for (const n of drawn) expect(n.r, id).toBeLessThanOrEqual(Math.max(...radii) + 1e-9);
+    // Las suprahepáticas, además, se abren hacia su desembocadura (decisión 365): hasta 4 mm de radio las tres principales y el
+    // tronco común, y ninguna se estrecha en el sentido del flujo.
+    for (const n of drawn) expect(n.r, id).toBeLessThanOrEqual(Math.max(...radii, id.startsWith('hv') ? 4 : 0) + 1e-9);
+    if (id.startsWith('hv')) {
+      // Con 0,2 mm de holgura sobre el máximo anterior: el final de una tributaria no pasa del calibre de la vena que la recibe
+      // (uniones sin nudo, decisión 358). Antes de la 365 la derecha perdía 0,8 mm de radio antes de la cava.
+      for (let k = 1, widest = drawn[0].r; k < drawn.length; widest = Math.max(widest, drawn[k++].r))
+        expect(drawn[k].r, `${id} ${k}`).toBeGreaterThanOrEqual(widest - 0.2);
+      if (['hvRight', 'hvMiddle', 'hvLeft', 'hvCommonTrunk'].includes(id)) expect(drawn.at(-1)!.r, id).toBeGreaterThanOrEqual(4 - 1e-9);
+    }
     if (!HEPATIC.includes(id) && !id.startsWith('pv')) {
       for (const n of drawn) expect(n.r, id).toBeGreaterThanOrEqual(Math.min(...radii) - 1e-9);
       expect([drawn[0].r, drawn.at(-1)!.r], id).toEqual([radii[0], radii.at(-1)]);
