@@ -292,12 +292,14 @@ export function interfaceAmplitude(id: Interface, kDb = IFACE_K_DB): number {
  * Uniform `uIface` de la pasada B: un vec4 por cara, (A, 2·k0·σz, 1/(4s²), dos lados), con A la
  * amplitud de `interfaceAmplitude`; ceros para `Interface.None`.
  */
-export function interfaceUniforms(k0: number, kDb = IFACE_K_DB): Float32Array {
+export function interfaceUniforms(k0: number, kDb = IFACE_K_DB, look: Readonly<Record<number, { slopeRms?: number }>> = {}): Float32Array {
   const out = new Float32Array(4 * INTERFACE_COUNT);
   for (let i = 1; i < INTERFACE_COUNT; i++) {
     const id: Interface = i;
-    const p = INTERFACES[id];
-    out.set([interfaceAmplitude(id, kDb), 2 * k0 * p.roughnessMm, 1 / (4 * p.slopeRms * p.slopeRms), p.twoSided ? 1 : 0], 4 * i);
+    const p = INTERFACES[id],
+      // Aspecto por persona (decisión 368): solo la pendiente de la rugosidad, que decide a qué ángulos se ve la cara.
+      slope = look[i]?.slopeRms ?? p.slopeRms;
+    out.set([interfaceAmplitude(id, kDb), 2 * k0 * p.roughnessMm, 1 / (4 * slope * slope), p.twoSided ? 1 : 0], 4 * i);
   }
   return out;
 }

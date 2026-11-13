@@ -541,7 +541,7 @@ export class UltrasoundRenderer {
     this.ring = new CompoundRing(profile.compound);
     this.k2 = lookWavenumber(profile.beam);
     this.ifaceK0 = (2 * Math.PI) / profile.beam.lambdaMm;
-    this.ifaceUniforms = interfaceUniforms(this.ifaceK0);
+    this.ifaceUniforms = interfaceUniforms(this.ifaceK0, undefined, gpu?.interfaceLook);
     const LINES = this.lines;
     this.couplingData = new Float32Array(LINES);
     const gl = canvas.getContext('webgl2', { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: false });

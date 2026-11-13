@@ -5,6 +5,7 @@ import {
   S0028_LIVER_GAP_KIDNEY_MM,
   S0028_LIVER_GAP_MM,
   S0028_LIVER_SEAM_MM,
+  S0028_LUMBAR_BODY_RADIUS_MM,
   S0028_PREPERITONEAL_MM,
   S0028_SUBCUTANEOUS_REACH_MM,
   s0028FatPages,
@@ -261,8 +262,13 @@ Cls classifyWith(vec3 m,bool withCurtain){
     return c;
   }
   classifyInside(m,k,od,vec3(e,valid?q.w-q.z:1e3),c);
-  if(b.x>=0.0&&b.x<1.3&&b.x<c.ifd&&c.tissue!=T_LUNG&&c.tissue!=T_FLUID&&c.tissue!=T_BLOOD&&thoracicMaterial(s28PLT(m,0))==0){
-    c.bd=min(c.bd,b.x);c.iface=IF_RIB;c.ifd=b.x;thoracicFrame(m,c.tangent,c.kc);}
+  // Cortical ósea vista desde el tejido blando de al lado: costillas y, desde la decisión 368, también las vértebras torácicas y
+  // lumbares (antes sin cara: tras la aorta su sombra se fundía con la luz y parecía una columna negra).
+  float cort=min(b.x,b.y);
+  if(cort>=0.0&&cort<1.3&&cort<c.ifd&&c.tissue!=T_LUNG&&c.tissue!=T_FLUID&&c.tissue!=T_BLOOD){
+    c.bd=min(c.bd,cort);c.iface=IF_RIB;c.ifd=cort;
+    // El cuerpo lumbar refleja como un cilindro vertical de su radio: un arco continuo, no destellos sueltos.
+    if(b.x<=b.y)thoracicFrame(m,c.tangent,c.kc);else{c.tangent=vec3(0.0,0.0,1.0);c.kc=${(1 / S0028_LUMBAR_BODY_RADIUS_MM).toFixed(5)};}}
   return c;
 }`;
 

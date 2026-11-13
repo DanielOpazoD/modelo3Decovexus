@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: las vértebras dibujan su cortical como un arco brillante con sombra; la aorta deja de fundirse con ella (368)
+
 - Imagen s0028: el páncreas es algo más ecogénico que el hígado y se distingue de él y de la grasa que lo rodea (367)
 
 - Imagen s0028: la pared se lee por capas, con fascias continuas de lado a lado y el músculo más oscuro que la grasa (366)

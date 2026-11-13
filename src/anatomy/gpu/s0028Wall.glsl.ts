@@ -145,6 +145,15 @@ const S0028_PLEURA_GLSL = /* glsl */ `
       if (c.tissue == T_LUNG && mirrorSeg < 0.0 && c.n.z > -0.5) { if (gasSeg < 0.0) { gasSeg = float(s); gasKind = 2.0; } continue; }
       `;
 
+/**
+ * Normal de la cortical ósea de s0028 (decisión 368): la media de la superficie a 3 mm, no la del vóxel. Con la local, la cortical
+ * de una vértebra reflejaba en destellos sueltos, uno por faceta de la distancia; con la media, como un arco continuo. Escalada
+ * para que la norma que deduce `faceGradient` sea la de la diferencia a 3 mm. En la CPU, `numericGradient` con h = 3 (`scene.ts`).
+ */
+const S0028_CORTEX_GLSL = /* glsl */ `vec2 t=vec2(3.0,0.0);
+    g=vec3(ribSd(m+t.xyy,0)-ribSd(m-t.xyy,0),ribSd(m+t.yxy,0)-ribSd(m-t.yxy,0),ribSd(m+t.yyx,0)-ribSd(m-t.yyx,0))*(FACE_GRAD_EPS/3.0);
+  `;
+
 type Replace = (source: string, type: string, name: string, replacement: string) => string;
 /**
  * Especializa la fuente por defecto para s0028: pared P2 (regla directa, rampas U), su clasificación ligera, la cortina
@@ -279,13 +288,14 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
     'domeSd',
     'float domeSd(vec3 m){bool valid;vec4 q=s28WallAt(m,valid);float d=s28PT(m,2);return valid?max(d,q.z-q.w):d;}',
   );
-  changed = replace(changed, 'float', 'ribSd', 'float ribSd(vec3 m,int k){return thoracicSdf(m);}');
+  // La cortical ósea de s0028 es la del hueso torácico o la del lumbar, la más cercana (decisión 368).
+  changed = replace(changed, 'float', 'ribSd', 'float ribSd(vec3 m,int k){return min(thoracicSdf(m),abdominalAtlasValue(m,8).x);}');
   // El pericondrio pertenece al campo de cartílago, no al SDF óseo.
   changed = changed.replace(
     /}\s*else\s+if\s*\(c\.iface\s*==\s*IF_RIB\s*\|\|\s*c\.iface\s*==\s*IF_PERICHONDRIUM\)\s*\{/,
     `} else if(c.iface==IF_PERICHONDRIUM){
     g=vec3(s28PT(m+h.xyy,1)-s28PT(m-h.xyy,1),s28PT(m+h.yxy,1)-s28PT(m-h.yxy,1),s28PT(m+h.yyx,1)-s28PT(m-h.yyx,1));
-  } else if(c.iface==IF_RIB){`,
+  } else if(c.iface==IF_RIB){${S0028_CORTEX_GLSL}} else if(false){`,
   );
   changed = changed.replace(/float\s+lg\s*=\s*length\(g\);/, 'if(any(isnan(g)))return vec4(0.0);\n  float lg = length(g);');
   if (/uWall\.x\s*\+\s*uWall\.y\s*\+\s*uWall\.z|skin\s*\+\s*uWall\.y\s*\+\s*uWall\.z/.test(changed))
