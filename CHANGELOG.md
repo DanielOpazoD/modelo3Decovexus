@@ -5,6 +5,10 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: el duodeno y el intestino delgado llevan contenido, no líquido negro; el colédoco ya no cruza la luz del duodeno (384)
+
+- Ventanas s0028: la hepatorrenal muestra el riñón entero sin el duodeno al lado y la intercostal, la suprahepática entrando en la cava (383)
+
 - Anatomía s0028: la lista de relaciones del TAC, medida sobre la propia persona s0028 con su herramienta; 21 de 21 filas
 
 - CI: el job principal tiene un tope de 40 minutos en vez de 25; un corredor lento ya no lo cancela en verde (382)

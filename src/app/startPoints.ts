@@ -322,10 +322,14 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   portalTrunk: { phi: 3.25, z: -80, yaw: 0.032, rock: 0.122, tilt: 0.26 },
   // Decisión 381: girada 1,4° y 0,6 mm hacia la cabeza, el plano pasa por el eje del codo de la porta en vez de rozarlo.
   portalSubcostal: { phi: 1.6, z: -49.4, yaw: -1.627, rock: 0.295, tilt: 0.255 },
-  intercostal: { phi: 3.55, z: -100, yaw: -0.838, rock: 0.488, tilt: 0.456 },
+  // Decisión 383 (valoración del responsable): el plano contiene el tramo final de la suprahepática derecha y su unión con la
+  // cava; antes solo el 38 % de ese tramo quedaba en el plano y una sombra ocupaba un tercio del sector.
+  intercostal: { phi: 3.475, z: -70, yaw: -0.05, rock: 0.075, tilt: 0.112 },
   subcostal: { phi: 2.35, z: -88.5, yaw: 1.114, rock: 0.325, tilt: -0.345 },
   subxiphoid: { phi: 1.65, z: -65, yaw: -0.037, rock: 0.063, tilt: -0.115 },
-  hepatorenal: { phi: 3.2, z: -90, yaw: -1.05, rock: 0.076, tilt: -0.236 },
+  // Decisión 383 (valoración del responsable): el riñón pasa de 66 a 82 mm en el plano, sale el duodeno y queda una costilla
+  // en el borde en vez de dos cruzando el campo. El colon sigue a un lado: con hígado como ventana no hay pose que lo evite.
+  hepatorenal: { phi: 3.2, z: -95, yaw: -0.8, rock: -0.188, tilt: -0.281 },
   renal: { phi: 3.35, z: -115, yaw: -0.498, rock: 0.083, tilt: 0.11 },
 };
 const S0028_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...S0028_POSES[sp.id] }));

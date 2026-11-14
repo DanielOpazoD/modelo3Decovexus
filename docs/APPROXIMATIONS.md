@@ -673,3 +673,10 @@ la vez de diafragma y de pericardio, que no se separan. Va pegada a la máscara 
 entre ambos queda del lado abdominal de la línea, y en una persona iría por dentro del pericardio. La grasa del TAC y lo que el
 TAC no rotula a menos de 15 mm del corazón se dibujan como grasa hipoecoica (epicárdica y pericárdica juntas); los 15 mm son una
 distancia fija, no una medida.
+
+### s0028: contenido del intestino delgado y vía biliar (384)
+
+El duodeno y el intestino delgado se dibujan con el mismo contenido que el estómago: en el TAC llevaban contraste oral y como
+líquido anecoico se leían como vasos. No se distingue un asa colapsada de una con contenido. La vía biliar es la de referencia
+recolocada: el colédoco se corta donde sale del duodeno (la papila no está en ninguna máscara) y el cístico es un tramo recto de
+la vesícula al colédoco. No sale del TAC, que no la segmenta.

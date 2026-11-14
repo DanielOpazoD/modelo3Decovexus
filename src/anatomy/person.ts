@@ -8,7 +8,8 @@ import type { PersonAssets, PersonIdentity } from './personAssets';
 import type { createAbdominalQueries, createThoracicQueries } from './personAtlas';
 import type { IndexedSourceSurface } from './s0028Surface';
 import type { AnatomyScene } from './scene';
-import type { VesselDef } from './vesselTree';
+import type { DuctDef, VesselDef } from './vesselTree';
+import type { Tissue } from './tissues';
 
 export interface AnatomyPerson {
   readonly classifyInside: (
@@ -24,6 +25,8 @@ export interface AnatomyPerson {
   readonly skinMm: number;
   /** Construction-only refinement of this person’s registered vascular landmarks. */
   readonly curveVessels?: (vessels: VesselDef[]) => void;
+  /** Vía biliar de esta persona a partir de la de referencia (s0028, decisión 384); solo construcción. */
+  readonly placeDucts?: (ducts: DuctDef[]) => DuctDef[];
   /** Tope de ramas hepáticas procedurales por vaso madre, cuando la persona ya trae ramas propias y los tubos van justos. */
   readonly hepaticBranchesPerParent?: number;
   /** Radio (mm) del cuerpo vertebral lumbar con que su cortical reparte el eco (decisión 368). */
@@ -42,6 +45,8 @@ export interface AnatomyPerson {
   readonly digestiveWallMm: (label: number) => number;
   readonly digestiveGas: (point: Vec3, label: number) => number;
   readonly isColon: (label: number) => boolean;
+  /** Tejido de la luz del duodeno y el intestino delgado cuando no es líquido anecoico (s0028, decisión 384); sin él, `Tissue.Fluid`. */
+  readonly smallBowelContents?: Tissue;
   /** Capas del estómago cuando la persona conserva otras (s0028, decisión 332); sin ellas, `GASTRIC_WALL`. */
   readonly gastricWall?: GastricWall;
   /** Marco nuevo (copia propia) del riñón del atlas (0 derecho, 1 izquierdo) cuando la persona lo mueve (decisiones 329 y 330); sin él, el de la escena. */

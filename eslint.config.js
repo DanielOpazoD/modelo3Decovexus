@@ -4,7 +4,16 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', 'public/**', 'coverage/**', 'test-results/**', 'playwright-report/**', 'maqueta-anatomica/**'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'public/**',
+      'coverage/**',
+      'test-results/**',
+      'playwright-report/**',
+      'maqueta-anatomica/**',
+      '.cache/**',
+    ],
   },
   js.configs.recommended,
   // Reglas con información de tipos (promesas sin esperar, `await` de no-promesas, etc.)

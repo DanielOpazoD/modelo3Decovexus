@@ -386,3 +386,5 @@ Generado por `npm run docs:index` — no editar a mano.
 | [380](DECISIONS.md#L12021) | El diafragma de s0028 envuelve también el corazón, y la grasa junto a él es hipoecoica | vigente |
 | [381](DECISIONS.md#L12034) | La subcostal portal de s0028 corta la porta por su eje | vigente |
 | [382](DECISIONS.md#L12046) | El job principal de CI tiene un tope de 40 minutos | vigente |
+| [383](DECISIONS.md#L12057) | La hepatorrenal y la intercostal de s0028 cambian de pose tras la primera valoración | vigente |
+| [384](DECISIONS.md#L12070) | El intestino delgado de s0028 lleva contenido y su vía biliar no cruza el duodeno | vigente |

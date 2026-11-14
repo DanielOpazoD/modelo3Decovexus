@@ -12,6 +12,7 @@ import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
 import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
 import { setAbdominalBody } from './support/legacyPerson/referenceBody';
 import { setS0028Solids } from './support/legacyPerson/s0028Solids';
+import { s0028SourceValue } from './support/legacyPerson/s0028Source';
 import { setS0028Wall } from './support/legacyPerson/s0028Wall';
 import { AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
 import { fixturePerson } from './support/legacyPerson/state';
@@ -292,4 +293,39 @@ it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue 
   expect(axis(scene, 'commonHepaticArtery')[0].p).toEqual(axis(scene, 'celiacTrunk').at(-1)!.p);
   expect(axis(scene, 'hepaticArtery')[0].p).toEqual(axis(scene, 'commonHepaticArtery').at(-1)!.p);
   expect(axis(scene, 'hepaticArtery').at(-1)!.p).toEqual(axis(foreign, 'hepaticArtery').at(-1)!.p);
+});
+
+it('la vía biliar de s0028 no atraviesa la luz del duodeno y su cístico nace en su vesícula (decisión 384)', () => {
+  // Oráculo propio: las máscaras del tubo digestivo y de la vesícula de la fuente, leídas aquí sobre el eje de cada conducto.
+  const duct = (s: AnatomyScene, id: string) => s.ducts.find((d) => d.id === id)!.tube.nodes;
+  const insideGutMm = (nodes: readonly { p: Vec3 }[]) => {
+    let mm = 0;
+    for (let i = 0; i + 1 < nodes.length; i++) {
+      const length = Math.hypot(...nodes[i + 1].p.map((v, a) => v - nodes[i].p[a]));
+      for (let s = 0; s < length; s += 0.5) {
+        const p = nodes[i].p.map((v, a) => v + ((nodes[i + 1].p[a] - v) * s) / length) as Vec3;
+        if (s0028SourceValue(p, 'digestiveTract').d < -1) mm += 0.5;
+      }
+    }
+    return mm;
+  };
+  // Control: la misma persona con la vía biliar de referencia, sin el gancho de la decisión.
+  const person = fixturePerson();
+  const before = new AnatomyScene(NORMAL_ADULT, undefined, { ...person, cpu: { ...person.cpu, placeDucts: undefined } });
+  // Medido el 14-11-2026: el colédoco recorría 26,5 mm por dentro del duodeno y ahora 2,5 (roza el bulbo); el cístico, 0.
+  expect(insideGutMm(duct(before, 'cbd'))).toBeGreaterThan(20);
+  expect(insideGutMm(duct(scene, 'cbd'))).toBeLessThan(4);
+  expect(insideGutMm(duct(scene, 'cysticDuct'))).toBe(0);
+  // El cístico nace dentro de la vesícula de esta persona (antes, a más de 10 mm) y termina sobre el eje del colédoco.
+  expect(s0028SourceValue(duct(scene, 'cysticDuct')[0].p, 'gallbladder').d).toBeLessThanOrEqual(0);
+  expect(s0028SourceValue(duct(before, 'cysticDuct')[0].p, 'gallbladder').d).toBeGreaterThan(10);
+  const end = duct(scene, 'cysticDuct').at(-1)!.p,
+    cbd = duct(scene, 'cbd');
+  let gap = Infinity;
+  for (let i = 0; i + 1 < cbd.length; i++)
+    for (let t = 0; t <= 1; t += 0.01)
+      gap = Math.min(gap, Math.hypot(...end.map((v, a) => v - (cbd[i].p[a] + (cbd[i + 1].p[a] - cbd[i].p[a]) * t))));
+  expect(gap).toBeLessThan(0.5);
+  // Los hepáticos derecho e izquierdo no cambian.
+  for (const id of ['rightHepaticDuct', 'leftHepaticDuct']) expect(duct(scene, id)).toEqual(duct(before, id));
 });

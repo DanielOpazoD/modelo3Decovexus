@@ -12053,3 +12053,29 @@ más lentas en la misma proporción. Con el tope de 25 min, la ejecución de la 
 **Consecuencias.** Un corredor lento termina en vez de cancelarse. No cambia ninguna prueba, aserción ni plazo de prueba; un
 cuelgue real tarda 15 min más en cortarse.
 **Verificación.** Autorizado por el responsable el 13-11-2026. La CI de este mismo cambio.
+
+## 383. La hepatorrenal y la intercostal de s0028 cambian de pose tras la primera valoración
+
+**Contexto.** Valoración del responsable (14-11-2026, 5 años de ecografía). Hepatorrenal: «puntos hiperecogénicos con sombra,
+¿las costillas?, ¿está bien la posición?» y «una estructura tubular al lado del riñón». Intercostal: «que quede más claro la
+unión de las venas hepáticas con la cava». Renal: «el riñón parece corto».
+**Opciones.** Dejar las poses, o buscarlas otra vez con lo que él ve mal; se elige buscar. Con el hígado como ventana no hay
+hepatorrenal sin colon ni costilla en esta persona (0 de 9.436 candidatas).
+**Decisión.** Hepatorrenal: riñón de 66 a 82 mm en el plano, una costilla en el borde en vez de dos, sin duodeno. Intercostal:
+su hito pasa a ser el tramo final de la vena y la unión, que queda entera en el plano (antes, el 38 %).
+**Consecuencias.** El colon sigue a un lado de la hepatorrenal, con su sombra. La intercostal cruza dos costillas y ya no ve
+la columna. El riñón derecho de este TAC mide 91 mm: la ventana renal no puede enseñar más de 82.
+**Verificación.** `s0028Windows` (dos pruebas con control sobre la pose anterior), `s0028RigidSector`, dos mutantes, láminas.
+
+## 384. El intestino delgado de s0028 lleva contenido y su vía biliar no cruza el duodeno
+
+**Contexto.** La «estructura tubular sin sentido» junto al riñón eran dos cosas: el duodeno, dibujado como un tubo de líquido
+negro (en el TAC llevaba contraste oral), y el colédoco de la otra persona, que aquí recorría 26 mm por dentro de la luz del
+duodeno y se veía como un anillo de pared gruesa. Su cístico nacía a 14 mm de la vesícula de este TAC.
+**Opciones.** Quitar la vía biliar de s0028, o recolocarla sobre sus máscaras; se elige recolocarla.
+**Decisión.** La luz del duodeno y del delgado se dibuja con el contenido del estómago (`smallBowelContents`, CPU y GLSL). El
+colédoco termina donde sale del tubo digestivo y el cístico va recto de la vesícula al punto del colédoco al que llega sin
+cruzar tubo digestivo, hígado ni páncreas (`placeDucts`, solo construcción).
+**Consecuencias.** Las asas se ven como intestino con contenido, no como vasos. El colédoco aún roza 2,5 mm el bulbo duodenal.
+La papila y el trayecto biliar son estimados; el tejido se llama «contenido gástrico» también en el intestino.
+**Verificación.** `s0028SolidsClassify` (4.207 puntos de delgado, ninguno líquido), `s0028Vessels`, dos mutantes, Metal.

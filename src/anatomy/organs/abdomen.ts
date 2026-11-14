@@ -149,7 +149,7 @@ export function abdomenQuery(m: Vec3, person?: AnatomyPerson) {
             ? Tissue.GastricContents
             : (person ? person.isColon(label) : label >= 5 && label <= 9)
               ? Tissue.ColonicContents
-              : Tissue.Fluid,
+              : (person?.smallBowelContents ?? Tissue.Fluid),
     boundaryDistance: stomach
       ? gastricBoundary(-d, inner, fold, rate, inner < 0 ? Math.abs(digestiveGasPlane(m, label, person)) / 2 : 1e3, layers)
       : Math.min(-d, Math.abs(inner), inner < 0 ? Math.abs(digestiveGasPlane(m, label, person)) / 2 : wall * 0.03) / 2,
