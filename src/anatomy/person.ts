@@ -9,6 +9,7 @@ import type { createAbdominalQueries, createThoracicQueries } from './personAtla
 import type { IndexedSourceSurface } from './s0028Surface';
 import type { AnatomyScene } from './scene';
 import type { DuctDef, VesselDef } from './vesselTree';
+import type { Tissue } from './tissues';
 
 export interface AnatomyPerson {
   readonly classifyInside: (
@@ -45,7 +46,7 @@ export interface AnatomyPerson {
   readonly digestiveGas: (point: Vec3, label: number) => number;
   readonly isColon: (label: number) => boolean;
   /** Tejido de la luz del duodeno y el intestino delgado cuando no es líquido anecoico (s0028, decisión 384); sin él, `Tissue.Fluid`. */
-  readonly smallBowelContents?: number;
+  readonly smallBowelContents?: Tissue;
   /** Capas del estómago cuando la persona conserva otras (s0028, decisión 332); sin ellas, `GASTRIC_WALL`. */
   readonly gastricWall?: GastricWall;
   /** Marco nuevo (copia propia) del riñón del atlas (0 derecho, 1 izquierdo) cuando la persona lo mueve (decisiones 329 y 330); sin él, el de la escena. */
