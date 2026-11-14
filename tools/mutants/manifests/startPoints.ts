@@ -24,8 +24,16 @@ export const startPoints: MutantManifest = {
       name: 'intercostal-sin-union-con-la-cava',
       origin: 'decisión 383',
       breaks: 'La intercostal vuelve a la pose en que la suprahepática derecha y la cava no se unen en el plano.',
-      from: '  intercostal: { phi: 3.475, z: -70, yaw: -0.05, rock: 0.075, tilt: 0.112 },',
+      from: '  intercostal: { phi: 3.435, z: -68, yaw: 0.07, rock: 0, tilt: 0.112 },',
       to: '  intercostal: { phi: 3.55, z: -100, yaw: -0.838, rock: 0.488, tilt: 0.456 },',
+      tests: ['src/validation/s0028Windows.test.ts'],
+    },
+    {
+      name: 'intercostal-con-costilla-sobre-la-vena',
+      origin: 'decisión 388',
+      breaks: 'La intercostal vuelve a la pose en que la costilla central tapa el tramo alto de la suprahepática derecha.',
+      from: '  intercostal: { phi: 3.435, z: -68, yaw: 0.07, rock: 0, tilt: 0.112 },',
+      to: '  intercostal: { phi: 3.475, z: -70, yaw: -0.05, rock: 0.075, tilt: 0.112 },',
       tests: ['src/validation/s0028Windows.test.ts'],
     },
     {

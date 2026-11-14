@@ -4,6 +4,7 @@ import {
   portalDarkLumen,
   renalSection,
   sectorFraction,
+  shadowedLumen,
   s0028WindowTargets,
   scoreWindow,
   type WindowScore,
@@ -100,6 +101,19 @@ it('la intercostal muestra la suprahepática derecha entrando en la cava: una so
   // Control: en la pose anterior la vena (32,9 mm) y la cava no llegaban a unirse en el plano.
   const old: ProbePose = { phi: 3.55, z: -100, lift: 0, yaw: -0.838, rock: 0.488, tilt: 0.456 };
   expect(lumen(old, /^(hvRight|ivc)/).areaMm2).toBeLessThan(lumen(old, /^ivc/).areaMm2 + 0.5 * lumen(old, /^hvRight/).areaMm2);
+});
+
+it('en la intercostal ninguna costilla cae sobre la suprahepática derecha (decisión 388)', () => {
+  // Revisión del 14-11-2026: con la pose de la decisión 383 la costilla central tapaba el tramo alto de la vena y esta parecía
+  // prolongar su sombra hasta la cava. Es donde se coloca el Doppler de la vena hepática.
+  const roi = { theta: [-0.5, 0.5] as [number, number], r: [40, 176] as [number, number] };
+  // Medido el 14-11-2026: el 0 % de la luz de la vena (398 mm² en el plano) bajo hueso o pulmón.
+  const now = shadowedLumen(person.anatomy, person.sample, poseOf('intercostal', 's0028'), roi, /^hvRight/);
+  expect(now.lumenMm2).toBeGreaterThan(300);
+  expect(now.shadowed).toBeLessThan(0.03);
+  // Control: la pose de la decisión 383 dejaba el 21 % en sombra.
+  const before: ProbePose = { phi: 3.475, z: -70, lift: 0, yaw: -0.05, rock: 0.075, tilt: 0.112 };
+  expect(shadowedLumen(person.anatomy, person.sample, before, roi, /^hvRight/).shadowed).toBeGreaterThan(0.12);
 });
 
 it('la intrahepática sigue la porta derecha y no corta la grasa junto a la vesícula (decisión 385)', () => {

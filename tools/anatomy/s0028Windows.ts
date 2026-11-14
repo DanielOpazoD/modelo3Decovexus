@@ -251,6 +251,39 @@ export function renalSection(
   return { lengthMm, boneNear: bone / lines, bowelLumen: lumen / samples };
 }
 
+/**
+ * Fracción de la luz de los vasos dados, en el plano y dentro de `roi`, que tiene hueso, cartílago o pulmón por encima en su
+ * misma línea de haz, o cae en una línea sin acoplar (decisión 388): la sombra costal que la tapa.
+ */
+export function shadowedLumen(
+  anatomy: AnatomyQuery,
+  sample: PhysiologySample,
+  pose: ProbePose,
+  roi: { theta: [number, number]; r: [number, number] },
+  vessels: RegExp,
+  stepMm = 1.5,
+): { lumenMm2: number; shadowed: number } {
+  const contact = probeContact(pose, TR, anatomy.scene.torso);
+  anatomy.setProbeCompression(contact);
+  const cols = Math.ceil(((roi.theta[1] - roi.theta[0]) * (TR.curvatureRadius + roi.r[1] / 2)) / stepMm);
+  let lumen = 0,
+    shadowed = 0;
+  for (let i = 0; i <= cols; i++) {
+    const theta = roi.theta[0] + ((roi.theta[1] - roi.theta[0]) * i) / cols;
+    if (Math.abs(theta) > TR.halfSector) continue;
+    let blocked = contactCoupling(contact, theta) < 0.5;
+    for (let r = stepMm; r < roi.r[1]; r += stepMm) {
+      const c = anatomy.classifyWorld(pointOnLine(contact.frame, TR, theta, r), sample);
+      if (c.tissue !== Tissue.BowelGas && SHADOWING.has(c.tissue)) blocked = true;
+      if (r >= roi.r[0] && c.tissue === Tissue.Blood && vessels.test(String(c.vessel))) {
+        lumen++;
+        if (blocked) shadowed++;
+      }
+    }
+  }
+  return { lumenMm2: lumen * stepMm * stepMm, shadowed: lumen ? shadowed / lumen : 1 };
+}
+
 /** Fracción del sector (41 líneas, de `r[0]` a `r[1]` mm cada 2 mm) que ocupan los tejidos dados. */
 export function sectorFraction(
   anatomy: AnatomyQuery,
