@@ -12030,3 +12030,15 @@ superficie de nivel del más cercano. La grasa (del TAC o sin rotular) a menos d
 **Consecuencias.** Entre hígado y corazón queda una línea fina (diafragma y pericardio juntos) y grasa oscura. Espesor y
 distancia son fijos, no medidos; el pericardio no se separa del diafragma.
 **Verificación.** `s0028WallRuntime` (236 puntos de lámina bajo el corazón), `s0028SolidsClassify`, tres mutantes, Metal, láminas.
+
+## 381. La subcostal portal de s0028 corta la porta por su eje
+
+**Contexto.** En la ventana subcostal portal la porta salía en dos trozos, un huso y una habichuela. El vaso es continuo en la
+clasificación; el plano rozaba el codo donde el tronco gira hacia la rama, y el espesor del haz (σ 1,8 mm) rellenaba de hígado
+la luz cortada de refilón. La puntuación de ventanas no lo veía: da por visto un punto del eje a menos de 4 mm del plano.
+**Opciones.** Estrechar el haz o ensanchar el vaso (falsean la física o la anatomía), o mover la pose; se elige esto.
+**Decisión.** `portalDarkLumen` mide la luz que se ve negra: sangre portal en el plano y a ±σ en elevación, mayor componente
+conexa. La pose pasa a z −49,4 mm y giro −1,627 rad (0,6 mm y 1,4°), el máximo de una rejilla de 77 poses vecinas.
+**Consecuencias.** La luz continua pasa de 19 a 32 mm y la porta se ve como un vaso en codo. Acoplamiento, campo libre e hito
+no cambian. La medida solo vigila esta ventana; la intrahepática ya mostraba un tramo continuo de 54 mm.
+**Verificación.** `s0028Windows` (pose nueva > 28 mm; control con la anterior < 22 mm), un mutante, capa lenta, láminas.

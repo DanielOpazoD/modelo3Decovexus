@@ -1,5 +1,5 @@
 import { beforeAll, expect, it } from 'vitest';
-import { loadS0028, s0028WindowTargets, scoreWindow, type WindowScore } from '../../tools/anatomy/s0028Windows';
+import { loadS0028, portalDarkLumen, s0028WindowTargets, scoreWindow, type WindowScore } from '../../tools/anatomy/s0028Windows';
 import { startPointsFor } from '../app/startPoints';
 import type { ProbePose } from '../probe/probe';
 
@@ -36,4 +36,18 @@ it('las poses de la otra persona no sirven en s0028: la porta intrahepática y l
   expect(foreign.intercostal.seen).toBeLessThan(0.5);
   // Hasta la decisión 374 el control era su acoplamiento (< 0,9): contaba como desacopladas las líneas que ven la pared de canto.
   expect(foreign.hepatorenal.seen).toBeLessThan(0.5);
+});
+
+it('la subcostal portal corta la porta por su eje: la luz se ve negra y continua a través del espesor del haz (decisión 381)', () => {
+  // La medida no usa el render: sangre portal en el plano y a ±σ en elevación, sobre la clasificación de la CPU. Zona de la
+  // bifurcación en esta ventana.
+  const roi = { theta: [-0.3, 0.35] as [number, number], r: [65, 128] as [number, number] };
+  const now = portalDarkLumen(person.anatomy, person.sample, poseOf('portalSubcostal', 's0028'), roi);
+  // Medido el 13-11-2026: 32,1 mm y 216 mm² en un tramo; el otro es una rama aparte.
+  expect(now.lengthMm).toBeGreaterThan(28);
+  expect(now.areaMm2).toBeGreaterThan(170);
+  // Control: la pose anterior (1,4° de giro y 0,6 mm) rozaba el codo y la porta salía en dos trozos; el mayor medía 19,3 mm.
+  const before = portalDarkLumen(person.anatomy, person.sample, { phi: 1.6, z: -50, lift: 0, yaw: -1.602, rock: 0.295, tilt: 0.255 }, roi);
+  expect(before.lengthMm).toBeLessThan(22);
+  expect(before.pieces).toBeGreaterThan(now.pieces);
 });

@@ -1,13 +1,13 @@
 # Estado vigente: pruebas
 
-Actualizado: 2026-11-14 sobre main `d10df2a`. Qué capas de prueba hay, cuánto tardan y cómo se acepta un cambio. La
+Actualizado: 2026-11-14 sobre main `0daf295`. Qué capas de prueba hay, cuánto tardan y cómo se acepta un cambio. La
 estrategia está en `docs/TESTING.md`; el procedimiento de aceptación y fusión, en `CONTRIBUTING.md`.
 
 ## Capas
 
 <!-- capas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `d10df2a` el 2026-11-14 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `0daf295` el 2026-11-14 con `tools/docs/estado.ts`.
 
 | Capa                                    |  Cuántas | Dónde                                   |
 | --------------------------------------- | -------: | --------------------------------------- |
