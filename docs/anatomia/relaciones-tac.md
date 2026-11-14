@@ -48,6 +48,75 @@ Las medidas con HU son descriptivas y no identifican una fascia ni un músculo c
 respiratoria y el estado de ayuno de los dos casos no constan, y pueden explicar parte de lo que difiere en colon, gas y
 base pulmonar. Médula, corteza y fascias no se pueden contrastar con estas máscaras.
 
+## Lista sobre la persona s0028, medida el 13-11-2026 sobre `main` 0daf295 más las decisiones 381 y 382
+
+La lista de arriba compara el modelo analítico anterior con dos TAC. Esta mide la persona `s0028`, que es la que quedará
+tras el corte, contra las máscaras de su propio TAC. `tools/anatomy/s0028-relations-grid.ts` clasifica el modelo en los
+mismos vóxeles del TAC (299 × 187 × 220 a 1,5 mm, sin remuestreo) y `tools/anatomy/s0028-relations.py` mide cada fila con
+la misma función sobre la máscara del modelo y la del TAC. Una fila se da por cumplida si la relación tiene el mismo sentido
+y difiere menos de 5°, 6 mm, 0,15 de fracción, 0,05 de llenado o un 25 % más 20 ml.
+
+| Órgano                        | Modelo (ml) | TAC (ml) | Dice | Entre centroides (mm) |
+| ----------------------------- | ----------: | -------: | ---: | --------------------: |
+| Hígado                        |      1356,5 |   1345,8 | 0,98 |                  0,70 |
+| Riñón derecho                 |       120,2 |    108,3 | 0,94 |                  1,11 |
+| Riñón izquierdo               |       122,0 |    108,6 | 0,94 |                  1,16 |
+| Bazo                          |        95,1 |     95,3 | 1,00 |                  0,05 |
+| Páncreas                      |        73,5 |     76,7 | 0,98 |                  0,85 |
+| Estómago                      |       537,8 |    568,8 | 0,97 |                  0,29 |
+| Colon                         |       366,8 |    403,7 | 0,94 |                   2,2 |
+| Cuerpo (piel)                 |     22367,2 |  22819,3 | 0,99 |                   2,5 |
+| Columna T10–L5                |       314,6 |    305,2 | 0,98 |                   4,0 |
+| Aorta descendente y abdominal |        53,3 |     52,8 | 0,95 |                  0,70 |
+| Cava inferior                 |        72,8 |     69,2 | 0,88 |                   3,1 |
+| Pulmones                      |      2133,4 |   2137,3 | 1,00 |                  0,07 |
+| Psoas                         |       180,6 |    181,4 | 1,00 |                  0,17 |
+
+| Relación básica                                                                       | Modelo s0028 | TAC s0028 | ¿Se cumple? |
+| ------------------------------------------------------------------------------------- | -----------: | --------: | ----------- |
+| Inclinación del riñón derecho (°)                                                     |         32,5 |      32,5 | Sí          |
+| Inclinación coronal del riñón derecho (°)                                             |         18,4 |      18,0 | Sí          |
+| Hígado sobre el riñón derecho, de centro a centro (mm)                                |         78,8 |      78,8 | Sí          |
+| Hígado sobre el riñón izquierdo, de centro a centro (mm)                              |         63,7 |      63,4 | Sí          |
+| Riñón izquierdo más alto que el derecho (mm)                                          |         15,2 |      15,4 | Sí          |
+| Riñón derecho por delante de la vértebra a su altura (mm)                             |         10,9 |      10,3 | Sí          |
+| Grasa en los 10 mm que rodean el riñón derecho (fracción)                             |         0,64 |      0,63 | Sí          |
+| Psoas a la columna, separación mínima (mm)                                            |          2,1 |       2,1 | Sí          |
+| Psoas al riñón derecho, separación mínima (mm)                                        |          2,1 |       2,1 | Sí          |
+| Contorno hepático lleno en el corte axial del polo renal superior (área / envolvente) |         0,64 |      0,61 | Sí          |
+| Volumen del colon (ml)                                                                |        366,8 |     403,7 | Sí          |
+| Colon al riñón izquierdo, separación mínima (mm)                                      |         27,6 |      27,6 | Sí          |
+| Gas digestivo (ml)                                                                    |         34,8 |      87,5 | Sí          |
+| Estómago sobre el páncreas, de centro a centro (mm)                                   |         28,1 |      28,3 | Sí          |
+| Riñón derecho a la línea media vertebral (mm)                                         |         61,6 |      62,6 | Sí          |
+| Cava a la derecha de la aorta en el corte renal (mm)                                  |         23,8 |      23,3 | Sí          |
+| Aorta respecto de la línea media vertebral (mm, + izquierda)                          |          4,7 |       4,7 | Sí          |
+| Masa paravertebral T10–L5 (ml)                                                        |        626,4 |     625,7 | Sí          |
+| Grasa bajo la piel en el arco anterior y lateral del corte renal, percentil 10 (mm)   |         27,5 |      25,6 | Sí          |
+| Grasa bajo la piel en el arco anterior y lateral del corte renal, mediana (mm)        |         37,2 |      37,2 | Sí          |
+| Grasa bajo la piel en el arco anterior y lateral del corte renal, percentil 90 (mm)   |         54,2 |      48,5 | Sí          |
+
+Coincide porque los órganos del modelo son las máscaras de este TAC; la tabla sirve sobre todo para detectar retrocesos.
+Lo que hay que saber al leerla:
+
+- **Medida ajustada tras la primera pasada**, y por qué: el llenado hepático se mide en el corte del polo renal superior
+  (en el del centro renal el hígado es una punta); el colon y el estómago del modelo incluyen la pared y el gas a menos de
+  6 mm de su contenido, como las máscaras del TAC; la aorta se compara por debajo de z 30 mm; el gas es una cota (menos
+  gas que el TAC cumple); y la grasa bajo la piel se mide en el arco anterior y lateral, de −45° a 225°.
+- **No modelado, fuera de las ventanas VExUS:** la pared posterior (en la línea media posterior el modelo tiene 50 mm de
+  grasa y el TAC, 2 mm hasta la apófisis espinosa), la aorta ascendente (el modelo dibuja grasa) y las suprarrenales.
+- **Regularizado a propósito** (decisión 361): en la línea media anterior el TAC tiene 51,5 mm de grasa hasta el primer
+  tejido blando y el modelo, 36,5 mm, porque su pared es continua y no reproduce la línea alba.
+- **Diferencias de definición:** el riñón del modelo incluye el seno y la pelvis (120 frente a 108 ml); la cava del modelo
+  es un tubo de calibre suavizado (Dice 0,88); el modelo tiene 35 ml de gas digestivo y el TAC, 88.
+- El intestino delgado, el duodeno, el corazón, la vesícula y los cartílagos costales del TAC quedan cubiertos por tejido
+  propio del modelo en más del 97 % de sus vóxeles.
+
+Láminas, fuera del repositorio: `relaciones-axial.png`, `relaciones-coronal.png` y `relaciones-sagital.png` (el mismo corte en
+el TAC y en el modelo, con los contornos de las máscaras del TAC sobre los dos). Abiertas y revisadas el 13-11-2026 por
+Claude: los órganos caen dentro de sus contornos en los tres cortes. **Falta la revisión del responsable**, que es quien da
+la lista por pasada (criterio 1 de «Cómo se comprueba»); el corte sigue siendo decisión suya. No es validación clínica.
+
 ## Lista vascular V01–V20, decisión 315
 
 Fuente anatómica: decisión 315.

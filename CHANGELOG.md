@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: la lista de relaciones del TAC, medida sobre la propia persona s0028 con su herramienta; 21 de 21 filas
+
 - CI: el job principal tiene un tope de 40 minutos en vez de 25; un corredor lento ya no lo cancela en verde (382)
 
 - Ventanas s0028: la subcostal portal muestra la porta como un vaso continuo en codo, no en dos trozos (381)
