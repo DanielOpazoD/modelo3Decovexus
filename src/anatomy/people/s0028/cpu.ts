@@ -9,11 +9,12 @@ import { S0028_CAPSULE_FAT_TISSUES, S0028_LUMBAR_BODY_RADIUS_MM } from './solids
 import { createSourceQueries } from './atlas';
 import { classifyInside, classifyWall } from './classifier';
 import { createSolidsQueries } from './solids';
-import { placeS0028Vessels, smoothS0028Vessels } from './vessels';
+import { placeS0028Ducts, placeS0028Vessels, smoothS0028Vessels } from './vessels';
 import { createWallQueries } from './wall';
 import { GASTRIC_WALL } from '../../organs/abdomen';
 import { HEART_ATLAS_SHIFT, HEART_AXES, type HeartShape } from '../../organs/heart';
 import { orthonormalBasis } from '../../primitives';
+import { Tissue } from '../../tissues';
 
 /** Riñones de s0028 (0 derecho, 1 izquierdo), medidos en sus máscaras: centroide, eje principal y dirección de la muesca hiliar. */
 /**
@@ -68,6 +69,7 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     skinMm: 1.5,
     curveVessels: placeS0028Vessels,
     smoothVessels: smoothS0028Vessels,
+    placeDucts: (ducts) => placeS0028Ducts(ducts, source.s0028SourceValue),
     // Con 23 ramas propias del TAC quedan 55 tubos para las procedurales: seis por madre llegan a las once (decisión 358).
     hepaticBranchesPerParent: 6,
     lumbarBodyRadiusMm: S0028_LUMBAR_BODY_RADIUS_MM,
@@ -84,6 +86,9 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     digestiveWallMm,
     digestiveGas: (point) => digestiveGasPlane(point, source.sourceGas),
     isColon: (label) => label === 4,
+    // El duodeno y el delgado de este TAC llevan contraste oral; en ayunas se ven colapsados o con contenido, no como tubos de
+    // líquido negro. Se dibujan con el contenido del estómago (decisión 384, valoración del responsable).
+    smallBowelContents: Tissue.GastricContents,
     gastricWall: GASTRIC_312,
   };
   return Object.freeze({ identity: assets.identity, assetKey: assets.assetKey, assets, cpu: Object.freeze(cpu) });

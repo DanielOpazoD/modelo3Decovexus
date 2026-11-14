@@ -142,7 +142,7 @@ const SLICE_SIGMA_MM = 1.8;
 const PORTAL = /^(pv|portal)/;
 
 /**
- * Luz portal que una pose deja ver negra (decisión 381). Un vaso cortado de refilón no se ve: el haz tiene espesor y promedia la
+ * Luz portal (o de los vasos de `vessels`) que una pose deja ver negra (decisión 381). Un vaso cortado de refilón no se ve: el haz tiene espesor y promedia la
  * luz con el hígado de al lado. Aquí un punto del plano es luz negra si hay sangre portal en él y a ±σ en elevación. Devuelve la
  * longitud (mayor distancia entre dos puntos, mm) y el área de la mayor componente conexa dentro de `roi` (ángulo en rad y
  * profundidad en mm), y cuántas componentes hay.
@@ -153,6 +153,7 @@ export function portalDarkLumen(
   pose: ProbePose,
   roi: { theta: [number, number]; r: [number, number] },
   stepMm = 1.5,
+  vessels: RegExp = PORTAL,
 ): { lengthMm: number; areaMm2: number; pieces: number } {
   const contact = probeContact(pose, TR, anatomy.scene.torso);
   anatomy.setProbeCompression(contact);
@@ -163,7 +164,7 @@ export function portalDarkLumen(
   const thetaOf = (i: number) => roi.theta[0] + ((roi.theta[1] - roi.theta[0]) * i) / (cols - 1);
   const blood = (p: Vec3) => {
     const c = anatomy.classifyWorld(p, sample);
-    return c.tissue === Tissue.Blood && c.vessel !== null && PORTAL.test(String(c.vessel));
+    return c.tissue === Tissue.Blood && c.vessel !== null && vessels.test(String(c.vessel));
   };
   const dark = new Uint8Array(cols * rows);
   for (let i = 0; i < cols; i++)
@@ -206,6 +207,50 @@ export function portalDarkLumen(
   return { ...best, pieces };
 }
 
+const KIDNEY_TISSUES = new Set<Tissue>([Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalPelvis]);
+const SHADOWING = new Set<Tissue>([Tissue.Bone, Tissue.Vertebra, Tissue.Cartilage, Tissue.Lung, Tissue.BowelGas]);
+
+/**
+ * Lo que una pose deja ver del riñón (decisión 383): el largo de su sección en el plano (mayor distancia entre dos puntos de
+ * riñón, mm), la fracción de líneas con hueso, pulmón o gas en los primeros 110 mm y la fracción del sector que ocupa la luz
+ * del duodeno, del intestino delgado o de la vía biliar (se leían como un tubo sin sentido junto al riñón).
+ */
+export function renalSection(
+  anatomy: AnatomyQuery,
+  sample: PhysiologySample,
+  pose: ProbePose,
+  depthMm: number,
+): { lengthMm: number; boneNear: number; bowelLumen: number } {
+  const contact = probeContact(pose, TR, anatomy.scene.torso);
+  anatomy.setProbeCompression(contact);
+  const lines = 41,
+    step = 3,
+    points: [number, number][] = [];
+  let bone = 0,
+    lumen = 0,
+    samples = 0;
+  for (let i = 0; i < lines; i++) {
+    const theta = -TR.halfSector + (2 * TR.halfSector * (i + 0.5)) / lines;
+    let shadowed = false;
+    for (let r = step; r < depthMm; r += step) {
+      samples++;
+      if (shadowed) continue;
+      const tissue = anatomy.classifyWorld(pointOnLine(contact.frame, TR, theta, r), sample).tissue;
+      if (SHADOWING.has(tissue)) {
+        shadowed = true;
+        if (r < 110) bone++;
+      } else if (tissue === Tissue.Fluid || tissue === Tissue.GastricContents) lumen++;
+      else if (KIDNEY_TISSUES.has(tissue)) {
+        const rho = TR.curvatureRadius + r;
+        points.push([rho * Math.sin(theta), rho * Math.cos(theta)]);
+      }
+    }
+  }
+  let lengthMm = 0;
+  for (const a of points) for (const b of points) lengthMm = Math.max(lengthMm, Math.hypot(a[0] - b[0], a[1] - b[1]));
+  return { lengthMm, boneNear: bone / lines, bowelLumen: lumen / samples };
+}
+
 /** Riñón derecho de s0028: centro y eje largo de su máscara (componentes principales), en mm LAS. */
 const KIDNEY = { center: [-50.5, -27.7, -128.1] as Vec3, u: [0.274, -0.462, 0.844] as Vec3 };
 
@@ -237,6 +282,7 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
     // Cava en eje largo: su tramo intrahepático (z −125 a −30 mm), donde se mide en VExUS. Más arriba el pulmón de esta persona
     // queda pegado a su pared posterior y el tórax de s0028 aún no tiene aurícula: la vista hacia la cabeza no se parece a una real.
     cava = tube('ivcInfra').filter((p) => p[2] >= -125 && p[2] <= -30),
+    cavaAtJunction = tube('ivcInfra').reduce((best, p) => (Math.abs(p[2] - hv.at(-1)![2]) < Math.abs(best[2] - hv.at(-1)![2]) ? p : best)),
     rightEnd = hv.slice(-9),
     middleEnd = tube('hvMiddle').slice(-9);
   const liver = Tissue.Liver;
@@ -272,13 +318,15 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
       through: liver,
     },
     {
+      // Valoración del responsable (decisión 383): lo que debe verse claro es la unión de la vena con la cava. El hito es el tramo
+      // final de la suprahepática derecha (unos 70 mm) y el centro de la cava a la altura de la unión, no la vena entera.
       id: 'intercostal',
       phi: [2.2, 3.6],
       z: [-130, 0],
       depthMm: 180,
-      points: hv,
-      pivot: mid(hv),
-      long: sub(hv.at(-1)!, hv[0]),
+      points: [...hv.slice(-15), cavaAtJunction],
+      pivot: hv.at(-6)!,
+      long: sub(hv.at(-1)!, hv.at(-15)!),
       through: liver,
     },
     {

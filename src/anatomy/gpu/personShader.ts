@@ -114,6 +114,10 @@ vec2 thoracicValue(vec3 p){
     'float digestiveGasPlane(vec3 m,float label){return s28Gas(m)>0.5?1.0:-1.0;}',
   );
   changed = changed.replace(/label\s*>=\s*5\.0\s*&&\s*label\s*<=\s*9\.0/g, 'label==4.0');
+  // La luz del duodeno y del delgado de s0028 lleva contenido, no líquido anecoico (decisión 384; par de `smallBowelContents`).
+  // La sentencia se reconoce por su forma, no por los nombres de los tejidos, que el build renombra: el último brazo (líquido)
+  // toma el identificador del brazo del estómago.
+  changed = changed.replace(/(\?\s*(\w+)\s*:\s*label\s*==\s*4\.0\s*\?\s*\w+\s*:\s*)\w+(\s*;)/g, '$1$2$3');
   // Lectores P1 de P3 (r3), antes de la pared y de la clasificación que los usan.
   changed = changed.replace('float respWeight(vec3 m)', S0028_READER_GLSL + '\nfloat respWeight(vec3 m)');
   // s0028 está en pausa (decisión 332): su estómago conserva las capas de la 312 y su contenido, sin dispersores fuertes

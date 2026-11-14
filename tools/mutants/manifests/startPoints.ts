@@ -12,5 +12,21 @@ export const startPoints: MutantManifest = {
       to: '  portalSubcostal: { phi: 1.6, z: -50, yaw: -1.602, rock: 0.295, tilt: 0.255 },',
       tests: ['src/validation/s0028Windows.test.ts'],
     },
+    {
+      name: 'hepatorrenal-con-costillas-y-duodeno',
+      origin: 'decisión 383',
+      breaks: 'La hepatorrenal vuelve a la pose con dos costillas cruzando el campo, el duodeno junto al riñón y 66 mm de riñón.',
+      from: '  hepatorenal: { phi: 3.2, z: -95, yaw: -0.8, rock: -0.188, tilt: -0.281 },',
+      to: '  hepatorenal: { phi: 3.2, z: -90, yaw: -1.05, rock: 0.076, tilt: -0.236 },',
+      tests: ['src/validation/s0028Windows.test.ts'],
+    },
+    {
+      name: 'intercostal-sin-union-con-la-cava',
+      origin: 'decisión 383',
+      breaks: 'La intercostal vuelve a la pose en que la suprahepática derecha y la cava no se unen en el plano.',
+      from: '  intercostal: { phi: 3.475, z: -70, yaw: -0.05, rock: 0.075, tilt: 0.112 },',
+      to: '  intercostal: { phi: 3.55, z: -100, yaw: -0.838, rock: 0.488, tilt: 0.456 },',
+      tests: ['src/validation/s0028Windows.test.ts'],
+    },
   ],
 };

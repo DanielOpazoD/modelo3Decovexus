@@ -29,9 +29,19 @@ import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
  * 2,5, renal 2,4 y porta subcostal 1,1. Es la limitación P8 de siempre (en main llegaba a 19,4 mm): el hueso bajo la cara sigue a
  * la pared en vez de frenarla. Desde la decisión 377 se cuenta también el flanco (11,4 mm): su costilla bajo el borde de la cara ya
  * acompañaba a la pared (12,9 mm con la carta anterior), pero quedaba entera por encima de la profundidad comprimida D y esta
- * prueba, que mira desde D, no la veía; con la pared 1 mm más fina asoman 0,4 mm por debajo.
+ * prueba, que mira desde D, no la veía; con la pared 1 mm más fina asoman 0,4 mm por debajo. Desde la decisión 383 también la
+ * hepatorrenal (11,1 mm): su pose nueva apoya entre costillas y, con el diafragma 10 mm más bajo, una queda bajo el borde de la cara.
  */
-const RIBS_UNDER_FACE = new Set(['subcostal', 'intercostal', 'portalTrunk', 'subxiphoid', 'renal', 'portalSubcostal', 'flank']);
+const RIBS_UNDER_FACE = new Set([
+  'subcostal',
+  'intercostal',
+  'portalTrunk',
+  'subxiphoid',
+  'renal',
+  'portalSubcostal',
+  'flank',
+  'hepatorenal',
+]);
 const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, sample: PhysiologySample;
 beforeAll(() => {
@@ -87,9 +97,10 @@ it('compresión rígida s0028: vértebras y sacro quietos en todo el sector de l
       counts[`${pose.id} D${D}`] = axial;
     }
   }
-  // Con dientes: la columna está en el sector de nueve ventanas; en el flanco, en su borde profundo, entre los dos riñones. El
-  // tronco portal, ahora intercostal lateral, no la alcanza.
-  for (const id of ['subxiphoid', 'epigastric', 'intercostal', 'subcostal', 'flank', 'portal', 'renal', 'hepatorenal', 'portalSubcostal'])
+  // Con dientes: la columna está en el sector de ocho ventanas; en el flanco, en su borde profundo, entre los dos riñones. El
+  // tronco portal, intercostal lateral, no la alcanza; tampoco la intercostal desde la decisión 383, que mira a la unión de la
+  // suprahepática con la cava y deja la columna fuera del sector (0 muestras).
+  for (const id of ['subxiphoid', 'epigastric', 'subcostal', 'flank', 'portal', 'renal', 'hepatorenal', 'portalSubcostal'])
     for (const D of [0, 10, 20]) expect(counts[`${id} D${D}`], `${id} D${D}`).toBeGreaterThan(id === 'flank' ? 50 : 10);
 });
 

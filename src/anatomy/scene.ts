@@ -464,7 +464,7 @@ export class AnatomyScene {
       const cls = tubeShapeClassOf(v.id);
       return cls ? { ...v, tube: { ...v.tube, shape: tubeShapeOf(i, cls, v.tube.nodes) } } : v;
     });
-    this.ducts = tree.ducts;
+    this.ducts = person.cpu.placeDucts?.(tree.ducts) ?? tree.ducts;
     // Solo los vasos «madre»: las ramas procedurales comparten id y no deben sustituirlos
     this.vesselById = new Map(this.vessels.filter((v) => v.flowFactor === undefined).map((v) => [v.id, v]));
     this.tubeBounds = [

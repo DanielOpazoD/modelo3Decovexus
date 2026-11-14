@@ -1,7 +1,7 @@
 import type { Vec3 } from '../../../core/vec3';
 import type { TubeNode } from '../../primitives';
 import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../../s0028TrunksData';
-import type { VesselDef } from '../../vesselTree';
+import type { DuctDef, VesselDef } from '../../vesselTree';
 
 /** Un extremo a esta distancia (mm) o menos del eje anterior de un vaso nacía o moría en él. */
 const TOUCH_MM = 3;
@@ -365,4 +365,64 @@ export function smoothS0028Vessels(vessels: VesselDef[]): void {
     // (`MAX_NODES`) y las ramas portales propias, cortas y ya ajustadas a cinco nodos, se quedan como están.
     if (v.flowFactor === undefined && (v.id in S0028_TRUNKS || SMOOTHED.includes(v.id)))
       v.tube = { ...v.tube, nodes: smoothAxis(v.tube.nodes, v.id in S0028_TRUNKS ? S0028_TUBE_SEGMENTS : S0028_TUBE_SEGMENTS / 2) };
+}
+
+/** Centro de la máscara de la vesícula de s0028 (4,8 ml, contraída), en mm LAS. */
+const S0028_GALLBLADDER_CENTER: Vec3 = [-65, 37, -84];
+
+/**
+ * Vía biliar de s0028 (decisión 384). La de referencia se trazó para la otra persona: aquí su colédoco recorría 26 mm por dentro de
+ * la luz del duodeno y se veía como un anillo de pared gruesa sin sentido junto al riñón, y su cístico nacía a 14 mm de la
+ * vesícula. El colédoco termina donde sale del duodeno (la papila, en su pared) y el cístico nace en la vesícula de esta persona.
+ * `sourceValue` es la distancia con signo a una máscara de la fuente. Solo construcción: CPU, Worker y GPU reciben los mismos nodos.
+ */
+export function placeS0028Ducts(ducts: DuctDef[], sourceValue: (p: Vec3, name: string) => { d: number }): DuctDef[] {
+  const lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const span = (a: Vec3, b: Vec3) => Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+  const inside = (p: Vec3, name: string) => sourceValue(p, name).d < 0;
+  let cbd = ducts.find((d) => d.id === 'cbd')!.tube.nodes;
+  if (inside(cbd[0].p, 'digestiveTract'))
+    // Del extremo distal hacia el hilio, a pasos de 0,5 mm: el primer punto fuera del tubo digestivo es el nuevo extremo.
+    outer: for (let i = 0; i + 1 < cbd.length; i++) {
+      const length = span(cbd[i].p, cbd[i + 1].p);
+      for (let s = 0; s < length; s += 0.5) {
+        const p = lerp(cbd[i].p, cbd[i + 1].p, s / length);
+        if (inside(p, 'digestiveTract')) continue;
+        cbd = [{ p, r: cbd[i].r + ((cbd[i + 1].r - cbd[i].r) * s) / length }, ...cbd.slice(i + 1)];
+        break outer;
+      }
+    }
+  // Cístico: recto desde el colédoco hasta el primer punto de la vesícula. De todos los puntos del colédoco se toma el que
+  // llega sin cruzar tubo digestivo, hígado ni páncreas y, entre esos, el de camino más corto.
+  let cystic: { join: Vec3; neck: Vec3; cost: number } | null = null;
+  for (let i = 0; i + 1 < cbd.length; i++) {
+    const length = span(cbd[i].p, cbd[i + 1].p);
+    for (let s = 0; s < length; s += 2) {
+      const join = lerp(cbd[i].p, cbd[i + 1].p, s / length),
+        reach = span(join, S0028_GALLBLADDER_CENTER);
+      let crossed = 0;
+      for (let t = 0; t < reach; t += 0.5) {
+        const p = lerp(join, S0028_GALLBLADDER_CENTER, t / reach);
+        if (inside(p, 'gallbladder')) {
+          const cost = 100 * crossed + t;
+          if (!cystic || cost < cystic.cost) cystic = { join, neck: p, cost };
+          break;
+        }
+        if (inside(p, 'digestiveTract') || inside(p, 'liver') || inside(p, 'pancreas')) crossed += 0.5;
+      }
+    }
+  }
+  return ducts.map((duct) => {
+    if (duct.id === 'cbd') return { ...duct, tube: { ...duct.tube, nodes: cbd } };
+    if (duct.id === 'cysticDuct' && cystic) {
+      const [a, b, c] = duct.tube.nodes;
+      const nodes = [
+        { p: cystic.neck, r: a.r },
+        { p: lerp(cystic.neck, cystic.join, 0.5), r: b.r },
+        { p: cystic.join, r: c.r },
+      ];
+      return { ...duct, tube: { ...duct.tube, nodes } };
+    }
+    return duct;
+  });
 }

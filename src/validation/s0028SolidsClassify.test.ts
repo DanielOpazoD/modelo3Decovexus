@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it, vi } from 'vitest';
+import { personShader } from '../anatomy/gpu/personShader';
 import { HALF } from '../anatomy/halfFloat';
 import { Interface } from '../anatomy/interfaces';
 import { torsoDepth } from '../anatomy/primitives';
@@ -13,6 +14,7 @@ import { startPointsFor } from '../app/startPoints';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
 import { PhysiologyEngine } from '../physiology/engine';
+import * as PASSES from '../ultrasound/shaders/passes.glsl';
 import { CONVEX_C35, probeFrame } from '../probe/probe';
 import { cutMapDirections, cutMapPoint } from '../ui/cutMapGeometry';
 import type { CutMapInit, CutMapRequest, CutMapResponse } from '../ui/cutMapWorker';
@@ -768,4 +770,57 @@ it('la grasa junto al corazón es epicárdica e hipoecoica; más lejos sigue sie
   expect(seen.epicardialD).toBeGreaterThan(200);
   expect(seen.epicardialU).toBeGreaterThan(1800);
   expect(seen.beyond).toBeGreaterThan(1200);
+});
+
+it('el duodeno y el intestino delgado de s0028 llevan contenido, no líquido anecoico (decisión 384)', () => {
+  // Oráculo propio: la etiqueta y la distancia del campo digestivo de la fuente, leídas aquí. A más de 4 mm por dentro de la
+  // serosa (7 mm en el estómago, por sus pliegues) la luz es contenido o gas; el líquido negro hacía de cada asa un tubo sin sentido junto al riñón.
+  const gut = B.fields.find((f) => f.name === 'digestiveTract')!;
+  const seen: Record<string, number> = {};
+  for (let k = 0; k < gut.dimensions[2]; k += 3)
+    for (let j = 0; j < gut.dimensions[1]; j += 3)
+      for (let i = 0; i < gut.dimensions[0]; i += 3) {
+        const p: Vec3 = [gut.originMm[0] + 1.5 * i, gut.originMm[1] + 1.5 * j, gut.originMm[2] + 1.5 * k];
+        const q = s0028SourceValue(p, 'digestiveTract');
+        if (!(q.d < (q.label % 128 === 1 ? -7 : -4))) continue;
+        const c = at(p);
+        // Sólo donde el tubo digestivo es el único dueño y ningún vaso cruza la luz (en la banda de pared hay conflicto).
+        const owner = ids(c).join('+');
+        if (c.solids?.state !== 'known' || c.vesselHit || (owner !== 'stomach' && owner !== 'bowel')) continue;
+        // La vesícula de este TAC, contraída, queda pegada al duodeno: su luz sí es líquido y se dibuja con su propia regla.
+        if (s0028SourceValue(p, 'gallbladder').d < 4) continue;
+        // Dentro de la banda de pared manda la pared, también donde es estimada.
+        const wall = s0028WallAt(p);
+        if (wall?.kind === 'known' && wall.depthMm < wall.interfaceMm) continue;
+        // Etiquetas de la fuente: 1 estómago, 2 duodeno, 3 intestino delgado y 4 colon.
+        const organ = q.label % 128 === 1 ? 'estómago' : q.label % 128 === 4 ? 'colon' : 'delgado';
+        const key = `${organ} ${Tissue[c.tissue]}`;
+        seen[key] = (seen[key] ?? 0) + 1;
+        expect(c.tissue, `${p.join(',')} ${organ}`).not.toBe(Tissue.Fluid);
+        if (c.tissue !== Tissue.BowelGas)
+          expect(c.tissue, `${p.join(',')} ${organ}`).toBe(organ === 'colon' ? Tissue.ColonicContents : Tissue.GastricContents);
+      }
+  // Medido el 14-11-2026 en un nodo de cada tres: 4.207 puntos de duodeno y delgado, 3.211 de estómago y 1.860 de colon con
+  // contenido, más 231 de gas en el colon. Antes de la decisión, los 4.207 eran líquido.
+  expect(seen['delgado GastricContents']).toBeGreaterThan(3000);
+  expect(seen['estómago GastricContents']).toBeGreaterThan(2200);
+  expect(seen['colon ColonicContents']).toBeGreaterThan(1300);
+});
+
+it('el programa de s0028 da a la luz del intestino el tejido del estómago; el común conserva el líquido (decisión 384)', () => {
+  // La sentencia se reconoce por su forma, como en `personShader`: el build renombra los tejidos. Brazos: estómago, colon y resto.
+  const arms = (source: string) =>
+    [...source.matchAll(/\?\s*(\w+)\s*:\s*label\s*(?:==\s*4\.0|>=\s*5\.0\s*&&\s*label\s*<=\s*9\.0)\s*\?\s*(\w+)\s*:\s*(\w+)\s*;/g)].map(
+      (m) => m.slice(1),
+    );
+  const common = arms(personShader(PASSES.FRAG_RAWFIELD, { person: 'current' })),
+    own = arms(personShader(PASSES.FRAG_RAWFIELD, { person: 's0028', bundle: B }));
+  expect(common.length).toBeGreaterThan(0);
+  // El programa de s0028 lleva la sentencia dos veces (clasificación común y lector directo); todas quedan cambiadas.
+  expect(own.length).toBeGreaterThanOrEqual(common.length);
+  for (const [stomach, colon, rest] of common) expect(new Set([stomach, colon, rest]).size).toBe(3);
+  for (const [stomach, colon, rest] of own) {
+    expect(rest).toBe(stomach);
+    expect(colon).not.toBe(stomach);
+  }
 });

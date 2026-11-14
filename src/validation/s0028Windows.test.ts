@@ -1,5 +1,12 @@
 import { beforeAll, expect, it } from 'vitest';
-import { loadS0028, portalDarkLumen, s0028WindowTargets, scoreWindow, type WindowScore } from '../../tools/anatomy/s0028Windows';
+import {
+  loadS0028,
+  portalDarkLumen,
+  renalSection,
+  s0028WindowTargets,
+  scoreWindow,
+  type WindowScore,
+} from '../../tools/anatomy/s0028Windows';
 import { startPointsFor } from '../app/startPoints';
 import type { ProbePose } from '../probe/probe';
 
@@ -50,4 +57,36 @@ it('la subcostal portal corta la porta por su eje: la luz se ve negra y continua
   const before = portalDarkLumen(person.anatomy, person.sample, { phi: 1.6, z: -50, lift: 0, yaw: -1.602, rock: 0.295, tilt: 0.255 }, roi);
   expect(before.lengthMm).toBeLessThan(22);
   expect(before.pieces).toBeGreaterThan(now.pieces);
+});
+
+it('la hepatorrenal muestra el riñón a lo largo, sin costillas cruzando el campo ni el duodeno al lado (decisión 383)', () => {
+  // Valoración del responsable del 14-11-2026: «puntos hiperecogénicos con sombra» y «una estructura tubular al lado del riñón».
+  // El riñón derecho de este TAC mide 91 mm; la medida lee la clasificación de la CPU, no el render.
+  const now = renalSection(person.anatomy, person.sample, poseOf('hepatorenal', 's0028'), 140);
+  // Medido el 14-11-2026: 82,5 mm, una línea de 41 con hueso y 0,8 % del sector con luz de duodeno o vía biliar.
+  expect(now.lengthMm).toBeGreaterThan(78);
+  expect(now.boneNear).toBeLessThanOrEqual(0.05);
+  expect(now.bowelLumen).toBeLessThan(0.012);
+  // Control: la pose anterior cortaba 65,9 mm de riñón, con tres líneas de hueso y 2 % de luz de duodeno.
+  const before = renalSection(person.anatomy, person.sample, { phi: 3.2, z: -90, lift: 0, yaw: -1.05, rock: 0.076, tilt: -0.236 }, 140);
+  expect(before.lengthMm).toBeLessThan(70);
+  expect(before.boneNear).toBeGreaterThan(0.05);
+  expect(before.bowelLumen).toBeGreaterThan(0.015);
+});
+
+it('la intercostal muestra la suprahepática derecha entrando en la cava: una sola luz negra (decisión 383)', () => {
+  // Valoración del responsable del 14-11-2026: «que quede más claro la unión de las venas hepáticas con la vena cava inferior».
+  // La misma medida de luz negra de la decisión 381, sobre la vena, sobre la cava y sobre las dos juntas.
+  const roi = { theta: [-0.5, 0.5] as [number, number], r: [40, 176] as [number, number] };
+  const lumen = (pose: ProbePose, vessels: RegExp) => portalDarkLumen(person.anatomy, person.sample, pose, roi, 2, vessels);
+  const pose = poseOf('intercostal', 's0028');
+  const vein = lumen(pose, /^hvRight/),
+    cava = lumen(pose, /^ivc/),
+    both = lumen(pose, /^(hvRight|ivc)/);
+  // Medido el 14-11-2026: vena 51,6 mm y 288 mm², cava 139 mm y 2.440 mm², y las dos unidas en una sola pieza de 2.728 mm².
+  expect(vein.lengthMm).toBeGreaterThan(45);
+  expect(both.areaMm2).toBeGreaterThan(cava.areaMm2 + 0.8 * vein.areaMm2);
+  // Control: en la pose anterior la vena (32,9 mm) y la cava no llegaban a unirse en el plano.
+  const old: ProbePose = { phi: 3.55, z: -100, lift: 0, yaw: -0.838, rock: 0.488, tilt: 0.456 };
+  expect(lumen(old, /^(hvRight|ivc)/).areaMm2).toBeLessThan(lumen(old, /^ivc/).areaMm2 + 0.5 * lumen(old, /^hvRight/).areaMm2);
 });

@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-14",
- "main": "0daf295",
+ "main": "7a42d89",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -49,7 +49,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 16698
+   "actual": 16727
   },
   {
    "what": "`annotation-capacity.gzip.bin`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 64940
+   "actual": 66038
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 25387
+   "actual": 1631
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 25476
   },
   {
    "what": "`series.js`",
@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 10403
+   "actual": 10401
   },
   {
    "what": "`structureIdentity.js`",
@@ -369,7 +369,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 109612
+   "actual": 109635
   },
   {
    "what": "JS clausura default (Workers y ganchos incluidos)",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1041961
+   "actual": 1042011
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1121504
+   "actual": 1122741
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -485,7 +485,7 @@
     "branches": 3082,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "c0474323f9228082e72d55e56e021f49055c39be85bed6ec3dacb24e892d1be0"
+    "sourceSha256": "28ad6b92c9d54259dbd9f45a126805b55ca2942857116da708d06be6b7a731a8"
    }
   },
   {
@@ -504,7 +504,7 @@
     "branches": 1215,
     "slots": 137,
     "samplers": 16,
-    "sourceSha256": "ecae2f4bf5cd2a06df5eed6c7946602dda8fd306325debda3f93aeb8d9269e9f"
+    "sourceSha256": "3ac8f36e8958237993095ac7505e40cb4867aaa691c00f5e39faef77b17a0489"
    }
   },
   {
@@ -523,7 +523,7 @@
     "branches": 921,
     "slots": 136,
     "samplers": 10,
-    "sourceSha256": "92503f3e9d605d008e1978cafc7b7ed24e70a66a268c51f91bc342b47ee6d23c"
+    "sourceSha256": "156f878b813bb91f93a14fd1cac7d49263bab147d0cad1a8d8aa268e1ebe8852"
    }
   },
   {
@@ -542,7 +542,7 @@
     "branches": 923,
     "slots": 137,
     "samplers": 15,
-    "sourceSha256": "1813cf305c8e0309cbfe9f4de36dd4fb79364d3be811aa5b4f1ef8cf1da4091a"
+    "sourceSha256": "fea34daa5f459eb16e8718e300ac680c0942d829d59ab667dc6529f248fcb3f0"
    }
   },
   {
@@ -561,7 +561,7 @@
     "branches": 641,
     "slots": 138,
     "samplers": 15,
-    "sourceSha256": "367917efced1d5b38900dbd5b51f189386629612a4235360c05c4214f3fa1def"
+    "sourceSha256": "236dd4345cb58a82eb9e14e22ef84fbbd1cba2924a43c5273527d6a7606576eb"
    }
   },
   {
@@ -580,7 +580,7 @@
     "branches": 1384,
     "slots": 101,
     "samplers": 6,
-    "sourceSha256": "6181c8fead52e5696a31cfc296a98c97cb55ded32033109a9162f5adc641d230"
+    "sourceSha256": "078388211046f8a7f44b1a6e3403c19a1aa2184ac61808165b1e3d21f7af359d"
    }
   },
   {
@@ -599,7 +599,7 @@
     "branches": 671,
     "slots": 102,
     "samplers": 11,
-    "sourceSha256": "04429f53d1caa055f1bb4fe06742300b09c37e4d8fad0f06f3d7f76c60e51a3e"
+    "sourceSha256": "128c0c767b596ac776ddbc6a44f3d1b0704c4be9108dc4be5880814a8bae5576"
    }
   },
   {
@@ -618,7 +618,7 @@
     "branches": 628,
     "slots": 110,
     "samplers": 7,
-    "sourceSha256": "c63169a4c629890248d48fe29a52d4d50cb424ef2bf944be44c6e1bd9aa1d197"
+    "sourceSha256": "2646ab01e650cf8bd8b0b7a8219ac5f1be91606c93b39a2ce92eadcb49554440"
    }
   }
  ],
