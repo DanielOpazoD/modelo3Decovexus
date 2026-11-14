@@ -58,7 +58,7 @@ export const KB = 1024;
 export const BUDGETS: Array<[RegExp, number]> = [
   [/surfaces\.gzip-.*\.bin$/, 9672026],
   // s0028 B, decision 317: pinned assets; decision 318 permits the complete exact-mesh HTTP package up to 25,000,000 B.
-  [/abdominal-direct\.gzip-.*\.bin$/, 8884215],
+  [/abdominal-direct\.gzip-.*\.bin$/, 9048961],
   [/thoracic-direct\.gzip-.*\.bin$/, 5287620],
   // P2: la reserva RAW es idéntica; anotación incremental <=850.000 B y manifiesto <=+4 KiB.
   [/annotation-capacity\.gzip-.*\.bin$/, 6999 + 850000],

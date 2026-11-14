@@ -12102,3 +12102,15 @@ sobre la cava y la aorta, con el estómago arriba: 79 mm de luz continua, sin hu
 **Consecuencias.** La bifurcación con la izquierda deja de verse en esta ventana. La decisión 381 queda sustituida en la pose,
 no en su medida.
 **Verificación.** `s0028Windows` (luz > 70 mm; controles de las poses de la 381 y anterior, < 40), un mutante, láminas.
+
+## 387. El riñón derecho de s0028 mide 110 mm
+
+**Contexto.** El responsable veía corto el riñón de las ventanas renales y decidió alargarlo a 11 cm. El de su TAC mide 91 mm
+de polo a polo (108 ml), en el límite bajo de lo normal; el modelo idealizado (decisión 361) toma el de un adulto promedio.
+**Opciones.** Escalar el riñón entero, o solo a lo largo de su eje; se elige el eje, con el centro y el ancho fijos.
+**Decisión.** `s0028-kidney-length.ts` estira el campo ×1,21, corrige la distancia por su gradiente, lo aplana contra los
+órganos, vasos fuente y pared con 0,75 mm de holgura y sin nodos en 0, y lo reubica en una caja mayor. El interior renal se
+estira igual. El izquierdo no cambia.
+**Consecuencias.** 109,6 mm y 129 ml; la ventana renal enseña 99 mm (antes 81). Desaparece el solape riñón–intestino del TAC.
+Atlas +165 KB (techo autoimpuesto declarado). El centro no se mueve: las relaciones del TAC se siguen cumpliendo.
+**Verificación.** `s0028Windows` (largo, ancho, interior, sin conflictos), Metal 3 de 3, lista de relaciones, láminas.

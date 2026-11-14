@@ -8,9 +8,13 @@ import {
   scoreWindow,
   type WindowScore,
 } from '../../tools/anatomy/s0028Windows';
+import { S0028_KIDNEY_FRAMES } from '../anatomy/people/s0028/cpu';
+import { S0028_BUNDLE } from '../anatomy/people/s0028/descriptor';
 import { Tissue } from '../anatomy/tissues';
 import { startPointsFor } from '../app/startPoints';
+import type { Vec3 } from '../core/vec3';
 import type { ProbePose } from '../probe/probe';
+import { BASELINE_CALIBER } from './support/legacyPerson/scene';
 
 let person: ReturnType<typeof loadS0028>;
 beforeAll(() => {
@@ -44,7 +48,10 @@ it('las poses de la otra persona no sirven en s0028: la porta intrahepática y l
   expect(foreign.portal.seen).toBeLessThan(0.5);
   expect(foreign.intercostal.seen).toBeLessThan(0.5);
   // Hasta la decisión 374 el control era su acoplamiento (< 0,9): contaba como desacopladas las líneas que ven la pared de canto.
-  expect(foreign.hepatorenal.seen).toBeLessThan(0.5);
+  // Desde la decisión 387 el riñón derecho mide 110 mm y la pose ajena lo alcanza a través del hígado en 5 de sus 25 líneas
+  // (0,5, la mitad de lo que pide una ventana; antes, 4). El control pasa a comparar las dos poses: la propia gana por 2 puntos.
+  expect(foreign.hepatorenal.seen).toBeLessThanOrEqual(0.5);
+  expect(foreign.hepatorenal.score).toBeLessThan(scores('s0028').hepatorenal.score - 2);
 });
 
 it('la subcostal portal enseña la porta principal en eje largo sobre la cava (decisiones 381 y 386)', () => {
@@ -111,4 +118,40 @@ it('la intrahepática sigue la porta derecha y no corta la grasa junto a la ves�
   expect(now.fat).toBeLessThan(0.095);
   expect(before.lumen).toBeLessThan(60);
   expect(before.fat).toBeGreaterThan(0.105);
+});
+
+it('el riñón derecho de s0028 mide 110 mm, sin pisar a sus vecinos, y la ventana renal lo enseña casi entero (decisión 387)', () => {
+  // Valoración del responsable del 14-11-2026: «el riñón parece corto». El de su TAC medía 91 mm y 108 ml; se alarga a lo
+  // largo de su eje, con el centro y el ancho fijos. Oráculo: el campo del riñón y el interior renal, leídos aquí punto a punto.
+  const regional = person.scene.person.cpu.regional!,
+    field = S0028_BUNDLE.fields.find((f) => f.name === 'kidneyRight')!;
+  const frame = S0028_KIDNEY_FRAMES[0],
+    long = frame.long,
+    hilum = frame.hilum;
+  let voxels = 0,
+    labelled = 0,
+    conflicts = 0,
+    [lo, hi, wlo, whi] = [Infinity, -Infinity, Infinity, -Infinity];
+  for (let k = 0; k < field.dimensions[2]; k++)
+    for (let j = 0; j < field.dimensions[1]; j++)
+      for (let i = 0; i < field.dimensions[0]; i++) {
+        const p: Vec3 = [field.originMm[0] + 1.5 * i, field.originMm[1] + 1.5 * j, field.originMm[2] + 1.5 * k];
+        if (!(regional.s0028SourceValue(p, 'kidneyRight').d < 0)) continue;
+        voxels++;
+        const d = p.map((v, a) => v - frame.center[a]);
+        const t = d[0] * long[0] + d[1] * long[1] + d[2] * long[2],
+          w = d[0] * hilum[0] + d[1] * hilum[1] + d[2] * hilum[2];
+        [lo, hi, wlo, whi] = [Math.min(lo, t), Math.max(hi, t), Math.min(wlo, w), Math.max(whi, w)];
+        if ([1, 2].includes(regional.s0028RenalInterior(p))) labelled++;
+        if ((i + j + k) % 3 === 0 && person.scene.classify(p, BASELINE_CALIBER).solids?.state === 'conflict') conflicts++;
+      }
+  // Medido el 14-11-2026: 109,6 mm de polo a polo, 59,0 de ancho, 128,2 ml, 98,4 % con corteza o médula, ningún conflicto.
+  expect(hi - lo).toBeGreaterThan(105);
+  expect(hi - lo).toBeLessThan(113);
+  expect(whi - wlo).toBeLessThan(62);
+  expect((voxels * 3.375) / 1000).toBeLessThan(135);
+  expect(labelled / voxels).toBeGreaterThan(0.95);
+  expect(conflicts).toBe(0);
+  // La ventana renal enseña 99,1 mm de riñón; con el de 91 mm, 80,6.
+  expect(renalSection(person.anatomy, person.sample, poseOf('renal', 's0028'), 140).lengthMm).toBeGreaterThan(95);
 });
