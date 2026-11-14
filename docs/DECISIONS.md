@@ -12079,3 +12079,15 @@ cruzar tubo digestivo, hígado ni páncreas (`placeDucts`, solo construcción).
 **Consecuencias.** Las asas se ven como intestino con contenido, no como vasos. El colédoco aún roza 2,5 mm el bulbo duodenal.
 La papila y el trayecto biliar son estimados; el tejido se llama «contenido gástrico» también en el intestino.
 **Verificación.** `s0028SolidsClassify` (4.207 puntos de delgado, ninguno líquido), `s0028Vessels`, dos mutantes, Metal.
+
+## 385. La porta derecha de s0028 continúa en su rama anterior y la intrahepática la sigue
+
+**Contexto.** Valoración del responsable: en la intrahepática la porta «se separa en su rama demasiado brusco» y el borde del
+hígado parecía tener una concavidad. En el TAC la porta derecha sobrepasaba 2,5 mm el origen de su rama anterior y giraba 32°
+hacia ella: la tapa de la madre colgaba y se veía un gancho. La concavidad era grasa junto a la vesícula en el borde del sector.
+**Opciones.** Alisar solo la unión, o además mover la pose; se eligen las dos.
+**Decisión.** Una rama portal que nace junto al extremo de su madre es su continuación: la madre termina en su origen, la rama
+sale por una curva de Hermite con la dirección de la madre y no se ensancha tras la unión. La pose sigue la porta derecha.
+**Consecuencias.** Luz portal continua de 54 a 81 mm y grasa del sector del 11,6 % al 7,9 %. Queda un muñón corto donde la
+rama anterior sale del plano hacia la cabeza.
+**Verificación.** `s0028Vessels` (unión a 12°, sin exceso; tabla del TAC como control), `s0028Windows`, dos mutantes, láminas.

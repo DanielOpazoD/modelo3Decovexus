@@ -86,6 +86,60 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
   addOwnBranches(vessels);
   flareHepaticVeins(vessels);
   fitJunctions(vessels);
+  continuePortalBranches(vessels);
+}
+
+/** Distancia (mm) entre el extremo de una porta y el origen de otra a partir de la cual dejan de ser una continuación. */
+const CONTINUATION_MM = 4;
+/**
+ * Una rama portal que nace junto al extremo de su madre es su continuación (decisión 385). En el TAC de s0028 la porta derecha
+ * sobrepasaba 2,5 mm el origen de su rama anterior y giraba 33° hacia ella: la tapa de la madre quedaba colgando y la ventana
+ * intrahepática mostraba un gancho, una rama «que se separa de golpe». La madre termina en el origen de la rama, la rama arranca
+ * en la dirección de la madre y no se ensancha tras la unión; la curva la pone el alisado posterior. Solo construcción.
+ */
+function continuePortalBranches(vessels: VesselDef[]): void {
+  const portal = vessels.filter((v) => v.flowFactor === undefined && (v.id.startsWith('pv') || v.id.startsWith('portal')));
+  for (const child of portal)
+    for (const mother of portal) {
+      if (mother === child) continue;
+      const nodes = mother.tube.nodes,
+        start = child.tube.nodes[0],
+        end = nodes[nodes.length - 1].p,
+        tangent = add(end, nodes[nodes.length - 2].p, -1),
+        norm = Math.hypot(...tangent),
+        u: Vec3 = [tangent[0] / norm, tangent[1] / norm, tangent[2] / norm],
+        beyond = add(end, start.p, -1);
+      // Continuación con exceso: el origen de la rama queda cerca del extremo y por detrás de él a lo largo de la madre.
+      if (Math.hypot(...beyond) > CONTINUATION_MM || beyond[0] * u[0] + beyond[1] * u[1] + beyond[2] * u[2] < 0.5) continue;
+      const hit = closest(nodes, start.p),
+        s = arcs(nodes),
+        i = Math.min(nodes.length - 2, Math.max(0, s.findIndex((x) => x > hit.s) - 1)),
+        t = s[i + 1] > s[i] ? Math.min(1, Math.max(0, (hit.s - s[i]) / (s[i + 1] - s[i]))) : 0;
+      mother.tube = {
+        ...mother.tube,
+        nodes: [...nodes.slice(0, i + 1), { p: start.p, r: nodes[i].r + (nodes[i + 1].r - nodes[i].r) * t }],
+      };
+      // Del origen al tercer nodo, una curva de Hermite que sale en la dirección de la madre y llega con la de la rama; sustituye al
+      // segundo nodo medido, que es el que hacía la esquina.
+      const old = child.tube.nodes,
+        target = old[2].p,
+        span = Math.hypot(...add(target, start.p, -1)),
+        arrive = add(old[3].p, old[1].p, -1),
+        arriveNorm = Math.hypot(...arrive),
+        hermite = (h: number): Vec3 => {
+          const h2 = h * h,
+            h3 = h2 * h;
+          let p = add([0, 0, 0], start.p, 2 * h3 - 3 * h2 + 1);
+          p = add(p, u, (h3 - 2 * h2 + h) * span);
+          p = add(p, target, -2 * h3 + 3 * h2);
+          return add(p, arrive, ((h3 - h2) * span) / arriveNorm);
+        };
+      // La rama no pasa del calibre con que nace: medida, la anterior empezaba 0,4 mm más gruesa que el final de su madre.
+      let widest = start.r;
+      const rest = old.slice(2).map((n) => ({ ...n, r: (widest = Math.min(widest, n.r)) }));
+      const curve = [0.25, 0.5, 0.75].map((h) => ({ p: hermite(h), r: start.r }));
+      child.tube = { ...child.tube, nodes: [start, ...curve, ...rest] };
+    }
 }
 
 /** Calibre mínimo (radio, mm) con que una suprahepática principal llega a la cava, y tramo final en que se abre hasta él. */

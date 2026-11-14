@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Ventanas s0028: la intrahepática sigue la porta derecha hasta su rama anterior, sin gancho en la unión ni grasa en el borde (385)
+
 - Imagen s0028: el duodeno y el intestino delgado llevan contenido, no líquido negro; el colédoco ya no cruza la luz del duodeno (384)
 
 - Ventanas s0028: la hepatorrenal muestra el riñón entero sin el duodeno al lado y la intercostal, la suprahepática entrando en la cava (383)

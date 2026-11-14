@@ -12,6 +12,14 @@ export const s0028Vessels: MutantManifest = {
       to: '  if (cbd.length < 0)',
       tests: ['src/validation/s0028Vessels.test.ts'],
     },
+    {
+      name: 'porta-derecha-con-gancho',
+      origin: 'decisión 385',
+      breaks: 'La porta derecha vuelve a sobrepasar el origen de su rama anterior: gancho en la ventana intrahepática.',
+      from: '  continuePortalBranches(vessels);',
+      to: '',
+      tests: ['src/validation/s0028Vessels.test.ts'],
+    },
   ],
 };
 

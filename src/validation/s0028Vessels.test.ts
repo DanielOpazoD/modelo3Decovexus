@@ -75,6 +75,9 @@ function toAxis(nodes: readonly { p: Vec3 }[], q: Vec3): number {
   return best;
 }
 
+/** Madres portales que su rama continúa (decisión 385): terminan donde esta nace. */
+const CONTINUED: Partial<Record<string, keyof typeof S0028_TRUNKS>> = { pvRight: 'pvRightAnterior' };
+
 it('los troncos de s0028 son los de sus máscaras, en el sentido del flujo y dentro de los techos del tubo', () => {
   for (const [id, [refRadius, nodes]] of Object.entries(S0028_TRUNKS)) {
     const v = scene.vesselById.get(id as never)!,
@@ -82,9 +85,15 @@ it('los troncos de s0028 son los de sus máscaras, en el sentido del flujo y den
       radii = nodes.map((n) => n[3]);
     // El eje dibujado es la curva que pasa por los nodos medidos (decisión 354): mismos extremos, cada nodo medido sobre él, sin
     // esquinas a la vista y dentro del techo de tramos de esta persona.
+    // Una madre que su rama continúa termina donde esta nace (decisión 385): la porta derecha pierde los 2,5 mm que sobrepasaban
+    // el origen de su rama anterior.
+    const continued = CONTINUED[id],
+      end = continued ? S0028_TRUNKS[continued][1][0] : nodes.at(-1)!,
+      // …y su rama sale en su dirección: el segundo nodo medido de la rama, el de la esquina, cede a una curva.
+      measured = continued ? nodes.slice(0, -1) : Object.values(CONTINUED).includes(id as never) ? [nodes[0], ...nodes.slice(2)] : nodes;
     expect(drawn[0].p, id).toEqual(nodes[0].slice(0, 3));
-    expect(drawn.at(-1)!.p, id).toEqual(nodes.at(-1)!.slice(0, 3));
-    for (const n of nodes) expect(toAxis(drawn, n.slice(0, 3) as Vec3), id).toBeLessThan(0.5);
+    expect(drawn.at(-1)!.p, id).toEqual(end.slice(0, 3));
+    for (const n of measured) expect(toAxis(drawn, n.slice(0, 3) as Vec3), id).toBeLessThan(0.5);
     expect(drawn.length - 1, id).toBeLessThanOrEqual(S0028_TUBE_SEGMENTS);
     expect(maxTurnDeg(drawn), id).toBeLessThan(12);
     // Nunca más quebrado que los nodos medidos, salvo donde ya eran casi rectos (el reparto deja uniones de hasta 8°–9°).
@@ -328,4 +337,29 @@ it('la vía biliar de s0028 no atraviesa la luz del duodeno y su cístico nace e
   expect(gap).toBeLessThan(0.5);
   // Los hepáticos derecho e izquierdo no cambian.
   for (const id of ['rightHepaticDuct', 'leftHepaticDuct']) expect(duct(scene, id)).toEqual(duct(before, id));
+});
+
+it('la rama anterior de la porta derecha continúa a su madre sin gancho (decisión 385)', () => {
+  // En el TAC la porta derecha sobrepasaba 2,5 mm el origen de su rama anterior y giraba 33° hacia ella. Oráculo: los nodos de
+  // la tabla del TAC frente a los de la escena.
+  const nodes = (id: string) => mothers(scene).find((v) => v.id === id)!.tube.nodes;
+  const [right, anterior] = [nodes('pvRight'), nodes('pvRightAnterior')];
+  const unit = (a: Vec3, b: Vec3) => {
+    const d = b.map((x, k) => x - a[k]),
+      n = Math.hypot(...d);
+    return d.map((x) => x / n);
+  };
+  const angle = (u: number[], w: number[]) => (Math.acos(Math.min(1, u[0] * w[0] + u[1] * w[1] + u[2] * w[2])) * 180) / Math.PI;
+  // La madre termina exactamente donde nace la rama, y la rama sale en su dirección.
+  expect(Math.hypot(...right.at(-1)!.p.map((x, k) => x - anterior[0].p[k]))).toBeLessThan(1e-9);
+  // Medido el 14-11-2026: 12° en la unión y 9,4° como mucho entre tramos de la rama; la tabla daba 32° en la unión.
+  expect(angle(unit(right.at(-2)!.p, right.at(-1)!.p), unit(anterior[0].p, anterior[1].p))).toBeLessThan(15);
+  expect(maxTurnDeg(anterior)).toBeLessThan(12);
+  // Control: la tabla del TAC.
+  const table = (id: keyof typeof S0028_TRUNKS) => S0028_TRUNKS[id][1].map(([x, y, z]) => [x, y, z] as Vec3);
+  const [tr, ta] = [table('pvRight'), table('pvRightAnterior')];
+  const u = unit(tr.at(-2)!, tr.at(-1)!),
+    beyond = tr.at(-1)!.map((x, k) => x - ta[0][k]);
+  expect(beyond[0] * u[0] + beyond[1] * u[1] + beyond[2] * u[2]).toBeGreaterThan(2);
+  expect(angle(u, unit(ta[0], ta[1]))).toBeGreaterThan(25);
 });

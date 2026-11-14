@@ -28,5 +28,13 @@ export const startPoints: MutantManifest = {
       to: '  intercostal: { phi: 3.55, z: -100, yaw: -0.838, rock: 0.488, tilt: 0.456 },',
       tests: ['src/validation/s0028Windows.test.ts'],
     },
+    {
+      name: 'intrahepatica-con-grasa-al-borde',
+      origin: 'decisión 385',
+      breaks: 'La intrahepática vuelve a la pose que corta la grasa junto a la vesícula y pierde la rama anterior de la porta.',
+      from: '  portal: { phi: 2.725, z: -59.014, yaw: -0.994, rock: 0.214, tilt: 0.086 },',
+      to: '  portal: { phi: 2.8, z: -65, yaw: -0.996, rock: 0.097, tilt: 0.067 },',
+      tests: ['src/validation/s0028Windows.test.ts'],
+    },
   ],
 };

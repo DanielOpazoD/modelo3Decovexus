@@ -3,10 +3,12 @@ import {
   loadS0028,
   portalDarkLumen,
   renalSection,
+  sectorFraction,
   s0028WindowTargets,
   scoreWindow,
   type WindowScore,
 } from '../../tools/anatomy/s0028Windows';
+import { Tissue } from '../anatomy/tissues';
 import { startPointsFor } from '../app/startPoints';
 import type { ProbePose } from '../probe/probe';
 
@@ -89,4 +91,22 @@ it('la intercostal muestra la suprahepática derecha entrando en la cava: una so
   // Control: en la pose anterior la vena (32,9 mm) y la cava no llegaban a unirse en el plano.
   const old: ProbePose = { phi: 3.55, z: -100, lift: 0, yaw: -0.838, rock: 0.488, tilt: 0.456 };
   expect(lumen(old, /^(hvRight|ivc)/).areaMm2).toBeLessThan(lumen(old, /^ivc/).areaMm2 + 0.5 * lumen(old, /^hvRight/).areaMm2);
+});
+
+it('la intrahepática sigue la porta derecha y no corta la grasa junto a la vesícula (decisión 385)', () => {
+  // Valoración del responsable del 14-11-2026: «demasiado brusco cómo se separa la porta en su rama» y «raro el borde del
+  // hígado, como si tuviera concavidad». La concavidad era grasa junto a la vesícula entrando por el borde del sector.
+  const roi = { theta: [-0.5, 0.5] as [number, number], r: [30, 126] as [number, number] };
+  const fat = new Set([Tissue.Fat, Tissue.MesentericFat, Tissue.PerirenalFat, Tissue.UnsegmentedSoftTissue]);
+  const measure = (pose: ProbePose) => ({
+    lumen: portalDarkLumen(person.anatomy, person.sample, pose, roi, 2).lengthMm,
+    fat: sectorFraction(person.anatomy, person.sample, pose, fat, [30, 110]),
+  });
+  const now = measure(poseOf('portal', 's0028')),
+    before = measure({ phi: 2.8, z: -65, lift: 0, yaw: -0.996, rock: 0.097, tilt: 0.067 });
+  // Medido el 14-11-2026: luz portal continua de 80,8 mm y 7,9 % de grasa; la pose anterior, 54,1 mm y 11,6 %.
+  expect(now.lumen).toBeGreaterThan(72);
+  expect(now.fat).toBeLessThan(0.095);
+  expect(before.lumen).toBeLessThan(60);
+  expect(before.fat).toBeGreaterThan(0.105);
 });

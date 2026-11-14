@@ -674,6 +674,12 @@ entre ambos queda del lado abdominal de la línea, y en una persona iría por de
 TAC no rotula a menos de 15 mm del corazón se dibujan como grasa hipoecoica (epicárdica y pericárdica juntas); los 15 mm son una
 distancia fija, no una medida.
 
+### s0028: continuación de la porta derecha (385)
+
+Donde una rama portal nace a menos de 4 mm del extremo de su madre, la madre termina en el origen de la rama y el primer tramo
+de la rama es una curva de Hermite que parte en la dirección de la madre: su segundo nodo medido se descarta. Solo ocurre en la
+porta derecha y su rama anterior. Regularización pedagógica (decisión 361), no medida.
+
 ### s0028: contenido del intestino delgado y vía biliar (384)
 
 El duodeno y el intestino delgado se dibujan con el mismo contenido que el estómago: en el TAC llevaban contraste oral y como

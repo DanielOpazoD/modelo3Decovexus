@@ -251,6 +251,28 @@ export function renalSection(
   return { lengthMm, boneNear: bone / lines, bowelLumen: lumen / samples };
 }
 
+/** Fracción del sector (41 líneas, de `r[0]` a `r[1]` mm cada 2 mm) que ocupan los tejidos dados. */
+export function sectorFraction(
+  anatomy: AnatomyQuery,
+  sample: PhysiologySample,
+  pose: ProbePose,
+  tissues: ReadonlySet<Tissue>,
+  r: [number, number],
+): number {
+  const contact = probeContact(pose, TR, anatomy.scene.torso);
+  anatomy.setProbeCompression(contact);
+  let hits = 0,
+    samples = 0;
+  for (let i = 0; i < 41; i++) {
+    const theta = -TR.halfSector + (2 * TR.halfSector * (i + 0.5)) / 41;
+    for (let depth = r[0]; depth < r[1]; depth += 2) {
+      samples++;
+      if (tissues.has(anatomy.classifyWorld(pointOnLine(contact.frame, TR, theta, depth), sample).tissue)) hits++;
+    }
+  }
+  return hits / samples;
+}
+
 /** Riñón derecho de s0028: centro y eje largo de su máscara (componentes principales), en mm LAS. */
 const KIDNEY = { center: [-50.5, -27.7, -128.1] as Vec3, u: [0.274, -0.462, 0.844] as Vec3 };
 
