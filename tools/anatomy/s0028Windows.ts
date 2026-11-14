@@ -292,12 +292,6 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
   const kidney = [-35, -18, 0, 18, 35].map((d) => KIDNEY.center.map((x, i) => x + d * KIDNEY.u[i]) as Vec3);
   const trunk = tube('pvTrunk'),
     right = tube('pvRight'),
-    left = along(
-      scene.vesselById
-        .get('pvLeft')!
-        .tube.nodes.slice(0, 4)
-        .map((n) => n.p),
-    ),
     hv = tube('hvRight'),
     // Confluencia: los últimos 40 mm de la derecha y de la media, que llegan a la cava por un lado y por otro.
     interlobar = scene.vesselById.get('interlobarVein2')!.tube.nodes.map((n) => n.p),
@@ -330,13 +324,14 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
       through: liver,
     },
     {
+      // Decisión 386: la porta principal y su rama derecha en eje largo, donde VExUS la mide; antes, la bifurcación con la izquierda.
       id: 'portalSubcostal',
       phi: [1.5, 2.7],
       z: [-130, -50],
       depthMm: 150,
-      points: [...left.slice().reverse(), ...right],
-      pivot: right[0],
-      long: sub(right.at(-1)!, left.at(-1)!),
+      points: [...trunk.slice(-6), ...right],
+      pivot: trunk.at(-1)!,
+      long: sub(right.at(-1)!, trunk.at(-6)!),
       through: liver,
     },
     {

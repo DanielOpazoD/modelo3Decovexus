@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Ventanas s0028: la subcostal portal enseña la porta principal en eje largo sobre la cava, en vez del codo de la bifurcación (386)
+
 - Ventanas s0028: la intrahepática sigue la porta derecha hasta su rama anterior, sin gancho en la unión ni grasa en el borde (385)
 
 - Imagen s0028: el duodeno y el intestino delgado llevan contenido, no líquido negro; el colédoco ya no cruza la luz del duodeno (384)

@@ -47,18 +47,20 @@ it('las poses de la otra persona no sirven en s0028: la porta intrahepática y l
   expect(foreign.hepatorenal.seen).toBeLessThan(0.5);
 });
 
-it('la subcostal portal corta la porta por su eje: la luz se ve negra y continua a través del espesor del haz (decisión 381)', () => {
-  // La medida no usa el render: sangre portal en el plano y a ±σ en elevación, sobre la clasificación de la CPU. Zona de la
-  // bifurcación en esta ventana.
-  const roi = { theta: [-0.3, 0.35] as [number, number], r: [65, 128] as [number, number] };
-  const now = portalDarkLumen(person.anatomy, person.sample, poseOf('portalSubcostal', 's0028'), roi);
-  // Medido el 13-11-2026: 32,1 mm y 216 mm² en un tramo; el otro es una rama aparte.
-  expect(now.lengthMm).toBeGreaterThan(28);
-  expect(now.areaMm2).toBeGreaterThan(170);
-  // Control: la pose anterior (1,4° de giro y 0,6 mm) rozaba el codo y la porta salía en dos trozos; el mayor medía 19,3 mm.
-  const before = portalDarkLumen(person.anatomy, person.sample, { phi: 1.6, z: -50, lift: 0, yaw: -1.602, rock: 0.295, tilt: 0.255 }, roi);
-  expect(before.lengthMm).toBeLessThan(22);
-  expect(before.pieces).toBeGreaterThan(now.pieces);
+it('la subcostal portal enseña la porta principal en eje largo sobre la cava (decisiones 381 y 386)', () => {
+  // Valoración del responsable del 14-11-2026: la reconocía «con dudas» (3 de 5). La pose de la decisión 381 solo enseñaba el
+  // codo de la bifurcación (32 mm de luz continua); la oblicua subcostal clásica pone la porta principal y su rama derecha en
+  // eje largo. Misma medida de luz negra de la decisión 381, sobre todo el sector.
+  const roi = { theta: [-0.5, 0.5] as [number, number], r: [40, 140] as [number, number] };
+  const now = portalDarkLumen(person.anatomy, person.sample, poseOf('portalSubcostal', 's0028'), roi, 2);
+  // Medido el 14-11-2026: 79,2 mm.
+  expect(now.lengthMm).toBeGreaterThan(70);
+  // Control: la pose de la decisión 381 (32,3 mm) y la anterior a ella (19 mm).
+  for (const before of [
+    { phi: 1.6, z: -49.4, lift: 0, yaw: -1.627, rock: 0.295, tilt: 0.255 },
+    { phi: 1.6, z: -50, lift: 0, yaw: -1.602, rock: 0.295, tilt: 0.255 },
+  ])
+    expect(portalDarkLumen(person.anatomy, person.sample, before, roi, 2).lengthMm).toBeLessThan(40);
 });
 
 it('la hepatorrenal muestra el riñón a lo largo, sin costillas cruzando el campo ni el duodeno al lado (decisión 383)', () => {
