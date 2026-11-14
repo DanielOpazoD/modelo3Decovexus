@@ -25,7 +25,8 @@ prueba de la primera:
 
 `?reference=1` carga además el perfil corporal del adulto de referencia (`reference-body.bin`); la e2e de equivalencia lo
 cubre con legacy. Tras P8, el corte sustituye el default por s0028 cuando pase la lista de relaciones del TAC (decisiones
-317 y 322).
+317 y 322). Medida el 13-11-2026 sobre la propia persona s0028, la lista se cumple en sus 21 filas; falta
+que el responsable revise las láminas (`docs/anatomia/relaciones-tac.md`).
 
 ## Fases s0028
 
