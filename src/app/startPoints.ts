@@ -326,8 +326,9 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   // derecha en eje largo sobre la cava y la aorta. Sustituye a la de la decisión 381, que solo enseñaba el codo de la bifurcación.
   portalSubcostal: { phi: 1.6, z: -100, yaw: -1.2, rock: 0.131, tilt: 0.15 },
   // Decisión 383 (valoración del responsable): el plano contiene el tramo final de la suprahepática derecha y su unión con la
-  // cava; antes solo el 38 % de ese tramo quedaba en el plano y una sombra ocupaba un tercio del sector.
-  intercostal: { phi: 3.475, z: -70, yaw: -0.05, rock: 0.075, tilt: 0.112 },
+  // cava; antes solo el 38 % de ese tramo quedaba en el plano y una sombra ocupaba un tercio del sector. Decisión 388: la huella
+  // gira hacia el espacio intercostal y la costilla central deja de caer sobre la vena (del 20 % de su luz en sombra a 0).
+  intercostal: { phi: 3.435, z: -68, yaw: 0.07, rock: 0, tilt: 0.112 },
   subcostal: { phi: 2.35, z: -88.5, yaw: 1.114, rock: 0.325, tilt: -0.345 },
   subxiphoid: { phi: 1.65, z: -65, yaw: -0.037, rock: 0.063, tilt: -0.115 },
   // Decisión 383 (valoración del responsable): el riñón pasa de 66 a 82 mm en el plano, sale el duodeno y queda una costilla

@@ -12114,3 +12114,15 @@ estira igual. El izquierdo no cambia.
 **Consecuencias.** 109,6 mm y 129 ml; la ventana renal enseña 99 mm (antes 81). Desaparece el solape riñón–intestino del TAC.
 Atlas +165 KB (techo autoimpuesto declarado). El centro no se mueve: las relaciones del TAC se siguen cumpliendo.
 **Verificación.** `s0028Windows` (largo, ancho, interior, sin conflictos), Metal 3 de 3, lista de relaciones, láminas.
+
+## 388. En la intercostal de s0028 ninguna costilla cae sobre la suprahepática
+
+**Contexto.** Revisión de las ocho ventanas del 14-11-2026: con la pose de la decisión 383 la costilla central dejaba su sombra
+sobre el tramo alto de la vena hepática derecha (21 % de su luz en el plano), que parecía prolongarla hasta la cava. Es donde
+se coloca el Doppler de la vena hepática.
+**Opciones.** Aceptarla como anatomía, o girar la huella hacia el espacio intercostal; se elige girarla (búsqueda local).
+**Decisión.** Pose nueva a unos 6 mm de la anterior, con la huella girada 7°: la vena queda entre dos costillas y conserva
+su unión con la cava.
+**Consecuencias.** 0 % de la vena en sombra, 56 mm de luz (antes 52), acoplamiento 1 y campo libre 0,64 (antes 0,66). Entra el
+polo superior del riñón por un lado y la aorta bajo la cava, la coronal clásica.
+**Verificación.** `s0028Windows` (luz en sombra < 3 %; control de la pose 383, > 12 %), un mutante, láminas.
