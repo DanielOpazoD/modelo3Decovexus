@@ -238,7 +238,11 @@ export function classifyInside(
       // Pegada por dentro a la pared es la grasa preperitoneal: hipoecoica como el panículo, no un parche brillante sobre el hígado.
       const preperitoneal = inside !== null && inside < S0028_PREPERITONEAL_MM;
       const fat = !visceral ? Tissue.Fat : perirenal ? Tissue.PerirenalFat : preperitoneal ? Tissue.Fat : Tissue.MesentericFat;
-      return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? fat, boundaryDistance: 0 }, solids!);
+      // La grasa preperitoneal queda por fuera del peritoneo: su línea va sobre el hígado, también del lado de la grasa (decisión
+      // 379). Sin esto la línea sólo se dibujaba donde no hay grasa entre la pared y el hígado.
+      const liverMm = preperitoneal && !SINUS_TISSUE[interior] ? scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d : Infinity;
+      const peritoneum = liverMm < S0028_LIVER_SEAM_MM ? { interface: Interface.Peritoneum, interfaceDistance: Math.max(liverMm, 0) } : {};
+      return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? fat, boundaryDistance: 0, ...peritoneum }, solids!);
     }
     // Diafragma de esta persona (decisión 348): la máscara de cada órgano ya ganó antes; no corta el hígado.
     const dome = s0028Diaphragm(scene.person.cpu.regional!, m, -depth);

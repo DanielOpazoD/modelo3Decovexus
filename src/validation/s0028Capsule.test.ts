@@ -3,7 +3,7 @@ import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { personShader } from '../anatomy/gpu/personShader';
 import { Interface, interfaceReflectivity } from '../anatomy/interfaces';
-import { S0028_CAPSULE_FAT_TISSUES } from '../anatomy/people/s0028/solidsData';
+import { S0028_CAPSULE_FAT_TISSUES, S0028_LIVER_SEAM_MM, S0028_PREPERITONEAL_MM } from '../anatomy/people/s0028/solidsData';
 import { Tissue } from '../anatomy/tissues';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
@@ -13,7 +13,8 @@ import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
 import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
 import { setAbdominalBody } from './support/legacyPerson/referenceBody';
 import { setS0028Solids } from './support/legacyPerson/s0028Solids';
-import { setS0028Wall } from './support/legacyPerson/s0028Wall';
+import { s0028SourceValue } from './support/legacyPerson/s0028Source';
+import { s0028InsideWall, setS0028Wall } from './support/legacyPerson/s0028Wall';
 import { AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
 import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
 
@@ -93,4 +94,41 @@ it('el programa de eco de s0028 amplía la condición de la cápsula y el común
   expect(common.match(statement(3))).toBeNull();
   expect(own.match(statement(2))).toBeNull();
   expect(own.match(statement(2 + S0028_CAPSULE_FAT_TISSUES.length))).toHaveLength(1);
+});
+
+it('la grasa preperitoneal lleva el peritoneo sobre el hígado, a su distancia de él (decisión 379)', () => {
+  // La grasa preperitoneal queda por fuera del peritoneo: su línea va en la superficie hepática también cuando entre la pared y el
+  // hígado hay grasa del TAC. Oráculo propio: la carta de pared y la distancia al hígado, leídas aquí.
+  let drawn = 0,
+    far = 0,
+    uncharted = 0;
+  const liver = B.fields.find((f) => f.name === 'liver')!;
+  for (let k = 0; k < liver.dimensions[2]; k += 2)
+    for (let j = 0; j < liver.dimensions[1]; j += 2)
+      for (let i = 0; i < liver.dimensions[0]; i += 2) {
+        const p: Vec3 = [liver.originMm[0] + 1.5 * i, liver.originMm[1] + 1.5 * j, liver.originMm[2] + 1.5 * k];
+        const c = scene.classify(p, BASELINE_CALIBER);
+        if (c.tissue !== Tissue.Fat || c.solids?.owners[0]?.id !== 'compatible_fat') continue;
+        // Junto al riñón manda su cara, que queda más cerca.
+        if (c.interface === Interface.RenalCapsule) continue;
+        const inside = s0028InsideWall(p),
+          liverMm = s0028SourceValue(p, 'liver').d,
+          tag = p.join(',');
+        if (inside === null || !(inside < S0028_PREPERITONEAL_MM)) {
+          // Sin carta de pared no hay cara de la que tomar la normal: ahí no se dibuja.
+          if (liverMm < S0028_LIVER_SEAM_MM) uncharted++;
+          expect(c.interface, tag).not.toBe(Interface.Peritoneum);
+        } else if (liverMm < S0028_LIVER_SEAM_MM) {
+          drawn++;
+          expect(c.interface, tag).toBe(Interface.Peritoneum);
+          expect(c.interfaceDistance, tag).toBeCloseTo(Math.max(liverMm, 0), 9);
+        } else {
+          far++;
+          expect(c.interface, tag).not.toBe(Interface.Peritoneum);
+        }
+      }
+  // Medido el 13-11-2026 en un nodo de cada dos: 1.752 con la línea, 8.225 lejos del hígado y 187 sin carta.
+  expect(drawn).toBeGreaterThan(1200);
+  expect(far).toBeGreaterThan(5000);
+  expect(uncharted).toBeGreaterThan(100);
 });

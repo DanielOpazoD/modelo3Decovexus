@@ -659,4 +659,9 @@ reborde costal. El hígado, el bazo y el pulmón se recortan donde pisaban esa p
 ### s0028: cápsula hepática frente a grasa perirrenal (378)
 
 La cápsula sube su eco donde el tejido de fuera es grasa perirrenal, con la misma ganancia que frente a la mesentérica (el salto
-hígado–grasa). Frente a la grasa de la pared no sube: donde esa capa es gruesa, el borde hepático queda sin línea propia.
+hígado–grasa). Frente a la grasa de la pared no sube; ahí el borde lo dibuja el peritoneo (379).
+
+### s0028: peritoneo sobre el hígado bajo la grasa preperitoneal (379)
+
+Donde entre la pared conocida y el hígado hay grasa del TAC, la línea del peritoneo se dibuja en la superficie hepática, con la
+normal de la cara interna de la pared, que ahí es casi paralela. Donde la carta no conoce la pared no se dibuja.

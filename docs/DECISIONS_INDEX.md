@@ -382,3 +382,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [376](DECISIONS.md#L11970) | Los huecos cerrados de la carta de pared de s0028 se rellenan como estimación | vigente |
 | [377](DECISIONS.md#L11982) | La pared de s0028 se regulariza a mayor escala y los órganos se recortan contra ella | vigente |
 | [378](DECISIONS.md#L11995) | La cápsula hepática de s0028 se ve donde linda con su grasa perirrenal | vigente |
+| [379](DECISIONS.md#L12008) | En s0028 el peritoneo se dibuja sobre el hígado también donde hay grasa preperitoneal | vigente |

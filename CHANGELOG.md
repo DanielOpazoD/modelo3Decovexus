@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Imagen s0028: el borde del hígado tiene línea también bajo la grasa preperitoneal; se ve en la hepatorrenal (379)
+
 - Imagen s0028: aparece la línea hepatorrenal; la cápsula hepática se ve donde linda con la grasa perirrenal (378)
 
 - Imagen s0028: la cápsula hepática bajo la pared queda en arco continuo, sin el hombro; pared regularizada a mayor escala (377)
