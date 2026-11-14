@@ -12126,3 +12126,15 @@ su unión con la cava.
 **Consecuencias.** 0 % de la vena en sombra, 56 mm de luz (antes 52), acoplamiento 1 y campo libre 0,64 (antes 0,66). Entra el
 polo superior del riñón por un lado y la aorta bajo la cava, la coronal clásica.
 **Verificación.** `s0028Windows` (luz en sombra < 3 %; control de la pose 383, > 12 %), un mutante, láminas.
+
+## 389. La vena renal de s0028 nace en el hilio
+
+**Contexto.** Revisión de las ocho ventanas del 14-11-2026: en mitad del seno de la ventana renal se veía una cuña negra de
+10 × 16 mm, que un ecografista leería como pelvis dilatada. Era la vena renal derecha: el árbol común la hace nacer 15 mm dentro
+del seno con 2 mm de radio (decisión 87), y el seno de este TAC llega a 26–28 mm del centro del riñón.
+**Opciones.** Unirla a las interlobares por el seno (más tubos, sin margen), afinarla, o hacerla nacer en el hilio; se elige
+esta.
+**Decisión.** En s0028 se quita su nodo del seno: la vena empieza en el nodo del hilio con su calibre y su tapa redonda.
+**Consecuencias.** Su luz llega a 21 mm del centro (antes 13). En la ventana renal queda un círculo pequeño en el hilio y el seno
+se ve ecogénico. La izquierda, igual. La pelvis del TAC sigue en la hepatorrenal.
+**Verificación.** `s0028Vessels` (control: sin la colocación de s0028, 13 mm), un mutante, láminas.

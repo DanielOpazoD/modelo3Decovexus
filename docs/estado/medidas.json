@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-14",
- "main": "9a0402e",
+ "main": "17f593a",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 69138
+   "actual": 69320
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 25476
+   "actual": 1631
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 25476
   },
   {
    "what": "`series.js`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1125843
+   "actual": 1126025
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",

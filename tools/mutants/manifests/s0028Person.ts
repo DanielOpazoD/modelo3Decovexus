@@ -1,6 +1,6 @@
 import type { MutantManifest } from '../manifest';
 
-/** Vía biliar de s0028 (decisión 384). */
+/** Vasos y vía biliar de s0028 (decisiones 384, 385 y 389). */
 export const s0028Vessels: MutantManifest = {
   module: 'src/anatomy/people/s0028/vessels.ts',
   mutants: [
@@ -17,6 +17,14 @@ export const s0028Vessels: MutantManifest = {
       origin: 'decisión 385',
       breaks: 'La porta derecha vuelve a sobrepasar el origen de su rama anterior: gancho en la ventana intrahepática.',
       from: '  continuePortalBranches(vessels);',
+      to: '',
+      tests: ['src/validation/s0028Vessels.test.ts'],
+    },
+    {
+      name: 'vena-renal-en-cuna-dentro-del-seno',
+      origin: 'decisión 389',
+      breaks: 'La vena renal vuelve a nacer 15 mm dentro del seno, afilada: una cuña negra que se lee como pelvis dilatada.',
+      from: '  startRenalVeinsAtHilum(vessels);',
       to: '',
       tests: ['src/validation/s0028Vessels.test.ts'],
     },
