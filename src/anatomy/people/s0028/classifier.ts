@@ -14,6 +14,7 @@ import {
   S0028_PREPERITONEAL_MM,
   S0028_RENAL_FACE_MM,
   S0028_DIAPHRAGM_DEEP_MM,
+  S0028_EPICARDIAL_MM,
   S0028_SUBCUTANEOUS_REACH_MM,
 } from '../../people/s0028/solidsData';
 import type { AnatomyScene, Classification, VesselCaliber } from '../../scene';
@@ -118,11 +119,18 @@ export function s0028Diaphragm(
   m: Vec3,
   belowSkinMm: number,
 ): number | null {
-  const d = regional.s0028SourceValue(m, 'lung').d;
-  if (!(d >= 0 && d < DIAPHRAGM_THICKNESS_MM)) return null;
-  if (regional.s0028SourceValue([m[0], m[1], m[2] + 3], 'lung').d < d - 1) return d;
-  return belowSkinMm > S0028_DIAPHRAGM_DEEP_MM && regional.s0028SourceValue([m[0], m[1] - 3, m[2]], 'lung').d < d - 1 ? d : null;
+  // La misma regla sobre el pulmón y, donde no la cumple, sobre el corazón (decisión 380): el diafragma y el pericardio lo
+  // envuelven por debajo y por delante igual que al pulmón.
+  for (const name of ['lung', 'heart']) {
+    const d = regional.s0028SourceValue(m, name).d;
+    if (!(d >= 0 && d < DIAPHRAGM_THICKNESS_MM)) continue;
+    if (regional.s0028SourceValue([m[0], m[1], m[2] + 3], name).d < d - 1) return d;
+    if (belowSkinMm > S0028_DIAPHRAGM_DEEP_MM && regional.s0028SourceValue([m[0], m[1] - 3, m[2]], name).d < d - 1) return d;
+  }
+  return null;
 }
+/** A menos de `S0028_EPICARDIAL_MM` del corazón de s0028: ahí la grasa es epicárdica (decisión 380). */
+const nearHeart = (scene: AnatomyScene, m: Vec3) => scene.person.cpu.regional!.s0028SourceValue(m, 'heart').d < S0028_EPICARDIAL_MM;
 /** @twin clasificacion */
 export function classifyInside(
   scene: AnatomyScene,
@@ -237,7 +245,15 @@ export function classifyInside(
       const perirenal = scene.person.cpu.regional!.s0028CompatibleFat(m) !== null;
       // Pegada por dentro a la pared es la grasa preperitoneal: hipoecoica como el panículo, no un parche brillante sobre el hígado.
       const preperitoneal = inside !== null && inside < S0028_PREPERITONEAL_MM;
-      const fat = !visceral ? Tissue.Fat : perirenal ? Tissue.PerirenalFat : preperitoneal ? Tissue.Fat : Tissue.MesentericFat;
+      // Junto al corazón es grasa epicárdica: hipoecoica, no un bloque blanco entre el hígado y las cavidades (decisión 380).
+      const epicardial = nearHeart(scene, m);
+      const fat = !visceral
+        ? Tissue.Fat
+        : perirenal
+          ? Tissue.PerirenalFat
+          : preperitoneal || epicardial
+            ? Tissue.Fat
+            : Tissue.MesentericFat;
       // La grasa preperitoneal queda por fuera del peritoneo: su línea va sobre el hígado, también del lado de la grasa (decisión
       // 379). Sin esto la línea sólo se dibujaba donde no hay grasa entre la pared y el hígado.
       const liverMm = preperitoneal && !SINUS_TISSUE[interior] ? scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d : Infinity;
@@ -275,11 +291,12 @@ export function classifyInside(
       solids!.kidneyMm > S0028_LIVER_GAP_KIDNEY_MM &&
       (inside !== null || -depth > S0028_SUBCUTANEOUS_REACH_MM)
     )
-      // Pegada por dentro a la pared es preperitoneal, hipoecoica como la grasa D de esa franja (decisión 366).
+      // Pegada por dentro a la pared es preperitoneal, hipoecoica como la grasa D de esa franja (decisión 366); junto al
+      // corazón, epicárdica, también hipoecoica (decisión 380).
       return renalFace(
         {
           ...NONE,
-          tissue: inside !== null && inside < S0028_PREPERITONEAL_MM ? Tissue.Fat : Tissue.MesentericFat,
+          tissue: (inside !== null && inside < S0028_PREPERITONEAL_MM) || nearHeart(scene, m) ? Tissue.Fat : Tissue.MesentericFat,
           boundaryDistance: 0,
           approximation: 'grasa-estimada',
         },

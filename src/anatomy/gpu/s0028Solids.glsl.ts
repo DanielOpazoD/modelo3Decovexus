@@ -9,6 +9,7 @@ import {
   S0028_LUMBAR_BODY_RADIUS_MM,
   S0028_PREPERITONEAL_MM,
   S0028_DIAPHRAGM_DEEP_MM,
+  S0028_EPICARDIAL_MM,
   S0028_SUBCUTANEOUS_REACH_MM,
   s0028FatPages,
   s0028RenalPages,
@@ -64,10 +65,15 @@ float s28P(highp sampler3D t,vec3 p,vec3 lo,vec3 dim,vec3 off){
 }
 float s28PA(vec3 p,int k){return s28P(uAbdominalAtlas,p,S28A_LO[k],S28A_DIM[k],S28A_OFF[k]);}
 float s28PT(vec3 p,int k){return s28P(uThoracicAtlas,p,S28T_LO[k],S28T_DIM[k],S28T_OFF[k]);}
-// Diafragma de esta persona (decisión 348): lámina bajo la base de su pulmón y, lejos de la piel, por delante de él (375); mm al
-// pulmón o −1 (par de s0028Diaphragm).
-float s28Dia(vec3 m){float d=s28PT(m,2);if(!(d>=0.0&&d<DIAPHRAGM_MM))return -1.0;
-  return s28PT(m+vec3(0.0,0.0,3.0),2)<d-1.0||(-torsoDepth(m)>${S0028_DIAPHRAGM_DEEP_MM.toFixed(1)}&&s28PT(m+vec3(0.0,-3.0,0.0),2)<d-1.0)?d:-1.0;}
+// Diafragma de esta persona (decisión 348): lámina bajo la base de su pulmón y, lejos de la piel, por delante de él (375).
+// Lo que el diafragma envuelve: el pulmón o el corazón, el que quede más cerca (decisión 380). El nombre va antes de «p» en orden
+// alfabético: la extensión de la ABI GLSL numera los símbolos nuevos por orden.
+float chestSd(vec3 p){return min(s28PT(p,2),s28PT(p,3));}
+// La regla de la lámina sobre el campo torácico k (2 pulmón, 3 corazón): mm a él o −1.
+float diaOf(vec3 m,int k){float d=s28PT(m,k);if(!(d>=0.0&&d<DIAPHRAGM_MM))return -1.0;
+  return s28PT(m+vec3(0.0,0.0,3.0),k)<d-1.0||(-torsoDepth(m)>${S0028_DIAPHRAGM_DEEP_MM.toFixed(1)}&&s28PT(m+vec3(0.0,-3.0,0.0),k)<d-1.0)?d:-1.0;}
+// El pulmón primero y, donde no cumple, el corazón (par de s0028Diaphragm).
+float s28Dia(vec3 m){float d=diaOf(m,2);return d>=0.0?d:diaOf(m,3);}
 // Etiqueta nearest (gemela de sourceLabel): floor(q + 0,5) es Math.round para q ≥ 0.
 float s28PLA(vec3 p,int k){return texelFetch(uAbdominalAtlas,ivec3(S28A_OFF[k]+floor((p-S28A_LO[k])/1.5+0.5)),0).g;}
 float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+floor((p-S28T_LO[k])/1.5+0.5)),0).g;}
@@ -225,13 +231,13 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   }
   else if(k==8&&s28PLA(m,8)>0.0){c.tissue=s28PLA(m,8)<=2.0?T_PSOAS:T_MUSCLE;c.bd=-od;return;}
   // Grasa del TAC: dentro de la cavidad es visceral y ecogénica; solo el panículo conserva el material de la pared.
-  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:!(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?T_FAT:s28PFatIn(m,0)||s28PFatIn(m,1)?T_PERIRENAL:e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}?T_FAT:T_MESENTERIC_FAT;c.bd=0.0;
+  else if(k==17){c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:!(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?T_FAT:s28PFatIn(m,0)||s28PFatIn(m,1)?T_PERIRENAL:e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}||s28PT(m,3)<${S0028_EPICARDIAL_MM.toFixed(1)}?T_FAT:T_MESENTERIC_FAT;c.bd=0.0;
     // La grasa preperitoneal queda por fuera del peritoneo: su línea va sobre el hígado, también del lado de la grasa (379).
     if(ren<3&&e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}){float lv=s28PA(m,0);if(lv<${S0028_LIVER_SEAM_MM.toFixed(1)}){c.iface=IF_PERITONEUM;c.ifd=max(lv,0.0);}}}
   else{
     float dome=s28Dia(m);
     if(dome>=0.0){c.tissue=T_DIAPHRAGM;c.bd=min(min(dome,DIAPHRAGM_MM-dome),e.z);
-      c.n=normalize(vec3(s28PT(m+vec3(1.5,0.0,0.0),2)-dome,s28PT(m+vec3(0.0,1.5,0.0),2)-dome,s28PT(m+vec3(0.0,0.0,1.5),2)-dome)+vec3(0.0,0.0,-1e-4));
+      float cs=chestSd(m);c.n=normalize(vec3(chestSd(m+vec3(1.5,0.0,0.0))-cs,chestSd(m+vec3(0.0,1.5,0.0))-cs,chestSd(m+vec3(0.0,0.0,1.5))-cs)+vec3(0.0,0.0,-1e-4));
       if(dome>0.5*DIAPHRAGM_MM){c.iface=IF_DIAPHRAGM_LIVER;c.ifd=DIAPHRAGM_MM-dome;}}
     else{
       // La cáscara sin máscara entre la cara interna de la pared y el hígado es músculo de la pared, y su peritoneo, la superficie
@@ -239,7 +245,7 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
       float lv=s28PA(m,0);
       if(ren<3&&e.z>=0.0&&e.z<${S0028_LIVER_GAP_MM.toFixed(1)}&&lv<${S0028_LIVER_GAP_MM.toFixed(1)}&&e.y>${S0028_LIVER_GAP_KIDNEY_MM.toFixed(1)}){c.tissue=T_MUSCLE;c.bd=lv;c.iface=IF_PERITONEUM;c.ifd=lv;}
       // Dentro de la cavidad lo no rotulado es grasa visceral (decisión 364); en la pared y junto al riñón sigue siendo U.
-      else{c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:e.y>${S0028_LIVER_GAP_KIDNEY_MM.toFixed(1)}&&(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?(e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}?T_FAT:T_MESENTERIC_FAT):e.y>${S0028_LIVER_GAP_KIDNEY_MM.toFixed(1)}?T_FAT:T_UNSEGMENTED;c.bd=0.0;}
+      else{c.tissue=ren==3||ren==5?T_RENAL_SINUS:ren==4?T_RENAL_PELVIS:e.y>${S0028_LIVER_GAP_KIDNEY_MM.toFixed(1)}&&(e.z<999.0||-torsoDepth(m)>${S0028_SUBCUTANEOUS_REACH_MM.toFixed(1)})?(e.z<${S0028_PREPERITONEAL_MM.toFixed(1)}||s28PT(m,3)<${S0028_EPICARDIAL_MM.toFixed(1)}?T_FAT:T_MESENTERIC_FAT):e.y>${S0028_LIVER_GAP_KIDNEY_MM.toFixed(1)}?T_FAT:T_UNSEGMENTED;c.bd=0.0;}
     }
   }
   // Contorno acústico renal: el borde O de la máscara, a ambos lados aunque los dos sean U.

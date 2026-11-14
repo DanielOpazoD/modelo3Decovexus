@@ -665,3 +665,11 @@ hígado–grasa). Frente a la grasa de la pared no sube; ahí el borde lo dibuja
 
 Donde entre la pared conocida y el hígado hay grasa del TAC, la línea del peritoneo se dibuja en la superficie hepática, con la
 normal de la cara interna de la pared, que ahí es casi paralela. Donde la carta no conoce la pared no se dibuja.
+
+### s0028: diafragma bajo el corazón y grasa epicárdica (380)
+
+La lámina del diafragma (348, 375) se dibuja también bajo el corazón y por delante de él, con el mismo espesor fijo: ahí hace a
+la vez de diafragma y de pericardio, que no se separan. Va pegada a la máscara del corazón, no a la cara del hígado: la grasa
+entre ambos queda del lado abdominal de la línea, y en una persona iría por dentro del pericardio. La grasa del TAC y lo que el
+TAC no rotula a menos de 15 mm del corazón se dibujan como grasa hipoecoica (epicárdica y pericárdica juntas); los 15 mm son una
+distancia fija, no una medida.

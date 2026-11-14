@@ -20,6 +20,11 @@ export const S0028_SCARPA_FRACTION = 0.45;
  */
 export const S0028_PREPERITONEAL_MM = 15;
 /**
+ * Distancia (mm) al corazón hasta la que la grasa es epicárdica o pericárdica (decisión 380): hipoecoica, como la del panículo. Con
+ * el material brillante de la grasa visceral, entre el hígado y el corazón salía una banda blanca.
+ */
+export const S0028_EPICARDIAL_MM = 15;
+/**
  * Entre la cara interna de la pared y el hígado queda una cáscara sin máscara, casi toda de menos de 2 mm (volumen parcial del
  * TAC). Hasta esta distancia de ambos se dibuja como músculo de la pared: sin ella el borde hepático quedaba tras una franja gris.
  */

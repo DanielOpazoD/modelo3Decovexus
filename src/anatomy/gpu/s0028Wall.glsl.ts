@@ -292,7 +292,7 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
     changed,
     'float',
     'domeSd',
-    'float domeSd(vec3 m){bool valid;vec4 q=s28WallAt(m,valid);float d=s28PT(m,2);return valid?max(d,q.z-q.w):d;}',
+    'float domeSd(vec3 m){bool valid;vec4 q=s28WallAt(m,valid);float d=chestSd(m);return valid?max(d,q.z-q.w):d;}',
   );
   // La cortical ósea de s0028 es la del hueso torácico o la del lumbar, la más cercana (decisión 368).
   changed = replace(changed, 'float', 'ribSd', 'float ribSd(vec3 m,int k){return min(thoracicSdf(m),abdominalAtlasValue(m,8).x);}');
