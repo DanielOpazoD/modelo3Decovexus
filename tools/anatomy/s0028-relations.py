@@ -33,7 +33,8 @@ dim = np.array(g['dimensions'])
 names = {int(k): v for k, v in g['tissueNames'].items()}
 T = {v: k for k, v in names.items()}
 load = lambda f: np.frombuffer(gzip.decompress((GRID / f).read_bytes()), np.uint8).reshape(dim[::-1]).transpose(2, 1, 0)
-tissue, vessel = load('model-grid.u8.gz'), load('model-vessel.u8.gz')
+tissue, vessel, owner = load('model-grid.u8.gz'), load('model-vessel.u8.gz'), load('model-owner.u8.gz')
+owned = lambda name: owner == g['ownerNames'].index(name)
 box = tuple(slice(lo[a], lo[a] + dim[a]) for a in range(3))
 origin = np.array(g['originLASmm'])
 
@@ -66,7 +67,8 @@ liver_m = ndi.binary_closing(liver_only | (np.isin(vessel, [3, 4]) & ndi.binary_
 wall_or_gas = is_('BowelGas', 'GutSubmucosa', 'GutMuscularis', 'SoftCapsule')
 to_stomach = ndi.distance_transform_edt(~is_('GastricContents'), sampling=P)
 to_colon = ndi.distance_transform_edt(~is_('ColonicContents'), sampling=P)
-stomach_m = is_('GastricContents') | (wall_or_gas & (to_stomach <= 6) & (to_stomach <= to_colon))
+# El estómago, por su dueño: desde la decisión 384 el contenido del intestino delgado usa el mismo tejido.
+stomach_m = owned('stomach')
 colon_m = is_('ColonicContents') | (wall_or_gas & (to_colon <= 6) & (to_colon < to_stomach))
 body_m = ndi.binary_fill_holes(tissue != T['Air'])
 vertebrae = [f'vertebrae_{n}' for n in ('T10', 'T11', 'T12', 'L1', 'L2', 'L3', 'L4', 'L5')]
@@ -181,7 +183,7 @@ def measure(S, gas, fat):
         'grasa en los 10 mm que rodean el riñón derecho (fracción)': float((fat & shell).sum() / shell.sum()),
         'psoas a la columna, separación mínima (mm)': min_gap(S['psoas'], sp),
         'psoas al riñón derecho, separación mínima (mm)': min_gap(S['psoas'], S['riñón derecho']),
-        'contorno hepático lleno en el corte axial del polo renal superior (área / envolvente)': hull_fill(S['hígado'][:, :, int(kz.max()) - 6]),
+        'contorno hepático lleno en el corte axial del polo renal superior (área / envolvente)': hull_fill(S['hígado'][:, :, POLE]),
         'volumen del colon (ml)': float(S['colon'].sum() * VOX_ML),
         'colon al riñón izquierdo, separación mínima (mm)': min_gap(S['colon'], S['riñón izquierdo']),
         'gas digestivo (ml)': float(gas.sum() * VOX_ML),
@@ -217,6 +219,8 @@ def panniculus(body, is_fat):
     return [float(v) for v in np.percentile(out, [10, 50, 90])]
 
 
+# El mismo corte físico en los dos: el del polo superior del riñón derecho del TAC (el del modelo, alargado, queda 9,5 mm más arriba).
+POLE = int(np.where(ct['riñón derecho'].any(axis=(0, 1)))[0].max()) - 6
 gut_ct = ct_mask('colon', 'stomach', 'small_bowel', 'duodenum')
 rows_model = measure(model, is_('BowelGas'), is_('Fat', 'PerirenalFat', 'MesentericFat', 'RetroperitonealFat'))
 rows_ct = measure(ct, gut_ct & (hu < -400), (hu >= -190) & (hu <= -30))

@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: el riñón derecho mide 110 mm de polo a polo (el de su TAC, 91); la ventana renal enseña 99 mm de riñón (387)
+
 - Ventanas s0028: la subcostal portal enseña la porta principal en eje largo sobre la cava, en vez del codo de la bifurcación (386)
 
 - Ventanas s0028: la intrahepática sigue la porta derecha hasta su rama anterior, sin gancho en la unión ni grasa en el borde (385)

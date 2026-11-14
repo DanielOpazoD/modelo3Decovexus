@@ -390,3 +390,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [384](DECISIONS.md#L12070) | El intestino delgado de s0028 lleva contenido y su vía biliar no cruza el duodeno | vigente |
 | [385](DECISIONS.md#L12083) | La porta derecha de s0028 continúa en su rama anterior y la intrahepática la sigue | vigente |
 | [386](DECISIONS.md#L12095) | La subcostal portal de s0028 enseña la porta principal en eje largo | vigente |
+| [387](DECISIONS.md#L12106) | El riñón derecho de s0028 mide 110 mm | vigente |

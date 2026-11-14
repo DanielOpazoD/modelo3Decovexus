@@ -674,6 +674,13 @@ entre ambos queda del lado abdominal de la línea, y en una persona iría por de
 TAC no rotula a menos de 15 mm del corazón se dibujan como grasa hipoecoica (epicárdica y pericárdica juntas); los 15 mm son una
 distancia fija, no una medida.
 
+### s0028: riñón derecho de 110 mm (387)
+
+El riñón derecho de s0028 no es el de su TAC: está estirado ×1,21 a lo largo de su eje largo, con el centro, el ancho y el
+grosor fijos, hasta 110 mm de polo a polo. Su corteza, su médula y su seno son los del TAC estirados igual, y sus polos se
+aplanan contra hígado, intestino, psoas, vasos y pared donde los pisarían. Es un riñón de adulto promedio sobre la posición de
+esta persona, no una medida.
+
 ### s0028: continuación de la porta derecha (385)
 
 Donde una rama portal nace a menos de 4 mm del extremo de su madre, la madre termina en el origen de la rama y el primer tramo

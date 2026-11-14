@@ -238,11 +238,11 @@ it('una pared estimada no disputa un órgano medido (decisión 376): en las celd
   expect(estimatedWall).toBeGreaterThan(15000);
 });
 
-it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los seis pares del censo', () => {
-  // Eran nueve hasta la decisión 373 (el intestino deja de pisar la banda alisada) y ocho hasta la 377, que recorta el hígado y el
-  // bazo contra la pared: esos órganos ya no tienen vóxeles dentro de la banda.
-  expect(conflicts.pairs).toHaveLength(6);
-  for (const gone of ['bowel+wall', 'liver+wall', 'spleen+wall']) expect(conflicts.pairs).not.toContain(gone);
+it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los cinco pares del censo', () => {
+  // Eran nueve hasta la decisión 373 (el intestino deja de pisar la banda alisada), ocho hasta la 377, que recorta el hígado y el
+  // bazo contra la pared, y seis hasta la 387: el riñón derecho alargado se aplana contra el intestino y deja de pisarlo.
+  expect(conflicts.pairs).toHaveLength(5);
+  for (const gone of ['bowel+wall', 'liver+wall', 'spleen+wall', 'bowel+kidney_right']) expect(conflicts.pairs).not.toContain(gone);
   for (const [x, y, z, k] of conflicts.points) {
     const c = at([x, y, z]);
     expect(c.solids?.state, `${x},${y},${z}`).toBe('conflict');

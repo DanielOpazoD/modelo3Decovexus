@@ -5,7 +5,9 @@
  *   node --import tsx tools/anatomy/s0028-relations-grid.ts <carpeta de salida>
  *
  * Clasifica en material, en reposo y sin sonda. Escribe `model-grid.u8.gz` (tejido), `model-vessel.u8.gz` (0 ninguno, 1 aorta,
- * 2 cava, 3 porta, 4 suprahepática, 5 otro vaso) y `model-grid.json` (caja en índices de vóxel del TAC y nombres de tejido).
+ * 2 cava, 3 porta, 4 suprahepática, 5 otro vaso), `model-owner.u8.gz` (primer dueño sólido, índice en `ownerNames`) y
+ * `model-grid.json` (caja en índices de vóxel del TAC y nombres de tejido y de dueño). El dueño distingue el estómago del
+ * intestino, que desde la decisión 384 comparten el tejido de su contenido.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -33,7 +35,9 @@ const lo = [0, 54, 98],
   dim = hi.map((v, a) => v - lo[a]);
 const { scene } = loadS0028();
 const tissue = new Uint8Array(dim[0] * dim[1] * dim[2]),
-  vessel = new Uint8Array(tissue.length);
+  vessel = new Uint8Array(tissue.length),
+  owner = new Uint8Array(tissue.length),
+  ownerNames = [''];
 const vesselCode = (id: string) =>
   id === 'aorta' ? 1 : id.startsWith('ivc') ? 2 : /^(pv|portal)/.test(id) ? 3 : id.startsWith('hv') ? 4 : 5;
 const t0 = Date.now();
@@ -44,11 +48,17 @@ for (let k = 0; k < dim[2]; k++) {
       const at = (k * dim[1] + j) * dim[0] + i;
       tissue[at] = Number(c.tissue);
       if (c.vessel !== null) vessel[at] = vesselCode(String(c.vessel));
+      const id = c.solids?.owners[0]?.id;
+      if (id) {
+        if (!ownerNames.includes(id)) ownerNames.push(id);
+        owner[at] = ownerNames.indexOf(id);
+      }
     }
   if (k % 40 === 0) console.log(`corte ${k} de ${dim[2]}: ${Math.round((Date.now() - t0) / 1000)} s`);
 }
 writeFileSync(`${out}/model-grid.u8.gz`, gzipSync(tissue));
 writeFileSync(`${out}/model-vessel.u8.gz`, gzipSync(vessel));
+writeFileSync(`${out}/model-owner.u8.gz`, gzipSync(owner));
 const names = Object.fromEntries(
   Object.entries(Tissue)
     .filter(([, v]) => typeof v === 'number')
@@ -57,7 +67,7 @@ const names = Object.fromEntries(
 writeFileSync(
   `${out}/model-grid.json`,
   JSON.stringify(
-    { voxelLo: lo, dimensions: dim, order: 'i-fastest', originLASmm: toLas(lo[0], lo[1], lo[2]), tissueNames: names },
+    { voxelLo: lo, dimensions: dim, order: 'i-fastest', originLASmm: toLas(lo[0], lo[1], lo[2]), tissueNames: names, ownerNames },
     null,
     1,
   ),

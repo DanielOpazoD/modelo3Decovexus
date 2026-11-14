@@ -77,11 +77,11 @@ it('sube los 16 tiles RG16F y centros como vistas de la carta cargada en el úni
     expect([u.input.byteOffset, u.input.length]).toEqual([4096 + B.solids.offsetBytes + 4096 * i, 2048]);
   });
   expect(pages).toHaveLength(77);
-  // Interior renal (decisión 341): 46 páginas más, en huecos propios del mismo atlas y fuera de la reserva de pared; cada
-  // half es un byte exacto con dos códigos de vóxel válidos (0 U, 3, 4, 9, 10, 13).
-  const renal = allPages.slice(77, 123);
+  // Interior renal (decisión 341): 59 páginas más (46 hasta la decisión 387, que alarga el riñón derecho), en huecos propios del
+  // mismo atlas y fuera de la reserva de pared; cada half es un byte exacto con dos códigos de vóxel válidos (0 U, 3, 4, 9, 10, 13).
+  const renal = allPages.slice(77, 136);
   expect(renal.map((u) => [u.x, u.y, u.z])).toEqual(s0028RenalPages());
-  expect(renal).toHaveLength(46);
+  expect(renal).toHaveLength(59);
   const taken = new Set(s0028FatPages().map((o) => o.join()));
   for (const u of renal) {
     expect(taken.has([u.x, u.y, u.z].join())).toBe(false);
@@ -95,7 +95,7 @@ it('sube los 16 tiles RG16F y centros como vistas de la carta cargada en el úni
     }
   }
   // Grasa del abdomen a 3 mm (decisión 343): 43 páginas más, vistas de la misma reserva tras el bloque P3, en huecos propios.
-  const wide = allPages.slice(123);
+  const wide = allPages.slice(136);
   expect(wide.map((u) => [u.x, u.y, u.z])).toEqual(s0028WideFatPages());
   expect(wide).toHaveLength(43);
   wide.forEach((u, i) => {

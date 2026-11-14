@@ -38,9 +38,9 @@ export const S0028_BUNDLE = freeze({
     {
       name: 'kidneyRight',
       asset: 'abdominal',
-      originMm: [-87.48527431275116, -68.21478450019774, -181.48879268882285],
-      dimensions: [53, 53, 68],
-      offset: [54, 200, 319],
+      originMm: [-90.48527431275116, -72.71478450019774, -190.48879268882285],
+      dimensions: [57, 59, 80],
+      offset: [0, 197, 605],
       pitchMm: 1.5,
     },
     {
@@ -173,9 +173,9 @@ export const S0028_BUNDLE = freeze({
   abdominal: {
     textureDimensions: [189, 256, 685],
     rawBytes: 132572160,
-    gzipBytes: 8884215,
-    sha256Gzip: 'a26a895f96bbd474785a52c9555273cc226485588e1bb7ef18d4512a6bad0fb0',
-    sha256Raw: 'f93e2d2ea1870a345fa971fd1a2237c58152e4aea79a14b3e785f2eb4025c4de',
+    gzipBytes: 9048961,
+    sha256Gzip: '378b2497f4077d32fac9c18ff16bdde70ed5fd59b24c99299d88daa86db1b561',
+    sha256Raw: 'b5e4765fd2870317fe6e08780f0ce3184ee9f0abf214c8e525014232aaa40630',
   },
   thoracic: {
     textureDimensions: [193, 139, 552],
