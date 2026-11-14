@@ -12042,3 +12042,14 @@ conexa. La pose pasa a z −49,4 mm y giro −1,627 rad (0,6 mm y 1,4°), el má
 **Consecuencias.** La luz continua pasa de 19 a 32 mm y la porta se ve como un vaso en codo. Acoplamiento, campo libre e hito
 no cambian. La medida solo vigila esta ventana; la intrahepática ya mostraba un tramo continuo de 54 mm.
 **Verificación.** `s0028Windows` (pose nueva > 28 mm; control con la anterior < 22 mm), un mutante, capa lenta, láminas.
+
+## 382. El job principal de CI tiene un tope de 40 minutos
+
+**Contexto.** El job «lint · tipos · tests · build · presupuesto» tarda de 13 a 25 min según el corredor que toque: en ocho
+ejecuciones del 13-11-2026 la suma de tiempos de suite fue de 1.724 a 3.408 s sobre código equivalente, con todas las suites
+más lentas en la misma proporción. Con el tope de 25 min, la ejecución de la PR 44 se canceló con todas sus etapas en verde.
+**Opciones.** Relanzar cada vez (25 min perdidos por intento), o subir el tope; se elige esto.
+**Decisión.** `timeout-minutes` del job `check` pasa de 25 a 40. Matrices (25) y E2E (40) no cambian.
+**Consecuencias.** Un corredor lento termina en vez de cancelarse. No cambia ninguna prueba, aserción ni plazo de prueba; un
+cuelgue real tarda 15 min más en cortarse.
+**Verificación.** Autorizado por el responsable el 13-11-2026. La CI de este mismo cambio.

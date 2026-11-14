@@ -437,7 +437,7 @@
   },
   {
    "what": "Trabajo «check» de la CI",
-   "limit": 25,
+   "limit": 40,
    "unit": "min",
    "decision": null,
    "source": ".github/workflows/ci.yml",

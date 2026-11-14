@@ -80,7 +80,7 @@ Medido en el candidato basado en main `0daf295` el 2026-11-14 con `tools/docs/es
 | Textura torácica s0028 en memoria (RAW)             |  60.413.664 |  60.413.664 |          0 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Samplers por programa (las dos personas)            |          16 |          16 |          0 | samplers | 317      | `tools/ci/shaderBudgets.ts`            |
 | Ranuras vec4 de uniforms por programa               |         179 |         138 |         41 | ranuras  | 317      | `tools/ci/shaderBudgets.ts`            |
-| Trabajo «check» de la CI                            |          25 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
+| Trabajo «check» de la CI                            |          40 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
 | Trabajo «matrix-validation» de la CI                |          25 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
 | Trabajo «triplex-early» de la CI                    |          10 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |
 | Trabajo «e2e» de la CI                              |          55 |           — |          — | min      | —        | `.github/workflows/ci.yml`             |

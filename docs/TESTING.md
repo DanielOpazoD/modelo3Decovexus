@@ -22,7 +22,7 @@ Ver [criterios de selección, costes observados y recibo CI](engineering/iterati
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Gancho de push (`.githooks/pre-push`)     | `npm run feedback`: formato y lint de lo cambiado frente a `origin/main`, tipos y pruebas en proporción (347) | segundos si sólo cambia documentación; las pruebas que importan el código cambiado; 2–9 min si toca configuración, herramientas o interfaz |
 | `npm run check`                           | formato, índice, lint, tipos, build, presupuesto y todas las pruebas con cobertura (core y matrices)          | 62 min en serie con un trabajador (cierre del punto 8); 75–86 min en los cierres de P2 r2b-U y P3 r2                                       |
-| CI protegida (`.github/workflows/ci.yml`) | lo de `check` repartido en core y matrices, la E2E en doce fragmentos y el tríplex temprano                   | core y matrices con techo de 25 min, E2E de 40; su recibo es la puerta de fusión                                                           |
+| CI protegida (`.github/workflows/ci.yml`) | lo de `check` repartido en core y matrices, la E2E en doce fragmentos y el tríplex temprano                   | core con techo de 40 min, matrices de 25 y E2E de 40; su recibo es la puerta de fusión                                                     |
 | Cierre de ronda (`npm run closure`)       | las etapas de abajo, en serie y con un trabajador                                                             | ≈102 min de etapas en el cierre del punto 8: `check` 62, lentas 29, rápidas 7, gancho 2,3                                                  |
 
 El gancho adelanta los errores baratos antes de publicar; no acredita nada. Un push que sólo borra ramas remotas
@@ -139,7 +139,7 @@ estáticas), sólidos, escena, Worker del corte y rótulos de P3, los siete de l
 documentado en su manifiesto. El conjunto completo tardó 483 s aquí con carga media 11 (línea base 34 s; cada mutante
 1–61 s; con 27 mutantes y carga 10–13, 507 s). La capa rápida comprueba que cada `from` sigue apareciendo una vez y que
 cada focal existe: un PR que mueve el texto bajo un mutante actualiza su manifiesto en el mismo PR y demuestra que sigue
-muerto; no se borra un mutante para obtener verde. Correr los mutantes no entra en el veredicto protegido (25 min de
+muerto; no se borra un mutante para obtener verde. Correr los mutantes no entra en el veredicto protegido (40 min de
 techo): `.github/workflows/mutants.yml` corre a mano o cuando cambian esos módulos, sus focales, el ejecutor,
 `vite.config.ts` o `package.json`, y su rojo no bloquea la fusión (en CI tardó 404 s el paso y 462 s el trabajo).
 
