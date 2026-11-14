@@ -33,7 +33,9 @@ beforeAll(() => {
   const profile = new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin'));
   setAbdominalBody(new Float32Array(profile.buffer));
   scene = new AnatomyScene(NORMAL_ADULT);
-});
+  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
+  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+}, 60_000);
 
 it('profundidad B alimenta signo, magnitud, caras profundas y respiración, también fuera de caja', () => {
   const p: Vec3 = [B.depth.originMm[0] - 6, B.depth.originMm[1] - 6, B.depth.originMm[2]];

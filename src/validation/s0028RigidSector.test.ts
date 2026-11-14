@@ -44,7 +44,9 @@ beforeAll(() => {
   setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
   scene = new AnatomyScene(NORMAL_ADULT);
   sample = new PhysiologyEngine(NORMAL_ADULT, scene.vesselAreas()).sample;
-});
+  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
+  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+}, 60_000);
 
 it('compresión rígida s0028: vértebras y sacro quietos en todo el sector de las diez ventanas, con D = 0/10/20 mm', () => {
   const tr = CONVEX_C35,

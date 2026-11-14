@@ -37,7 +37,9 @@ beforeAll(() => {
   setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
   scene = new AnatomyScene(NORMAL_ADULT);
   sample = new PhysiologyEngine(NORMAL_ADULT, scene.vesselAreas()).sample;
-});
+  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
+  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+}, 60_000);
 // Planos de referencia fijos de P2 y P3 (las poses que s0028 heredaba), no las ventanas de inicio del producto: las huellas y
 // los recuentos de esta prueba se midieron sobre ellos, y una ventana puede moverse sin que cambie la mecánica del contacto.
 const poses = () => startPointsFor(scene.torso, B).map((p) => ({ ...p, ...ABDOMINAL_POSES[p.id] }));

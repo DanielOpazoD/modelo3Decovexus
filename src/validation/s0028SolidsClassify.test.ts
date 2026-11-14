@@ -41,7 +41,9 @@ beforeAll(() => {
   setS0028Solids(capacity);
   setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
   scene = new AnatomyScene(NORMAL_ADULT);
-});
+  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
+  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+}, 60_000);
 const at = (p: Vec3) => scene.classify(p, BASELINE_CALIBER);
 const ids = (c: Classification) => c.solids?.owners.map((o) => o.id) ?? [];
 /** Compartimentos que s0028 no identifica (decisión 321): los de la arquitectura analítica de la otra persona. */

@@ -34,7 +34,9 @@ beforeAll(() => {
     ...person,
     cpu: { ...person.cpu, curveVessels: undefined, smoothVessels: undefined },
   });
-});
+  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
+  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+}, 60_000);
 const mothers = (s: AnatomyScene) => s.vessels.filter((v) => v.flowFactor === undefined);
 const axis = (s: AnatomyScene, id: string) => s.vesselById.get(id as never)!.tube.nodes;
 const PORTAL = ['pvTrunk', 'pvRight', 'pvLeft', 'portalSplenic', 'portalSmv'];
