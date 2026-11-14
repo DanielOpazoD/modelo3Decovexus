@@ -318,10 +318,13 @@ const DEFAULT_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ..
 // su riñón. Decisión 349: con la cava y las suprahepáticas de su TAC, la intercostal sigue la derecha en eje largo, la subcostal
 // muestra la confluencia de la derecha y la media, y la subxifoidea vuelve al eje de la cava. La epigástrica ya mostraba su hito.
 const S0028_POSES: typeof DEFAULT_POSES = {
-  portal: { phi: 2.8, z: -65, yaw: -0.996, rock: 0.097, tilt: 0.067 },
+  // Decisión 385 (valoración del responsable): el plano sigue la porta derecha hasta su rama anterior (luz continua de 54 a 81 mm)
+  // y sale de la grasa junto a la vesícula que dibujaba una concavidad en el borde del hígado.
+  portal: { phi: 2.725, z: -59.014, yaw: -0.994, rock: 0.214, tilt: 0.086 },
   portalTrunk: { phi: 3.25, z: -80, yaw: 0.032, rock: 0.122, tilt: 0.26 },
-  // Decisión 381: girada 1,4° y 0,6 mm hacia la cabeza, el plano pasa por el eje del codo de la porta en vez de rozarlo.
-  portalSubcostal: { phi: 1.6, z: -49.4, yaw: -1.627, rock: 0.295, tilt: 0.255 },
+  // Decisión 386 (valoración del responsable: «con dudas», 3 de 5): oblicua subcostal clásica, con la porta principal y su rama
+  // derecha en eje largo sobre la cava y la aorta. Sustituye a la de la decisión 381, que solo enseñaba el codo de la bifurcación.
+  portalSubcostal: { phi: 1.6, z: -100, yaw: -1.2, rock: 0.131, tilt: 0.15 },
   // Decisión 383 (valoración del responsable): el plano contiene el tramo final de la suprahepática derecha y su unión con la
   // cava; antes solo el 38 % de ese tramo quedaba en el plano y una sombra ocupaba un tercio del sector.
   intercostal: { phi: 3.475, z: -70, yaw: -0.05, rock: 0.075, tilt: 0.112 },

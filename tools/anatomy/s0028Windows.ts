@@ -251,6 +251,28 @@ export function renalSection(
   return { lengthMm, boneNear: bone / lines, bowelLumen: lumen / samples };
 }
 
+/** Fracción del sector (41 líneas, de `r[0]` a `r[1]` mm cada 2 mm) que ocupan los tejidos dados. */
+export function sectorFraction(
+  anatomy: AnatomyQuery,
+  sample: PhysiologySample,
+  pose: ProbePose,
+  tissues: ReadonlySet<Tissue>,
+  r: [number, number],
+): number {
+  const contact = probeContact(pose, TR, anatomy.scene.torso);
+  anatomy.setProbeCompression(contact);
+  let hits = 0,
+    samples = 0;
+  for (let i = 0; i < 41; i++) {
+    const theta = -TR.halfSector + (2 * TR.halfSector * (i + 0.5)) / 41;
+    for (let depth = r[0]; depth < r[1]; depth += 2) {
+      samples++;
+      if (tissues.has(anatomy.classifyWorld(pointOnLine(contact.frame, TR, theta, depth), sample).tissue)) hits++;
+    }
+  }
+  return hits / samples;
+}
+
 /** Riñón derecho de s0028: centro y eje largo de su máscara (componentes principales), en mm LAS. */
 const KIDNEY = { center: [-50.5, -27.7, -128.1] as Vec3, u: [0.274, -0.462, 0.844] as Vec3 };
 
@@ -270,12 +292,6 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
   const kidney = [-35, -18, 0, 18, 35].map((d) => KIDNEY.center.map((x, i) => x + d * KIDNEY.u[i]) as Vec3);
   const trunk = tube('pvTrunk'),
     right = tube('pvRight'),
-    left = along(
-      scene.vesselById
-        .get('pvLeft')!
-        .tube.nodes.slice(0, 4)
-        .map((n) => n.p),
-    ),
     hv = tube('hvRight'),
     // Confluencia: los últimos 40 mm de la derecha y de la media, que llegan a la cava por un lado y por otro.
     interlobar = scene.vesselById.get('interlobarVein2')!.tube.nodes.map((n) => n.p),
@@ -308,13 +324,14 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
       through: liver,
     },
     {
+      // Decisión 386: la porta principal y su rama derecha en eje largo, donde VExUS la mide; antes, la bifurcación con la izquierda.
       id: 'portalSubcostal',
       phi: [1.5, 2.7],
       z: [-130, -50],
       depthMm: 150,
-      points: [...left.slice().reverse(), ...right],
-      pivot: right[0],
-      long: sub(right.at(-1)!, left.at(-1)!),
+      points: [...trunk.slice(-6), ...right],
+      pivot: trunk.at(-1)!,
+      long: sub(right.at(-1)!, trunk.at(-6)!),
       through: liver,
     },
     {

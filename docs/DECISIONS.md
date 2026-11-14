@@ -12079,3 +12079,26 @@ cruzar tubo digestivo, hígado ni páncreas (`placeDucts`, solo construcción).
 **Consecuencias.** Las asas se ven como intestino con contenido, no como vasos. El colédoco aún roza 2,5 mm el bulbo duodenal.
 La papila y el trayecto biliar son estimados; el tejido se llama «contenido gástrico» también en el intestino.
 **Verificación.** `s0028SolidsClassify` (4.207 puntos de delgado, ninguno líquido), `s0028Vessels`, dos mutantes, Metal.
+
+## 385. La porta derecha de s0028 continúa en su rama anterior y la intrahepática la sigue
+
+**Contexto.** Valoración del responsable: en la intrahepática la porta «se separa en su rama demasiado brusco» y el borde del
+hígado parecía tener una concavidad. En el TAC la porta derecha sobrepasaba 2,5 mm el origen de su rama anterior y giraba 32°
+hacia ella: la tapa de la madre colgaba y se veía un gancho. La concavidad era grasa junto a la vesícula en el borde del sector.
+**Opciones.** Alisar solo la unión, o además mover la pose; se eligen las dos.
+**Decisión.** Una rama portal que nace junto al extremo de su madre es su continuación: la madre termina en su origen, la rama
+sale por una curva de Hermite con la dirección de la madre y no se ensancha tras la unión. La pose sigue la porta derecha.
+**Consecuencias.** Luz portal continua de 54 a 81 mm y grasa del sector del 11,6 % al 7,9 %. Queda un muñón corto donde la
+rama anterior sale del plano hacia la cabeza.
+**Verificación.** `s0028Vessels` (unión a 12°, sin exceso; tabla del TAC como control), `s0028Windows`, dos mutantes, láminas.
+
+## 386. La subcostal portal de s0028 enseña la porta principal en eje largo
+
+**Contexto.** El responsable reconoció la subcostal portal «con dudas» (3 de 5), sin comentario. Su pose (decisiones 346 y 381) buscaba la bifurcación: un codo de 32 mm de porta, la cava y la aorta en corte y una sombra costal, sin un tubo largo que
+se lea como porta. VExUS mide la porta en su tronco o en su rama derecha.
+**Opciones.** Afinar la pose de la bifurcación, o buscar la oblicua subcostal clásica; se elige esta (525 candidatas).
+**Decisión.** El hito de la ventana pasa a ser el final del tronco y la rama derecha. La pose nueva los corta en eje largo
+sobre la cava y la aorta, con el estómago arriba: 79 mm de luz continua, sin hueso y campo libre 0,99.
+**Consecuencias.** La bifurcación con la izquierda deja de verse en esta ventana. La decisión 381 queda sustituida en la pose,
+no en su medida.
+**Verificación.** `s0028Windows` (luz > 70 mm; controles de las poses de la 381 y anterior, < 40), un mutante, láminas.
