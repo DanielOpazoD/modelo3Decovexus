@@ -705,9 +705,13 @@ export class AnatomyScene {
       }
       case 'dome':
         if (this.identity.person === 's0028') {
-          // La cara del diafragma de s0028 es una superficie de nivel de la distancia a su pulmón (decisión 348).
+          // La cara del diafragma de s0028 es una superficie de nivel de la distancia a su pulmón (decisión 348) o a su corazón,
+          // el que quede más cerca (decisión 380).
           const regional = this.person.cpu.regional!;
-          return Math.max(regional.s0028SourceValue(m, 'lung').d, -(regional.s0028InsideWall(m) ?? Infinity));
+          return Math.max(
+            Math.min(regional.s0028SourceValue(m, 'lung').d, regional.s0028SourceValue(m, 'heart').d),
+            -(regional.s0028InsideWall(m) ?? Infinity),
+          );
         }
         return sdDiaphragm(m, this.diaphragm, this.torso);
       case 'kidneyOuter':

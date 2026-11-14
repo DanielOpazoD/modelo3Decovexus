@@ -58,7 +58,11 @@ function fatLook(p: Vec3): Tissue {
   const visceral = q?.kind === 'known' || -torsoDepth(p, scene.torso) > 50;
   // Pegada por dentro a la cara interna de la pared (menos de 15 mm) es preperitoneal: se ve como el panículo (decisión 352).
   const preperitoneal = q?.kind === 'known' && q.depthMm - q.interfaceMm < 15;
-  return !visceral ? Tissue.Fat : s0028CompatibleFat(p) !== null ? Tissue.PerirenalFat : preperitoneal ? Tissue.Fat : Tissue.MesentericFat;
+  // A menos de 15 mm del corazón es epicárdica, también hipoecoica (decisión 380).
+  const epicardial = s0028SourceValue(p, 'heart').d < 15;
+  if (!visceral) return Tissue.Fat;
+  if (s0028CompatibleFat(p) !== null) return Tissue.PerirenalFat;
+  return preperitoneal || epicardial ? Tissue.Fat : Tissue.MesentericFat;
 }
 /**
  * Oráculo del interior renal (decisión 341), independiente del lector de la aplicación: expande por su cuenta los tramos
@@ -731,4 +735,35 @@ it('grasa del abdomen a 3 mm (decisión 343): reproduce los testigos del TAC y s
   // 36,5 % de las celdas de la caja son grasa; buena parte es panículo, que ya dibuja la pared.
   expect(fatRows).toBeGreaterThan(150);
   expect(classifiedFat).toBeGreaterThan(40);
+});
+
+it('la grasa junto al corazón es epicárdica e hipoecoica; más lejos sigue siendo visceral (decisión 380)', () => {
+  // Oráculo propio: la carta de pared y la distancia al corazón de su máscara, leídas aquí. Vale para la grasa D del TAC
+  // y para lo que el TAC no rotula dentro de la cavidad, que se dibuja como la grasa de al lado.
+  const heart = B.fields.find((f) => f.name === 'heart')!;
+  const seen = { epicardialD: 0, epicardialU: 0, beyond: 0 };
+  for (let k = -12; k < heart.dimensions[2] + 12; k += 3)
+    for (let j = -12; j < heart.dimensions[1] + 12; j += 3)
+      for (let i = -12; i < heart.dimensions[0] + 12; i += 3) {
+        const p: Vec3 = [heart.originMm[0] + 1.5 * i, heart.originMm[1] + 1.5 * j, heart.originMm[2] + 1.5 * k];
+        const c = at(p);
+        if (c.vesselHit || c.interface === Interface.DuctLumen) continue;
+        if (c.tissue !== Tissue.Fat && c.tissue !== Tissue.MesentericFat) continue;
+        const owned = ids(c).join() === 'compatible_fat';
+        if (!owned && c.solids?.state !== 'U') continue;
+        // Sólo dentro de la cavidad y fuera de las cajas de grasa perirrenal: ahí deciden la pared y el corazón.
+        const q = s0028WallAt(p);
+        if (!(q?.kind === 'known' || -torsoDepth(p, scene.torso) > 50) || (owned && s0028CompatibleFat(p) !== null)) continue;
+        const preperitoneal = q?.kind === 'known' && q.depthMm - q.interfaceMm < 15,
+          near = s0028SourceValue(p, 'heart').d < 15;
+        expect(c.tissue, p.join(',')).toBe(preperitoneal || near ? Tissue.Fat : Tissue.MesentericFat);
+        if (preperitoneal) continue;
+        if (!near) seen.beyond++;
+        else if (owned) seen.epicardialD++;
+        else seen.epicardialU++;
+      }
+  // Medido el 13-11-2026 en un nodo de cada tres: 309 de grasa D y 2.801 sin rotular junto al corazón; 1.841 más lejos.
+  expect(seen.epicardialD).toBeGreaterThan(200);
+  expect(seen.epicardialU).toBeGreaterThan(1800);
+  expect(seen.beyond).toBeGreaterThan(1200);
 });

@@ -12017,3 +12017,16 @@ hígado lleva la cara del peritoneo a su distancia del hígado, en CPU y GLSL. S
 **Consecuencias.** Línea continua en el borde hepático de la hepatorrenal; las ventanas anteriores no cambian a la vista. La cara
 interna del músculo conserva su propia línea, que ahí es la fascia.
 **Verificación.** `s0028Capsule` (1.752 puntos con la línea a su distancia; lejos del hígado y sin carta, ninguno), dos mutantes.
+
+## 380. El diafragma de s0028 envuelve también el corazón, y la grasa junto a él es hipoecoica
+
+**Contexto.** En la subcostal de venas hepáticas, entre el hígado y las cavidades había una banda blanca de 1–2 cm: la lámina
+del diafragma solo seguía al pulmón (decisión 348), y bajo el corazón la grasa del TAC se dibujaba como grasa visceral
+brillante, pegada al hígado sin línea entre los dos.
+**Opciones.** Una lámina sobre el mínimo de las distancias a pulmón y corazón (quitaba lámina bajo el pulmón donde el corazón
+queda más cerca), o la misma regla aplicada primero al pulmón y luego al corazón; se elige esto.
+**Decisión.** La lámina de la 348/375 se aplica al pulmón y, donde no la cumple, al corazón, en CPU y GLSL; su cara es la
+superficie de nivel del más cercano. La grasa (del TAC o sin rotular) a menos de 15 mm del corazón es epicárdica: `Tissue.Fat`.
+**Consecuencias.** Entre hígado y corazón queda una línea fina (diafragma y pericardio juntos) y grasa oscura. Espesor y
+distancia son fijos, no medidos; el pericardio no se separa del diafragma.
+**Verificación.** `s0028WallRuntime` (236 puntos de lámina bajo el corazón), `s0028SolidsClassify`, tres mutantes, Metal, láminas.

@@ -446,25 +446,32 @@ it('el hígado fuente no se recorta con la W ni la cúpula procedurales de otra 
 });
 
 it('el diafragma de s0028 es la lámina bajo la base de su pulmón, no la cúpula de la otra persona (decisión 348)', () => {
-  // Oráculo independiente: la distancia al pulmón de la máscara, leída aquí. Bajo la base (el pulmón queda encima), a menos del
-  // espesor del diafragma y sin dueño, el punto es diafragma; lejos del pulmón, nunca.
-  const lung = (p: Vec3) => s0028SourceValue(p, 'lung').d;
+  // Oráculo independiente: la distancia al pulmón y al corazón de las máscaras, leída aquí. Bajo la base (el órgano queda encima),
+  // a menos del espesor del diafragma y sin dueño, el punto es diafragma; lejos de los dos, nunca. La regla va primero sobre el
+  // pulmón y, donde el pulmón queda lejos, sobre el corazón (decisión 380).
+  const lung = (p: Vec3) => s0028SourceValue(p, 'lung').d,
+    heart = (p: Vec3) => s0028SourceValue(p, 'heart').d;
+  const far = (d: number) => d > DIAPHRAGM_THICKNESS_MM + 0.5 || d < -0.5;
   let sheet = 0,
     faced = 0,
-    away = 0;
+    away = 0,
+    underHeart = 0;
   for (let x = -110; x <= 100; x += 7)
     for (let y = -70; y <= 70; y += 7)
       for (let z = -80; z <= 40; z += 1.5) {
         const p: Vec3 = [x, y, z],
-          d = lung(p),
           c = scene.classify(p, BASELINE_CALIBER);
-        if (d > DIAPHRAGM_THICKNESS_MM + 0.5 || d < -0.5) {
-          if (d > 0) away++;
+        if (far(lung(p)) && far(heart(p))) {
+          if (lung(p) > 0) away++;
           expect(c.tissue, p.join(',')).not.toBe(Tissue.Diaphragm);
           continue;
         }
-        const below = lung([x, y, z + 3]) < d - 1;
+        // El campo que decide: el pulmón si está cerca; el corazón sólo donde el pulmón queda lejos.
+        const of = !far(lung(p)) ? lung : heart,
+          d = of(p);
+        const below = of([x, y, z + 3]) < d - 1;
         if (!(d >= 0.2 && d < DIAPHRAGM_THICKNESS_MM - 0.2) || !below || c.solids?.state !== 'U' || c.vesselHit) continue;
+        if (of === heart) underHeart++;
         sheet++;
         expect(c, p.join(',')).toMatchObject({ tissue: Tissue.Diaphragm, approximation: 'diaphragm-lung-base' });
         // La mitad abdominal dibuja la cara hepática, a su distancia de la superficie de nivel, salvo que otra cara quede más cerca.
@@ -475,6 +482,8 @@ it('el diafragma de s0028 es la lámina bajo la base de su pulmón, no la cúpul
           expect(c.interfaceDistance, p.join(',')).toBeCloseTo(DIAPHRAGM_THICKNESS_MM - d, 9);
         }
       }
+  // Medido el 13-11-2026: 940 puntos de lámina, 236 de ellos bajo el corazón, y 251 con la cara hepática.
+  expect(underHeart).toBeGreaterThan(150);
   expect(sheet).toBeGreaterThan(150);
   expect(faced).toBeGreaterThan(50);
   expect(away).toBeGreaterThan(10000);
