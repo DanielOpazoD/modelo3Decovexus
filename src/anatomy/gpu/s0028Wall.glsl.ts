@@ -121,12 +121,24 @@ float s28RespWall(vec3 m){
 `;
 
 /**
+ * Músculo de s0028 (decisión 390, criterio del responsable): fondo 12 dB más oscuro que el de la decisión 366 (0,24), 8,5 dB bajo
+ * la grasa de la pared, y estrías con el mismo brillo absoluto que entonces: se ve más oscuro que la grasa y estriado. La ganancia
+ * de la estría se calcula sobre la retrodispersión de la tabla común (`WT_STRIA_GAIN`), así que su peso sube en la proporción que
+ * mantiene su pico: 1 + (G − 1)·k = 0,24·G / fondo. El músculo posterior, sin estrías, también se oscurece. [EXTRAPOLACIÓN PROPIA]
+ */
+export const S0028_MUSCLE_BACKSCATTER = 0.06;
+/** Fondo de la decisión 366 cuyo brillo de estría se conserva. */
+export const S0028_STRIATION_KEPT_BACKSCATTER = 0.24;
+/** Fondo sobre el de la decisión 366: el GLSL de las estrías sube su peso a (razón·G − 1)/(G − 1), con G = `WT_STRIA_GAIN`. */
+const KEPT_RATIO = (S0028_STRIATION_KEPT_BACKSCATTER / S0028_MUSCLE_BACKSCATTER).toFixed(4);
+
+/**
  * Estrías del músculo de la pared de s0028 (decisión 352): las del perimisio de `muscleStriation`, apoyadas en la vaina anterior de
  * la carta de esta persona en lugar de en las capas procedurales, sin las ondas largas ni la pendiente de la fascia de la otra.
  * Fuera de la banda conocida no hay estría: el músculo posterior fuente sigue liso. La sal de la máscara (83,7) es la de la otra.
  * @twin textura-pared
  */
-const S0028_STRIATION_GLSL = /* glsl */ `
+export const S0028_STRIATION_GLSL = /* glsl */ `
 vec4 muscleStriation(vec3 m){
   bool valid;vec4 q=s28WallAt(m,valid);
   if(!valid||q.w<q.x||q.w>=q.y)return vec4(0.0,1.0,0.0,0.0);
@@ -138,7 +150,7 @@ vec4 muscleStriation(vec3 m){
   vec3 gradient=-torsoDepthGrad(m)+jitterGain*(noise.y*wallArcGradient(m)+vec3(0.0,0.0,noise.z));
   vec2 cell=floor(vec2(u,v)/WT_STRIA_CELL_MM+0.6*noise.x);
   float x=laminaDistance(s,cell.x,cell.y)*WT_STRIA_SPACING/WT_STRIA_SIGMA;
-  return vec4(normalize(gradient),mask*exp(-0.5*x*x));
+  return vec4(normalize(gradient),((${KEPT_RATIO}*WT_STRIA_GAIN-1.0)/(WT_STRIA_GAIN-1.0))*mask*exp(-0.5*x*x));
 }
 `;
 

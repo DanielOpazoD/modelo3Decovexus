@@ -674,6 +674,13 @@ entre ambos queda del lado abdominal de la línea, y en una persona iría por de
 TAC no rotula a menos de 15 mm del corazón se dibujan como grasa hipoecoica (epicárdica y pericárdica juntas); los 15 mm son una
 distancia fija, no una medida.
 
+### s0028: músculo de la pared y fascia de Scarpa (390)
+
+El músculo de s0028 tiene un fondo de retrodispersión de 0,06 (la grasa de la pared, 0,16) y sus estrías conservan el brillo que
+tenían con 0,24: es un músculo hipoecoico con perimisio ecogénico, no una medida. El músculo posterior, que no lleva estrías, se
+oscurece igual. La cara de Scarpa sube con una ganancia de 0,35 (−9 dB) sobre su reflectividad común. Valores elegidos sobre
+capturas con el criterio del responsable, sin referencia cuantitativa.
+
 ### s0028: riñón derecho de 110 mm (387)
 
 El riñón derecho de s0028 no es el de su TAC: está estirado ×1,21 a lo largo de su eje largo, con el centro, el ancho y el

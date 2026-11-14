@@ -56,7 +56,7 @@ color). La regla «anatomía TS = GLSL» (`CLAUDE.md`, invariante 1) se comprueb
 | ------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
 | Clasificación de un punto | página, Worker y GLSL                                        | página, Worker y GLSL con los dueños de P3 (decisión 321)                      |
 | Campos de los órganos     | atlas registrados en las tres                                | lector directo B en las tres; GLSL especializado por persona (decisión 318)    |
-| Pared                     | capas con relieve y costillas (decisiones 62 y 88)           | pared continua de la regla directa en las tres (decisión 320)                  |
+| Pared                     | capas con relieve y costillas (decisiones 62 y 88)           | regla directa (320); músculo oscuro y estriado, Scarpa tenue (390)             |
 | Superficies 3D            | mallas del navegador sobre el mismo campo                    | mallas exactas precalculadas (decisiones 318 y 319)                            |
 | Paridad en la CI          | `equivalence.spec.ts`, `abdominalAtlas.spec.ts` y regionales | `s0028WallGpu.spec.ts`, `s0028SolidsGpu.spec.ts`; CPU = Worker bit a bit (321) |
 

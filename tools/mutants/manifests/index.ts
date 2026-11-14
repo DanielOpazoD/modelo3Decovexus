@@ -3,7 +3,7 @@ import type { MutantManifest } from '../manifest';
 import { contact } from './contact';
 import { cutMapWorker } from './cutMapWorker';
 import { s0028Classifier } from './s0028Classifier';
-import { s0028Cpu, s0028Vessels } from './s0028Person';
+import { s0028Cpu, s0028Look, s0028Vessels } from './s0028Person';
 import { s0028Solids } from './s0028Solids';
 import { s0028Wall } from './s0028Wall';
 import { s0028WallGlsl } from './s0028WallGlsl';
@@ -23,4 +23,5 @@ export const MANIFESTS: readonly MutantManifest[] = [
   startPoints,
   s0028Vessels,
   s0028Cpu,
+  s0028Look,
 ];

@@ -2,6 +2,7 @@ import { personShader } from '../../gpu/personShader';
 import type { InstalledCpuPerson, PersonGpuPlan } from '../../person';
 import { Interface } from '../../interfaces';
 import { Tissue } from '../../tissues';
+import { S0028_MUSCLE_BACKSCATTER } from '../../gpu/s0028Wall.glsl';
 import { S0028_BUNDLE } from './descriptor';
 import { S0028_TUBE_SEGMENTS } from './vessels';
 /**
@@ -9,7 +10,12 @@ import { S0028_TUBE_SEGMENTS } from './vessels';
  * de frente: el hueso es rugoso a la escala de la onda. Con la pendiente de 0,15 de la otra persona, la cortical de una vértebra
  * salía en destellos sueltos. Valor [EXTRAPOLACIÓN PROPIA].
  */
-export const S0028_INTERFACE_LOOK = Object.freeze({ [Interface.RibCortex]: { slopeRms: 0.5 } });
+export const S0028_INTERFACE_LOOK = Object.freeze({
+  [Interface.RibCortex]: { slopeRms: 0.5 },
+  // La fascia de Scarpa, más tenue que la fascia profunda y el peritoneo: las caras de la pared no brillan todas igual (decisión
+  // 390, criterio del responsable). −9 dB; con 0,5 apenas cambiaba y con 0 desaparecía [EXTRAPOLACIÓN PROPIA].
+  [Interface.Scarpa]: { gain: 0.35 },
+});
 
 /**
  * Aspecto de los tejidos de s0028 donde la tabla común no basta para leer la imagen (decisión 355). Su grasa visceral es la del
@@ -19,8 +25,9 @@ export const S0028_INTERFACE_LOOK = Object.freeze({ [Interface.RibCortex]: { slo
 export const S0028_TISSUE_LOOK = Object.freeze({
   [Tissue.PerirenalFat]: { backscatter: 3 },
   [Tissue.MesentericFat]: { backscatter: 2.6 },
-  // El músculo de la pared se ve más oscuro que su grasa, como una lente hipoecoica entre fascias (decisión 366).
-  [Tissue.Muscle]: { backscatter: 0.24 },
+  // El músculo de la pared se ve más oscuro que su grasa, como una lente hipoecoica entre fascias (decisión 366), y estriado: fondo
+  // 12 dB más oscuro con las estrías del mismo brillo (decisión 390).
+  [Tissue.Muscle]: { backscatter: S0028_MUSCLE_BACKSCATTER },
   // Miocardio de gris medio: la pared se distingue de la sangre de su cavidad (decisión 369).
   [Tissue.Myocardium]: { backscatter: 0.9 },
   // Páncreas algo más ecogénico que el hígado y menos que la grasa que lo rodea: se distingue de los dos (decisión 367).

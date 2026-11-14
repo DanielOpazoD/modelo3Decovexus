@@ -73,8 +73,11 @@ export interface PersonGpuPlan {
   readonly tissueLook?: Readonly<
     Record<number, { readonly backscatter?: number; readonly speckleClump?: number; readonly attenuation?: number }>
   >;
-  /** Aspecto por cara de esta persona: pendiente de la rugosidad con que se sube su eco de interfaz (decisión 368). */
-  readonly interfaceLook?: Readonly<Record<number, { slopeRms?: number }>>;
+  /**
+   * Aspecto por cara de esta persona: pendiente de la rugosidad (decisión 368) y ganancia de amplitud (decisión 390) con que se
+   * sube su eco de interfaz.
+   */
+  readonly interfaceLook?: Readonly<Record<number, { slopeRms?: number; gain?: number }>>;
 }
 
 export interface InstalledCpuPerson {
