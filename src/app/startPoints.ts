@@ -320,7 +320,8 @@ const DEFAULT_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ..
 const S0028_POSES: typeof DEFAULT_POSES = {
   portal: { phi: 2.8, z: -65, yaw: -0.996, rock: 0.097, tilt: 0.067 },
   portalTrunk: { phi: 3.25, z: -80, yaw: 0.032, rock: 0.122, tilt: 0.26 },
-  portalSubcostal: { phi: 1.6, z: -50, yaw: -1.602, rock: 0.295, tilt: 0.255 },
+  // Decisión 381: girada 1,4° y 0,6 mm hacia la cabeza, el plano pasa por el eje del codo de la porta en vez de rozarlo.
+  portalSubcostal: { phi: 1.6, z: -49.4, yaw: -1.627, rock: 0.295, tilt: 0.255 },
   intercostal: { phi: 3.55, z: -100, yaw: -0.838, rock: 0.488, tilt: 0.456 },
   subcostal: { phi: 2.35, z: -88.5, yaw: 1.114, rock: 0.325, tilt: -0.345 },
   subxiphoid: { phi: 1.65, z: -65, yaw: -0.037, rock: 0.063, tilt: -0.115 },

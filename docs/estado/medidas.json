@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-14",
- "main": "d10df2a",
+ "main": "0daf295",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 10401
+   "actual": 10403
   },
   {
    "what": "`structureIdentity.js`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1041959
+   "actual": 1041961
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1121502
+   "actual": 1121504
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -437,7 +437,7 @@
   },
   {
    "what": "Trabajo «check» de la CI",
-   "limit": 25,
+   "limit": 40,
    "unit": "min",
    "decision": null,
    "source": ".github/workflows/ci.yml",

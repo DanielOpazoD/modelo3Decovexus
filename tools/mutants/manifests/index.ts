@@ -7,6 +7,7 @@ import { s0028Solids } from './s0028Solids';
 import { s0028Wall } from './s0028Wall';
 import { s0028WallGlsl } from './s0028WallGlsl';
 import { scene } from './scene';
+import { startPoints } from './startPoints';
 import { structureIdentity } from './structureIdentity';
 
 export const MANIFESTS: readonly MutantManifest[] = [
@@ -18,4 +19,5 @@ export const MANIFESTS: readonly MutantManifest[] = [
   s0028Classifier,
   cutMapWorker,
   structureIdentity,
+  startPoints,
 ];

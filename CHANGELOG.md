@@ -5,6 +5,10 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- CI: el job principal tiene un tope de 40 minutos en vez de 25; un corredor lento ya no lo cancela en verde (382)
+
+- Ventanas s0028: la subcostal portal muestra la porta como un vaso continuo en codo, no en dos trozos (381)
+
 - Imagen s0028: entre el hígado y el corazón hay una línea fina (diafragma y pericardio) y grasa oscura en vez de una banda blanca (380)
 
 - Imagen s0028: el borde del hígado tiene línea también bajo la grasa preperitoneal; se ve en la hepatorrenal (379)

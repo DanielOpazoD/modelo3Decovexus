@@ -137,6 +137,75 @@ export function scoreWindow(anatomy: AnatomyQuery, sample: PhysiologySample, pos
   };
 }
 
+/** σ elevacional del haz (mm) hacia los 10 cm de profundidad: 1,6 mm en el foco de la lente, a 8 cm. */
+const SLICE_SIGMA_MM = 1.8;
+const PORTAL = /^(pv|portal)/;
+
+/**
+ * Luz portal que una pose deja ver negra (decisión 381). Un vaso cortado de refilón no se ve: el haz tiene espesor y promedia la
+ * luz con el hígado de al lado. Aquí un punto del plano es luz negra si hay sangre portal en él y a ±σ en elevación. Devuelve la
+ * longitud (mayor distancia entre dos puntos, mm) y el área de la mayor componente conexa dentro de `roi` (ángulo en rad y
+ * profundidad en mm), y cuántas componentes hay.
+ */
+export function portalDarkLumen(
+  anatomy: AnatomyQuery,
+  sample: PhysiologySample,
+  pose: ProbePose,
+  roi: { theta: [number, number]; r: [number, number] },
+  stepMm = 1.5,
+): { lengthMm: number; areaMm2: number; pieces: number } {
+  const contact = probeContact(pose, TR, anatomy.scene.torso);
+  anatomy.setProbeCompression(contact);
+  const f = contact.frame,
+    middle = TR.curvatureRadius + (roi.r[0] + roi.r[1]) / 2,
+    cols = Math.ceil(((roi.theta[1] - roi.theta[0]) * middle) / stepMm) + 1,
+    rows = Math.ceil((roi.r[1] - roi.r[0]) / stepMm) + 1;
+  const thetaOf = (i: number) => roi.theta[0] + ((roi.theta[1] - roi.theta[0]) * i) / (cols - 1);
+  const blood = (p: Vec3) => {
+    const c = anatomy.classifyWorld(p, sample);
+    return c.tissue === Tissue.Blood && c.vessel !== null && PORTAL.test(String(c.vessel));
+  };
+  const dark = new Uint8Array(cols * rows);
+  for (let i = 0; i < cols; i++)
+    for (let j = 0; j < rows; j++) {
+      const p = pointOnLine(f, TR, thetaOf(i), roi.r[0] + j * stepMm);
+      const beside = (sign: number) => p.map((v, a) => v + sign * SLICE_SIGMA_MM * f.elevation[a]) as Vec3;
+      if (blood(p) && blood(beside(1)) && blood(beside(-1))) dark[i * rows + j] = 1;
+    }
+  const seen = new Uint8Array(cols * rows);
+  let best = { lengthMm: 0, areaMm2: 0 },
+    pieces = 0;
+  for (let start = 0; start < dark.length; start++) {
+    if (!dark[start] || seen[start]) continue;
+    pieces++;
+    const stack = [start],
+      points: [number, number][] = [];
+    seen[start] = 1;
+    while (stack.length) {
+      const k = stack.pop()!,
+        i = Math.floor(k / rows),
+        j = k % rows,
+        rho = TR.curvatureRadius + roi.r[0] + j * stepMm;
+      points.push([rho * Math.sin(thetaOf(i)), rho * Math.cos(thetaOf(i))]);
+      for (let di = -1; di <= 1; di++)
+        for (let dj = -1; dj <= 1; dj++) {
+          const a = i + di,
+            b = j + dj;
+          if (a < 0 || a >= cols || b < 0 || b >= rows) continue;
+          const n = a * rows + b;
+          if (dark[n] && !seen[n]) {
+            seen[n] = 1;
+            stack.push(n);
+          }
+        }
+    }
+    let lengthMm = 0;
+    for (const a of points) for (const b of points) lengthMm = Math.max(lengthMm, Math.hypot(a[0] - b[0], a[1] - b[1]));
+    if (lengthMm > best.lengthMm) best = { lengthMm, areaMm2: points.length * stepMm * stepMm };
+  }
+  return { ...best, pieces };
+}
+
 /** Riñón derecho de s0028: centro y eje largo de su máscara (componentes principales), en mm LAS. */
 const KIDNEY = { center: [-50.5, -27.7, -128.1] as Vec3, u: [0.274, -0.462, 0.844] as Vec3 };
 

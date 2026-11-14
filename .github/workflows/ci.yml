@@ -23,7 +23,9 @@ jobs:
     name: lint · tipos · tests · build · presupuesto
     runs-on: ubuntu-24.04
     # La matriz IQ corre en otro corredor; conserva umbrales y el veredicto exige ambas fases.
-    timeout-minutes: 25
+    # Tope de 40 min: el job tarda de 13 a 25 min según el corredor que toque (medido el 13-11-2026 en ocho ejecuciones) y con 25
+    # se cancelaba con todas sus etapas en verde. No cambia ninguna prueba ni su plazo.
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
