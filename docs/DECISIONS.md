@@ -12232,3 +12232,24 @@ solo exige acuerdo a más de 1 mm de un borde.
 muestra de las diez ventanas cae ahí: sus imágenes no cambian.
 **Verificación.** `s0028HeartTubes.spec.ts` (nueva): 5952 puntos junto a la pared de cinco tubos, 314 dentro del corazón, cero
 discrepancias; sin el arreglo, las 3 de la raíz aórtica. Revisión de programas s0028 actualizada.
+
+## 399. Tras el corte, la escena procedural queda como apoyo de pruebas, fuera del producto
+
+**Contexto.** El corte (340) retira `default` y `legacy`. 173 archivos de pruebas unitarias usan la escena procedural de apoyo
+(`validation/support/legacyPerson`) para probar el motor (física, Doppler, imagen) con una anatomía analítica; `loadS0028` monta
+s0028 con la misma escena. Portarlas todas a s0028 sería el grueso del corte, sin que el alumno vea nada distinto.
+**Decisión.** Aprobada por el responsable el 15-11-2026: la escena procedural sigue como apoyo de pruebas, fuera del producto (ni
+`selectPerson`, ni paquetes, ni activos de la aplicación). Solo se portan a s0028 las pruebas de lo que el alumno ve.
+**Consecuencias.** El corte borra del producto `people/default`, sus atlas y superficies; las pruebas del motor no cambian.
+**Verificación.** La frontera de paquetes (`personBoundary.spec.ts`, `bundleAssets.test.ts`) y `layers.test.ts` en la PR del corte.
+
+## 400. El mapa de ocupación evita leer los campos de s0028 que valen 16 en la celda
+
+**Contexto.** Cada clasificación GPU de s0028 lee sus 19 campos fuente; en las celdas ocupadas solo 2,0 quedan cerca. Todos están
+recortados a 16 mm y la trilineal no sale del intervalo de sus nodos: donde ningún nodo baja de 16, el campo vale 16 exactamente.
+**Decisión.** Aprobada por el responsable el 15-11-2026: un bit por campo y celda de 6 mm (`fieldMask.ts`), calculado al cargar
+desde los campos (~115 ms) y subido a 191 páginas libres del atlas abdominal. `s28POwn` lo lee una vez y `s28P` no lee el campo
+con el bit apagado (sin ramas nuevas). La GPU da lo mismo que antes; la CPU no cambia.
+**Consecuencias.** M4: el cuadro de s0028 baja un 5–11 % (techo sin leer ningún campo, 11–13 ms); el banco no cambia de forma clara.
+El paquete JS de s0028 queda a 40 B de su techo; ~0,8 MB de JS más.
+**Verificación.** `s0028FieldMask.test.ts` (conservador; falla sin el último nodo de cada celda), `s0028WallUpload`, paridad GPU.

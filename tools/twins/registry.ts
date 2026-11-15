@@ -1006,6 +1006,17 @@ export const TWINS: readonly TwinPair[] = [
     evidence: [{ ...E.s0028Solids, scope: 'tejido en las celdas de la caja amplia y en las diez ventanas' }],
   },
   {
+    id: 's0028-mapa-campos',
+    what: 'Celda de 6 mm del mapa de ocupación de los campos fuente de s0028 (decisión 400): con su bit apagado, el campo vale 16 en toda la celda y la GPU no lo lee.',
+    kind: 'cpu-glsl',
+    cpu: [{ file: 'src/anatomy/people/s0028/fieldMask.ts', symbols: ['s0028FieldMaskCell'] }],
+    gpu: [{ file: 'src/anatomy/gpu/s0028Solids.glsl.ts', symbols: ['nearS28'], templates: ['S0028_READER_GLSL'] }],
+    evidence: [
+      { ...E.s0028Equivalence, scope: 'clasificación s0028 con el mapa: diez ventanas, 80 000 puntos y la cáscara de sus caras' },
+      { ...E.s0028Solids, scope: 'dueños, conflictos y grasa de s0028 con el mapa' },
+    ],
+  },
+  {
     id: 's0028-diafragma',
     what: 'Diafragma de s0028: lámina bajo la base de su pulmón, donde ningún dueño reclama el punto (distancia al pulmón menor que el espesor y pulmón encima).',
     kind: 'cpu-glsl',

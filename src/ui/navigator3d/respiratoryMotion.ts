@@ -14,8 +14,14 @@ export function bindRespiratoryMotion(
     geometry: THREE.BufferGeometry;
     rest: Float32Array;
     normals: Float32Array | null;
+    /** Normal sin normalizar de cada vértice, N₀ + mm·N₁ (la misma suma de `computeVertexNormals`, exacta en mm). */
+    linear: { n0: Float64Array; n1: Float64Array } | null;
     weights: Float32Array;
     direction: THREE.Vector3;
+    /** Envolventes de reposo y el mayor peso: con ellas, las del desplazamiento sin recorrer los vértices. */
+    sphere: THREE.Sphere;
+    box: THREE.Box3 | null;
+    maxWeight: number;
   }> = [];
   const labels: Array<{ object: THREE.Sprite; rest: THREE.Vector3; direction: THREE.Vector3; weight: number }> = [];
   const seen = new Set<THREE.BufferGeometry>();
@@ -55,12 +61,31 @@ export function bindRespiratoryMotion(
         const geometry = mesh.geometry,
           position = geometry.getAttribute('position');
         if (!position) return;
+        // Las escrituras por cuadro van directas al arreglo: un atributo entrelazado, normalizado o de otro tipo se copia antes a
+        // Float32 plano de tres componentes (los mismos valores).
+        for (const name of ['position', 'normal'] as const) {
+          const a = geometry.getAttribute(name);
+          if (a && !(a instanceof THREE.BufferAttribute && a.array instanceof Float32Array && a.itemSize === 3 && !a.normalized))
+            geometry.setAttribute(name, new THREE.BufferAttribute(read(a), 3));
+        }
         const rest = read(position),
           weights = new Float32Array(position.count),
           p = new THREE.Vector3();
         for (let i = 0; i < position.count; i++) weights[i] = checkedWeight(p.fromBufferAttribute(position, i).applyMatrix4(toMaterial));
         const normal = geometry.getAttribute('normal');
-        meshes.push({ geometry, rest, normals: normal ? read(normal) : null, weights, direction: direction(toMaterial) });
+        const d = direction(toMaterial);
+        geometry.computeBoundingSphere();
+        meshes.push({
+          geometry,
+          rest,
+          normals: normal ? read(normal) : null,
+          linear: normal ? linearNormals(geometry.index, rest, weights, d) : null,
+          weights,
+          direction: d,
+          sphere: geometry.boundingSphere!.clone(),
+          box: geometry.boundingBox ? geometry.boundingBox.clone() : null,
+          maxWeight: weights.reduce((a, b) => Math.max(a, b), 0),
+        });
       }
     });
   }
@@ -72,23 +97,49 @@ export function bindRespiratoryMotion(
       if (!Number.isFinite(mm)) throw new Error('Desplazamiento respiratorio 3D inválido');
       if (mm === lastMm) return;
       lastMm = mm;
-      for (const { geometry, rest, normals, weights, direction: d } of meshes) {
-        const p = geometry.getAttribute('position');
-        for (let i = 0; i < p.count; i++) {
-          const a = mm * weights[i];
-          if (mm === 0) p.setXYZ(i, rest[3 * i], rest[3 * i + 1], rest[3 * i + 2]);
-          else p.setXYZ(i, rest[3 * i] + a * d.x, rest[3 * i + 1] + a * d.y, rest[3 * i + 2] + a * d.z);
-        }
+      for (const { geometry, rest, normals, linear, weights, direction: d, sphere, box, maxWeight } of meshes) {
+        // Escritura directa en los arreglos: posiciones y normales son Float32 sin normalizar, donde setXYZ escribe lo mismo; con
+        // millones de vértices por cuadro, su paso por el atributo era la mitad del coste.
+        const p = geometry.getAttribute('position') as THREE.BufferAttribute,
+          pa = p.array as Float32Array;
+        if (mm === 0) pa.set(rest);
+        else
+          for (let i = 0; i < p.count; i++) {
+            const a = mm * weights[i];
+            pa[3 * i] = rest[3 * i] + a * d.x;
+            pa[3 * i + 1] = rest[3 * i + 1] + a * d.y;
+            pa[3 * i + 2] = rest[3 * i + 2] + a * d.z;
+          }
         p.needsUpdate = true;
         if (normals) {
-          if (mm === 0) {
-            const normal = geometry.getAttribute('normal');
-            for (let i = 0; i < normal.count; i++) normal.setXYZ(i, normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]);
-            normal.needsUpdate = true;
-          } else geometry.computeVertexNormals();
+          const normal = geometry.getAttribute('normal') as THREE.BufferAttribute,
+            na = normal.array as Float32Array;
+          if (mm === 0) na.set(normals);
+          else {
+            // lo que daría `computeVertexNormals` sobre la malla desplazada, sin recorrer sus triángulos en cada cuadro
+            const { n0, n1 } = linear!;
+            for (let i = 0; i < normal.count; i++) {
+              const x = n0[3 * i] + mm * n1[3 * i],
+                y = n0[3 * i + 1] + mm * n1[3 * i + 1],
+                z = n0[3 * i + 2] + mm * n1[3 * i + 2],
+                l = Math.sqrt(x * x + y * y + z * z) || 1;
+              na[3 * i] = x / l;
+              na[3 * i + 1] = y / l;
+              na[3 * i + 2] = z / l;
+            }
+          }
+          normal.needsUpdate = true;
         }
-        if (geometry.boundingBox) geometry.computeBoundingBox();
-        geometry.computeBoundingSphere();
+        // Envolventes que contienen la malla desplazada: cada vértice se mueve a lo sumo |mm|·peso máximo·|d|.
+        const reach = Math.abs(mm) * maxWeight;
+        geometry.boundingSphere = new THREE.Sphere(sphere.center.clone(), sphere.radius + reach * d.length());
+        if (box) {
+          const s = d.clone().multiplyScalar(mm * maxWeight);
+          geometry.boundingBox = new THREE.Box3(
+            box.min.clone().add(new THREE.Vector3(Math.min(0, s.x), Math.min(0, s.y), Math.min(0, s.z))),
+            box.max.clone().add(new THREE.Vector3(Math.max(0, s.x), Math.max(0, s.y), Math.max(0, s.z))),
+          );
+        }
       }
       for (const label of labels) {
         label.object.position.copy(label.rest);
@@ -104,4 +155,51 @@ export function bindRespiratoryMotion(
     },
   };
   return binding;
+}
+
+/**
+ * La suma de `computeVertexNormals` (productos vectoriales de cada triángulo, sin normalizar) como función del desplazamiento
+ * respiratorio mm, con las posiciones rest + mm·w·d. Los dos lados de un triángulo se desplazan a lo largo de la misma d, así que el
+ * término en mm² del producto vectorial se anula: la suma es exactamente N₀ + mm·N₁.
+ */
+function linearNormals(
+  index: THREE.BufferAttribute | null,
+  rest: Float32Array,
+  weights: Float32Array,
+  d: THREE.Vector3,
+): { n0: Float64Array; n1: Float64Array } {
+  const count = rest.length / 3,
+    n0 = new Float64Array(rest.length),
+    n1 = new Float64Array(rest.length);
+  const triangles = index ? index.count : count;
+  for (let t = 0; t + 2 < triangles; t += 3) {
+    const a = index ? index.getX(t) : t,
+      b = index ? index.getX(t + 1) : t + 1,
+      c = index ? index.getX(t + 2) : t + 2;
+    // cb = C − B y ab = A − B en reposo (u, v) y sus derivadas en mm (du = (wC − wB)·d, dv = (wA − wB)·d)
+    const ux = rest[3 * c] - rest[3 * b],
+      uy = rest[3 * c + 1] - rest[3 * b + 1],
+      uz = rest[3 * c + 2] - rest[3 * b + 2],
+      vx = rest[3 * a] - rest[3 * b],
+      vy = rest[3 * a + 1] - rest[3 * b + 1],
+      vz = rest[3 * a + 2] - rest[3 * b + 2],
+      fu = weights[c] - weights[b],
+      fv = weights[a] - weights[b];
+    // u×v y u×(fv·d) + (fu·d)×v
+    const cx = uy * vz - uz * vy,
+      cy = uz * vx - ux * vz,
+      cz = ux * vy - uy * vx,
+      ex = fv * (uy * d.z - uz * d.y) + fu * (d.y * vz - d.z * vy),
+      ey = fv * (uz * d.x - ux * d.z) + fu * (d.z * vx - d.x * vz),
+      ez = fv * (ux * d.y - uy * d.x) + fu * (d.x * vy - d.y * vx);
+    for (const v of [a, b, c]) {
+      n0[3 * v] += cx;
+      n0[3 * v + 1] += cy;
+      n0[3 * v + 2] += cz;
+      n1[3 * v] += ex;
+      n1[3 * v + 1] += ey;
+      n1[3 * v + 2] += ez;
+    }
+  }
+  return { n0, n1 };
 }
