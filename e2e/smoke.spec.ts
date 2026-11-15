@@ -117,8 +117,8 @@ test('cambia de caso y el HUD lo refleja', async ({ page }) => {
   // el HUD se escribe en cada cuadro: el caso nuevo se ve en el cuadro siguiente al cambio (dos, por si el cambio
   // llega a mitad de uno)
   await page.selectOption('#case-select', 'severe-congestion');
-  // modo alumno: el caso se rotula «Paciente B», nunca con su diagnóstico
-  await withinFrames(page, 2, 'HUD con «Paciente B»', hudOr('#hud-tl', 'Paciente B'));
+  // por defecto el caso lleva su nombre descriptivo (decisión 393); «Paciente B» solo con ?alumno
+  await withinFrames(page, 2, 'HUD con el nombre del caso', hudOr('#hud-tl', 'Congestión venosa grave'));
   await page.selectOption('#case-select', 'af-moderate-congestion');
   await withinFrames(page, 2, 'HUD con «FA»', hudOr('#hud-tr', 'FA'));
   expect(errors).toEqual([]);
@@ -1055,19 +1055,29 @@ test('color realista (decisión 70): sin bloques de celda, grano correlado y rel
   expect(errors).toEqual([]);
 });
 
-test('modo alumno ciego: sin diagnóstico en pantalla; el docente lo ve con ?docente', async ({ page }) => {
-  // Guía §17. Nombres clínicos de los casos (no deben aparecer en modo alumno).
+test('modo alumno ciego con ?alumno: sin diagnóstico en pantalla; el docente lo ve con ?docente', async ({ page }) => {
+  // Guía §17. Nombres clínicos de los casos (no deben aparecer en modo alumno). Desde la decisión 393 el modo ciego se pide
+  // con ?alumno: por defecto los casos llevan su nombre.
   // Arranca la aplicación dos veces: con SwiftShader cada arranque compila los 16 programas (decisión 58)
   budget(120_000, 2);
-  const diagnoses = ['Adulto sano', 'Congestión venosa', 'patrones no graves', 'fallo derecho', 'Trampa', 'sin congestión', 'casi normal'];
-  const errors = await bootWithoutErrors(page);
+  const diagnoses = [
+    'Adulto sano',
+    'Congestión venosa',
+    'patrones no graves',
+    'fallo derecho',
+    'Trampa',
+    'sin congestión',
+    'casi normal',
+    'portal invertido',
+  ];
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&alumno=1');
   await expect(page.locator('#debug-toggle')).toBeHidden();
   await page.selectOption('#case-select', 'severe-congestion');
   await withinFrames(page, 2, 'HUD con «Paciente B»', contains(page, '#hud-tl', 'Paciente B'));
   const body = await page.locator('body').innerText();
   for (const d of diagnoses) expect(body, d).not.toContain(d);
   const options = await page.locator('#case-select option').allTextContents();
-  expect(options).toEqual(['Paciente A', 'Paciente B', 'Paciente C', 'Paciente D', 'Paciente E', 'Paciente F', 'Paciente G']);
+  expect(options).toEqual(['Paciente A', 'Paciente B', 'Paciente C', 'Paciente D', 'Paciente E', 'Paciente F', 'Paciente G', 'Paciente H']);
   await expect(page.locator('#cutmap')).toHaveAttribute('data-labels', '0');
   await expect(page.locator('#layer-vessels')).toBeDisabled();
   expect(errors).toEqual([]);
@@ -1085,9 +1095,9 @@ test('modo alumno ciego: sin diagnóstico en pantalla; el docente lo ve con ?doc
 test('casos trampa (decisión 82): el alumno lee la viñeta, marca el contexto y ve el aviso; la trampa es del docente', async ({ page }) => {
   // Dos arranques (alumno y docente), como el modo ciego: con SwiftShader cada uno compila los programas
   budget(120_000, 2);
-  const errors = await bootWithoutErrors(page);
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&alumno=1');
   await page.selectOption('#case-select', 'abdominal-hypertension');
-  await withinFrames(page, 2, 'HUD con «Paciente D»', contains(page, '#hud-tl', 'Paciente D'));
+  await withinFrames(page, 2, 'HUD con «Paciente E»', contains(page, '#hud-tl', 'Paciente E'));
   // `force`: con render por software el hilo principal no deja a los elementos «estables»
   await page.getByRole('tab', { name: 'Medir' }).click({ force: true });
   // la viñeta del caso, con lo que el operador sabe

@@ -12171,3 +12171,21 @@ publicados), aliasing a la escala de partida (±40 cm/s) y la congestión grave 
 **Decisión.** `placeS0028Vessels` no toma el radio de referencia de su TAC para las suprahepáticas; la imagen (365) no cambia.
 **Consecuencias.** Grados 0, 3 y 1 (sano, grave, FA) con las nueve capturas limpias; S del sano 22 cm/s.
 **Verificación.** `s0028ExamChain` (capa lenta), un mutante, Metal.
+
+## 393. Los casos llevan su nombre descriptivo por defecto
+
+**Contexto.** Petición del responsable (15-11-2026): los títulos de los casos, descriptivos por defecto. El modo alumno ciego
+(guía §17) estaba siempre activo: «Paciente A, B…» salvo con la casilla Docente, que en producción solo aparece con `?docente`.
+**Opciones.** Quitar el modo ciego, o dejarlo como opción; se elige la opción: sirve para un examen.
+**Decisión.** Nombres descriptivos en el selector y en la cabecera; «Paciente A, B…» solo con `?alumno` en la dirección. Los
+rótulos del corte, los vasos del 3D y la pestaña Docente siguen con la casilla Docente.
+**Verificación.** `blindMode.test.ts`; e2e del cambio de caso y del modo ciego (ahora con `?alumno`).
+
+## 394. Congestión venosa grave con flujo portal invertido
+
+**Contexto.** Petición del responsable (15-11-2026): un caso VExUS 3 con la porta invertida, el grado máximo de congestión. El
+caso grave llega a PF 62–76 % sin invertirse.
+**Decisión.** El caso grave con IT 1,0 y PAD 22 mmHg: la onda v invierte la porta en sístole (−15 a +27 cm/s; PF 130–155 %),
+con la S hepática invertida, renal monofásica y VCI de 32 mm. Más IT o menos distensibilidad auricular daban −70 cm/s.
+**Consecuencias.** Ocho casos. En s0028, desde las ventanas del menú, el alumno mide PF 150 % (verdad 152) y grado 3.
+**Verificación.** `portalReversal.test.ts` con el caso grave de control; `s0028PortalReversal.test.ts` (capa lenta).

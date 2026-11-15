@@ -1,6 +1,6 @@
 # Estado vigente: presupuestos
 
-Actualizado: 2026-11-15 sobre main `1d5f6a4`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
+Actualizado: 2026-11-15 sobre main `0457224`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
 su valor actual. Los techos no se suben para obtener verde (decisión 322); subir uno es una decisión propia, declarada en
 la PR y en `docs/DECISIONS.md`.
 
@@ -22,7 +22,7 @@ la PR y en `docs/DECISIONS.md`.
 
 <!-- tabla generada por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `1d5f6a4` el 2026-11-15 con `tools/docs/estado.ts`. No se copian a mano.
+Medido en el candidato basado en main `0457224` el 2026-11-15 con `tools/docs/estado.ts`. No se copian a mano.
 
 | Techo                                               |      Límite |      Actual |     Margen | Unidad   | Decisión | Fuente                                 |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- | -------- | -------------------------------------- |

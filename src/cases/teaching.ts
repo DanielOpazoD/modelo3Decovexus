@@ -18,6 +18,7 @@ export const CASE_TEACHING: Readonly<Record<CaseId, CaseTeaching>> = {
   'normal-adult': { context: {}, trap: null },
   'severe-congestion': { context: {}, trap: null },
   'af-moderate-congestion': { context: { atrialFibrillation: true }, trap: null },
+  'refractory-right-heart-failure': { context: {}, trap: null },
   'abdominal-hypertension': {
     context: { raisedIntraAbdominalPressure: true },
     trap:

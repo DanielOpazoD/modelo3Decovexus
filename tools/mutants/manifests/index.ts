@@ -1,5 +1,6 @@
 /** Manifiestos de mutantes, uno por módulo (decisión 322, punto 8). Un módulo nuevo se añade aquí. */
 import type { MutantManifest } from '../manifest';
+import { blindMode, cases } from './cases';
 import { contact } from './contact';
 import { cutMapWorker } from './cutMapWorker';
 import { s0028Classifier } from './s0028Classifier';
@@ -24,4 +25,6 @@ export const MANIFESTS: readonly MutantManifest[] = [
   s0028Vessels,
   s0028Cpu,
   s0028Look,
+  cases,
+  blindMode,
 ];

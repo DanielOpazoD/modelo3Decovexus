@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { caseDisplayLabel, caseVignette, teacherToggleAllowed } from '../app/blindMode';
+import { blindCaseNames, caseDisplayLabel, caseVignette, shownCaseLabel, teacherToggleAllowed } from '../app/blindMode';
 import { caseTeacherNotes } from '../app/teacherNotes';
 import { CASES, CASE_IDS } from '../cases';
 import { CASE_TEACHING } from '../cases/teaching';
@@ -16,6 +16,19 @@ describe('Modo alumno ciego', () => {
       expect(caseDisplayLabel(c.id, true)).toBe(c.label);
     });
     expect(caseDisplayLabel('desconocido', false)).toBe('Paciente');
+  });
+
+  it('los nombres descriptivos son el defecto; «Paciente A…» solo con ?alumno (decisión 393)', () => {
+    expect(blindCaseNames('')).toBe(false);
+    expect(blindCaseNames('?e2e=1&abdomen=s0028')).toBe(false);
+    expect(blindCaseNames('?alumno')).toBe(true);
+    expect(blindCaseNames('?e2e=1&alumno=1')).toBe(true);
+    // el selector, la cabecera y la pestaña Adquirir usan el mismo nombre
+    for (const c of CASES) {
+      expect(shownCaseLabel(c.id, false, '')).toBe(c.label);
+      expect(shownCaseLabel(c.id, false, '?alumno')).toBe(caseDisplayLabel(c.id, false));
+      expect(shownCaseLabel(c.id, true, '?alumno')).toBe(c.label);
+    }
   });
 
   it('la casilla «Docente» solo se ofrece en desarrollo o con ?docente', () => {
