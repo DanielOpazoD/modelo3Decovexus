@@ -158,6 +158,9 @@ jobs:
         run: node -e "require('node:assert/strict').equal(require('@playwright/test/package.json').version, '1.63.0', 'Actualizar versión y digest de la imagen E2E junto al lockfile')"
       - run: npx vite build
       - run: node --import tsx tools/ci/run-e2e-shard.ts ${{ matrix.shard }} ${{ strategy.job-total }}
+        # Inventario del corte (no fusionar): toda prueba que arranca con bootWithoutErrors lo hace con s0028.
+        env:
+          E2E_ABDOMEN: s0028
       - name: Guardar los tiempos (duración, arranque y ritmo del bucle de cada prueba)
         if: always()
         uses: actions/upload-artifact@v7
