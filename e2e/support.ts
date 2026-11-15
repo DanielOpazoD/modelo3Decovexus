@@ -28,14 +28,15 @@ export function budget(workMs: number, boots = 1): void {
 
 /** Wait for the selected physical pose to be acquired, not fifty unnecessary software-rendered frames. */
 export async function windowAcquired(page: Page, id: StartPoint['id']) {
-  const torso = await page.evaluate(() => {
-    const t = window.__vexusTest!.sim().scene.torso;
-    return { a: t.a, b: t.b, profile: t.profile ? Array.from(t.profile) : undefined };
+  // La pose de la persona cargada: con s0028 (E2E_ABDOMEN=s0028, el corte) son las suyas, no las de la otra persona.
+  const { person, ...torso } = await page.evaluate(() => {
+    const s = window.__vexusTest!.sim().scene,
+      t = s.torso;
+    return { person: s.identity.person, a: t.a, b: t.b, profile: t.profile ? Array.from(t.profile) : undefined };
   });
-  const target = startPointsFor(
-    { ...torso, profile: torso.profile ? new Float32Array(torso.profile) : undefined },
-    { person: 'current' },
-  ).find((p) => p.id === id)!;
+  const target = startPointsFor({ ...torso, profile: torso.profile ? new Float32Array(torso.profile) : undefined }, { person }).find(
+    (p) => p.id === id,
+  )!;
   const expected = { phi: target.phi, z: target.z, yaw: target.yaw, rock: target.rock ?? 0, tilt: target.tilt ?? 0, lift: 0 };
   // ProbeAnimator converges in simulation time and snaps all six fields to the target.
   // Require BOTH the current probe and the displayed acquisition, with the existing test budget unchanged.
