@@ -87,6 +87,20 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
   flareHepaticVeins(vessels);
   fitJunctions(vessels);
   continuePortalBranches(vessels);
+  startRenalVeinsAtHilum(vessels);
+}
+
+/**
+ * La vena renal de s0028 nace en el hilio (decisión 389). El árbol común la hace nacer 15 mm dentro del seno con 2 mm de radio
+ * (decisión 87, `RENAL_VEIN_SINUS_V`), pero el seno de su TAC llega hasta 26–28 mm del centro: los 10 mm afilados quedaban en
+ * mitad del seno y la ventana renal mostraba una cuña negra de 10 × 16 mm, que se lee como una pelvis dilatada. Sin la red
+ * interlobar continua (decisión 339, solo de `current`), ese nodo no es raíz de nadie: se quita y la vena empieza en el nodo
+ * del hilio, con su calibre y su tapa redonda. Solo construcción.
+ */
+function startRenalVeinsAtHilum(vessels: VesselDef[]): void {
+  for (const v of vessels)
+    if ((v.id === 'renalVeinRight' || v.id === 'renalVeinLeft') && v.flowFactor === undefined && v.tube.nodes.length > 2)
+      v.tube = { ...v.tube, nodes: v.tube.nodes.slice(1) };
 }
 
 /** Distancia (mm) entre el extremo de una porta y el origen de otra a partir de la cual dejan de ser una continuación. */

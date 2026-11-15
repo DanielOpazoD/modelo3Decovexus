@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { MAX_NODES, MAX_TUBE_SEGMENTS } from '../anatomy/gpu/anatomy.glsl';
+import { S0028_KIDNEY_FRAMES } from '../anatomy/people/s0028/cpu';
 import { S0028_TUBE_SEGMENTS } from '../anatomy/people/s0028/vessels';
 import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../anatomy/s0028TrunksData';
 import { SCENE_TUBE_CAPACITY } from '../anatomy/tubeCapacity';
@@ -274,14 +275,18 @@ it('solo se mueven los troncos y los vasos que nacían de ellos; cada uno sigue 
   for (const n of artery) expect(n.r).toBeGreaterThanOrEqual(Math.min(...foreignRadii));
   for (const [id, parent] of Object.entries(followers)) {
     const nodes = axis(scene, id),
-      old = axis(foreign, id),
+      // La vena renal nace en el nodo del hilio, sin el del seno (decisión 389).
+      old = id.startsWith('renalVein') ? axis(foreign, id).slice(1) : axis(foreign, id),
       // Las venas mueren en su tronco y las arterias y ramas portales nacen de él: el extremo unido es el más cercano.
       end = toAxis(axis(scene, parent), nodes[0].p) < toAxis(axis(scene, parent), nodes.at(-1)!.p) ? 0 : nodes.length - 1,
       far = nodes.length - 1 - end;
     // El extremo que tocaba al tronco lo sigue tocando; el otro no se ha movido
     expect(toAxis(axis(scene, parent), nodes[end].p), id).toBeLessThan(3);
     // (la mesentérica superior es la del propio TAC, entera: decisión 354).
-    if (id !== 'portalSmv') expect(nodes[far].p, id).toEqual(old[far ? old.length - 1 : 0].p);
+    // La vena renal empieza en su nodo del hilio, que el desplazamiento de su cava ya movía un poco (0,7 mm la derecha).
+    if (id.startsWith('renalVein'))
+      expect(Math.hypot(...nodes[far].p.map((x, k) => x - old[far ? old.length - 1 : 0].p[k])), id).toBeLessThan(1.5);
+    else if (id !== 'portalSmv') expect(nodes[far].p, id).toEqual(old[far ? old.length - 1 : 0].p);
     // Los radios son los suyos: iguales nodo a nodo, o lineales entre ellos si su eje se dibuja como curva. Los tres vasos
     // retrazados (decisión 354) llevan los de su tabla, dentro del calibre de su clase.
     if (['portalSmv', 'sma', 'renalArteryRight'].includes(id)) for (const n of nodes) expect(n.r > 1.9 && n.r <= 5, id).toBe(true);
@@ -362,4 +367,23 @@ it('la rama anterior de la porta derecha continúa a su madre sin gancho (decisi
     beyond = tr.at(-1)!.map((x, k) => x - ta[0][k]);
   expect(beyond[0] * u[0] + beyond[1] * u[1] + beyond[2] * u[2]).toBeGreaterThan(2);
   expect(angle(u, unit(ta[0], ta[1]))).toBeGreaterThan(25);
+});
+
+it('la vena renal de s0028 nace en el hilio, sin una cuña en mitad del seno (decisión 389)', () => {
+  // Revisión del 14-11-2026: la vena renal derecha entraba 10 mm afilada en el seno y la ventana renal mostraba una cuña negra de
+  // 10 × 16 mm que se lee como una pelvis dilatada. Medida: lo más hondo que llega su luz a lo largo del eje del hilio, desde el
+  // centro del riñón (el seno de su TAC llega a 26–28 mm).
+  const deepest = (s: AnatomyScene, id: 'renalVeinRight' | 'renalVeinLeft', k: number) => {
+    const f = S0028_KIDNEY_FRAMES[k];
+    return Math.min(...s.vesselById.get(id)!.tube.nodes.map((n) => n.p.reduce((a, x, i) => a + (x - f.center[i]) * f.hilum[i], 0) - n.r));
+  };
+  // Medido el 14-11-2026: 21,1 mm la derecha y 20,0 la izquierda; con el nodo del árbol común, 13 las dos.
+  for (const [id, k] of [
+    ['renalVeinRight', 0],
+    ['renalVeinLeft', 1],
+  ] as const) {
+    expect(deepest(scene, id, k), id).toBeGreaterThan(19);
+    // Control: sin la colocación de s0028 la vena nace 15 mm dentro del seno con 2 mm de radio.
+    expect(deepest(foreign, id, k), id).toBeLessThan(15);
+  }
 });

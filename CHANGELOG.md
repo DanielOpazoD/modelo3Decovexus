@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: la vena renal nace en el hilio; desaparece la cuña negra que parecía una pelvis dilatada en mitad del seno (389)
+
 - Ventanas s0028: en la intercostal ninguna costilla cae sobre la suprahepática derecha, que queda entera hasta la cava (388)
 
 - Anatomía s0028: el riñón derecho mide 110 mm de polo a polo (el de su TAC, 91); la ventana renal enseña 99 mm de riñón (387)

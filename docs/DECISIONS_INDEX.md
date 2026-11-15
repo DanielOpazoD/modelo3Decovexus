@@ -392,3 +392,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [386](DECISIONS.md#L12095) | La subcostal portal de s0028 enseña la porta principal en eje largo | vigente |
 | [387](DECISIONS.md#L12106) | El riñón derecho de s0028 mide 110 mm | vigente |
 | [388](DECISIONS.md#L12118) | En la intercostal de s0028 ninguna costilla cae sobre la suprahepática | vigente |
+| [389](DECISIONS.md#L12130) | La vena renal de s0028 nace en el hilio | vigente |

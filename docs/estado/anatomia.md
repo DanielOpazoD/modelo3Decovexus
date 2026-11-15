@@ -1,6 +1,6 @@
 # Estado vigente: anatomía
 
-Actualizado: 2026-11-14 sobre main `9a0402e`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
+Actualizado: 2026-11-14 sobre main `17f593a`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
@@ -71,7 +71,7 @@ U es «desconocido»: el modelo no inventa tejido donde la fuente no lo dice.
   el contacto acopla por la piel.
 - Dos dueños independientes en un punto son conflicto: U, conservados en `solids`, sin precedencia (decisión 321). El
   solape hígado/pared de unos 11 mm³ sigue declarado como conflicto.
-- Riñón: borde D; el derecho, estirado a 110 mm (decisión 387). Su interior lleva el rótulo offline del propio TAC (r5, decisión 341): corteza y médula E dentro de la máscara;
+- Riñón: borde D; el derecho, estirado a 110 mm (decisión 387); su vena nace en el hilio (389). Su interior lleva el rótulo offline del propio TAC (r5, decisión 341): corteza y médula E dentro de la máscara;
   en el hueco del hilio, seno graso y colector D y vasos e interfaces del seno E. La boca hiliar y lo no rotulado siguen U.
 - Gerota, cuadrado lumbar y diafragma posterior: U en P3; la grasa entra solo como «grasa compatible» D (decisión 321).
   Desde la decisión 343 esa grasa llega a todo el abdomen superior: a 1,5 mm hasta 30 mm del riñón y a 3 mm en el resto.
@@ -83,7 +83,7 @@ Todos los techos de la aplicación, con su fuente, están en `docs/estado/presup
 
 <!-- presupuestos s0028: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `9a0402e` el 2026-11-14 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `17f593a` el 2026-11-14 con `tools/docs/estado.ts`.
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |
