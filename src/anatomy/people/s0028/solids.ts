@@ -3,7 +3,7 @@ import { HALF } from '../../halfFloat';
 import type { PersonAssets } from '../../personAssets';
 import { S0028_RENAL_INTERIOR as R } from '../../s0028RenalInteriorData';
 import { S0028_RENAL_INTERIOR_RUNS } from '../../s0028RenalInteriorRuns';
-import { sourceDistance, sourceLabel } from '../../sourceVolume';
+import { sourceDistance, sourceDistanceReader, sourceLabel } from '../../sourceVolume';
 import { S0028_BUNDLE as B } from './descriptor';
 import { s0028FatPages, s0028RenalPages, s0028WideFatPages } from './solidsData';
 import type { S0028WallSample } from './wall';
@@ -275,18 +275,32 @@ export function createSolidsQueries(assets: PersonAssets) {
     return ((HALF[wideFat[bit >> 3]] >> (bit & 7)) & 1) === 1;
   }
 
+  type FieldReader = (x: number, y: number, z: number) => number;
+  let rigidReaders: [FieldReader[], FieldReader[]] | null = null;
+  /** Lectores de los campos de las zonas rígidas, resueltos la primera vez (`sourceDistanceReader`, bit a bit `sourceDistance`). */
+  function rigidFields(): [FieldReader[], FieldReader[]] {
+    if (rigidReaders) return rigidReaders;
+    const reader = (i: number): FieldReader => {
+      const f = FIELDS[i];
+      return sourceDistanceReader(f.asset === 'abdominal' ? abdominalAtlas! : thoracicAtlas!, f, B[f.asset].textureDimensions);
+    };
+    return (rigidReaders = [[3, 4].map(reader), [9, 10, 11, 12].map(reader)]);
+  }
+
   /**
    * Zonas rígidas por dueño en la compresión (r3), a lo largo de la línea E + dir·t del tronco rígido (en apnea, material =
    * rígido): la entrada de cada hueso o cartílago (hasta ocho) y los tramos renales [entrada, salida] (el quiste y el seno
    * no son máscara renal: quedan entre dos tramos). Pasos de 0,75 mm afinados por bisección.
    */
   function s0028RigidSpan(E: Vec3, dir: Vec3, tMax: number): [number[], number[]] {
-    const inside = (t: number, kidney: boolean): boolean =>
-      (kidney ? [3, 4] : [9, 10, 11, 12]).some((i) => {
-        const f = FIELDS[i];
-        const p: Vec3 = [E[0] + dir[0] * t, E[1] + dir[1] * t, E[2] + dir[2] * t];
-        return sourceDistance(f.asset === 'abdominal' ? abdominalAtlas! : thoracicAtlas!, p, f, B[f.asset].textureDimensions) < 0;
-      });
+    const [kidneyFields, boneFields] = rigidFields();
+    // el mismo punto para cada campo y el mismo orden de `some`: los riñones (3, 4) y los huesos y cartílagos (9–12)
+    const inside = (t: number, kidney: boolean): boolean => {
+      const x = E[0] + dir[0] * t,
+        y = E[1] + dir[1] * t,
+        z = E[2] + dir[2] * t;
+      return (kidney ? kidneyFields : boneFields).some((read) => read(x, y, z) < 0);
+    };
     const edge = (a: number, kidney: boolean): number => {
       if (a < -2) return a + 0.75;
       let b = a + 0.75;

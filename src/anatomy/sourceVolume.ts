@@ -44,6 +44,51 @@ export function sourceDistance(data: Uint16Array, p: Vec3, f: SourceVolume, text
   return 0 + (y0 + tz * (y1 - y0));
 }
 
+/**
+ * `sourceDistance` de un campo fijo con sus constantes resueltas una vez: las mismas operaciones en el mismo orden, sin leer el
+ * descriptor por punto (`s0028Depth.test.ts` lo exige bit a bit en cada campo de s0028). Para los recorridos que leen un campo miles de veces por pose.
+ */
+export function sourceDistanceReader(
+  data: Uint16Array,
+  f: SourceVolume,
+  textureDimensions: readonly number[],
+): (x: number, y: number, z: number) => number {
+  const [o0, o1, o2] = f.originMm,
+    [n0, n1, n2] = f.dimensions,
+    [f0, f1, f2] = f.offset,
+    pitch = f.pitchMm,
+    sy = 2 * textureDimensions[0],
+    sz = sy * textureDimensions[1];
+  return (x, y, z) => {
+    const qx = (x - o0) / pitch,
+      qy = (y - o1) / pitch,
+      qz = (z - o2) / pitch;
+    if (qx < 0 || qy < 0 || qz < 0 || qx > n0 - 1 || qy > n1 - 1 || qz > n2 - 1) return 16;
+    const ax = Math.min(n0 - 2, Math.floor(qx)),
+      ay = Math.min(n1 - 2, Math.floor(qy)),
+      az = Math.min(n2 - 2, Math.floor(qz)),
+      tx = qx - ax,
+      ty = qy - ay,
+      tz = qz - az,
+      base = (az + f2) * sz + (ay + f1) * sy + 2 * (ax + f0);
+    const a000 = HALF[data[base]],
+      a100 = HALF[data[base + 2]],
+      a010 = HALF[data[base + sy]],
+      a110 = HALF[data[base + sy + 2]],
+      a001 = HALF[data[base + sz]],
+      a101 = HALF[data[base + sz + 2]],
+      a011 = HALF[data[base + sz + sy]],
+      a111 = HALF[data[base + sz + sy + 2]],
+      x00 = a000 + tx * (a100 - a000),
+      x10 = a010 + tx * (a110 - a010),
+      x01 = a001 + tx * (a101 - a001),
+      x11 = a011 + tx * (a111 - a011),
+      y0 = x00 + ty * (x10 - x00),
+      y1 = x01 + ty * (x11 - x01);
+    return 0 + (y0 + tz * (y1 - y0));
+  };
+}
+
 /** Nearest label only when identity is requested; a clipped distance16 is still inside the brick. */
 export function sourceLabel(data: Uint16Array, p: Vec3, f: SourceVolume, textureDimensions: readonly number[]): number {
   const qx = (p[0] - f.originMm[0]) / f.pitchMm,
