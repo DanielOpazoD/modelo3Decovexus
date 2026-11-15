@@ -58,7 +58,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'] as const)
   test(`puerta arterial renal ${caseId}: no certifica continuidad venosa por error`, async ({ page }, testInfo) => {
     budget(240_000);
     await page.setViewportSize({ width: 1440, height: 1000 });
-    const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&docente=1');
+    const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028&docente=1');
     await page.selectOption('#case-select', caseId);
     await page
       .locator('button', { hasText: /Apnea\s*esp/ })
