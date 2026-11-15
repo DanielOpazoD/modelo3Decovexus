@@ -28,6 +28,14 @@ export const s0028Vessels: MutantManifest = {
       to: '',
       tests: ['src/validation/s0028Vessels.test.ts'],
     },
+    {
+      name: 'suprahepaticas-con-area-del-tac',
+      origin: 'decisión 392',
+      breaks: 'Las suprahepáticas vuelven al área de flujo de su TAC: la VSH va 2,7 veces más rápida y se pliega a la escala de partida.',
+      from: "    if (!v.id.startsWith('hv')) v.refRadius = trunk[0];",
+      to: '    v.refRadius = trunk[0];',
+      tests: ['src/validation/s0028ExamChain.test.ts'],
+    },
   ],
 };
 

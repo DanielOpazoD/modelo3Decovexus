@@ -11,8 +11,8 @@ Medido en el candidato basado en main `1d5f6a4` el 2026-11-15 con `tools/docs/es
 
 | Capa                                    |  Cuántas | Dónde                                   |
 | --------------------------------------- | -------: | --------------------------------------- |
-| Archivos vitest (rápidos + lentos)      |      339 | `src/**/*.test.ts`                      |
-| De ellos, lentos (`// @tier slow`)      |       34 | `npm run test:slow`, `check`, CI        |
+| Archivos vitest (rápidos + lentos)      |      340 | `src/**/*.test.ts`                      |
+| De ellos, lentos (`// @tier slow`)      |       35 | `npm run test:slow`, `check`, CI        |
 | Especificaciones e2e / llamadas `test(` | 89 / 148 | `e2e/*.spec.ts`, 12 fragmentos en la CI |
 | Contratos Python                        |       20 | `tools/anatomy/*_test.py` (local)       |
 

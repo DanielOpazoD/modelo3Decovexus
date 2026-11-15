@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Doppler s0028: sus suprahepáticas fluyen con el área de referencia; la cadena VExUS desde sus ventanas da el grado de la verdad sin plegado a la escala de partida (392)
+
 - Ventanas s0028: la subxifoidea, bajo el xifoides y abanicada hacia la cabeza, enseña la cava entrando en la aurícula derecha (391)
 
 - Imagen s0028: el músculo de la pared se ve más oscuro que la grasa y estriado, y la fascia de Scarpa más tenue que las otras caras (390)

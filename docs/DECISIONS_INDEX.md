@@ -395,3 +395,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [389](DECISIONS.md#L12130) | La vena renal de s0028 nace en el hilio | vigente |
 | [390](DECISIONS.md#L12142) | El músculo de la pared de s0028 se ve oscuro y estriado, y Scarpa tenue | vigente |
 | [391](DECISIONS.md#L12154) | La subxifoidea de s0028 enseña la cava entrando en la aurícula derecha | vigente |
+| [392](DECISIONS.md#L12165) | Las suprahepáticas de s0028 fluyen con el área de referencia | vigente |
