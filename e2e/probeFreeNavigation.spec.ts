@@ -301,7 +301,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
     }, info) => {
       budget(180_000);
       await observe(page);
-      const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+      const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
       if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
       await observeNavigator(page);
       const records = [];
@@ -390,7 +390,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`subcostal right portal acquisition retains 3D and cut geometry while moving, ${caseId}`, async ({ page }, info) => {
     budget(180_000);
     await observe(page);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     await observeNavigator(page);
     await page.locator('[data-window="portalSubcostal"]').click();
@@ -430,7 +430,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`captured probe drag resumes without accumulating frozen movement, ${caseId}`, async ({ page }, info) => {
     budget(180_000);
     await observe(page);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     await observeNavigator(page);
     await page.evaluate(() => {

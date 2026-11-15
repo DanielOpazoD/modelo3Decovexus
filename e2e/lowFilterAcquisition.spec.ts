@@ -5,7 +5,7 @@ test.use({ trace: { mode: 'retain-on-failure', screenshots: false, snapshots: tr
 for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`Color de filtro bajo conserva respuesta al corte en fases idénticas, ${caseId}`, async ({ page }, info) => {
     budget(180_000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     for (const id of ['renal', 'portal'] as const) {
       await page.evaluate((id) => {

@@ -26,7 +26,7 @@ test('two frozen views submit no empty GPU fences and still redraw camera, cine 
           });
         }
       });
-      errors.push(await bootWithoutErrors(p, '?e2e=app&abdomen=atlas'));
+      errors.push(await bootWithoutErrors(p, '?e2e=app&abdomen=s0028'));
     }
     for (const p of pages) await p.locator('#freeze').click();
     for (const p of pages) {

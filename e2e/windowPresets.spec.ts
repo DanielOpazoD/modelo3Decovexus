@@ -5,7 +5,7 @@ checkAfterEach();
 
 test('preajustes por ventana: Color renal independiente, PW visible y línea de base habitual', async ({ page }, info) => {
   budget(180_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await page.setViewportSize({ width: 1440, height: 1000 });
   for (const caseId of ['normal-adult', 'severe-congestion']) {
     await page.selectOption('#case-select', caseId);

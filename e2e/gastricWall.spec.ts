@@ -36,7 +36,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
   }, info) => {
     budget(120000);
     const wallPoints = stomachWallPoints();
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     await page.selectOption('#case-select', caseId);
     await page.getByRole('button', { name: 'Apnea espiratoria', exact: true }).click();
     await page.locator('[data-window="epigastric"]').click();

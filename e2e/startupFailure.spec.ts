@@ -8,7 +8,7 @@ test('GPU failure aborts boot and preserves evidence', async ({ page }, info) =>
       body: `<script>console.debug('[vexus:startup] {"stage":"ultrasound:gpu-failed","timeMs":1}')</script>`,
     }),
   );
-  await expect(bootWithoutErrors(page)).rejects.toThrow('ultrasound:gpu-failed');
+  await expect(bootWithoutErrors(page, '?e2e=1&abdomen=s0028')).rejects.toThrow('ultrasound:gpu-failed');
   const attachment = info.attachments.find((a) => a.name === 'startup-stages');
   expect(attachment).toBeTruthy();
   expect(JSON.parse(attachment!.body!.toString())).toMatchObject({

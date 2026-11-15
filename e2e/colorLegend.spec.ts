@@ -99,7 +99,7 @@ for (const viewport of [
     test.use({ viewport, deviceScaleFactor: viewport.dpr });
     test('degradado legible en Color y tríplex, invertido y congelado corresponde a la adquisición', async ({ page }, info) => {
       budget(120_000);
-      const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+      const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
       await observe(page);
       await page.locator('#mode-color').click();
       await withinSimSeconds(page, 1, 'primera escala Color adquirida', async () =>

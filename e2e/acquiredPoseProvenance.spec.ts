@@ -7,7 +7,7 @@ import { bootWithoutErrors, budget, withinFrames } from './support';
 
 test('conserva pose adquirida al mover controles congelados y recuperar cine antiguo', async ({ page }, info) => {
   budget(90_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   // Let the ordinary GPU pacer acquire the historical frames. Rendering twenty
   // frames synchronously bypassed its fence and queued minutes of SwiftShader
   // work, later charged to readDisplay. Three cine entries provide oldIndex >= 1.

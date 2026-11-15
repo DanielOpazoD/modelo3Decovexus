@@ -210,7 +210,7 @@ async function observe(page: Page) {
 
 test('manual probe sliders retain the requested pose during an automatic window transition', async ({ page }) => {
   budget(60_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   for (const [i, name] of ['Rotación', 'Inclinación', 'Basculación', 'Presión'].entries()) {
     await page.locator(`[data-window="${i % 2 ? 'intercostal' : 'hepatorenal'}"]`).click();
     await page.getByRole('slider', { name, exact: true }).press('ArrowRight');
@@ -264,7 +264,7 @@ test('two live atlas views keep producing the current cut through probe and case
   try {
     for (const p of pages) {
       await observe(p);
-      consoleErrors.push(await bootWithoutErrors(p, '?e2e=app&abdomen=atlas'));
+      consoleErrors.push(await bootWithoutErrors(p, '?e2e=app&abdomen=s0028'));
     }
     for (const id of ['severe-congestion', 'normal-adult', 'severe-congestion']) {
       await Promise.all(
