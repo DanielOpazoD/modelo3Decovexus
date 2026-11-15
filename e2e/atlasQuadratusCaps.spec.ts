@@ -12,7 +12,7 @@ const witnesses = [-70.36, 70.36].flatMap((x) => [
 for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`Atlas renal muscle ends agree in production through probe movement (${caseId})`, async ({ page }, info) => {
     budget(180000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     await page.locator('[data-window="renal"]').click();
     await windowAcquired(page, 'renal');

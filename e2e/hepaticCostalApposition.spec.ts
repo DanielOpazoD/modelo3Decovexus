@@ -4,7 +4,7 @@ import { Interface } from '../src/anatomy/interfaces';
 
 test('registered costal cortical interfaces precede bone in the production atlas', async ({ page }, info) => {
   budget(180000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
   await page.locator('[data-window="intercostal"]').click();
   await windowAcquired(page, 'intercostal');
   // Keep the original costal-interface plane independently of the saved vascular framing.

@@ -5,7 +5,7 @@ import { Tissue } from '../src/anatomy/tissues';
 for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`hepatorenal colon acquires echoes without vascular flow, including probe movement (${caseId})`, async ({ page }, info) => {
     budget(120000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
     await page.selectOption('#case-select', caseId);
     await page.getByRole('button', { name: 'Apnea espiratoria', exact: true }).click();
     await page.locator('[data-window="hepatorenal"]').click();

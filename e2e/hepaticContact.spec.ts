@@ -6,7 +6,7 @@ import { bootWithoutErrors, budget, windowAcquired } from './support';
 for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`registered hepatic contact agrees across the production classifiers (${caseId})`, async ({ page }, info) => {
     budget(120_000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     await page.locator('[data-window="subcostal"]').click();
     await windowAcquired(page, 'subcostal');
@@ -90,7 +90,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
 
 test('subcostal portal window restores its own depth after the intrahepatic window', async ({ page }, info) => {
   budget(120_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
   await page.locator('[data-window="portal"]').click();
   await expect(page.getByLabel('Profundidad', { exact: true })).toHaveValue('130');
   await page.locator('[data-window="portalSubcostal"]').click();
