@@ -112,4 +112,6 @@ en el banco (`npm run fidelity -- --abdomen s0028`), 30–60 fps quieta (la subx
 mismo coste síncrono (~5 ms). En el bucle respirando, subxifoidea quieta 37 fps con el carril 3D y 45 sin él, y 19 y 29 al mover (la
 otra, 60 y 52–55); renal quieta, 33 y 60. Al mover, el límite es la CPU: el contacto de s0028 (`probeContact`) cuesta ~37 ms por pose
 (~5 la otra), en la cara interna de cada nodo (`firstRegionalWallCrossing` a pasos de 1 mm, siete lecturas de la EDT por punto) y en
-los nodos rígidos (`s0028RigidSpan`). Quieta, el hilo principal está ocioso y el cuadro espera la valla de la GPU.
+los nodos rígidos (`s0028RigidSpan`). Quieta, el hilo principal está ocioso y el cuadro espera la GPU: la ecografía cuesta 15–18 ms
+(`gpuTimings`; la otra, 5–7). Por pasada, la clasificación B 15,9 ms (8,9) y A0 5,5 (1,3): las optimizaciones de A0 y de la rejilla
+vascular (decisiones 338 y 339) solo se aplicaron a la otra persona.
