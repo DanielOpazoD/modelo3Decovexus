@@ -2,8 +2,8 @@ import { CASES, isCaseId } from '../cases';
 import { CASE_VIGNETTES } from '../cases/vignettes';
 
 /**
- * Modo alumno ciego (guía §17): el alumno no ve el diagnóstico. Los casos se muestran como
- * «Paciente A, B, C…» (orden del registro) y el nombre clínico solo en modo docente; el corte
+ * Modo alumno ciego (guía §17): el alumno no ve el diagnóstico. Con `?alumno` (decisión 393: por defecto, nombres
+ * descriptivos) los casos se muestran como «Paciente A, B, C…» (orden del registro) y el nombre clínico solo en modo docente; el corte
  * ecográfico pierde los rótulos de estructuras y el navegador 3D los vasos (el calibre de la VCI
  * delata la congestión). Del contexto clínico (decisión 82) el alumno ve la viñeta; el nombre del
  * caso con sus confusores reales y la trampa los da `teacherNotes.ts`, que solo carga la pestaña
@@ -21,6 +21,22 @@ export function caseDisplayLabel(caseId: string, teacher: boolean): string {
  */
 export function caseVignette(caseId: string): string {
   return isCaseId(caseId) ? CASE_VIGNETTES[caseId] : '';
+}
+
+/**
+ * Los casos llevan su nombre descriptivo por defecto (decisión 393, responsable); «Paciente A, B…» solo en el modo alumno ciego,
+ * que se pide con `?alumno` en la dirección (un examen). El modo docente siempre los nombra.
+ */
+export function blindCaseNames(search: string): boolean {
+  return new URLSearchParams(search).has('alumno');
+}
+
+/**
+ * El nombre del caso tal como se muestra: el selector, la cabecera de la imagen y la pestaña Adquirir (decisión 393). Sin
+ * `search`, la dirección de la página; fuera del navegador (pruebas de la interfaz en Node), ninguna: nombres descriptivos.
+ */
+export function shownCaseLabel(caseId: string, teacher: boolean, search: string = globalThis.location?.search ?? ''): string {
+  return caseDisplayLabel(caseId, teacher || !blindCaseNames(search));
 }
 
 /** La casilla «Docente» solo se ofrece en desarrollo o con `?docente` en la dirección. */

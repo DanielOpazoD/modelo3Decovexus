@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-15",
- "main": "1d5f6a4",
+ "main": "0457224",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -624,8 +624,8 @@
  ],
  "s0028DescriptorSha256": "3201286d10bc1723cd95729be079cba3813a1376fc461b0a524716c3b0533f8c",
  "tests": {
-  "vitestFiles": 340,
-  "slowFiles": 35,
+  "vitestFiles": 342,
+  "slowFiles": 36,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,
   "e2eShards": 12,

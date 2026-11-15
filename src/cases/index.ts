@@ -82,6 +82,25 @@ export const AF_MODERATE_CONGESTION: PatientState = {
 };
 
 /**
+ * Congestión venosa grave con flujo portal invertido (decisión 394, petición del responsable): el grado máximo de VExUS (3)
+ * con el patrón portal más grave, la inversión sistólica. El fallo derecho del caso grave con la insuficiencia tricuspídea
+ * libre (1,0) y la PAD media en 22 mmHg: las ondas v gigantes llegan al sinusoide del hígado congestivo y en cada sístole
+ * la presión hepática supera la esplácnica, así que la porta se invierte (−15 a +27 cm/s; PF 130–155 %, frente a 62–76 % del
+ * caso grave). Suprahepática con la S invertida, renal monofásica y VCI de 32 mm. Más IT o menos distensibilidad
+ * auricular invierten la porta hasta −70 cm/s, que no es creíble. Parámetros [EXTRAPOLACIÓN PROPIA].
+ */
+export const PORTAL_REVERSAL_CONGESTION: PatientState = {
+  ...SEVERE_CONGESTION,
+  liver: { ...SEVERE_CONGESTION.liver },
+  habitus: { ...SEVERE_CONGESTION.habitus },
+  id: 'refractory-right-heart-failure',
+  label: 'Congestión venosa grave con flujo portal invertido',
+  seed: 20260928,
+  tricuspidRegurgitation: 1.0,
+  rapMeanMmHg: 22,
+};
+
+/**
  * Casos trampa (decisión 82): confusores de VExUS de la literatura revisada el 26-09-2026 con la fisiología que el
  * motor ya tiene. Cada uno parte de un caso de referencia y cambia solo lo que crea el confusor; la discordancia que
  * enseña (grado frente a PAD) la comprueba `traps.test.ts` con la verdad del motor en respiración tranquila y en apnea
@@ -176,6 +195,7 @@ const REGISTRY = {
   'normal-adult': NORMAL_ADULT,
   'severe-congestion': SEVERE_CONGESTION,
   'af-moderate-congestion': AF_MODERATE_CONGESTION,
+  'refractory-right-heart-failure': PORTAL_REVERSAL_CONGESTION,
   'abdominal-hypertension': ABDOMINAL_HYPERTENSION,
   'tricuspid-regurgitation': TRICUSPID_REGURGITATION,
   'mechanical-ventilation': MECHANICAL_VENTILATION,

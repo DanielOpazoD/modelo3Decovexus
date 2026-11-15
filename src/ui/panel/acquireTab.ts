@@ -1,4 +1,4 @@
-import { caseDisplayLabel } from '../../app/blindMode';
+import { shownCaseLabel } from '../../app/blindMode';
 import type { RespiratoryPattern } from '../../physiology/patientState';
 import { PROBE_LIFT_LIMITS } from '../../probe/probe';
 import { button, note, row, slider } from '../controls';
@@ -113,7 +113,7 @@ export function buildRespirationControls(ctx: PanelContext, p: HTMLElement): voi
   const info = note(resp);
   ctx.track({
     sync: () =>
-      (info.textContent = `${caseDisplayLabel(s().patient.id, ctx.store.get().debug)} · FC ${s().patient.heartRateBpm} lpm · ${breathing() ? `resp ${s().patient.respiratoryRateMin}/min` : s().patient.respiratoryPattern === 'apnea-inspiratory' ? 'pausa inspiratoria' : 'apagada · fin de espiración'}`),
+      (info.textContent = `${shownCaseLabel(s().patient.id, ctx.store.get().debug)} · FC ${s().patient.heartRateBpm} lpm · ${breathing() ? `resp ${s().patient.respiratoryRateMin}/min` : s().patient.respiratoryPattern === 'apnea-inspiratory' ? 'pausa inspiratoria' : 'apagada · fin de espiración'}`),
   });
   ctx
     .segmented<RespiratoryPattern>(

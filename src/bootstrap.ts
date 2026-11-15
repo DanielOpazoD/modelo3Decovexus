@@ -1,5 +1,5 @@
 import type { InstalledPerson, PersonSurfaces } from './anatomy/person';
-import { caseDisplayLabel, teacherToggleAllowed } from './app/blindMode';
+import { shownCaseLabel, teacherToggleAllowed } from './app/blindMode';
 import { registerDevtools } from './app/devtools';
 import { buildDiagnostics, buildLabel, diagnosticsFileName, gpuInfo } from './app/diagnostics';
 import { modeHasColor, modeHasPw, toggleM, toggleMode } from './app/equipment';
@@ -86,9 +86,12 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       o.value = c.id;
       caseSelect.appendChild(o);
     }
-    /** Nombres del selector según el modo: «Paciente A/B/C» para el alumno (guía §17). */
+    /**
+     * Nombres del selector: descriptivos por defecto (decisión 393); «Paciente A/B/C» solo en el modo alumno ciego
+     * (`?alumno`, guía §17) mientras el docente no lo desactive.
+     */
     function labelCases(teacher: boolean): void {
-      for (const o of Array.from(caseSelect.options)) o.textContent = caseDisplayLabel(o.value, teacher);
+      for (const o of Array.from(caseSelect.options)) o.textContent = shownCaseLabel(o.value, teacher, location.search);
     }
     labelCases(false);
 
@@ -597,7 +600,7 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       if (!comparisonOpen) drawAcquiredViews(s, now, true);
       const t = s.physiology.clock.t;
       const h = hudText({
-        patientLabel: caseDisplayLabel(s.patient.id, store.get().debug),
+        patientLabel: shownCaseLabel(s.patient.id, store.get().debug, location.search),
         frozen: s.frozen,
         heartRateBpm: heartRate.update(s.sample.rr, dt),
         atrialFibrillation: s.patient.rhythm === 'atrial-fibrillation',

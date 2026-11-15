@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { AF_MODERATE_CONGESTION, CASES, CIRRHOSIS_PULMONARY_HYPERTENSION, NORMAL_ADULT, SEVERE_CONGESTION } from '../cases';
+import {
+  AF_MODERATE_CONGESTION,
+  CASES,
+  CIRRHOSIS_PULMONARY_HYPERTENSION,
+  NORMAL_ADULT,
+  PORTAL_REVERSAL_CONGESTION,
+  SEVERE_CONGESTION,
+} from '../cases';
 import {
   BOLUS_TAU_S,
   Circulation,
@@ -368,7 +375,9 @@ describe('Lazo del motor en el punto de los casos', () => {
     for (const p of withoutPortalHypertension) {
       const k = engineFor(p).circulation.loop;
       expect(k.pmsf0).toBeGreaterThan(p.rapMeanMmHg + 4);
-      expect(k.pmsf0).toBeLessThan(25);
+      // La porta invertida (decisión 394) tiene la PAD en 22 mmHg, que exige Pmsf > 26: su techo es el de un paciente con
+      // sobrecarga de volumen, 26,3 ± 3,2 mmHg en UCI tras expandir volumen (medido: 27,9). Los demás, < 25.
+      expect(k.pmsf0).toBeLessThan(p.id === PORTAL_REVERSAL_CONGESTION.id ? 30 : 25);
       const rvrMinPerL = (k.rvr * 1000) / 60; // mmHg·s/mL → mmHg·min/L
       expect(rvrMinPerL).toBeGreaterThan(1.1);
       expect(rvrMinPerL).toBeLessThan(1.5);

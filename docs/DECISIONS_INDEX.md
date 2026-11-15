@@ -396,3 +396,5 @@ Generado por `npm run docs:index` — no editar a mano.
 | [390](DECISIONS.md#L12142) | El músculo de la pared de s0028 se ve oscuro y estriado, y Scarpa tenue | vigente |
 | [391](DECISIONS.md#L12154) | La subxifoidea de s0028 enseña la cava entrando en la aurícula derecha | vigente |
 | [392](DECISIONS.md#L12165) | Las suprahepáticas de s0028 fluyen con el área de referencia | vigente |
+| [393](DECISIONS.md#L12175) | Los casos llevan su nombre descriptivo por defecto | vigente |
+| [394](DECISIONS.md#L12184) | Congestión venosa grave con flujo portal invertido | vigente |
