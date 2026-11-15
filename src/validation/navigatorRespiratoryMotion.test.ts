@@ -115,6 +115,44 @@ describe('movimiento 3D en el mismo campo respiratorio material', () => {
     expect(p.version).toBe(current);
   });
 
+  it('las normales y las envolventes del desplazamiento son las de computeVertexNormals y las de la malla, sin recorrerla', () => {
+    // Por cuadro no se rehacen los triángulos: la suma de normales es exactamente lineal en mm (los dos lados de cada triángulo se
+    // desplazan a lo largo de la misma dirección). Una esfera indexada y otra sin índice, rotadas y escaladas, con pesos variables.
+    for (const indexed of [true, false]) {
+      const root = new THREE.Group(),
+        g = new THREE.SphereGeometry(3, 24, 16),
+        geometry = indexed ? g : g.toNonIndexed();
+      geometry.computeVertexNormals();
+      const m = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial());
+      m.rotation.set(0.4, -0.7, 0.2);
+      m.scale.set(1.3, 0.8, 1.1);
+      m.position.set(2, -1, 5);
+      root.add(m);
+      geometry.computeBoundingBox();
+      const binding = bindRespiratoryMotion([root], (p) => Math.min(1, Math.max(0, 0.5 + p[1] / 8)));
+      for (const mm of [-18, 7, 20]) {
+        binding.apply(mm);
+        const fast = Array.from(geometry.getAttribute('normal').array);
+        const exact = geometry.clone();
+        exact.computeVertexNormals();
+        const reference = exact.getAttribute('normal').array;
+        let worst = 0;
+        for (let i = 0; i < fast.length; i += 3)
+          worst = Math.max(worst, Math.hypot(fast[i] - reference[i], fast[i + 1] - reference[i + 1], fast[i + 2] - reference[i + 2]));
+        expect(worst, `${indexed ? 'indexada' : 'sin índice'} mm ${mm}`).toBeLessThan(1e-5);
+        // las envolventes contienen la malla desplazada
+        const p = geometry.getAttribute('position'),
+          v = new THREE.Vector3();
+        for (let i = 0; i < p.count; i++) {
+          v.fromBufferAttribute(p, i);
+          expect(geometry.boundingSphere!.distanceToPoint(v)).toBeLessThanOrEqual(1e-6);
+          expect(geometry.boundingBox!.distanceToPoint(v)).toBeLessThanOrEqual(1e-6);
+        }
+      }
+      binding.release();
+    }
+  });
+
   it('separa geometrías compartidas si ocupan posiciones materiales distintas', () => {
     const root = new THREE.Group(),
       a = mesh(),
