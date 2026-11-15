@@ -189,7 +189,7 @@ test('PW, Color y tríplex se arrastran antes de soltar sin mover la sonda; se c
 }, info) => {
   budget(240_000);
   await page.setViewportSize({ width: 1280, height: 1000 });
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await observeOverlay(page);
   for (const mode of ['pw', 'color', 'triplex'] as const) {
     await page.locator('#mode-b').click();
@@ -358,7 +358,7 @@ test('PW, Color y tríplex se arrastran antes de soltar sin mover la sonda; se c
 
 test('elegir ventanas reinicia Doppler y M en 2D, sale del cine y adquiere el nuevo destino', async ({ page }) => {
   budget(180_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   for (const destination of [
     { id: 'portal', mode: 'color' },
     { id: 'renal', mode: 'triplex' },

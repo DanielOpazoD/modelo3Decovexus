@@ -4,7 +4,7 @@ import { bootWithoutErrors, budget, windowAcquired } from './support';
 for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`hepatorenal preset shows liver and acoustically accessible kidney (${caseId})`, async ({ page }, info) => {
     budget(120000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     await page.locator('[data-window="hepatorenal"]').click();
     await windowAcquired(page, 'hepatorenal');

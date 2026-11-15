@@ -50,7 +50,7 @@ void main() {
 for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`muscle normals follow their material phase and wall faces remain continuous, ${caseId}`, async ({ page }, info) => {
     budget(120_000);
-    await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     const previousFrame = await page.evaluate(() => window.__vexusTest!.sim().renderer.displayedFrame!.n);
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     await withinFrames(page, 30, 'cuadro adquirido del paciente actual', () =>

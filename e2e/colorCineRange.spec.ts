@@ -5,7 +5,7 @@ import { bootWithoutErrors, budget } from './support';
 for (const caseId of ['normal-adult', 'severe-congestion']) {
   test(`cine Color conserva el campo complejo de tejido móvil con ganancia alta, ${caseId}`, async ({ page }, info) => {
     budget(90_000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     const observed = await page.evaluate(() => {
       const hooks = window.__vexusTest!,

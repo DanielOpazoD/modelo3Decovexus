@@ -7,7 +7,7 @@ checkAfterEach();
 // Los rayos de esas poses se comprueban en `ivcAtriumWindow.test.ts`.
 test('VCI–AD: la ventana adquiere el B de su pose central', async ({ page }) => {
   budget(120_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await page.locator('[data-window="subxiphoid"]').click();
   await windowAcquired(page, 'subxiphoid');
   const state = await page.evaluate(() => {
@@ -20,7 +20,7 @@ test('VCI–AD: la ventana adquiere el B de su pose central', async ({ page }) =
 
 test('bloque cardíaco registrado conserva paridad CPU/GPU con suelo y vecinos', async ({ page }, info) => {
   budget(180_000);
-  await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   const report = await page.evaluate(() => {
     const s = window.__vexusTest!.sim(),
       cal = s.anatomy.caliberFor(s.sample),

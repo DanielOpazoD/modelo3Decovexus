@@ -4,7 +4,7 @@ import { bootWithoutErrors, budget } from './support';
 test('escala PW lateral: cero, inversión, tamaño y ECG alineados', async ({ page }, testInfo) => {
   budget(180_000);
   await page.setViewportSize({ width: 1440, height: 1000 });
-  const errors = await bootWithoutErrors(page);
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028');
   await page
     .locator('button', { hasText: /Apnea\s*esp/ })
     .first()

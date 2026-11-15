@@ -10,7 +10,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
   for (const [group, windows] of groups.entries())
     test(`saved examination windows ${caseId}/${group}: actual cards, acquired pose and hepatic PW access`, async ({ page }, info) => {
       budget(240_000);
-      const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+      const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
       await page.selectOption('#case-select', caseId);
       await page.getByRole('button', { name: 'Apnea espiratoria', exact: true }).click();
       for (const id of windows) {

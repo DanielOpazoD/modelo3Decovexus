@@ -63,7 +63,7 @@ test('renal and hepatorenal sweeps retain acquisition geometry with two views an
   try {
     for (const p of pages) {
       await observe(p);
-      errors.push(await bootWithoutErrors(p, '?e2e=app&abdomen=atlas'));
+      errors.push(await bootWithoutErrors(p, '?e2e=app&abdomen=s0028'));
       // A fence in the ultrasound context cannot drain the separate 3D context.
       // Observe the production wiring without adding work or waiting for the GPU.
       const fences = await p.evaluate(() => window.gpuProgress ?? []);

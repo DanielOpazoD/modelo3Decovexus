@@ -4,7 +4,7 @@ import { bootWithoutErrors, budget } from './support';
 for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`pared Atlas: caras y normales del modelo compartido coinciden con GPU, ${caseId}`, async ({ page }, info) => {
     budget(300_000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     await page.selectOption('#case-select', caseId);
     await page
       .locator('button', { hasText: /Apnea\s*esp/ })

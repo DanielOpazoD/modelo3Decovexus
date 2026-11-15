@@ -26,7 +26,7 @@ test('the anatomical worker receives the exact acquisition wall and costal atlas
       Reflect.apply(original, this, [message, transfer]);
     };
   });
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await page.locator('[data-window="intercostal"]').click();
   await windowAcquired(page, 'intercostal');
   await withinFrames(page, 30, 'mapa del plano intercostal adquirido', async () =>
@@ -86,7 +86,7 @@ for (const [id, target] of [
 ] as const)
   test(`subcostal ${target} has a transhepatic near field and continuously acquired frames`, async ({ page }, info) => {
     budget(180000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     await page.locator(`[data-window="${id}"]`).click();
     await windowAcquired(page, id);
     const report = await page.evaluate((target) => {

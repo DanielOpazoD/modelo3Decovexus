@@ -4,7 +4,7 @@ import { bootWithoutErrors, budget, withinFrames } from './support';
 for (const caseId of ['normal-adult', 'severe-congestion'])
   test(`pressure control commands the full physical lift range, ${caseId}`, async ({ page }, info) => {
     budget(120_000);
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     await page.selectOption('#case-select', caseId);
     for (const viewport of [
       { width: 1440, height: 1000 },

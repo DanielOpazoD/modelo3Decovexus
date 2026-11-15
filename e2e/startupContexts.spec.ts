@@ -106,7 +106,7 @@ test('initializes both real WebGL contexts before acquisition and retains the 3D
       });
     }
   });
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   const initial = await page.evaluate(() => ({
     contexts: window.startupContexts.contexts.map(({ canvas, readyAt }) => ({ id: canvas.id, parent: canvas.parentElement?.id, readyAt })),
     firstUltrasoundDraw: window.startupContexts.firstUltrasoundDraw!,
@@ -241,7 +241,7 @@ test('initializes both real WebGL contexts before acquisition and retains the 3D
 
 test('a partial GPU submission drains before releasing its page turn and recovers the requested pose', async ({ page }, info) => {
   budget(90_000); // Un solo arranque, con el mismo presupuesto de trabajo que los otros casos de contexto.
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   expect(await page.evaluate(() => window.__vexusTest!.loggedErrors())).toEqual([]);
   try {
     await page.evaluate(() => {
@@ -393,7 +393,7 @@ for (const stage of ['module', 'draw'] as const)
           Reflect.apply(original, this, args);
         });
       });
-    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+    const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
     expectLoggedErrors(page, [/context-init-regression/]);
     const logged = await page.evaluate(() => window.__vexusTest!.loggedErrors());
     expect(logged).toHaveLength(1);

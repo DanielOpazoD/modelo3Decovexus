@@ -3,7 +3,7 @@ import { bootWithoutErrors, budget, windowAcquired, withinFrames } from './suppo
 
 test('el selector ofrece ocho accesos en cuatro territorios y Enter abre la porta subcostal en 2D', async ({ page }, info) => {
   budget(120_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await expect(page.getByRole('heading', { name: 'Ventanas', exact: true })).toBeVisible();
   await expect(page).toHaveTitle('VExUS LAB');
   await expect(page.locator('.brand')).toHaveText('VExUS LAB');
