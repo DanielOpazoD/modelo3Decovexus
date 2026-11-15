@@ -1,23 +1,29 @@
 import type { Vec3 } from '../../../core/vec3';
 import type { PersonAssets } from '../../personAssets';
-import { sourceDistance, sourceLabel } from '../../sourceVolume';
+import { sourceDistance, sourceDistanceReader, sourceLabel } from '../../sourceVolume';
 import { S0028_BUNDLE as B } from './descriptor';
 export function createSourceQueries(assets: PersonAssets) {
   const abdominalAtlas = assets.buffers.abdominal,
     thoracicAtlas = assets.buffers.thoracic;
-  const depthAt: Vec3 = [0, 0, 0];
-  /** La EDT común en (x, y, z), sin reservar memoria: la consultan el 3D por vértice y la pared por punto. */
+  // La EDT común (rejilla de 3 mm) con sus constantes resueltas una vez: el contacto la lee ~80 000 veces por pose.
+  const [o0, o1, o2] = B.depth.originMm,
+    [n0, n1, n2] = B.depth.dimensions;
+  const depthField = abdominalAtlas ? sourceDistanceReader(abdominalAtlas, B.depth, B.abdominal.textureDimensions) : null;
+  /**
+   * La EDT común en (x, y, z), sin reservar memoria: la consultan el 3D por vértice y la pared por punto. La proyección a la caja
+   * y la lectura en el punto proyectado, con las mismas operaciones y en el mismo orden que antes (`s0028Depth.test.ts`).
+   */
   function s0028DepthXyz(x: number, y: number, z: number): number | undefined {
-    if (!abdominalAtlas) return undefined;
-    const f = B.depth;
-    let outside = 0;
-    for (let i = 0; i < 3; i++) {
-      const q = ((i === 0 ? x : i === 1 ? y : z) - f.originMm[i]) / 3;
-      const a = Math.max(0, Math.min(f.dimensions[i] - 1, q));
-      depthAt[i] = f.originMm[i] + a * 3;
-      outside += (q - a) ** 2;
-    }
-    return sourceDistance(abdominalAtlas, depthAt, f, B.abdominal.textureDimensions) + Math.sqrt(outside) * 3;
+    if (!depthField) return undefined;
+    // proyección a la caja de la EDT; lo que sale se suma como distancia euclídea a ella
+    const q0 = (x - o0) / 3,
+      a0 = Math.max(0, Math.min(n0 - 1, q0)),
+      q1 = (y - o1) / 3,
+      a1 = Math.max(0, Math.min(n1 - 1, q1)),
+      q2 = (z - o2) / 3,
+      a2 = Math.max(0, Math.min(n2 - 1, q2));
+    const outside = 0 + (q0 - a0) ** 2 + (q1 - a1) ** 2 + (q2 - a2) ** 2;
+    return depthField(o0 + a0 * 3, o1 + a1 * 3, o2 + a2 * 3) + Math.sqrt(outside) * 3;
   }
   /** Profundidad bajo la piel s0028 en p (la GPU la lee con `torsoDepth` especializada en `personShader`). @twin s0028-lector */
   function s0028Depth(p: Vec3): number | undefined {
