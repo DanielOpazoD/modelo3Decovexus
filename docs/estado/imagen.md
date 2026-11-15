@@ -10,7 +10,7 @@ No cambia la pasada B nativa ni la resolución192×1024. Ocho imágenes idéntic
 optimización;24 estados A0 bit a bit. Banco MetalM4:−46,91% GPU agregado frente a adaf672,
 mediana y p95 por cada una de ocho escenas≤base. No FPS ni garantía universal de hardware/poses.
 SwiftShader conserva su reparto; s0028 nativa conserva A0 original. Objetivos adicionales
-1.004.544B nominales e índice vascular current8mm, techo4MiB. No memoria total ni coste frío.
+1.004.544B nominales e índice vascular de 8 mm (también s0028, decisión 397), techo4MiB. No memoria total ni coste frío.
 Ver decisión339 y evidencia original; aceptación completa/CI se acreditan por separado.
 
 ## Pasadas por cuadro

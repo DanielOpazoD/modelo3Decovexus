@@ -1018,10 +1018,8 @@ export class UltrasoundRenderer {
         const at = compact * TUBE_HEADER_TEXELS * 4;
         return tubeGridRegions(this.sceneData, (NODE_BASE + this.sceneData[at]) * 4, this.sceneData[at + 1], reaches[compact]);
       });
-      this.tubeGrid =
-        buildTubeGrid(spheres, regions, s.identity.person === 'current' ? 8 : 16) ??
-        buildTubeGrid(spheres, regions, 16) ??
-        buildTubeGrid(spheres, regions);
+      // 8 mm para toda persona con atlas (decisiones 339 y 397), con la caída de siempre si no cabe
+      this.tubeGrid = buildTubeGrid(spheres, regions, 8) ?? buildTubeGrid(spheres, regions, 16) ?? buildTubeGrid(spheres, regions);
       if (this.tubeGrid) {
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.tubeGridTex);
