@@ -88,8 +88,8 @@ const ALLOWED: Record<string, readonly string[]> = {
   // p. ej. el de los ecos de interfaz, sobre el motor de imagen, y el contorno del hígado de las vistas de
   // las capturas, que necesita la sonda, los casos y las poses de partida de `app/startPoints`); las pruebas
   // no cuentan como capa. La cadena del alumno por la ruta de la aplicación (`support/studentChain.ts`, decisión 93)
-  // necesita además la fisiología y la captura del Doppler
-  validation: ['core', 'physiology', 'anatomy', 'ultrasound', 'probe', 'doppler', 'cases', 'app'],
+  // necesita además la fisiología y la captura del Doppler; las escalas de s0028 (`support/s0028Scales.ts`), la verdad VExUS
+  validation: ['core', 'physiology', 'anatomy', 'ultrasound', 'probe', 'doppler', 'cases', 'app', 'vexus'],
   bootstrap: ['core', 'physiology', 'anatomy', 'cases', 'probe', 'ultrasound', 'doppler', 'audio', 'vexus', 'app', 'ui'],
 };
 
