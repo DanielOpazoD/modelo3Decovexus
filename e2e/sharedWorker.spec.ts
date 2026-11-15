@@ -30,7 +30,8 @@ test('el trabajador modular conserva clasificación y estado separado al cambiar
       Reflect.apply(original, this, [message, transfer]);
     };
   });
-  const errors = await bootWithoutErrors(page, '?e2e=app&reference=1');
+  // La otra persona con su torso de referencia (desde el corte, s0028 es la persona por defecto).
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas&reference=1');
   for (const id of ['normal-adult', 'severe-congestion']) {
     await page.selectOption('#case-select', id);
     await page.locator('[data-window="intercostal"]').click();
