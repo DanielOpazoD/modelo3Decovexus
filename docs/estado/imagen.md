@@ -108,10 +108,8 @@ que la valla o que la reserva de turno.
 ## Cadencia de s0028 (medida el 15-11-2026; condición del corte)
 
 Lo anterior es de la otra persona: s0028 aún no cumple la regla del coste (`docs/REGLAS.md`). M4, Metal, las dos en la misma sesión:
-en el banco (`npm run fidelity -- --abdomen s0028`), 30–60 fps quieta (la subxifoidea, 30) frente a 60 en los ocho estados, con el
-mismo coste síncrono (~5 ms). En el bucle respirando, subxifoidea quieta 37 fps con el carril 3D y 45 sin él, y 19 y 29 al mover (la
-otra, 60 y 52–55); renal quieta, 33 y 60. Al mover, el límite es la CPU: el contacto de s0028 (`probeContact`) cuesta ~37 ms por pose
-(~5 la otra), en la cara interna de cada nodo (`firstRegionalWallCrossing` a pasos de 1 mm, siete lecturas de la EDT por punto) y en
-los nodos rígidos (`s0028RigidSpan`). Quieta, el hilo principal está ocioso y el cuadro espera la GPU: la ecografía cuesta 15–18 ms
-(`gpuTimings`; la otra, 5–7). Por pasada, la clasificación B 15,9 ms (8,9) y A0 5,5 (1,3): las optimizaciones de A0 y de la rejilla
-vascular (decisiones 338 y 339) solo se aplicaron a la otra persona.
+en el banco (`npm run fidelity -- --abdomen s0028`), 30–60 fps quieta (la subxifoidea, 30) frente a 60 en los ocho estados. Al mover,
+el contacto de s0028 costaba ~37 ms por pose y ahora 10 (PR 63, mismo resultado bit a bit): subxifoidea de 19 a 30 fps con el carril
+3D (la otra, 52–55). Quieta, el cuadro espera la GPU: la ecografía cuesta 15–23 ms (`gpuTimings`; la otra, 5–7); por pasada, la
+clasificación B 15,9 ms (8,9) y A0 5,5 (1,3). Saltar las clasificaciones de elevación de B la baja un 30–40 %: en s0028 la grasa
+visceral y los contenidos digestivos salen con `bd = 0` y las disparan siempre. Plan en `docs/anatomia/corte-s0028.md`.
