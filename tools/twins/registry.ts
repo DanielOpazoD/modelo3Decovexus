@@ -127,6 +127,11 @@ const E = {
     file: 'e2e/s0028WallGpu.spec.ts',
     title: 'la GPU s0028 conserva la banda D/E con identidad U y el panículo regional CPU',
   },
+  s0028Equivalence: {
+    kind: 'gpu',
+    file: 'e2e/s0028Equivalence.spec.ts',
+    title: 'la anatomía GLSL coincide con la TypeScript en tejido, vaso, velocidad y caras',
+  },
 } as const satisfies Record<string, TwinEvidence>;
 /** Lo que la e2e de los sólidos s0028 (r3 de P3) compara de la clasificación: tejido y cara, no los valores intermedios. */
 const S0028_CLASSIFICATION =
@@ -158,6 +163,7 @@ export const TWINS: readonly TwinPair[] = [
       E.atlas,
       { ...E.s0028Solids, scope: 'clasificación s0028 con los dueños P3: nodos, cajas de grasa, conflictos, planos y ventanas' },
       { ...E.s0028Wall, scope: 'clasificación s0028 en la banda de la pared y testigos sólidos' },
+      { ...E.s0028Equivalence, scope: 'clasificación s0028 en las diez ventanas, 80 000 puntos del tronco y la cáscara de sus caras' },
       {
         kind: 'texto',
         file: 'src/validation/pleura.test.ts',
@@ -235,6 +241,7 @@ export const TWINS: readonly TwinPair[] = [
     ],
     evidence: [
       E.equivalence,
+      { ...E.s0028Equivalence, scope: 'vasos s0028: vaso y velocidad en las diez ventanas y en 80 000 puntos del tronco' },
       {
         kind: 'texto',
         file: 'src/validation/vesselShape.test.ts',
