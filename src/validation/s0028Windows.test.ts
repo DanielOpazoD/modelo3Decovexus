@@ -3,6 +3,7 @@ import {
   loadS0028,
   portalDarkLumen,
   renalSection,
+  s0028AtriumWindow,
   sectorFraction,
   shadowedLumen,
   s0028WindowTargets,
@@ -132,6 +133,25 @@ it('la intrahepática sigue la porta derecha y no corta la grasa junto a la ves�
   expect(now.fat).toBeLessThan(0.095);
   expect(before.lumen).toBeLessThan(60);
   expect(before.fat).toBeGreaterThan(0.105);
+});
+
+it('la subxifoidea enseña la cava entrando en la aurícula derecha, en el centro y en sus vecinas (decisión 391)', () => {
+  // Contrato de la otra persona (`ivcAtriumWindow.test.ts`): cinco rayos claros vecinos y 20 mm de aurícula, a más de 5° del borde.
+  const sp = poseOf('subxiphoid', 's0028');
+  for (const [rock, tilt] of [
+    [0, 0],
+    [0.035, 0],
+    [-0.035, 0],
+    [0, 0.035],
+    [0, -0.035],
+  ]) {
+    const now = s0028AtriumWindow(person.anatomy, person.sample, { ...sp, rock: sp.rock + rock, tilt: sp.tilt + tilt });
+    // Medido el 15-11-2026 en el centro: 13 rayos y 31 mm; en las vecinas, de 10 rayos y 21 mm a 15 y 36.
+    expect(now.accepted, JSON.stringify({ rock, tilt, ...now })).toBe(true);
+  }
+  // Control: la pose anterior (decisión 351) dejaba la entrada a 30° de un sector de ±34° y la aurícula fuera.
+  const before = { phi: 1.65, z: -65, lift: 0, yaw: -0.037, rock: 0.063, tilt: -0.115 };
+  expect(s0028AtriumWindow(person.anatomy, person.sample, before).longestRun).toBe(0);
 });
 
 it('el riñón derecho de s0028 mide 110 mm, sin pisar a sus vecinos, y la ventana renal lo enseña casi entero (decisión 387)', () => {

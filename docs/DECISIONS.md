@@ -12150,3 +12150,14 @@ una ganancia de amplitud por cara en `interfaceLook`: Scarpa ×0,35.
 **Consecuencias.** Músculo 8,5 dB bajo la grasa de la pared; Scarpa 15 dB bajo la fascia profunda (antes 6). El músculo posterior
 se oscurece igual. La textura de la grasa (septos) no cambia.
 **Verificación.** `s0028TissueLook`, hashes de los sombreadores, dos mutantes, Metal, láminas de las ocho ventanas.
+
+## 391. La subxifoidea de s0028 enseña la cava entrando en la aurícula derecha
+
+**Contexto.** VExUS mide la cava a 1–2 cm de su entrada en la aurícula. En la subxifoidea de s0028 (pose de la decisión 351) esa
+entrada quedaba a 30° de un sector de ±34° y la aurícula, fuera: el hito de la búsqueda acababa en z −30 mm, de cuando su tórax no
+tenía aurícula (la tiene desde la 356).
+**Opciones.** Una subcostal derecha (φ 2, la mejor sin límites, 5 cm a la derecha y 7 bajo el xifoides) o bajo el xifoides; se elige esta.
+**Decisión.** El hito llega al centro de la aurícula y la sonda apoya 1,4 cm bajo el xifoides, abanicada 23° a la cabeza.
+**Consecuencias.** 13 rayos claros y 31 mm de aurícula (antes, 0), también en las cuatro vecinas; delante va grasa, no hígado: el
+lóbulo izquierdo de s0028 no llega ahí, y el contrato de la otra persona se aplica sin ese requisito.
+**Verificación.** `s0028Windows` (centro, vecinas y control), un mutante, capa lenta, Metal; lámina con el mismo plano del TAC.
