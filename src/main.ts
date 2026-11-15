@@ -11,7 +11,7 @@ async function start(): Promise<void> {
     if (controller.signal.aborted) return;
     const message = document.createElement('div');
     message.className = 'error';
-    const person = new URLSearchParams(location.search).get('abdomen') ?? 'default';
+    const person = new URLSearchParams(location.search).get('abdomen') ?? 's0028';
     message.textContent = `No se pudo cargar ${person} (inicio): ${error instanceof Error ? error.message : String(error)}`;
     const retry = document.createElement('button');
     retry.textContent = 'Recargar esta persona';

@@ -19,9 +19,9 @@ prueba de la primera:
 
 | Persona | Cómo se elige     | Fuente                                                                                           | Uso                                               |
 | ------- | ----------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| default | por defecto       | atlas abdominal y torácico registrados más la escena procedural (vasos, pared en capas, órganos) | la aplicación; no cambia sin decisión propia      |
+| default | `?abdomen=atlas`  | atlas abdominal y torácico registrados más la escena procedural (vasos, pared en capas, órganos) | hasta que se retire (corte, decisión 340)         |
 | legacy  | `?abdomen=legacy` | escena procedural sin atlas                                                                      | gate TS ↔ GLSL de la CI (decisiones 30, 57 y 166) |
-| s0028   | `?abdomen=s0028`  | un TAC real (caso s0028), anatomía paralela por fases                                            | migración P0–P8 (decisión 317)                    |
+| s0028   | por defecto       | un TAC real (caso s0028)                                                                         | la aplicación desde el corte (decisión 340)       |
 
 `?reference=1` carga además el perfil corporal del adulto de referencia (`reference-body.bin`); la e2e de equivalencia lo
 cubre con legacy. Tras P8, el corte sustituye el default por s0028 cuando pase la lista de relaciones del TAC (decisiones
