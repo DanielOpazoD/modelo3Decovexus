@@ -12189,3 +12189,13 @@ caso grave llega a PF 62–76 % sin invertirse.
 con la S hepática invertida, renal monofásica y VCI de 32 mm. Más IT o menos distensibilidad auricular daban −70 cm/s.
 **Consecuencias.** Ocho casos. En s0028, desde las ventanas del menú, el alumno mide PF 150 % (verdad 152) y grado 3.
 **Verificación.** `portalReversal.test.ts` con el caso grave de control; `s0028PortalReversal.test.ts` (capa lenta).
+
+## 395. Las interlobares de s0028 van hacia el borde convexo
+
+**Contexto.** Por la cadena del alumno, la cirrosis de s0028 daba grado 2 (la otra persona, 3): la renal salía bifásica con la
+verdad monofásica (S/D 0,23). Sus interlobares llevaban el giro de la fila de la otra persona (−0,4π, decisión 309), pensado para
+su ventana: en s0028 iban de delante atrás, cruzaban el plano renal y la mejor puerta quedaba a 57° del vaso (cos 0,54).
+**Decisión.** Giro propio por persona (`interlobarTurn`); en s0028, 0: del seno al borde convexo, que en su ventana mira a la
+sonda. La pose renal se rebusca con su objetivo de siempre (la interlobar media en el plano).
+**Consecuencias.** Puerta a cos 0,93; renal de la verdad en los ocho casos; cirrosis grado 3; riñón 107 mm en la ventana (99).
+**Verificación.** `s0028Windows`, `s0028Traps` (capa lenta), un mutante, Metal.

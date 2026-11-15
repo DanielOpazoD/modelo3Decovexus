@@ -51,6 +51,14 @@ export const s0028Cpu: MutantManifest = {
       to: '    smallBowelContents: undefined,',
       tests: ['src/validation/s0028SolidsClassify.test.ts'],
     },
+    {
+      name: 'interlobares-de-delante-atras',
+      origin: 'decisión 395',
+      breaks: 'Las interlobares de s0028 vuelven al giro de la otra persona: cruzan el plano renal y la puerta queda a 57° del vaso.',
+      from: 'export const S0028_INTERLOBAR_TURN = 0;',
+      to: 'export const S0028_INTERLOBAR_TURN = -0.4 * Math.PI;',
+      tests: ['src/validation/s0028Windows.test.ts'],
+    },
   ],
 };
 

@@ -13,9 +13,11 @@ import {
 import { S0028_KIDNEY_FRAMES } from '../anatomy/people/s0028/cpu';
 import { S0028_BUNDLE } from '../anatomy/people/s0028/descriptor';
 import { Tissue } from '../anatomy/tissues';
+import { bestGateOnVessel } from '../app/gatePlacement';
 import { startPointsFor } from '../app/startPoints';
 import type { Vec3 } from '../core/vec3';
-import type { ProbePose } from '../probe/probe';
+import { probeContact } from '../probe/contact';
+import { CONVEX_C35, type ProbePose } from '../probe/probe';
 import { BASELINE_CALIBER } from './support/legacyPerson/scene';
 
 let person: ReturnType<typeof loadS0028>;
@@ -154,6 +156,32 @@ it('la subxifoidea enseña la cava entrando en la aurícula derecha, en el centr
   expect(s0028AtriumWindow(person.anatomy, person.sample, before).longestRun).toBe(0);
 });
 
+it('la ventana renal ofrece una vena interlobar a lo largo del haz, y sus interlobares van hacia el borde convexo (decisión 395)', () => {
+  // Con el giro de la fila de la otra persona (−0,4π) iban de delante atrás y la mejor puerta quedaba a 57° del vaso (cos 0,54):
+  // la S pequeña de la renal monofásica, cerca del suelo, salía bifásica. Medido el 15-11-2026: cos 0,93 con 1,3 mm a la pared.
+  const frame = S0028_KIDNEY_FRAMES[0];
+  for (const id of ['interlobarVein1', 'interlobarVein2', 'interlobarVein3', 'interlobarArtery2'] as const) {
+    const nodes = person.scene.vessels.find((v) => v.id === id && v.flowFactor === undefined)!.tube.nodes;
+    const d = nodes[0].p.map((x, i) => x - nodes.at(-1)!.p[i]);
+    const toBorder = -(d[0] * frame.hilum[0] + d[1] * frame.hilum[1] + d[2] * frame.hilum[2]) / Math.hypot(...d);
+    // la vena va del borde al seno (sentido del flujo); la arteria al revés: lo que cuenta es la dirección
+    expect(Math.abs(toBorder), id).toBeGreaterThan(0.85);
+  }
+  const pose = poseOf('renal', 's0028');
+  const contact = probeContact(pose, CONVEX_C35, person.scene.torso);
+  person.anatomy.setProbeCompression(contact);
+  const best = bestGateOnVessel(
+    person.anatomy,
+    contact.frame,
+    CONVEX_C35,
+    person.sample,
+    ['interlobarVein1', 'interlobarVein2', 'interlobarVein3'],
+    135,
+  );
+  expect(best, 'sin puerta en una interlobar').not.toBeNull();
+  expect(best!.cosAngle).toBeGreaterThan(0.85);
+});
+
 it('el riñón derecho de s0028 mide 110 mm, sin pisar a sus vecinos, y la ventana renal lo enseña casi entero (decisión 387)', () => {
   // Valoración del responsable del 14-11-2026: «el riñón parece corto». El de su TAC medía 91 mm y 108 ml; se alarga a lo
   // largo de su eje, con el centro y el ancho fijos. Oráculo: el campo del riñón y el interior renal, leídos aquí punto a punto.
@@ -186,6 +214,6 @@ it('el riñón derecho de s0028 mide 110 mm, sin pisar a sus vecinos, y la venta
   expect((voxels * 3.375) / 1000).toBeLessThan(135);
   expect(labelled / voxels).toBeGreaterThan(0.95);
   expect(conflicts).toBe(0);
-  // La ventana renal enseña 99,1 mm de riñón; con el de 91 mm, 80,6.
+  // La ventana renal enseña 106,9 mm de riñón (decisión 395; antes, 99,1); con el de 91 mm, 80,6.
   expect(renalSection(person.anatomy, person.sample, poseOf('renal', 's0028'), 140).lengthMm).toBeGreaterThan(95);
 });

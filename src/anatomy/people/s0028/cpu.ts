@@ -34,6 +34,8 @@ export const S0028_HEART: HeartShape = Object.freeze({
     la: { c: [2, -6 - HEART_ATLAS_SHIFT[1], 36 - HEART_ATLAS_SHIFT[2]] as Vec3, r: [30, 15, 22] as Vec3 },
   },
 });
+/** Giro de la fila de interlobares de s0028 alrededor del eje largo de su riñón (decisión 395): 0, hacia el borde convexo. */
+export const S0028_INTERLOBAR_TURN = 0;
 export const S0028_KIDNEY_FRAMES: readonly { center: Vec3; long: Vec3; hilum: Vec3 }[] = [
   { center: [-50.5, -27.7, -128.1], long: [0.2742, -0.4616, 0.8437], hilum: [0.9331, 0.34, -0.1173] },
   { center: [70.7, -27.3, -112.7], long: [-0.2537, -0.2372, 0.9377], hilum: [-0.896, 0.4229, -0.1354] },
@@ -74,6 +76,9 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     hepaticBranchesPerParent: 6,
     lumbarBodyRadiusMm: S0028_LUMBAR_BODY_RADIUS_MM,
     capsuleFatTissues: S0028_CAPSULE_FAT_TISSUES,
+    // Su fila de interlobares va hacia el borde convexo (−v de su marco renal), que en su ventana renal mira a la sonda: con el giro
+    // de la otra persona (−0,4π) iban de delante atrás y el alumno las tomaba a 57° del haz (decisión 395).
+    interlobarTurn: S0028_INTERLOBAR_TURN,
     heart: S0028_HEART,
     // Marco de cada riñón, de su máscara: centro, eje largo (componente principal) y dirección del hilio (su muesca). Sitúa los
     // vasos del hilio y las interlobares en el riñón de esta persona; el parénquima sigue saliendo del rótulo del TAC.
