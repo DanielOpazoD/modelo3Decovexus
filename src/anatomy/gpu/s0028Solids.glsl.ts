@@ -15,28 +15,15 @@ import {
   s0028RenalPages,
   s0028WideFatPages,
 } from '../people/s0028/solidsData';
+import { s0028FieldMaskPages } from '../people/s0028/fieldMask';
+import { S0028_ABDOMINAL_FIELDS, S0028_THORACIC_FIELDS } from '../people/s0028/fieldMaskFields';
+import { S0028_FIELD_MASK as FM } from '../s0028FieldMaskData';
 import { S0028_RENAL_INTERIOR as R } from '../s0028RenalInteriorData';
 import { RIGID_BASE } from './anatomy.glsl';
 
 /** Campos P3 de cada atlas, en el orden de los índices GLSL: los doce dueños abdominales y los tres vasos fuente (P5). */
-const ABDOMINAL = [
-  'liver',
-  'spleen',
-  'pancreas',
-  'kidneyRight',
-  'kidneyLeft',
-  'gallbladder',
-  'bladder',
-  'digestiveTract',
-  'posteriorMuscle',
-  'lumbarSacralBone',
-  'sacrum',
-  'renalCysts',
-  'aorta',
-  'inferior_vena_cava',
-  'portal_vein_and_splenic_vein',
-];
-const THORACIC = ['thoracicBone', 'cartilage', 'lung', 'heart'];
+const ABDOMINAL = S0028_ABDOMINAL_FIELDS;
+const THORACIC = S0028_THORACIC_FIELDS;
 const vec = (v: readonly number[]) => `vec3(${v.map((n) => n.toFixed(15)).join(',')})`;
 const table = (prefix: string, names: readonly string[]) =>
   (['originMm', 'dimensions', 'offset'] as const)
@@ -51,20 +38,38 @@ const table = (prefix: string, names: readonly string[]) =>
  * Lectores P1 de P3, par GLSL de `s0028SourceValue` (distancia y rótulo); también los usan la pared ligera y la pleura.
  * @twin s0028-lector
  * @twin s0028-diafragma
+ * @twin s0028-mapa-campos
  */
 export const S0028_READER_GLSL = /* glsl */ `
 ${table('S28A', ABDOMINAL)}
 ${table('S28T', THORACIC)}
-// Distancia del campo (gemela de sourceDistance: 16 fuera de su caja). El filtro del hardware cuantiza los pesos y puede
-// cambiar el signo junto a la frontera: a menos de un vóxel, los mismos ocho nodos que la CPU.
-float s28P(highp sampler3D t,vec3 p,vec3 lo,vec3 dim,vec3 off){
+// Mapa de ocupación de los campos (decisión 400): un bit por campo y celda de 6 mm, encendido donde el campo puede bajar de 16 mm
+// (todos están recortados a 16 y la trilineal no sale del intervalo de sus nodos). s28POwn lo lee una vez para su punto y lo
+// devuelve a todos los bits al terminar; con el bit apagado el campo vale 16 en toda la celda y no se lee.
+int S28_NEAR=-1;
+const vec3 S28M_LO=${vec(FM.originMm)};
+const ivec3 S28M_DIM=ivec3(${FM.dimensions.join(',')});
+const ivec3 S28M_PAGE[${FM.pages.length / 3}]=ivec3[](${s0028FieldMaskPages()
+  .map((p) => `ivec3(${p.join(',')})`)
+  .join(',')});
+// Gemela: s0028FieldMaskCell; fuera de la rejilla no queda ningún campo cerca. Nombre antes de «p»: la ABI numera los nuevos por orden.
+int nearS28(vec3 p){
+  ivec3 v=ivec3(floor((p-S28M_LO)/${FM.cellMm.toFixed(1)})),n=S28M_DIM;
+  if(any(lessThan(v,ivec3(0)))||any(greaterThanEqual(v,n)))return 0;
+  int i=(v.z*n.y+v.y)*n.x+v.x;
+  vec2 t=texelFetch(uAbdominalAtlas,S28M_PAGE[i>>10]+ivec3(i&31,(i>>5)&31,0),0).rg;
+  return int(t.x)|(int(t.y)<<11);
+}
+// Distancia del campo (gemela de sourceDistance: 16 fuera de su caja, y 16 donde el mapa no lo tiene cerca). El filtro del
+// hardware cuantiza los pesos y puede cambiar el signo junto a la frontera: a menos de un vóxel, los mismos ocho nodos que la CPU.
+float s28P(highp sampler3D t,vec3 p,vec3 lo,vec3 dim,vec3 off,int bit){
   vec3 q=(p-lo)/1.5;
-  if(any(lessThan(q,vec3(0.0)))||any(greaterThan(q,dim-1.0)))return 16.0;
+  if(((S28_NEAR>>bit)&1)==0||any(lessThan(q,vec3(0.0)))||any(greaterThan(q,dim-1.0)))return 16.0;
   float d=textureLod(t,(off+q+0.5)/vec3(textureSize(t,0)),0.0).r;
   return abs(d)<1.5?sourceDistancePrecise(t,q,ivec3(dim),ivec3(off)):d;
 }
-float s28PA(vec3 p,int k){return s28P(uAbdominalAtlas,p,S28A_LO[k],S28A_DIM[k],S28A_OFF[k]);}
-float s28PT(vec3 p,int k){return s28P(uThoracicAtlas,p,S28T_LO[k],S28T_DIM[k],S28T_OFF[k]);}
+float s28PA(vec3 p,int k){return s28P(uAbdominalAtlas,p,S28A_LO[k],S28A_DIM[k],S28A_OFF[k],k);}
+float s28PT(vec3 p,int k){return s28P(uThoracicAtlas,p,S28T_LO[k],S28T_DIM[k],S28T_OFF[k],${ABDOMINAL.length}+k);}
 // Diafragma de esta persona (decisión 348): lámina bajo la base de su pulmón y, lejos de la piel, por delante de él (375).
 // Lo que el diafragma envuelve: el pulmón o el corazón, el que quede más cerca (decisión 380). El nombre va antes de «p» en orden
 // alfabético: la extensión de la ABI GLSL numera los símbolos nuevos por orden.
@@ -147,7 +152,7 @@ void s28PAdd(inout int n,inout int k,inout float d,int id,float v){if(v<0.0){if(
 // el único; ids de la tabla CPU: 9 hueso, 16 banda P2, 17 grasa). b: hueso torácico, lumbosacro, sacro y cartílago;
 // e: vesícula y el riñón más cercano (su borde O es la cara acústica).
 int s28POwn(vec3 m,vec4 q,bool valid,out int k,out float d,out vec4 b,out vec2 e){
-  int n=0;k=-1;d=16.0;
+  int n=0;k=-1;d=16.0;S28_NEAR=nearS28(m);
   s28PAdd(n,k,d,0,s28PA(m,0));
   s28PAdd(n,k,d,1,s28PA(m,1));
   s28PAdd(n,k,d,2,s28PA(m,2));
@@ -173,6 +178,7 @@ int s28POwn(vec3 m,vec4 q,bool valid,out int k,out float d,out vec4 b,out vec2 e
   if(n==(k==16?1:0)&&(s28PFat(m,0)||s28PFat(m,1))&&s28PA(m,12)>=0.0&&s28PA(m,13)>=0.0&&s28PA(m,14)>=0.0){if(n==0){k=17;d=0.0;}n++;}
   // Fuera de las cajas renales, la grasa del abdomen a 3 mm: sólo sin ningún dueño (tampoco pared) ni vaso fuente.
   if(n==0&&!s28PFatIn(m,0)&&!s28PFatIn(m,1)&&s28PWide(m)&&s28PA(m,12)>=0.0&&s28PA(m,13)>=0.0&&s28PA(m,14)>=0.0){k=17;d=0.0;n++;}
+  S28_NEAR=-1;
   return n;
 }
 // Gradiente analítico de la trilineal del riñón cuya caja contiene p (gemelo: s0028KidneyGradient): los ocho nodos de
