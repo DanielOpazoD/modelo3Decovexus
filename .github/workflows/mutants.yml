@@ -31,6 +31,7 @@ on:
       - 'src/validation/s0028Vessels.test.ts'
       - 'src/validation/s0028SolidsPackage.test.ts'
       - 'src/validation/s0028TissueLook.test.ts'
+      - 'src/validation/s0028ExamChain.test.ts'
       - 'tools/mutants/**'
       - 'vite.config.ts'
       - 'package.json'

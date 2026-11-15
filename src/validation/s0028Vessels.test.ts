@@ -6,6 +6,7 @@ import { S0028_KIDNEY_FRAMES } from '../anatomy/people/s0028/cpu';
 import { S0028_TUBE_SEGMENTS } from '../anatomy/people/s0028/vessels';
 import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../anatomy/s0028TrunksData';
 import { SCENE_TUBE_CAPACITY } from '../anatomy/tubeCapacity';
+import { buildVesselTree } from '../anatomy/vesselTree';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
 import witnesses from './fixtures/s0028-trunk-witnesses.json';
@@ -80,6 +81,7 @@ function toAxis(nodes: readonly { p: Vec3 }[], q: Vec3): number {
 const CONTINUED: Partial<Record<string, keyof typeof S0028_TRUNKS>> = { pvRight: 'pvRightAnterior' };
 
 it('los troncos de s0028 son los de sus máscaras, en el sentido del flujo y dentro de los techos del tubo', () => {
+  const reference = buildVesselTree(scene.kidneyRight, scene.kidneyLeft, true).vessels;
   for (const [id, [refRadius, nodes]] of Object.entries(S0028_TRUNKS)) {
     const v = scene.vesselById.get(id as never)!,
       drawn = v.tube.nodes,
@@ -115,7 +117,10 @@ it('los troncos de s0028 son los de sus máscaras, en el sentido del flujo y den
       for (const n of drawn) expect(n.r, id).toBeGreaterThanOrEqual(Math.min(...radii) - 1e-9);
       expect([drawn[0].r, drawn.at(-1)!.r], id).toEqual([radii[0], radii.at(-1)]);
     }
-    expect(v.refRadius, id).toBe(refRadius);
+    // El área de flujo es la medida, salvo en las suprahepáticas: la de referencia del adulto (decisión 392).
+    expect(v.refRadius, id).toBe(
+      id.startsWith('hv') ? reference.find((r) => r.id === id && r.flowFactor === undefined)!.refRadius : refRadius,
+    );
   }
   // Una sola máscara portal: la esplénica muere donde nace el tronco, y de su final nacen las dos ramas.
   expect(axis(scene, 'portalSplenic').at(-1)!.p).toEqual(axis(scene, 'pvTrunk')[0].p);

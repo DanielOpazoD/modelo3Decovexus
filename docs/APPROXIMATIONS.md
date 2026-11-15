@@ -607,6 +607,13 @@ lo afirma: es la hipótesis más simple para que el fondo no muestre la rejilla 
 El calibre de las suprahepáticas es el de su TAC salvo que nunca disminuye hacia la cava y las tres principales llegan a ella con
 8 mm de diámetro al menos. Los 8 mm y los 25 mm del tramo en que se abren son cifras de aspecto, no medidas.
 
+### s0028: área de flujo de las suprahepáticas (392)
+
+Las suprahepáticas de s0028 fluyen con el área de referencia del adulto (`vesselTree.ts`: radios 5,6 / 4,5 / 4,2 mm y 6 en el
+tronco común, desembocadura de 8–10 mm, B.2), no con la de su TAC (3,4 / 2,8 / 2,7 y 2,8): la segmentación de una vena fina,
+que además se estrechaba antes de la cava. La imagen conserva el calibre de la decisión 365 (8 mm en la desembocadura): la
+velocidad es uniforme por vaso (decisión 6) y no se lee del calibre que se ve.
+
 ### s0028: aspecto de la pared (366)
 
 Las fascias de la pared se dibujan con reflectividad uniforme (sin la variación a lo largo de la cara de la otra persona) y el

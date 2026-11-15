@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14398
+   "actual": 69345
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 69320
+   "actual": 14398
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 25555
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 25555
+   "actual": 1631
   },
   {
    "what": "`series.js`",
@@ -289,7 +289,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 485
+   "actual": 5730
   },
   {
    "what": "`surfaces.js`",
@@ -297,7 +297,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 485
   },
   {
    "what": "`teacherTab.js`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1126116
+   "actual": 1126141
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,8 +624,8 @@
  ],
  "s0028DescriptorSha256": "3201286d10bc1723cd95729be079cba3813a1376fc461b0a524716c3b0533f8c",
  "tests": {
-  "vitestFiles": 339,
-  "slowFiles": 34,
+  "vitestFiles": 340,
+  "slowFiles": 35,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,
   "e2eShards": 12,

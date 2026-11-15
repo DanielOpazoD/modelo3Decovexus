@@ -51,7 +51,9 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
       length = arcs(old).at(-1)!,
       nodes: TubeNode[] = trunk[1].map(([x, y, z, r]) => ({ p: [x, y, z], r }));
     v.tube = { ...v.tube, nodes };
-    v.refRadius = trunk[0];
+    // Las suprahepáticas conservan el área de flujo de referencia (decisión 392): la de su TAC (3,4 mm de radio la derecha,
+    // frente a 5,6) es la segmentación de una vena fina y hacía la VSH 2,7 veces más rápida, plegada a la escala de partida.
+    if (!v.id.startsWith('hv')) v.refRadius = trunk[0];
     moved.set(v, (hit) =>
       add(hit.s < 1e-6 ? nodes[0].p : hit.s > length - 1e-6 ? nodes[nodes.length - 1].p : closest(nodes, hit.point).point, hit.point, -1),
     );

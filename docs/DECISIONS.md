@@ -12161,3 +12161,13 @@ tenía aurícula (la tiene desde la 356).
 **Consecuencias.** 13 rayos claros y 31 mm de aurícula (antes, 0), también en las cuatro vecinas; delante va grasa, no hígado: el
 lóbulo izquierdo de s0028 no llega ahí, y el contrato de la otra persona se aplica sin ese requisito.
 **Verificación.** `s0028Windows` (centro, vecinas y control), un mutante, capa lenta, Metal; lámina con el mismo plano del TAC.
+
+## 392. Las suprahepáticas de s0028 fluyen con el área de referencia
+
+**Contexto.** La cadena del alumno (puerta PW → espectro → medida → grado) nunca había pasado por s0028. Con el área de flujo de
+su TAC (radio 3,4 mm la derecha, 36 mm²; la referencia, 5,6 y 99) la VSH iba 2,7 veces más rápida: S de 59 cm/s en el sano (22–43
+publicados), aliasing a la escala de partida (±40 cm/s) y la congestión grave con grado 2; desde la subcostal, el sano «grave».
+**Opciones.** Subir la escala de partida solo en s0028, o el área; se elige el área: el TAC no resuelve una vena fina.
+**Decisión.** `placeS0028Vessels` no toma el radio de referencia de su TAC para las suprahepáticas; la imagen (365) no cambia.
+**Consecuencias.** Grados 0, 3 y 1 (sano, grave, FA) con las nueve capturas limpias; S del sano 22 cm/s.
+**Verificación.** `s0028ExamChain` (capa lenta), un mutante, Metal.
