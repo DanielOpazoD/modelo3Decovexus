@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Ventanas s0028: la subxifoidea, bajo el xifoides y abanicada hacia la cabeza, enseña la cava entrando en la aurícula derecha (391)
+
 - Imagen s0028: el músculo de la pared se ve más oscuro que la grasa y estriado, y la fascia de Scarpa más tenue que las otras caras (390)
 
 - Anatomía s0028: la vena renal nace en el hilio; desaparece la cuña negra que parecía una pelvis dilatada en mitad del seno (389)

@@ -37,6 +37,14 @@ export const startPoints: MutantManifest = {
       tests: ['src/validation/s0028Windows.test.ts'],
     },
     {
+      name: 'subxifoidea-sin-auricula',
+      origin: 'decisión 391',
+      breaks: 'La subxifoidea vuelve a la pose en que la entrada de la cava queda en el borde del sector y la aurícula fuera.',
+      from: '  subxiphoid: { phi: 1.53, z: -46, yaw: -0.019, rock: 0.399, tilt: -0.132 },',
+      to: '  subxiphoid: { phi: 1.65, z: -65, yaw: -0.037, rock: 0.063, tilt: -0.115 },',
+      tests: ['src/validation/s0028Windows.test.ts'],
+    },
+    {
       name: 'intrahepatica-con-grasa-al-borde',
       origin: 'decisión 385',
       breaks: 'La intrahepática vuelve a la pose que corta la grasa junto a la vesícula y pierde la rama anterior de la porta.',

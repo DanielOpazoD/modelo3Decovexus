@@ -5,6 +5,10 @@
  */
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
+import { uncompress } from '../../src/anatomy/compression';
+import { HEART_ATLAS_SHIFT } from '../../src/anatomy/organs/heart';
+import { heartChamber } from '../../src/anatomy/organs/heartChamber';
+import { S0028_HEART } from '../../src/anatomy/people/s0028/cpu';
 import { AnatomyQuery } from '../../src/anatomy/query';
 import { Tissue } from '../../src/anatomy/tissues';
 import { NORMAL_ADULT } from '../../src/cases';
@@ -20,6 +24,9 @@ import { setS0028Solids } from '../../src/validation/support/legacyPerson/s0028S
 import { setS0028Wall } from '../../src/validation/support/legacyPerson/s0028Wall';
 import { AnatomyScene } from '../../src/validation/support/legacyPerson/scene';
 import { setThoracicAtlas } from '../../src/validation/support/legacyPerson/thoracicAtlas';
+
+/** Centro de la aurícula derecha de s0028 en el marco del modelo, leído en su TAC (decisión 356): (−24, 27, 32) mm. */
+export const S0028_RA_CENTER = S0028_HEART.cavities.ra.c.map((x, i) => x + HEART_ATLAS_SHIFT[i]) as Vec3;
 
 /** La persona s0028 completa en Node, con la fisiología del adulto sano en apnea espiratoria. */
 export function loadS0028(): { scene: AnatomyScene; anatomy: AnatomyQuery; sample: PhysiologySample } {
@@ -306,6 +313,58 @@ export function sectorFraction(
   return hits / samples;
 }
 
+/**
+ * Aurícula derecha de s0028 en una pose (decisión 391), con el contrato de la otra persona (`support/ivcAtriumWindow.ts`): 97
+ * rayos cada 0,5 mm; un rayo es claro si está acoplado, a más de 5° del borde, cruza el diafragma o la pared del corazón antes
+ * de la aurícula, recorre en ella al menos 8 mm sin nada delante que tape (hueso, cartílago, pulmón ni gas) y se aceptan cinco
+ * rayos claros vecinos y 20 mm de anchura. Sin el «a través del hígado» de la otra persona: el lóbulo izquierdo de s0028 no llega
+ * delante de su aurícula (grasa de 30–40 mm entre la pared y el diafragma), rasgo de esta persona.
+ */
+export function s0028AtriumWindow(anatomy: AnatomyQuery, sample: PhysiologySample, pose: ProbePose) {
+  const contact = probeContact(pose, TR, anatomy.scene.torso);
+  anatomy.setProbeCompression(contact);
+  const cpu = anatomy.scene.person.cpu;
+  const rays: { theta: number; clear: boolean; lateral: number[] }[] = [];
+  for (let line = 0; line < 97; line++) {
+    const theta = -TR.halfSector + (2 * TR.halfSector * line) / 96;
+    let barrier = false,
+      blocked = false,
+      atriumMm = 0;
+    const lateral: number[] = [];
+    for (let r = 0; r <= 170 && !blocked; r += 0.5) {
+      const world = pointOnLine(contact.frame, TR, theta, r);
+      const tissue = anatomy.classifyWorld(world, sample).tissue;
+      if (atriumMm === 0 && (tissue === Tissue.Diaphragm || tissue === Tissue.Myocardium)) barrier = true;
+      const m = uncompress(world, contact);
+      if (tissue === Tissue.Blood && cpu.regional!.s0028SourceValue(m, 'heart').d < 0 && heartChamber(m, -1e3, cpu) === 'ra') {
+        atriumMm += 0.5;
+        lateral.push(dot(sub(world, contact.frame.face), contact.frame.lateral));
+      } else if (atriumMm === 0 && BLOCK.has(tissue)) blocked = true;
+      else if (atriumMm > 0) break;
+    }
+    rays.push({
+      theta,
+      lateral,
+      clear:
+        contactCoupling(contact, theta) > 0.5 &&
+        Math.abs(theta) < TR.halfSector - (5 * Math.PI) / 180 &&
+        barrier &&
+        !blocked &&
+        atriumMm >= 8,
+    });
+  }
+  let run = 0,
+    longestRun = 0;
+  const lateral: number[] = [];
+  for (const ray of rays) {
+    run = ray.clear ? run + 1 : 0;
+    longestRun = Math.max(longestRun, run);
+    if (ray.clear) lateral.push(...ray.lateral);
+  }
+  const widthMm = lateral.length ? Math.max(...lateral) - Math.min(...lateral) : 0;
+  return { longestRun, widthMm, accepted: longestRun >= 5 && widthMm >= 20 };
+}
+
 /** Riñón derecho de s0028: centro y eje largo de su máscara (componentes principales), en mm LAS. */
 const KIDNEY = { center: [-50.5, -27.7, -128.1] as Vec3, u: [0.274, -0.462, 0.844] as Vec3 };
 
@@ -328,9 +387,11 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
     hv = tube('hvRight'),
     // Confluencia: los últimos 40 mm de la derecha y de la media, que llegan a la cava por un lado y por otro.
     interlobar = scene.vesselById.get('interlobarVein2')!.tube.nodes.map((n) => n.p),
-    // Cava en eje largo: su tramo intrahepático (z −125 a −30 mm), donde se mide en VExUS. Más arriba el pulmón de esta persona
-    // queda pegado a su pared posterior y el tórax de s0028 aún no tiene aurícula: la vista hacia la cabeza no se parece a una real.
-    cava = tube('ivcInfra').filter((p) => p[2] >= -125 && p[2] <= -30),
+    // Cava en eje largo hasta su entrada en la aurícula derecha (decisión 391): VExUS la mide a 1–2 cm de esa entrada, junto a la
+    // suprahepática. Hasta entonces el hito acababa en z −30 mm, cuando el tórax de s0028 aún no tenía aurícula (la tiene desde la
+    // decisión 356), y la entrada quedaba en el borde del sector con la aurícula fuera.
+    cava = tube('ivcInfra').filter((p) => p[2] >= -90),
+    atrium = S0028_RA_CENTER,
     cavaAtJunction = tube('ivcInfra').reduce((best, p) => (Math.abs(p[2] - hv.at(-1)![2]) < Math.abs(best[2] - hv.at(-1)![2]) ? p : best)),
     rightEnd = hv.slice(-9),
     middleEnd = tube('hvMiddle').slice(-9);
@@ -392,11 +453,14 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
     },
     {
       id: 'subxiphoid',
-      phi: [1.55, 2.0],
-      z: [-130, -50],
+      // Bajo el xifoides (su punta, a z −32 mm) y junto a la línea media: con más margen la búsqueda acaba en una subcostal
+      // derecha (φ 2, 5 cm a la derecha y 7 cm por debajo del xifoides), que ya no es esta ventana.
+      phi: [1.55, 1.8],
+      z: [-90, -40],
       depthMm: 180,
-      points: cava,
-      pivot: mid(cava),
+      // La cava y el camino de su extremo al centro de la aurícula: la entrada debe verse, no solo el tubo.
+      points: [...cava, ...[0.25, 0.5, 0.75, 1].map((s) => cava.at(-1)!.map((x, i) => x + s * (atrium[i] - x)) as Vec3)],
+      pivot: cavaAtJunction,
       long: sub(cava.at(-1)!, cava[0]),
       through: liver,
     },

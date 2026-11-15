@@ -330,7 +330,9 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   // gira hacia el espacio intercostal y la costilla central deja de caer sobre la vena (del 20 % de su luz en sombra a 0).
   intercostal: { phi: 3.435, z: -68, yaw: 0.07, rock: 0, tilt: 0.112 },
   subcostal: { phi: 2.35, z: -88.5, yaw: 1.114, rock: 0.325, tilt: -0.345 },
-  subxiphoid: { phi: 1.65, z: -65, yaw: -0.037, rock: 0.063, tilt: -0.115 },
+  // Decisión 391: bajo el xifoides y abanicada 23° hacia la cabeza, la cava entra en la aurícula derecha dentro del sector (13
+  // rayos claros y 31 mm de aurícula); antes la entrada quedaba en el borde y la aurícula, fuera.
+  subxiphoid: { phi: 1.53, z: -46, yaw: -0.019, rock: 0.399, tilt: -0.132 },
   // Decisión 383 (valoración del responsable): el riñón pasa de 66 a 82 mm en el plano, sale el duodeno y queda una costilla
   // en el borde en vez de dos cruzando el campo. El colon sigue a un lado: con hígado como ventana no hay pose que lo evite.
   hepatorenal: { phi: 3.2, z: -95, yaw: -0.8, rock: -0.188, tilt: -0.281 },
