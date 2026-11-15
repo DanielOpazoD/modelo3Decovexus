@@ -1,6 +1,6 @@
 # Estado vigente: imagen
 
-Actualizado: 2026-11-15 sobre main `c7e3a43`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
+Actualizado: 2026-11-15 sobre main `ab368da`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
 techos los limitan. La explicación de cada pasada está en `docs/ARCHITECTURE.md`; las decisiones, en `docs/DECISIONS.md`.
 
 ## A0 nativa current (339)
@@ -10,7 +10,7 @@ No cambia la pasada B nativa ni la resolución192×1024. Ocho imágenes idéntic
 optimización;24 estados A0 bit a bit. Banco MetalM4:−46,91% GPU agregado frente a adaf672,
 mediana y p95 por cada una de ocho escenas≤base. No FPS ni garantía universal de hardware/poses.
 SwiftShader conserva su reparto; s0028 nativa conserva A0 original. Objetivos adicionales
-1.004.544B nominales e índice vascular current8mm, techo4MiB. No memoria total ni coste frío.
+1.004.544B nominales e índice vascular de 8 mm (también s0028, decisión 397), techo4MiB. No memoria total ni coste frío.
 Ver decisión339 y evidencia original; aceptación completa/CI se acreditan por separado.
 
 ## Pasadas por cuadro
@@ -49,7 +49,7 @@ samplers y ranuras de uniforms: decisión 317):
 
 <!-- programas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `c7e3a43` el 2026-11-15 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `ab368da` el 2026-11-15 con `tools/docs/estado.ts`.
 
 | Programa                  | Samplers default / s0028 | Ranuras default / s0028 | Uso de tokens (peor persona) | Uso de ramas |
 | ------------------------- | -----------------------: | ----------------------: | ---------------------------: | -----------: |
@@ -108,10 +108,8 @@ que la valla o que la reserva de turno.
 ## Cadencia de s0028 (medida el 15-11-2026; condición del corte)
 
 Lo anterior es de la otra persona: s0028 aún no cumple la regla del coste (`docs/REGLAS.md`). M4, Metal, las dos en la misma sesión:
-en el banco (`npm run fidelity -- --abdomen s0028`), 30–60 fps quieta (la subxifoidea, 30) frente a 60 en los ocho estados, con el
-mismo coste síncrono (~5 ms). En el bucle respirando, subxifoidea quieta 37 fps con el carril 3D y 45 sin él, y 19 y 29 al mover (la
-otra, 60 y 52–55); renal quieta, 33 y 60. Al mover, el límite es la CPU: el contacto de s0028 (`probeContact`) cuesta ~37 ms por pose
-(~5 la otra), en la cara interna de cada nodo (`firstRegionalWallCrossing` a pasos de 1 mm, siete lecturas de la EDT por punto) y en
-los nodos rígidos (`s0028RigidSpan`). Quieta, el hilo principal está ocioso y el cuadro espera la GPU: la ecografía cuesta 15–18 ms
-(`gpuTimings`; la otra, 5–7). Por pasada, la clasificación B 15,9 ms (8,9) y A0 5,5 (1,3): las optimizaciones de A0 y de la rejilla
-vascular (decisiones 338 y 339) solo se aplicaron a la otra persona.
+en el banco (`npm run fidelity -- --abdomen s0028`), 30–60 fps quieta (la subxifoidea, 30) frente a 60 en los ocho estados. Al mover,
+el contacto de s0028 costaba ~37 ms por pose y ahora 10 (PR 63, mismo resultado bit a bit): subxifoidea de 19 a 30 fps con el carril
+3D (la otra, 52–55). Quieta, el cuadro espera la GPU: la ecografía cuesta 15–23 ms (`gpuTimings`; la otra, 5–7); por pasada, la
+clasificación B 15,9 ms (8,9) y A0 5,5 (1,3). Saltar las clasificaciones de elevación de B la baja un 30–40 %: en s0028 la grasa
+visceral y los contenidos digestivos salen con `bd = 0` y las disparan siempre. Plan en `docs/anatomia/corte-s0028.md`.

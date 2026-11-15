@@ -1,31 +1,31 @@
 # Estado vigente: pruebas
 
-Actualizado: 2026-11-15 sobre main `c7e3a43`. Qué capas de prueba hay, cuánto tardan y cómo se acepta un cambio. La
+Actualizado: 2026-11-15 sobre main `ab368da`. Qué capas de prueba hay, cuánto tardan y cómo se acepta un cambio. La
 estrategia está en `docs/TESTING.md`; el procedimiento de aceptación y fusión, en `CONTRIBUTING.md`.
 
 ## Capas
 
 <!-- capas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `c7e3a43` el 2026-11-15 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `ab368da` el 2026-11-15 con `tools/docs/estado.ts`.
 
 | Capa                                    |  Cuántas | Dónde                                   |
 | --------------------------------------- | -------: | --------------------------------------- |
-| Archivos vitest (rápidos + lentos)      |      344 | `src/**/*.test.ts`                      |
-| De ellos, lentos (`// @tier slow`)      |       37 | `npm run test:slow`, `check`, CI        |
-| Especificaciones e2e / llamadas `test(` | 89 / 148 | `e2e/*.spec.ts`, 12 fragmentos en la CI |
+| Archivos vitest (rápidos + lentos)      |      346 | `src/**/*.test.ts`                      |
+| De ellos, lentos (`// @tier slow`)      |       39 | `npm run test:slow`, `check`, CI        |
+| Especificaciones e2e / llamadas `test(` | 90 / 149 | `e2e/*.spec.ts`, 12 fragmentos en la CI |
 | Contratos Python                        |       20 | `tools/anatomy/*_test.py` (local)       |
 
 <!-- fin de capas -->
 
-| Capa               | Qué protege                                                                                            | Cuándo corre                        |
-| ------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------- |
-| Unitarias rápidas  | DSP, unidades, clasificador VExUS, anatomía por puntos, sonda, contratos estáticos (GLSL, docs, capas) | `npm test`, gancho de push, `check` |
-| Lentas             | fisiología emergente por caso, cadena Doppler y cadena completa del alumno (decisión 94)               | `npm run test:slow`, `check`, CI    |
-| Cobertura          | umbrales globales que solo suben, en dos fases (core y matrices IQ) con sello por commit               | `check`, CI                         |
-| e2e                | arranque, casos, medición, contexto WebGL y equivalencia TS ↔ GLSL con SwiftShader (decisiones 30, 57) | CI en doce fragmentos               |
-| Contratos Python   | fuente y exportadores del TAC de la migración s0028                                                    | local, al tocar `tools/anatomy`     |
-| Banco de fidelidad | textura e interfaces en GPU real                                                                       | a mano en cada PR de imagen         |
+| Capa               | Qué protege                                                                                                                 | Cuándo corre                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Unitarias rápidas  | DSP, unidades, clasificador VExUS, anatomía por puntos, sonda, contratos estáticos (GLSL, docs, capas)                      | `npm test`, gancho de push, `check` |
+| Lentas             | fisiología emergente por caso, cadena Doppler y cadena completa del alumno (decisión 94)                                    | `npm run test:slow`, `check`, CI    |
+| Cobertura          | umbrales globales que solo suben, en dos fases (core y matrices IQ) con sello por commit                                    | `check`, CI                         |
+| e2e                | arranque, casos, medición, contexto WebGL y equivalencia TS ↔ GLSL de legacy y de s0028 con SwiftShader (decisiones 30, 57) | CI en doce fragmentos               |
+| Contratos Python   | fuente y exportadores del TAC de la migración s0028                                                                         | local, al tocar `tools/anatomy`     |
+| Banco de fidelidad | textura e interfaces en GPU real                                                                                            | a mano en cada PR de imagen         |
 
 ## Tiempos
 

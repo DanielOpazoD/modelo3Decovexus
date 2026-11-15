@@ -21,9 +21,10 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
     });
     const poses = await page.evaluate(() => {
       const s = window.__vexusTest!.sim();
-      return { torso: s.scene.torso, pose: s.pose };
+      return { torso: s.scene.torso, pose: s.pose, person: s.scene.identity.person };
     });
-    const transverse = startPointsFor(poses.torso, { person: 'current' }).find((p) => p.id === 'epigastric')!;
+    // la pose de la persona cargada (con E2E_ABDOMEN=s0028, la suya)
+    const transverse = startPointsFor(poses.torso, { person: poses.person }).find((p) => p.id === 'epigastric')!;
     // Las láminas de imagen y el cine son evidencia en Metal, fuera de CI: en SwiftShader superan los 5 min por caso (decisión 314)
     for (const view of ['transverse'] as const) {
       await page.evaluate(
@@ -161,8 +162,11 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
     const errors = await bootWithoutErrors(page, '?e2e=app');
     if (caseId !== 'normal-adult') await page.selectOption('#case-select', caseId);
     await expect.poll(() => page.evaluate(() => window.__vexusTest!.sim().patient.id)).toBe(caseId);
-    const torso = await page.evaluate(() => window.__vexusTest!.sim().scene.torso);
-    const pose = startPointsFor(torso, { person: 'current' }).find((p) => p.id === 'epigastric')!;
+    const { torso, person } = await page.evaluate(() => {
+      const scene = window.__vexusTest!.sim().scene;
+      return { torso: scene.torso, person: scene.identity.person };
+    });
+    const pose = startPointsFor(torso, { person }).find((p) => p.id === 'epigastric')!;
     const results = [];
     for (const systole of [false, true]) {
       // Manual render bypasses the application's frame pacer. Drain the previous image

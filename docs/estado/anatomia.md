@@ -1,6 +1,6 @@
 # Estado vigente: anatomía
 
-Actualizado: 2026-11-15 sobre main `c7e3a43`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
+Actualizado: 2026-11-15 sobre main `ab368da`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
@@ -45,7 +45,7 @@ que el responsable revise las láminas (`docs/anatomia/relaciones-tac.md`).
 | P6       | árbol portal y tributarias suprahepáticas del mismo hígado                                             | 357, 358, 365           | fusionada                                 |
 | P7       | tórax del caso: diafragma, corazón con la cava en la aurícula, pulmón apartado de la cava              | 348, 356, 369, 375, 380 | fusionada                                 |
 | P8 (2)   | ocho ventanas con pose propia; lista de relaciones medida sobre s0028 (21 de 21 filas)                 | 359, 381                | medida; falta la revisión del responsable |
-| Corte    | s0028 como única anatomía; retirar `default` y `legacy`                                                | 340                     | pendiente: decisión del responsable       |
+| Corte    | s0028 como única anatomía; retirar `default` y `legacy` (plan: `docs/anatomia/corte-s0028.md`)         | 340                     | pendiente: decisión del responsable       |
 
 ## Dónde se calcula
 
@@ -83,7 +83,7 @@ Todos los techos de la aplicación, con su fuente, están en `docs/estado/presup
 
 <!-- presupuestos s0028: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `c7e3a43` el 2026-11-15 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `ab368da` el 2026-11-15 con `tools/docs/estado.ts`.
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |
