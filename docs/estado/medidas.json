@@ -65,7 +65,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 252816
+   "actual": 253570
   },
   {
    "what": "`candidate-manifest.bin`",
@@ -305,7 +305,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 46687
+   "actual": 46743
   },
   {
    "what": "`testHooks.js`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1042025
+   "actual": 1042835
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1126141
+   "actual": 1126951
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,8 +624,8 @@
  ],
  "s0028DescriptorSha256": "3201286d10bc1723cd95729be079cba3813a1376fc461b0a524716c3b0533f8c",
  "tests": {
-  "vitestFiles": 342,
-  "slowFiles": 36,
+  "vitestFiles": 343,
+  "slowFiles": 37,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,
   "e2eShards": 12,

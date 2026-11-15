@@ -29,6 +29,11 @@ export interface AnatomyPerson {
   readonly placeDucts?: (ducts: DuctDef[]) => DuctDef[];
   /** Tope de ramas hepáticas procedurales por vaso madre, cuando la persona ya trae ramas propias y los tubos van justos. */
   readonly hepaticBranchesPerParent?: number;
+  /**
+   * Giro (rad) alrededor del eje largo del riñón de la fila de interlobares que mira a la ventana renal (decisiones 309 y 395); sin
+   * él, `ATLAS_INTERIOR_TURN`, el de la otra persona.
+   */
+  readonly interlobarTurn?: number;
   /** Radio (mm) del cuerpo vertebral lumbar con que su cortical reparte el eco (decisión 368). */
   readonly lumbarBodyRadiusMm?: number;
   /**

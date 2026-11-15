@@ -71,7 +71,7 @@ U es «desconocido»: el modelo no inventa tejido donde la fuente no lo dice.
   el contacto acopla por la piel.
 - Dos dueños independientes en un punto son conflicto: U, conservados en `solids`, sin precedencia (decisión 321). El
   solape hígado/pared de unos 11 mm³ sigue declarado como conflicto.
-- Riñón: borde D; el derecho, estirado a 110 mm (decisión 387); su vena nace en el hilio (389). Su interior lleva el rótulo offline del propio TAC (r5, decisión 341): corteza y médula E dentro de la máscara;
+- Riñón: borde D; el derecho, estirado a 110 mm (decisión 387); su vena nace en el hilio (389) y sus interlobares van hacia el borde convexo (395). Su interior lleva el rótulo offline del propio TAC (r5, decisión 341): corteza y médula E dentro de la máscara;
   en el hueco del hilio, seno graso y colector D y vasos e interfaces del seno E. La boca hiliar y lo no rotulado siguen U.
 - Gerota, cuadrado lumbar y diafragma posterior: U en P3; la grasa entra solo como «grasa compatible» D (decisión 321).
   Desde la decisión 343 esa grasa llega a todo el abdomen superior: a 1,5 mm hasta 30 mm del riñón y a 3 mm en el resto.

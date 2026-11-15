@@ -2,7 +2,7 @@ import { registerAbdominalVessels } from './abdominalVessels';
 import { SeededRandom } from '../core/random';
 import { add, cross, dist, normalize, rotateAxis, scale, sub, type Vec3 } from '../core/vec3';
 import { VESSEL_META, type CaliberLaw, type VesselId } from '../physiology/vessels';
-import { atlasInterior, BERTIN_COLUMNS_U, kidneyWorld, type Kidney } from './organs/kidney';
+import { ATLAS_INTERIOR_TURN, atlasInterior, BERTIN_COLUMNS_U, kidneyWorld, type Kidney } from './organs/kidney';
 import { tubeShapeMaxFactor, type Tube, type TubeShapeClass } from './primitives';
 import { Tissue } from './tissues';
 
@@ -122,7 +122,10 @@ export function buildVesselTree(
   // alumno queda junto al seno, donde miden lo mismo que antes (el `refRadius`, que da el área y la velocidad, no cambia)
   // Con el atlas van por la fila que mira a la ventana renal, donde el riñón es más delgado que hacia fuera (decisión 309)
   // Cada columna lleva su leve giro: no van las tres en el mismo plano [EXTRAPOLACIÓN PROPIA]
-  const kwi = (q: Vec3, u: number): Vec3 => kw(kR, registeredAbdomen ? atlasInterior(q, (0.07 * u) / BERTIN_COLUMNS_U[2]) : q);
+  // El giro de la fila es el de la persona cuando lo tiene (decisión 395): el de la otra persona, −0,4π, dejaba las de s0028 de
+  // delante atrás, cruzando el plano de su ventana renal a 57° del haz.
+  const turn = kR.person?.interlobarTurn ?? ATLAS_INTERIOR_TURN;
+  const kwi = (q: Vec3, u: number): Vec3 => kw(kR, registeredAbdomen ? atlasInterior(q, (0.07 * u) / BERTIN_COLUMNS_U[2], turn) : q);
   const reach = (outer: number): number => (registeredAbdomen ? outer * 0.62 : outer);
   const interlobarVein = (id: VesselId, u: number, bow: number, outer: number): VesselDef =>
     thin(

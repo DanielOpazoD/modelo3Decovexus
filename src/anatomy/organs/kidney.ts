@@ -163,10 +163,13 @@ export const PYRAMIDS: readonly RenalPyramid[] = buildPyramids(PYRAMID_SPECS);
  */
 export const ATLAS_INTERIOR_TURN = -0.4 * Math.PI;
 
-/** Punto del marco de la fila lateral (`PYRAMID_SPECS`) en el interior del riñón del atlas, con un giro propio (rad) alrededor del eje largo. */
-export function atlasInterior(q: Vec3, extra = 0): Vec3 {
-  const c = Math.cos(ATLAS_INTERIOR_TURN + extra);
-  const s = Math.sin(ATLAS_INTERIOR_TURN + extra);
+/**
+ * Punto del marco de la fila lateral (`PYRAMID_SPECS`) en el interior del riñón del atlas, con un giro propio (rad) alrededor del eje
+ * largo. `turn`: el giro de la fila de la persona (`AnatomyPerson.interlobarTurn`, decisión 395); por omisión, el de la otra persona.
+ */
+export function atlasInterior(q: Vec3, extra = 0, turn = ATLAS_INTERIOR_TURN): Vec3 {
+  const c = Math.cos(turn + extra);
+  const s = Math.sin(turn + extra);
   return [q[0], q[1] * c - q[2] * s, q[1] * s + q[2] * c];
 }
 

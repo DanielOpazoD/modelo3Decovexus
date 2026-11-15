@@ -336,7 +336,9 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   // Decisión 383 (valoración del responsable): el riñón pasa de 66 a 82 mm en el plano, sale el duodeno y queda una costilla
   // en el borde en vez de dos cruzando el campo. El colon sigue a un lado: con hígado como ventana no hay pose que lo evite.
   hepatorenal: { phi: 3.2, z: -95, yaw: -0.8, rock: -0.188, tilt: -0.281 },
-  renal: { phi: 3.35, z: -115, yaw: -0.498, rock: 0.083, tilt: 0.11 },
+  // Decisión 395: con sus interlobares hacia el borde convexo, la media recorre el plano a lo largo del haz (coseno 0,93; antes
+  // la cruzaba a 57°) y el riñón se ve 107 mm.
+  renal: { phi: 3.25, z: -130, yaw: -0.378, rock: 0.199, tilt: 0.011 },
 };
 const S0028_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...S0028_POSES[sp.id] }));
 /** Scene-specific presets; legacy tests/torso retain their own poses. */

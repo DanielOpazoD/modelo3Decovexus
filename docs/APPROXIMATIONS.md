@@ -608,6 +608,12 @@ lo afirma: es la hipótesis más simple para que el fondo no muestre la rejilla 
 El calibre de las suprahepáticas es el de su TAC salvo que nunca disminuye hacia la cava y las tres principales llegan a ella con
 8 mm de diámetro al menos. Los 8 mm y los 25 mm del tramo en que se abren son cifras de aspecto, no medidas.
 
+### s0028: interlobares hacia el borde convexo (395)
+
+Las tres raíces interlobares de s0028 (las de la otra persona en su marco renal) van del seno hacia el borde convexo, sin el giro
+de −0,4π que en la otra persona las orienta hacia su ventana renal (decisión 309). Un riñón real las tiene alrededor de todo el
+seno; el modelo solo dibuja esta fila, la que se interroga en VExUS. Es una regla de orientación, no una segmentación del TAC.
+
 ### s0028: área de flujo de las suprahepáticas (392)
 
 Las suprahepáticas de s0028 fluyen con el área de referencia del adulto (`vesselTree.ts`: radios 5,6 / 4,5 / 4,2 mm y 6 en el
