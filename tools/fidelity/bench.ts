@@ -8,6 +8,7 @@
  *   npm run fidelity -- --sweep            # + banco de interfaces con 4 poses más por vista
  *   npm run fidelity -- --compound false   # la imagen de una mirada (composición espacial apagada)
  *   npm run fidelity -- --harmonic false   # en fundamental (armónica tisular apagada)
+ *   npm run fidelity -- --abdomen s0028    # otra persona del abdomen (`?abdomen=`); sin ella, la de la aplicación
  *
  * La composición espacial (decisión 58) está encendida por defecto, como en la aplicación: el banco llena
  * el anillo de miradas antes de medir y cada escena añade el bloque `compound` (por banda: SNR de la mirada
@@ -70,6 +71,8 @@ const SWEEP = args.get('sweep') === 'true';
 const COMPOUND_ON = args.get('compound') !== 'false';
 /** Armónica tisular (decisión 77): encendida salvo `--harmonic false`, como en la aplicación. */
 const HARMONIC_ON = args.get('harmonic') !== 'false';
+/** Persona del abdomen (`?abdomen=`, p. ej. `s0028`); sin la opción, la de la aplicación. */
+const ABDOMEN = args.get('abdomen') ?? null;
 /** Poses del barrido de interfaces sobre cada vista (`--sweep`). */
 const SWEEP_POSES = [{ rockDeg: 6 }, { rockDeg: -6 }, { tiltDeg: 6 }, { tiltDeg: -6 }];
 /**
@@ -162,7 +165,7 @@ try {
       const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
       const errors: string[] = [];
       page.on('pageerror', (e) => errors.push(e.message));
-      await page.goto(`${URL}/?e2e=1&docente=1`);
+      await page.goto(`${URL}/?e2e=1&docente=1${ABDOMEN ? `&abdomen=${encodeURIComponent(ABDOMEN)}` : ''}`);
       await page.waitForFunction(
         () => /\d+ fps/.test(document.querySelector('#status')?.textContent ?? '') && typeof window.__vexusTest === 'object',
         null,
@@ -170,6 +173,9 @@ try {
           timeout: 60_000,
         },
       );
+      // la persona pedida o nada: un banco de la otra persona con el nombre de esta no informaría nada
+      const person = await page.evaluate(() => window.__vexusTest!.sim().scene.identity.person);
+      if (ABDOMEN && person !== ABDOMEN) throw new Error(`banco: se pidió el abdomen ${ABDOMEN} y cargó ${person}`);
       gpu = await page.evaluate((): string => {
         const gl = document.createElement('canvas').getContext('webgl2');
         const ext = gl?.getExtension('WEBGL_debug_renderer_info');
@@ -364,6 +370,6 @@ const provenance = {
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(
   OUT,
-  `${JSON.stringify({ ...provenance, fecha: new Date().toISOString().slice(0, 10), gpu, url: URL, compuesto: COMPOUND_ON, armonica: HARMONIC_ON, escenas: roundDeep(results) }, null, 1)}\n`,
+  `${JSON.stringify({ ...provenance, fecha: new Date().toISOString().slice(0, 10), gpu, url: URL, abdomen: ABDOMEN, compuesto: COMPOUND_ON, armonica: HARMONIC_ON, escenas: roundDeep(results) }, null, 1)}\n`,
 );
 console.log(`línea base → ${OUT}`);

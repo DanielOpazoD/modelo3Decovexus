@@ -84,21 +84,11 @@ Las siete E2E Metal de RM pasan. La no-regresión estricta por estado no pasa en
 la corrección, condicionado a check y CI del commit final. La puerta original sigue fallida;
 no se repite rendimiento ni se presenta como una mejora visible del aspecto general.
 
-## Ventana hepatorrenal visible (decisión 335)
+## Ventanas de la otra persona (decisiones 335 y 336)
 
-Candidato manual: el inicio de la persona actual entra entre costillas y muestra juntos el hígado
-con el riñón longitudinal. Cambia la adquisición, no el tamaño o la forma de los órganos. Se conserva
-la anatomía y toda la cadena de imagen. La prueba de visibilidad protege ahora también el hígado;
-antes sólo protegía el riñón. [Comparaciones registradas](../evidence/INDEX.md#image-visible-65-paired);
-negativos en la ronda manual `image-visible-65`.
-
-## Revisión de ventanas (decisión 336)
-
-Ocho tarjetas revisadas, dos casos: tres poses nuevas (VCI transversal, suprahepática derecha
-intercostal y media subcostal). Cinco conservadas tras comparar candidatos; la hepatorrenal de
-335 sigue vigente. [16 pares registrados](../evidence/INDEX.md#image-views-66-paired). Sólo cambia
-la adquisición; no hay remodelación anatómica ni tareas programadas. Aceptación remota pendiente
-del último commit del PR352; los resultados anteriores no se reutilizan como CI del nuevo head.
+La hepatorrenal entra entre costillas con hígado y riñón longitudinal juntos (335); tres poses nuevas y cinco conservadas en las ocho
+tarjetas (336). Solo cambia la adquisición. Pares registrados en [image-visible-65](../evidence/INDEX.md#image-visible-65-paired) e
+[image-views-66](../evidence/INDEX.md#image-views-66-paired).
 
 ## Rejilla vascular nativa (decisión338)
 
@@ -114,3 +104,14 @@ Con la sonda quieta el bucle va a 60 fps; al girarla o deslizarla, a 37–49 (Ap
 frente a 17–19). La ecografía tarda 7–9 ms de GPU por cuadro. Lo que queda por debajo de 60 al mover es CPU del hilo principal:
 resolver el contacto de la sonda cuesta unos 5 ms por pose (`bodyDepth`) y, si el cuadro termina tarde, la siguiente RAF llega antes
 que la valla o que la reserva de turno.
+
+## Cadencia de s0028 (medida el 15-11-2026; condición del corte)
+
+Lo anterior es de la otra persona: s0028 aún no cumple la regla del coste (`docs/REGLAS.md`). M4, Metal, las dos en la misma sesión:
+en el banco (`npm run fidelity -- --abdomen s0028`), 30–60 fps quieta (la subxifoidea, 30) frente a 60 en los ocho estados, con el
+mismo coste síncrono (~5 ms). En el bucle respirando, subxifoidea quieta 37 fps con el carril 3D y 45 sin él, y 19 y 29 al mover (la
+otra, 60 y 52–55); renal quieta, 33 y 60. Al mover, el límite es la CPU: el contacto de s0028 (`probeContact`) cuesta ~37 ms por pose
+(~5 la otra), en la cara interna de cada nodo (`firstRegionalWallCrossing` a pasos de 1 mm, siete lecturas de la EDT por punto) y en
+los nodos rígidos (`s0028RigidSpan`). Quieta, el hilo principal está ocioso y el cuadro espera la GPU: la ecografía cuesta 15–18 ms
+(`gpuTimings`; la otra, 5–7). Por pasada, la clasificación B 15,9 ms (8,9) y A0 5,5 (1,3): las optimizaciones de A0 y de la rejilla
+vascular (decisiones 338 y 339) solo se aplicaron a la otra persona.
