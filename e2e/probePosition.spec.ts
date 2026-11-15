@@ -46,7 +46,7 @@ test('copiar posición conserva mandos exactos y distingue la imagen congelada',
 
 test('portapapeles denegado o ausente ofrece texto seleccionado sin afirmar que lo copió', async ({ page }) => {
   budget(20_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=legacy');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   for (const unavailable of [false, true]) {
     await page.evaluate((missing) => {
       Object.defineProperty(navigator, 'clipboard', {

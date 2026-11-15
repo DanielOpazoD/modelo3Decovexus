@@ -10,7 +10,7 @@ for (const atlas of [false, true])
         (atlas ? ' (abdomen atlas)' : ''),
       async ({ page }, info) => {
         budget(120_000);
-        const errors = await bootWithoutErrors(page, `?e2e=1&abdomen=${atlas ? 'atlas' : 'legacy'}&docente=1`);
+        const errors = await bootWithoutErrors(page, `?e2e=1&abdomen=${atlas ? 'atlas' : 's0028'}&docente=1`);
         await page.selectOption('#case-select', caseId);
         await page
           .locator('button', { hasText: /Apnea\s*esp/ })

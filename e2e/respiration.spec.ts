@@ -77,9 +77,9 @@ for (const reference of [false, true]) {
     expect(pw).toMatchObject({ cycling: false, phase: 0 });
     expect(errors).toEqual([]);
   });
-  test(`respiración y M: activar, medir y volver a apagar (${reference ? 'referencia' : 'legacy'})`, async ({ page }, info) => {
+  test(`respiración y M: activar, medir y volver a apagar (${reference ? 'referencia' : 's0028'})`, async ({ page }, info) => {
     test.setTimeout(180_000);
-    const errors = await bootWithoutErrors(page, reference ? '?e2e=1&abdomen=legacy&reference=1' : '?e2e=1&abdomen=legacy');
+    const errors = await bootWithoutErrors(page, reference ? '?e2e=1&abdomen=legacy&reference=1' : '?e2e=1&abdomen=s0028');
     await expect(page.getByRole('button', { name: 'Activar respiración', exact: true })).toBeVisible();
     await page.evaluate(() => window.__vexusTest!.goToStartPoint('subxiphoid'));
     await activate(page.locator('#mode-m'));

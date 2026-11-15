@@ -3,11 +3,11 @@ import { bootWithoutErrors, budget, checkAfterEach } from './support';
 import { measureHepatorenal } from '../tools/fidelity/hepatorenalMeasurements';
 checkAfterEach();
 for (const reference of [false, true])
-  test(`ventana hepatorrenal normal: adquisición y contraste emparejado (${reference ? 'referencia' : 'legacy'})`, async ({
+  test(`ventana hepatorrenal normal: adquisición y contraste emparejado (${reference ? 'referencia' : 's0028'})`, async ({
     page,
   }, info) => {
     budget(240_000);
-    await bootWithoutErrors(page, reference ? '?e2e=1&abdomen=legacy&reference=1' : '?e2e=1&abdomen=legacy');
+    await bootWithoutErrors(page, reference ? '?e2e=1&abdomen=legacy&reference=1' : '?e2e=1&abdomen=s0028');
     const card = page.getByRole('button', { name: /^Hepatorrenal/ });
     await card.click();
     await expect(card).toHaveAttribute('aria-current', 'true');

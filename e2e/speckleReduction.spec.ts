@@ -120,7 +120,7 @@ test('la reducción de moteado cambia solo la presentación del modo B', async (
 
 test('cambiar de nivel arranca la persistencia con el cuadro nuevo, sin mezclar niveles', async ({ page }) => {
   budget(120000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await page.getByRole('button', { name: 'Apnea espiratoria', exact: true }).click();
   await page.locator('[data-window="intercostal"]').click();
   await page.waitForFunction(() => (window.__vexusTest?.framesRendered() ?? 0) > 3);
@@ -176,7 +176,7 @@ test('conserva bordes, luces de 3 mm y líneas pos-PSF en las tres fases nativas
 
 test('el mando suspendido no reinicia Color, y activar o suspender R sí descarta la historia incompatible', async ({ page }, info) => {
   budget(180000);
-  await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await page.locator('#freeze').click();
   const result = await page.evaluate(() => {
     const s = window.__vexusTest!.sim(),
@@ -258,7 +258,7 @@ test('el mando suspendido no reinicia Color, y activar o suspender R sí descart
 
 test('el cine conserva el reinicio 0→2→0 dentro de 20 ms al congelar y redimensionar', async ({ page }, info) => {
   budget(180000);
-  await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await page.locator('[data-window="intercostal"]').click();
   await page.locator('#freeze').click();
   const result = await page.evaluate(() => {
@@ -322,7 +322,7 @@ test('el cine conserva el reinicio 0→2→0 dentro de 20 ms al congelar y redim
 
 test('RM identifica la imagen adquirida en vivo, congelada y en cine con el control real', async ({ page }) => {
   budget(180000);
-  await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   const setLevel = async (level: number) =>
     page.getByLabel('Reducción de moteado', { exact: true }).evaluate((el, value) => {
       if (!(el instanceof HTMLInputElement)) throw new Error('control de moteado no es input');
@@ -358,7 +358,7 @@ test('RM identifica la imagen adquirida en vivo, congelada y en cine con el cont
 // Variar sólo profundidad discrimina la antigua interpolación del log en G (hasta 38 grises de error).
 test('RM conserva el perfil axial cuando no hay variación lateral', async ({ page }, info) => {
   budget(180000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   const result = await page.evaluate(() => {
     const s = window.__vexusTest!.sim(),
       r = s.renderer;

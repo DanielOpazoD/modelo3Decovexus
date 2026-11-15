@@ -73,7 +73,7 @@ test('arranca, renderiza cuadros y no emite errores', async ({ page }) => {
     };
   });
   let bootCompleted = false;
-  const boot = bootWithoutErrors(page).then((errors) => {
+  const boot = bootWithoutErrors(page, '?e2e=1&abdomen=s0028').then((errors) => {
     bootCompleted = true;
     return errors;
   });
@@ -104,7 +104,7 @@ test('arranca, renderiza cuadros y no emite errores', async ({ page }) => {
 
 test('cambia de caso y el HUD lo refleja', async ({ page }) => {
   budget(90_000);
-  const errors = await bootWithoutErrors(page);
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028');
   // Si el HUD no cambia, el mensaje dice por qué: caso vivo, selector, avisos y errores de consola
   // (en CI el paso a FA falló dos veces sin más pista que «esperaba FA»).
   const hudOr = (sel: string, text: string) => async (): Promise<true | string> => {
@@ -124,7 +124,7 @@ test('cambia de caso y el HUD lo refleja', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('lo que ve el usuario (?e2e=app&abdomen=legacy): subxifoidea en armónica con composición, hígado a media escala y la VCI negra', async ({
+test('lo que ve el usuario (?e2e=app&abdomen=s0028): subxifoidea en armónica con composición, hígado a media escala y la VCI negra', async ({
   page,
 }) => {
   // El resto de la e2e arranca en la pose por defecto y en fundamental (`?e2e=1&abdomen=legacy`, la física calibrada de sus pruebas);
@@ -132,7 +132,7 @@ test('lo que ve el usuario (?e2e=app&abdomen=legacy): subxifoidea en armónica c
   // configuración con los ganchos cargados: la imagen que abre el alumno, medida como el banco (decisiones 52 y 58).
   // Con SwiftShader (local, 27-09): hígado mediana 91, desviación 15,1; luz 7.
   budget(120_000);
-  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=legacy');
+  const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await withinFrames(page, 2, 'HUD en armónica con composición', contains(page, '#hud-tr', /THI 3,5 MHz[\s\S]*CX/));
   await withinFrames(page, 20, 'la tarjeta subxifoidea resaltada', async () => {
     const cur = await page
@@ -278,7 +278,7 @@ test('lo medido a la vista sobre el espectro y el vaso equivocado (decisión 94)
 test('modos por teclado, pestaña Medir y captura de una medición', async ({ page }) => {
   budget(180_000);
   // ?docente: al final se abre la pestaña Docente (en producción la casilla solo aparece así)
-  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&docente=1');
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028&docente=1');
   // Técnica del operador: apnea espiratoria (pestaña Adquirir) antes de medir la suprahepática
   await page
     .locator('button', { hasText: /Apnea\s*esp/ })
@@ -396,7 +396,7 @@ test('modos por teclado, pestaña Medir y captura de una medición', async ({ pa
   expect(errors).toEqual([]);
 });
 
-for (const model of ['legacy', 'atlas'] as const)
+for (const model of ['legacy', 's0028'] as const)
   test(`sobrevive a la pérdida del contexto WebGL: avisa, se recupera y el reloj sigue (${model})`, async ({ page }) => {
     // la recuperación vuelve a compilar todos los programas: dos arranques
     budget(60_000, 2);
@@ -1070,7 +1070,7 @@ test('modo alumno ciego con ?alumno: sin diagnóstico en pantalla; el docente lo
     'casi normal',
     'portal invertido',
   ];
-  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&alumno=1');
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028&alumno=1');
   await expect(page.locator('#debug-toggle')).toBeHidden();
   await page.selectOption('#case-select', 'severe-congestion');
   await withinFrames(page, 2, 'HUD con «Paciente B»', contains(page, '#hud-tl', 'Paciente B'));
@@ -1083,7 +1083,7 @@ test('modo alumno ciego con ?alumno: sin diagnóstico en pantalla; el docente lo
   expect(errors).toEqual([]);
 
   // Con ?docente la casilla aparece y al marcarla vuelven el nombre, los rótulos y los vasos
-  const errors2 = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&docente=1');
+  const errors2 = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028&docente=1');
   await page.locator('#debug-toggle').check();
   await page.selectOption('#case-select', 'severe-congestion');
   await withinFrames(page, 2, 'HUD con el nombre del caso', contains(page, '#hud-tl', 'Congestión venosa grave'));
@@ -1095,7 +1095,7 @@ test('modo alumno ciego con ?alumno: sin diagnóstico en pantalla; el docente lo
 test('casos trampa (decisión 82): el alumno lee la viñeta, marca el contexto y ve el aviso; la trampa es del docente', async ({ page }) => {
   // Dos arranques (alumno y docente), como el modo ciego: con SwiftShader cada uno compila los programas
   budget(120_000, 2);
-  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&alumno=1');
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028&alumno=1');
   await page.selectOption('#case-select', 'abdominal-hypertension');
   await withinFrames(page, 2, 'HUD con «Paciente E»', contains(page, '#hud-tl', 'Paciente E'));
   // `force`: con render por software el hilo principal no deja a los elementos «estables»
@@ -1151,7 +1151,7 @@ test('casos trampa (decisión 82): el alumno lee la viñeta, marca el contexto y
   expect(errors).toEqual([]);
 
   // Docente: el nombre del caso, su contexto real y la trampa
-  const errors2 = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&docente=1');
+  const errors2 = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028&docente=1');
   // al marcar «Docente» la consola abre su pestaña
   await page.locator('#debug-toggle').check({ force: true });
   await page.selectOption('#case-select', 'abdominal-hypertension');
@@ -1180,7 +1180,7 @@ test('intervenciones docentes (decisión 79): bolo y PEEP mueven el lazo del sim
   page,
 }) => {
   budget(180_000);
-  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&docente=1');
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028&docente=1');
   // `force`: con render por software el hilo principal no deja a los elementos «estables»
   await page.locator('#debug-toggle').check({ force: true });
   await page.getByRole('tab', { name: 'Docente' }).click({ force: true });
@@ -1234,7 +1234,7 @@ test('intervenciones docentes (decisión 79): bolo y PEEP mueven el lazo del sim
 
 test('el anuncio docente no mueve Reiniciar paciente entre apuntar y hacer clic', async ({ page }) => {
   budget(60_000);
-  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=legacy&docente=1');
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028&docente=1');
   await page.locator('#debug-toggle').check({ force: true });
   await page.getByRole('tab', { name: 'Docente' }).click({ force: true });
   const reset = page.getByRole('button', { name: 'Reiniciar paciente', exact: true });
@@ -1275,7 +1275,7 @@ test('color: la misma transmisión que el PW y una ganancia que alcanza el ruido
   // e2e llegó a medir 1,16 dB (1 de cada ~6 corridas pasaba de 1 dB, la cota de antes). Ruido puro 0 % de
   // celdas a 0 dB y 64 % a +24 dB (antes el máximo del deslizador no mostraba ruido nunca).
   budget(240_000);
-  const errors = await bootWithoutErrors(page);
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028');
   const r = await page.evaluate(() => {
     const T = window.__vexusTest!;
     document.querySelector<HTMLButtonElement>('#mode-pw')!.click();
@@ -1306,7 +1306,7 @@ test('armónica tisular (decisión 77): campo cercano limpio, el mismo tejido y 
   // cuatro cuadros con lectura de la envolvente (dos modos × contacto y sonda levantada) con SwiftShader, y un segundo
   // arranque sin ?e2e
   budget(240_000, 2);
-  const errors = await bootWithoutErrors(page);
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028');
   // la e2e arranca en fundamental, la física calibrada de sus pruebas (la aplicación, en armónica)
   await withinFrames(
     page,

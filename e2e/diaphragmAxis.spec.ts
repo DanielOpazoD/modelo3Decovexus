@@ -3,9 +3,9 @@ import { bootWithoutErrors, budget, checkAfterEach } from './support';
 import { Interface } from '../src/anatomy/interfaces';
 checkAfterEach();
 for (const reference of [false, true])
-  test(`eje diafragmático sin singularidad CPU/GPU (${reference ? 'referencia' : 'legacy'})`, async ({ page }, info) => {
+  test(`eje diafragmático sin singularidad CPU/GPU (${reference ? 'referencia' : 's0028'})`, async ({ page }, info) => {
     budget(180_000);
-    await bootWithoutErrors(page, reference ? '?e2e=1&abdomen=legacy&reference=1' : '?e2e=1&abdomen=legacy');
+    await bootWithoutErrors(page, reference ? '?e2e=1&abdomen=legacy&reference=1' : '?e2e=1&abdomen=s0028');
     const points = await page.evaluate(() => {
       const sim = window.__vexusTest!.sim(),
         cal = sim.anatomy.caliberFor(sim.sample);
