@@ -12209,3 +12209,14 @@ tras el hígado a 12,5 a 2 cm de la aurícula, y la fisiología la escala entera
 **Consecuencias.** En la guía (1–2 cm bajo la suprahepática), ≤ 3 % de la verdad; a 2 cm de la aurícula, el sano 18,5, y ningún
 caso cruza los 2 cm al revés. Sin halo junto al surco hepático.
 **Verificación.** `s0028IvcSite` (los ocho casos, llena y vacía), un mutante, Metal; lámina subxifoidea e intercostal.
+
+## 397. s0028 usa también la rejilla vascular de 8 mm
+
+**Contexto.** s0028 no sostiene 60 fps con la sonda quieta: su ecografía cuesta 15–23 ms de GPU (la otra persona, 5–7). La decisión
+339 dejó a s0028 con la rejilla de 16/32 mm para no tocarla; la de 8 mm solo la usaba la otra persona.
+**Opciones.** Esperar a abaratar la clasificación B (lo que más pesa, diseño pendiente); o esto, que no cambia ningún resultado.
+**Decisión.** `updateSceneDynamic` construye la rejilla a 8 mm para toda persona con atlas, con la misma caída a 16 y 32 mm.
+**Consecuencias.** En un M4, cuatro pares alternados en cuatro ventanas: el cuadro baja en 7 de 8 pares, un 5–17 % (subxifoidea
+25,1 → 23,0 ms; subcostal portal 23,0 → 19,0). La rejilla de s0028 pasa de 172 kB a 1,2 MB (techo 4 MiB). La rejilla es conservadora:
+la clasificación no cambia.
+**Verificación.** `tubeSegmentGrid.test.ts` (conservadora a 8, 16 y 32 mm); paridad GPU de s0028 en la CI (`s0028Equivalence`).
