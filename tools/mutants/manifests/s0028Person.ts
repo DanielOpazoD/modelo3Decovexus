@@ -29,6 +29,14 @@ export const s0028Vessels: MutantManifest = {
       tests: ['src/validation/s0028Vessels.test.ts'],
     },
     {
+      name: 'vci-del-tac-donde-se-mide',
+      origin: 'decisión 396',
+      breaks: 'La VCI de s0028 vuelve al calibre de su TAC donde se mide: el sano pasa de 2 cm a 2 cm de la aurícula.',
+      from: '  regularIvcWhereMeasured(vessels);',
+      to: '',
+      tests: ['src/validation/s0028IvcSite.test.ts'],
+    },
+    {
       name: 'suprahepaticas-con-area-del-tac',
       origin: 'decisión 392',
       breaks: 'Las suprahepáticas vuelven al área de flujo de su TAC: la VSH va 2,7 veces más rápida y se pliega a la escala de partida.',

@@ -12199,3 +12199,13 @@ su ventana: en s0028 iban de delante atrás, cruzaban el plano renal y la mejor 
 sonda. La pose renal se rebusca con su objetivo de siempre (la interlobar media en el plano).
 **Consecuencias.** Puerta a cos 0,93; renal de la verdad en los ocho casos; cirrosis grado 3; riñón 107 mm en la ventana (99).
 **Verificación.** `s0028Windows`, `s0028Traps` (capa lenta), un mutante, Metal.
+
+## 396. La VCI de s0028 tiene calibre regular donde se mide
+
+**Contexto.** La verdad de la VCI es el diámetro del radio de referencia (10 mm); la de s0028, de su TAC, iba de 8,7 mm de radio
+tras el hígado a 12,5 a 2 cm de la aurícula, y la fisiología la escala entera: la imagen daba la verdad × radio local / 10. El sano
+(18,7 mm) medía 23,5 a 2 cm de la aurícula, por encima del corte de 2 cm del VExUS; la PIA alta, 20,5 (verdad 16,2).
+**Decisión.** De z −55 a 5 (2 cm bajo la suprahepática a 1 cm de la aurícula), el radio de referencia; la apertura, en el último cm.
+**Consecuencias.** En la guía (1–2 cm bajo la suprahepática), ≤ 3 % de la verdad; a 2 cm de la aurícula, el sano 18,5, y ningún
+caso cruza los 2 cm al revés. Sin halo junto al surco hepático.
+**Verificación.** `s0028IvcSite` (los ocho casos, llena y vacía), un mutante, Metal; lámina subxifoidea e intercostal.

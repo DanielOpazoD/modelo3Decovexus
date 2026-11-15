@@ -5,6 +5,8 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Anatomía s0028: la VCI tiene calibre regular donde se mide; en la imagen mide lo que la fisiología y el sano ya no pasa de 2 cm junto a la aurícula (396)
+
 - Anatomía s0028: sus interlobares van hacia el borde convexo y la ventana renal ofrece una a lo largo del haz; la cadena VExUS da la renal y el grado de la verdad en los ocho casos (395)
 
 - Casos: congestión venosa grave con flujo portal invertido (VExUS 3 con la porta invertida en sístole) (394)

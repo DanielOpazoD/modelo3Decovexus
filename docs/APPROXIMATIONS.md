@@ -608,6 +608,12 @@ lo afirma: es la hipótesis más simple para que el fondo no muestre la rejilla 
 El calibre de las suprahepáticas es el de su TAC salvo que nunca disminuye hacia la cava y las tres principales llegan a ella con
 8 mm de diámetro al menos. Los 8 mm y los 25 mm del tramo en que se abren son cifras de aspecto, no medidas.
 
+### s0028: calibre de la VCI donde se mide (396)
+
+De 2 cm bajo la desembocadura de la suprahepática derecha a 1 cm de la aurícula (z −55 a 5) la VCI de s0028 lleva el radio de
+referencia de la fisiología (10 mm), y la apertura de su TAC queda en el último centímetro. Su TAC iba de 8,7 mm tras el hígado a
+12,5 a 2 cm de la aurícula. Es una regularización (decisión 361): el diámetro de la imagen es el de la verdad en todo el tramo.
+
 ### s0028: interlobares hacia el borde convexo (395)
 
 Las tres raíces interlobares de s0028 (las de la otra persona en su marco renal) van del seno hacia el borde convexo, sin el giro

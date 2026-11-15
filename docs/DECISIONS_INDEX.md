@@ -399,3 +399,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [393](DECISIONS.md#L12175) | Los casos llevan su nombre descriptivo por defecto | vigente |
 | [394](DECISIONS.md#L12184) | Congestión venosa grave con flujo portal invertido | vigente |
 | [395](DECISIONS.md#L12193) | Las interlobares de s0028 van hacia el borde convexo | vigente |
+| [396](DECISIONS.md#L12203) | La VCI de s0028 tiene calibre regular donde se mide | vigente |

@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-15",
- "main": "0457224",
+ "main": "c7e3a43",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -65,7 +65,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 253570
+   "actual": 253586
   },
   {
    "what": "`candidate-manifest.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 69345
+   "actual": 69801
   },
   {
    "what": "`cpu.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 25555
+   "actual": 1631
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 25555
   },
   {
    "what": "`series.js`",
@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 10399
+   "actual": 10400
   },
   {
    "what": "`structureIdentity.js`",
@@ -289,7 +289,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 485
   },
   {
    "what": "`surfaces.js`",
@@ -297,7 +297,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 485
+   "actual": 5730
   },
   {
    "what": "`teacherTab.js`",
@@ -369,7 +369,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 109635
+   "actual": 109671
   },
   {
    "what": "JS clausura default (Workers y ganchos incluidos)",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1042835
+   "actual": 1042888
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1126951
+   "actual": 1127460
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,7 +624,7 @@
  ],
  "s0028DescriptorSha256": "3201286d10bc1723cd95729be079cba3813a1376fc461b0a524716c3b0533f8c",
  "tests": {
-  "vitestFiles": 343,
+  "vitestFiles": 344,
   "slowFiles": 37,
   "e2eSpecs": 89,
   "e2eTestCalls": 148,
