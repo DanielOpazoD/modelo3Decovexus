@@ -45,7 +45,7 @@ que el responsable revise las láminas (`docs/anatomia/relaciones-tac.md`).
 | P6       | árbol portal y tributarias suprahepáticas del mismo hígado                                             | 357, 358, 365           | fusionada                                 |
 | P7       | tórax del caso: diafragma, corazón con la cava en la aurícula, pulmón apartado de la cava              | 348, 356, 369, 375, 380 | fusionada                                 |
 | P8 (2)   | ocho ventanas con pose propia; lista de relaciones medida sobre s0028 (21 de 21 filas)                 | 359, 381                | medida; falta la revisión del responsable |
-| Corte    | s0028 como única anatomía; retirar `default` y `legacy`                                                | 340                     | pendiente: decisión del responsable       |
+| Corte    | s0028 como única anatomía; retirar `default` y `legacy` (plan: `docs/anatomia/corte-s0028.md`)         | 340                     | pendiente: decisión del responsable       |
 
 ## Dónde se calcula
 
