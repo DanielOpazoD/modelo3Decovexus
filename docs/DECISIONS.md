@@ -12232,3 +12232,13 @@ solo exige acuerdo a más de 1 mm de un borde.
 muestra de las diez ventanas cae ahí: sus imágenes no cambian.
 **Verificación.** `s0028HeartTubes.spec.ts` (nueva): 5952 puntos junto a la pared de cinco tubos, 314 dentro del corazón, cero
 discrepancias; sin el arreglo, las 3 de la raíz aórtica. Revisión de programas s0028 actualizada.
+
+## 399. Tras el corte, la escena procedural queda como apoyo de pruebas, fuera del producto
+
+**Contexto.** El corte (340) retira `default` y `legacy`. 173 archivos de pruebas unitarias usan la escena procedural de apoyo
+(`validation/support/legacyPerson`) para probar el motor (física, Doppler, imagen) con una anatomía analítica; `loadS0028` monta
+s0028 con la misma escena. Portarlas todas a s0028 sería el grueso del corte, sin que el alumno vea nada distinto.
+**Decisión.** Aprobada por el responsable el 15-11-2026: la escena procedural sigue como apoyo de pruebas, fuera del producto (ni
+`selectPerson`, ni paquetes, ni activos de la aplicación). Solo se portan a s0028 las pruebas de lo que el alumno ve.
+**Consecuencias.** El corte borra del producto `people/default`, sus atlas y superficies; las pruebas del motor no cambian.
+**Verificación.** La frontera de paquetes (`personBoundary.spec.ts`, `bundleAssets.test.ts`) y `layers.test.ts` en la PR del corte.

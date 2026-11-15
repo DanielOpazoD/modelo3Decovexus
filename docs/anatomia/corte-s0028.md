@@ -28,7 +28,7 @@ a ±se, así que un `bd` perfecto ahorraría un 16–25 % del cuadro. Ya se prob
 cercano; la rejilla vascular de 8 mm da un 5–17 % (PR 65).
 
 La palanca grande es abaratar cada clasificación: s0028 lee unos 19 campos fuente por punto y, sin leerlos (experimento que rompe
-la imagen, solo para medir), el cuadro baja de 21–23 a 12,6–14 ms. Propuesta para el responsable: un mapa de ocupación por celda de
+la imagen, solo para medir), el cuadro baja de 21–23 a 12,6–14 ms. Aprobado por el responsable el 15-11-2026, en curso: un mapa de ocupación por celda de
 6 mm que diga qué campos pueden quedar cerca (a menos de un margen mayor que todos sus umbrales) y, con él, no leer los demás: en las
 ventanas, solo 1,7–2,3 de los 19 campos quedan a menos de 16 mm de cada muestra, así que caerían casi todas las lecturas. Sería
 exacto: la trilineal está acotada por sus nodos, así que «el campo no baja de M en la celda» se calcula sin muestreo. Solo cambia la
@@ -47,13 +47,14 @@ pruebas pasan 78 y fallan 92.
 Al corregir las poses, `aortaPulse` destapó el único fallo real hallado: en la raíz aórtica, dentro del corazón, la GPU daba sangre
 donde la CPU da pared (decisión 398, PR 68). La lista por prueba va en la descripción de la PR de este documento.
 
-## Qué se borra (decisión del responsable)
+## Qué se borra
 
 - Producto: `src/anatomy/people/default` (lo comparten `default` y `legacy`), sus atlas y superficies (19,9 MB comprimidos en el
   repositorio), la rama de `selectPerson` y lo que solo existe para ellas en el renderizador (A0 y rejilla propias, decisión 339).
-- Pruebas: 173 archivos unitarios usan la escena de apoyo `validation/support/legacyPerson`, que también monta s0028 en
-  `loadS0028`; 26 e2e arrancan con `?abdomen=legacy`. Portarlas todas sería el grueso del corte. Propuesta: la escena procedural
-  sigue como apoyo de pruebas del motor (física, Doppler), fuera del producto, y solo se portan las pruebas de lo que el alumno ve.
+- Pruebas (decisión 399, aprobada por el responsable el 15-11-2026): la escena procedural de apoyo
+  (`validation/support/legacyPerson`, que usan 173 archivos unitarios y que también monta s0028 en `loadS0028`) sigue como apoyo
+  de pruebas del motor, fuera del producto. Solo se portan a s0028 las pruebas de lo que el alumno ve; las 26 e2e que arrancan con
+  `?abdomen=legacy` se portan o se retiran con su persona.
 
 ## Orden propuesto
 
