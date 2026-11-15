@@ -401,3 +401,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [395](DECISIONS.md#L12193) | Las interlobares de s0028 van hacia el borde convexo | vigente |
 | [396](DECISIONS.md#L12203) | La VCI de s0028 tiene calibre regular donde se mide | vigente |
 | [397](DECISIONS.md#L12213) | s0028 usa también la rejilla vascular de 8 mm | vigente |
+| [398](DECISIONS.md#L12224) | En el corazón de s0028 solo la cava pierde la pared, también en la GPU | vigente |

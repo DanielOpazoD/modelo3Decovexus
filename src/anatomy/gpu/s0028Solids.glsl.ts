@@ -342,8 +342,10 @@ export function s0028SolidsShader(source: string, replace: Replace): string {
     .replace(/float\s+dDome\s*=\s*sdDome\(m,\s*dn\);/, 'dn=vec3(0.0,0.0,-0.5);float dDome=1000.0;')
     // La cava dentro de la máscara del corazón (dueño 15, decisión 356): sangre hasta donde llega su eje, que acaba en la aurícula,
     // sin pared ni cara. La regla de la aurícula devuelve (cavidad, fuera, cota): aquí, dentro de la cavidad. Sin escribir el
-    // nombre de la función ni el de su variable, que el build acorta.
-    .replace(/(\w+)\s*=\s*\w+\(m,\s*dDome\s*\*\s*max\(1\.0,\s*-0\.5\s*\/\s*dn\.z\)\);/, '$& if(k==15)$1=vec3(-1000.0,0.0,1000.0);');
+    // nombre de la función ni el de su variable, que el build acorta. Entre llaves: la asignación es la sentencia de un `if` de la
+    // cava sin llaves, y sin ellas la regla valía para todo tubo dentro del corazón (la aorta salía sangre sin pared; la CPU solo
+    // la aplica a la cava, decisión 398).
+    .replace(/(\w+)\s*=\s*\w+\(m,\s*dDome\s*\*\s*max\(1\.0,\s*-0\.5\s*\/\s*dn\.z\)\);/, '{$& if(k==15)$1=vec3(-1000.0,0.0,1000.0);}');
   // La única ivec2 del tramo es la lista de candidatos de la rejilla de tubos.
   if (!tubes.includes('dDome=1000.0')) throw new Error('Tubos s0028 sin cúpula');
   if (!tubes.includes('if(k==15)')) throw new Error('Tubos s0028 sin la cava en el corazón');

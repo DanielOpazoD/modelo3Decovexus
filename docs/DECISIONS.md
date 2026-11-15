@@ -12220,3 +12220,15 @@ caso cruza los 2 cm al revés. Sin halo junto al surco hepático.
 25,1 → 23,0 ms; subcostal portal 23,0 → 19,0). La rejilla de s0028 pasa de 172 kB a 1,2 MB (techo 4 MiB). La rejilla es conservadora:
 la clasificación no cambia.
 **Verificación.** `tubeSegmentGrid.test.ts` (conservadora a 8, 16 y 32 mm); paridad GPU de s0028 en la CI (`s0028Equivalence`).
+
+## 398. En el corazón de s0028 solo la cava pierde la pared, también en la GPU
+
+**Contexto.** El inventario del corte (e2e con s0028) dio 3 discrepancias CPU/GPU en `aortaPulse`: en la raíz aórtica, dentro de la
+máscara del corazón, la CPU daba pared arterial y la GPU, sangre. `personShader` añadía la regla de la cava en la aurícula (356)
+tras un `if` de la cava sin llaves: en la GPU valía para todo tubo dentro del corazón. El gate de equivalencia no lo veía, porque
+solo exige acuerdo a más de 1 mm de un borde.
+**Decisión.** La asignación y la regla van entre llaves, dentro del `if` de la cava, como en la CPU.
+**Consecuencias.** La GPU vuelve a coincidir con la CPU: la aorta y las suprahepáticas conservan pared y luz dentro del corazón. Ninguna
+muestra de las diez ventanas cae ahí: sus imágenes no cambian.
+**Verificación.** `s0028HeartTubes.spec.ts` (nueva): 5952 puntos junto a la pared de cinco tubos, 314 dentro del corazón, cero
+discrepancias; sin el arreglo, las 3 de la raíz aórtica. Revisión de programas s0028 actualizada.

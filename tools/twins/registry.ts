@@ -132,6 +132,11 @@ const E = {
     file: 'e2e/s0028Equivalence.spec.ts',
     title: 'la anatomía GLSL coincide con la TypeScript en tejido, vaso, velocidad y caras',
   },
+  s0028HeartTubes: {
+    kind: 'gpu',
+    file: 'e2e/s0028HeartTubes.spec.ts',
+    title: 's0028: dentro del corazón solo la cava pierde la pared; aorta y suprahepáticas iguales en CPU y GPU',
+  },
 } as const satisfies Record<string, TwinEvidence>;
 /** Lo que la e2e de los sólidos s0028 (r3 de P3) compara de la clasificación: tejido y cara, no los valores intermedios. */
 const S0028_CLASSIFICATION =
@@ -242,6 +247,7 @@ export const TWINS: readonly TwinPair[] = [
     evidence: [
       E.equivalence,
       { ...E.s0028Equivalence, scope: 'vasos s0028: vaso y velocidad en las diez ventanas y en 80 000 puntos del tronco' },
+      { ...E.s0028HeartTubes, scope: 'tubos de s0028 junto a su pared, también dentro del corazón (decisión 398)' },
       {
         kind: 'texto',
         file: 'src/validation/vesselShape.test.ts',
