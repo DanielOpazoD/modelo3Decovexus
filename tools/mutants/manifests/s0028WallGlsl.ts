@@ -20,5 +20,13 @@ export const s0028WallGlsl: MutantManifest = {
       to: '  return 0.0;',
       tests: ['src/validation/s0028WallGpu.test.ts', 'src/validation/shaderLimits.test.ts'],
     },
+    {
+      name: 'musculo-de-la-pared-claro',
+      origin: 'decisión 390',
+      breaks: 'El músculo de s0028 vuelve al fondo de la decisión 366: tan claro como la grasa, sin que destaquen sus estrías.',
+      from: 'export const S0028_MUSCLE_BACKSCATTER = 0.06;',
+      to: 'export const S0028_MUSCLE_BACKSCATTER = 0.24;',
+      tests: ['src/validation/s0028TissueLook.test.ts'],
+    },
   ],
 };

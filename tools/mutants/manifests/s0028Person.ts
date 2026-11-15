@@ -45,3 +45,18 @@ export const s0028Cpu: MutantManifest = {
     },
   ],
 };
+
+/** Aspecto de las caras de s0028 en la imagen. */
+export const s0028Look: MutantManifest = {
+  module: 'src/anatomy/people/s0028/gpu.ts',
+  mutants: [
+    {
+      name: 'scarpa-tan-brillante-como-las-demas',
+      origin: 'decisión 390',
+      breaks: 'La fascia de Scarpa vuelve a brillar como la fascia profunda: las caras de la pared parecen todas iguales.',
+      from: '  [Interface.Scarpa]: { gain: 0.35 },',
+      to: '',
+      tests: ['src/validation/s0028TissueLook.test.ts'],
+    },
+  ],
+};

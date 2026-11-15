@@ -12138,3 +12138,15 @@ esta.
 **Consecuencias.** Su luz llega a 21 mm del centro (antes 13). En la ventana renal queda un círculo pequeño en el hilio y el seno
 se ve ecogénico. La izquierda, igual. La pelvis del TAC sigue en la hepatorrenal.
 **Verificación.** `s0028Vessels` (control: sin la colocación de s0028, 13 mm), un mutante, láminas.
+
+## 390. El músculo de la pared de s0028 se ve oscuro y estriado, y Scarpa tenue
+
+**Contexto.** Valoración del responsable: pared «puede mejorar». Propuesta de Claude que aceptó el 14-11-2026: músculo más
+oscuro y estriado que la grasa, y Scarpa más tenue que la fascia profunda y el peritoneo. Medido en capturas: el músculo era tan
+claro como la grasa (más en la renal y la portal) y Scarpa brillaba como la fascia profunda.
+**Opciones.** Cambiar las tablas comunes, o el aspecto propio de s0028; se elige este: la otra persona no cambia.
+**Decisión.** Fondo del músculo 0,06 (antes 0,24) con las estrías al mismo brillo absoluto (su peso ×4,5 en el GLSL de s0028), y
+una ganancia de amplitud por cara en `interfaceLook`: Scarpa ×0,35.
+**Consecuencias.** Músculo 8,5 dB bajo la grasa de la pared; Scarpa 15 dB bajo la fascia profunda (antes 6). El músculo posterior
+se oscurece igual. La textura de la grasa (septos) no cambia.
+**Verificación.** `s0028TissueLook`, hashes de los sombreadores, dos mutantes, Metal, láminas de las ocho ventanas.
