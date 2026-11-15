@@ -15,6 +15,7 @@ import { S0028_BUNDLE } from '../anatomy/people/s0028/descriptor';
 import { Tissue } from '../anatomy/tissues';
 import { bestGateOnVessel } from '../app/gatePlacement';
 import { startPointsFor } from '../app/startPoints';
+import { windowPreset } from '../app/windowPreset';
 import type { Vec3 } from '../core/vec3';
 import { probeContact } from '../probe/contact';
 import { CONVEX_C35, type ProbePose } from '../probe/probe';
@@ -180,6 +181,33 @@ it('la ventana renal ofrece una vena interlobar a lo largo del haz, y sus interl
   );
   expect(best, 'sin puerta en una interlobar').not.toBeNull();
   expect(best!.cosAngle).toBeGreaterThan(0.85);
+});
+
+it('cada tarjeta con Doppler enmarca en su caja de color el sitio de la puerta sobre su vaso', () => {
+  // Las cajas de partida (`windowPreset`) se ajustaron a la otra persona; en s0028 los vasos están más hondos. Lo que importa al
+  // alumno es que el sitio de la puerta (la técnica del operador) quede dentro. Medido el 15-11-2026: intercostal (84 mm),
+  // subcostal (69), intrahepática en la rama derecha (77, a 42°), subcostal portal (96) y renal (86), todas dentro.
+  for (const [id, vessels] of [
+    ['intercostal', ['hvRight']],
+    ['subcostal', ['hvMiddle', 'hvRight']],
+    ['portal', ['pvRight']],
+    ['portalSubcostal', ['pvTrunk']],
+    ['renal', ['interlobarVein1', 'interlobarVein2', 'interlobarVein3']],
+  ] as const) {
+    const color: { theta0?: number; theta1?: number; r0?: number; r1?: number } = {};
+    let depthMm = 180;
+    for (const c of windowPreset(id, CONVEX_C35.f0Doppler, true, true)) {
+      if (c.type === 'color') Object.assign(color, c.patch);
+      if (c.type === 'bmode' && c.patch.depthMm !== undefined) depthMm = c.patch.depthMm;
+    }
+    const contact = probeContact(poseOf(id, 's0028'), CONVEX_C35, person.scene.torso);
+    person.anatomy.setProbeCompression(contact);
+    const gate = bestGateOnVessel(person.anatomy, contact.frame, CONVEX_C35, person.sample, [...vessels], depthMm - 5);
+    expect(gate, `${id}: sin puerta`).not.toBeNull();
+    const tag = `${id}: puerta θ ${gate!.theta.toFixed(2)} r ${gate!.r.toFixed(0)}, caja ${JSON.stringify(color)}`;
+    expect(gate!.theta >= color.theta0! && gate!.theta <= color.theta1!, tag).toBe(true);
+    expect(gate!.r >= color.r0! && gate!.r <= color.r1!, tag).toBe(true);
+  }
 });
 
 it('el riñón derecho de s0028 mide 110 mm, sin pisar a sus vecinos, y la ventana renal lo enseña casi entero (decisión 387)', () => {
