@@ -4,8 +4,9 @@ import { loadPerson as loadS0028, verifyS0028Manifest } from '../anatomy/people/
 import { S0028_BUNDLE, selectAnatomy } from './support/legacyPerson/anatomyBundle';
 
 describe('selección anterior a escena y carga de una persona', () => {
-  it('conserva el default y rechaza combinaciones incompatibles', () => {
-    expect(selectAnatomy(new URLSearchParams()).person).toBe('current');
+  it('s0028 por defecto (corte, decisión 340), la otra persona con ?abdomen=atlas y rechaza combinaciones incompatibles', () => {
+    expect(selectAnatomy(new URLSearchParams())).toBe(S0028_BUNDLE);
+    expect(selectAnatomy(new URLSearchParams('abdomen=atlas')).person).toBe('current');
     expect(selectAnatomy(new URLSearchParams('abdomen=legacy')).person).toBe('legacy');
     expect(selectAnatomy(new URLSearchParams('abdomen=s0028'))).toBe(S0028_BUNDLE);
     expect(() => selectAnatomy(new URLSearchParams('abdomen=s0028&reference=1'))).toThrow(/incompatible/);

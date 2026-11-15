@@ -1,9 +1,8 @@
 # Corte a s0028: qué está listo, qué falta y en qué orden
 
-Actualizado: 2026-11-15. El corte deja s0028 como la única anatomía y retira `default` y `legacy` (decisión 340, `docs/REGLAS.md`). Su
-condición es que el responsable revise las láminas de las relaciones con el TAC. Revisión preparada en la página
-[Revisión del corte s0028](https://claude.ai/artifact/VAVUYUcufbFQnwXk9TXZcQ); la PR que cambia la persona por defecto (66) espera su
-respuesta.
+Actualizado: 2026-11-15. El corte deja s0028 como la única anatomía y retira `default` y `legacy` (decisión 340, `docs/REGLAS.md`). El
+responsable lo aprobó el 15-11-2026 tras revisar la página [Revisión del corte s0028](https://claude.ai/artifact/VAVUYUcufbFQnwXk9TXZcQ)
+y la aplicación, con el coste medido (decisión 401): s0028 es la persona por defecto desde la PR 66.
 
 ## Listo
 
@@ -58,7 +57,7 @@ donde la CPU da pared (decisión 398, PR 68). La lista por prueba va en la descr
 
 ## Orden propuesto
 
-1. Persona por defecto s0028 (PR 66), con la otra en `?abdomen=atlas`. No se borra nada.
+1. Hecho: persona por defecto s0028 (PR 66, decisión 401), con la otra en `?abdomen=atlas`. No se borra nada.
 2. Las e2e genéricas que fallan con s0028 se arreglan o se fijan a la otra persona con su motivo.
 3. El gate de equivalencia de `legacy` cede el sitio al de s0028.
 4. Se retira la otra persona del producto: código, atlas, presupuestos y paquete, con las cifras de memoria y descarga en la PR.

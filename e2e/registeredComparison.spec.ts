@@ -21,7 +21,8 @@ test('compara imágenes registradas pese a distinto trabajo del receptor antes d
     page.on('console', (message) => {
       if (message.type() === 'error') errors.push(message.text());
     });
-    await page.goto('/?e2e=app&reference=1');
+    // La otra persona con su torso de referencia: desde el corte (decisión 340) la aplicación carga s0028 sin ?abdomen=.
+    await page.goto('/?e2e=app&abdomen=atlas&reference=1');
     await page.waitForFunction(() => (window.__vexusTest?.framesRendered() ?? 0) >= 2, undefined, { timeout: BOOT_MS });
     // Congelar inmediatamente: esperar el HUD o clicar antes deja una fase dependiente de la velocidad de la GPU.
     await page.evaluate(comparisonState, { phase: 'prepare' as const, targetSeconds: 5 });

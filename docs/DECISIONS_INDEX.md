@@ -404,3 +404,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [398](DECISIONS.md#L12224) | En el corazón de s0028 solo la cava pierde la pared, también en la GPU | vigente |
 | [399](DECISIONS.md#L12236) | Tras el corte, la escena procedural queda como apoyo de pruebas, fuera del producto | vigente |
 | [400](DECISIONS.md#L12246) | El mapa de ocupación evita leer los campos de s0028 que valen 16 en la celda | vigente |
+| [401](DECISIONS.md#L12257) | s0028 es la persona por defecto: primer paso del corte | vigente |

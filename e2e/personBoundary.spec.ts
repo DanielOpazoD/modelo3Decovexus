@@ -19,7 +19,8 @@ test('default carga sus vistas y Worker sin solicitar ningún módulo privado s0
   budget(20_000);
   const requests: string[] = [];
   context.on('request', (request) => requests.push(new URL(request.url()).pathname.slice(1)));
-  const errors = await bootWithoutErrors(page, '?e2e=1&docente');
+  // la otra persona, pedida: desde el corte (decisión 340) la aplicación carga s0028 sin ?abdomen=
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=atlas&docente');
   // El primer mapa espera a que el Worker descargue su chunk y construya la persona: tiempo de CPU, no cuadros. En una GPU
   // nativa 30 cuadros son medio segundo; 8 s de simulación son al menos 32 cuadros en SwiftShader (≤ 0,25 s por cuadro).
   await withinSimSeconds(page, 8, 'Worker diferido default entrega un mapa', () =>

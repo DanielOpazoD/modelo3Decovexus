@@ -12253,3 +12253,12 @@ con el bit apagado (sin ramas nuevas). La GPU da lo mismo que antes; la CPU no c
 **Consecuencias.** M4: el cuadro de s0028 baja un 5–11 % (techo sin leer ningún campo, 11–13 ms); el banco no cambia de forma clara.
 El paquete JS de s0028 queda a 40 B de su techo; ~0,8 MB de JS más.
 **Verificación.** `s0028FieldMask.test.ts` (conservador; falla sin el último nodo de cada celda), `s0028WallUpload`, paridad GPU.
+
+## 401. s0028 es la persona por defecto: primer paso del corte
+
+**Contexto.** El corte (340) pedía que el responsable revisara las relaciones de s0028 con su TAC (21 de 21) y sus ventanas. Revisadas
+en la página de revisión y en la aplicación local, con el coste medido: 30–60 fps con la sonda quieta, sin llegar a los 60 de la regla.
+**Decisión.** Aprobada por el responsable el 15-11-2026 («Apruebo el corte»), con ese coste. Sin `?abdomen=` la aplicación carga
+s0028; la otra persona queda en `?abdomen=atlas` y la escena procedural en `?abdomen=legacy` hasta retirarlas.
+**Consecuencias.** El alumno ve s0028. Las PR siguientes retiran la otra persona del producto y portan o retiran sus pruebas (399).
+**Verificación.** `s0028Bundle.test.ts`; la e2e completa en la CI de esta PR, con las pruebas de la otra persona fijadas a `atlas`.
