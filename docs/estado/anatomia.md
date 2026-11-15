@@ -30,22 +30,22 @@ que el responsable revise las láminas (`docs/anatomia/relaciones-tac.md`).
 
 ## Fases s0028
 
-| Fase     | Qué entra                                                                                              | Decisión                | Estado en main                            |
-| -------- | ------------------------------------------------------------------------------------------------------ | ----------------------- | ----------------------------------------- |
-| P0       | fuente, lector directo B, piel y profundidad, presupuestos                                             | 317                     | fusionada                                 |
-| P1       | lector especializado por persona y mallas exactas precalculadas, compactadas sin pérdida               | 318, 319                | fusionada                                 |
-| P2       | pared continua: regla directa, contacto por la piel y respiración sobre U                              | 320                     | fusionada                                 |
-| P3 r1–r3 | sólidos y compartimento posterior en CPU, Worker y GPU                                                 | 321 (en revisión)       | fusionada                                 |
-| P3 r4    | interior renal desde el propio TAC, offline (se instala en r5)                                         | 321 (en revisión)       | fusionada                                 |
-| P3 r5    | interior renal instalado en CPU, Worker y GPU, con el seno del hilio                                   | 341                     | fusionada                                 |
-| —        | grasa compatible D en todo el abdomen superior, a 3 mm                                                 | 343                     | fusionada                                 |
-| P5       | aorta, porta y esplénica (345); cava y suprahepáticas (349); vasos renales en el marco del riñón (350) | 345, 349, 350           | fusionada                                 |
-| P8 (1)   | seis ventanas de inicio propias, por búsqueda sobre su anatomía                                        | 346                     | fusionada                                 |
-| P4       | digestivo y gas: estómago, colon e intestino delgado de sus máscaras; gas limitado                     | 321, 363                | fusionada                                 |
-| P6       | árbol portal y tributarias suprahepáticas del mismo hígado                                             | 357, 358, 365           | fusionada                                 |
-| P7       | tórax del caso: diafragma, corazón con la cava en la aurícula, pulmón apartado de la cava              | 348, 356, 369, 375, 380 | fusionada                                 |
-| P8 (2)   | ocho ventanas con pose propia; lista de relaciones medida sobre s0028 (21 de 21 filas)                 | 359, 381                | medida; falta la revisión del responsable |
-| Corte    | s0028 como única anatomía; retirar `default` y `legacy` (plan: `docs/anatomia/corte-s0028.md`)         | 340                     | pendiente: decisión del responsable       |
+| Fase     | Qué entra                                                                                              | Decisión                | Estado en main                             |
+| -------- | ------------------------------------------------------------------------------------------------------ | ----------------------- | ------------------------------------------ |
+| P0       | fuente, lector directo B, piel y profundidad, presupuestos                                             | 317                     | fusionada                                  |
+| P1       | lector especializado por persona y mallas exactas precalculadas, compactadas sin pérdida               | 318, 319                | fusionada                                  |
+| P2       | pared continua: regla directa, contacto por la piel y respiración sobre U                              | 320                     | fusionada                                  |
+| P3 r1–r3 | sólidos y compartimento posterior en CPU, Worker y GPU                                                 | 321 (en revisión)       | fusionada                                  |
+| P3 r4    | interior renal desde el propio TAC, offline (se instala en r5)                                         | 321 (en revisión)       | fusionada                                  |
+| P3 r5    | interior renal instalado en CPU, Worker y GPU, con el seno del hilio                                   | 341                     | fusionada                                  |
+| —        | grasa compatible D en todo el abdomen superior, a 3 mm                                                 | 343                     | fusionada                                  |
+| P5       | aorta, porta y esplénica (345); cava y suprahepáticas (349); vasos renales en el marco del riñón (350) | 345, 349, 350           | fusionada                                  |
+| P8 (1)   | seis ventanas de inicio propias, por búsqueda sobre su anatomía                                        | 346                     | fusionada                                  |
+| P4       | digestivo y gas: estómago, colon e intestino delgado de sus máscaras; gas limitado                     | 321, 363                | fusionada                                  |
+| P6       | árbol portal y tributarias suprahepáticas del mismo hígado                                             | 357, 358, 365           | fusionada                                  |
+| P7       | tórax del caso: diafragma, corazón con la cava en la aurícula, pulmón apartado de la cava              | 348, 356, 369, 375, 380 | fusionada                                  |
+| P8 (2)   | ocho ventanas con pose propia; lista de relaciones medida sobre s0028 (21 de 21 filas)                 | 359, 381                | medida; falta la revisión del responsable  |
+| Corte    | s0028 como única anatomía; retirar `default` y `legacy` (plan: `docs/anatomia/corte-s0028.md`)         | 340, 401                | aprobado: s0028 por defecto; falta retirar |
 
 ## Dónde se calcula
 
