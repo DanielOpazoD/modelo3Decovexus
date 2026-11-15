@@ -1,6 +1,6 @@
 # Estado vigente: imagen
 
-Actualizado: 2026-11-15 sobre main `ab368da`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
+Actualizado: 2026-11-15 sobre main `315d870`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
 techos los limitan. La explicación de cada pasada está en `docs/ARCHITECTURE.md`; las decisiones, en `docs/DECISIONS.md`.
 
 ## A0 nativa current (339)
@@ -49,7 +49,7 @@ samplers y ranuras de uniforms: decisión 317):
 
 <!-- programas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `ab368da` el 2026-11-15 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `315d870` el 2026-11-15 con `tools/docs/estado.ts`.
 
 | Programa                  | Samplers default / s0028 | Ranuras default / s0028 | Uso de tokens (peor persona) | Uso de ramas |
 | ------------------------- | -----------------------: | ----------------------: | ---------------------------: | -----------: |
@@ -112,4 +112,5 @@ en el banco (`npm run fidelity -- --abdomen s0028`), 30–60 fps quieta (la subx
 el contacto de s0028 costaba ~37 ms por pose y ahora 10 (PR 63, mismo resultado bit a bit): subxifoidea de 19 a 30 fps con el carril
 3D (la otra, 52–55). Quieta, el cuadro espera la GPU: la ecografía cuesta 15–23 ms (`gpuTimings`; la otra, 5–7); por pasada, la
 clasificación B 15,9 ms (8,9) y A0 5,5 (1,3). Saltar las clasificaciones de elevación de B la baja un 30–40 %: en s0028 la grasa
-visceral y los contenidos digestivos salen con `bd = 0` y las disparan siempre. Plan en `docs/anatomia/corte-s0028.md`.
+visceral y los contenidos digestivos salen con `bd = 0` y las disparan siempre. La rejilla de 8 mm (397) y el mapa de ocupación de
+campos (400) bajan el cuadro un 5–17 % y un 5–11 %. Plan en `docs/anatomia/corte-s0028.md`.
