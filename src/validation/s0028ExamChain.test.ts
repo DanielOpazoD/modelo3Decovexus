@@ -117,4 +117,24 @@ describe('s0028: cadena completa del alumno desde sus ventanas (decisión 392)',
       expect(m?.quality.issue).toBeNull();
       expect(m?.pattern).toBe(truth.hepaticPattern);
     });
+
+  // La porta desde la ventana del menú que la enseña en eje largo (la subcostal, decisión 386): `portalTrunk` es un preset de
+  // calibración fuera del menú. En apnea, la PF de la verdad en los tres casos (medido el 15-11-2026: 18/13, 70/76, 36/36).
+  for (const base of [NORMAL_ADULT, SEVERE_CONGESTION, AF_MODERATE_CONGESTION])
+    it(`${base.label}: la PF portal desde la subcostal del menú, en apnea, coincide con la verdad`, () => {
+      const session = openSession(base, 'apnea-expiratory');
+      const contact = probeAt(session, 'portalSubcostal');
+      const best = placeGate(session, contact, ['pvTrunk'], { acoustic: false, maxDepthMm: 170 })!;
+      expect(best).not.toBeNull();
+      const prfHz = Math.min(prfFromNyquistCms(40, CONVEX_C35.f0Doppler), Math.floor((0.9 * 1_540_000) / (2 * best.r)));
+      const { captures } = acquire(session, contact, best, 'portal', { prfHz, seconds: 8.5, gateMm: Math.min(4, 2 * best.bd) });
+      const m = captures.at(-1)?.m;
+      const beats = m?.measuredBeats ?? [];
+      expect(beats.length).toBeGreaterThan(0);
+      const last = beats.at(-1)!;
+      const truthPF = measurePhysiologyTruth(session.engine, { fromT: beats[0].tR - 1e-6, toT: last.tR + last.rr + 1e-6 }).portalPF;
+      expect(m?.quality.issue).toBeNull();
+      expect(classifyPortal(m!.pulsatilityFraction)).toBe(classifyPortal(truthPF));
+      expect(Math.abs(m!.pulsatilityFraction - truthPF)).toBeLessThan(8);
+    });
 });
