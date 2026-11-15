@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-15",
- "main": "c7e3a43",
+ "main": "ab368da",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 69801
+   "actual": 69362
   },
   {
    "what": "`cpu.js`",
@@ -289,7 +289,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 485
+   "actual": 5730
   },
   {
    "what": "`surfaces.js`",
@@ -297,7 +297,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 485
   },
   {
    "what": "`teacherTab.js`",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1127460
+   "actual": 1127021
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,10 +624,10 @@
  ],
  "s0028DescriptorSha256": "3201286d10bc1723cd95729be079cba3813a1376fc461b0a524716c3b0533f8c",
  "tests": {
-  "vitestFiles": 344,
-  "slowFiles": 37,
-  "e2eSpecs": 89,
-  "e2eTestCalls": 148,
+  "vitestFiles": 346,
+  "slowFiles": 39,
+  "e2eSpecs": 90,
+  "e2eTestCalls": 149,
   "e2eShards": 12,
   "pythonContracts": 20
  }

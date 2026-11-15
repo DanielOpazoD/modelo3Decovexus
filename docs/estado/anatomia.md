@@ -1,6 +1,6 @@
 # Estado vigente: anatomía
 
-Actualizado: 2026-11-15 sobre main `c7e3a43`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
+Actualizado: 2026-11-15 sobre main `ab368da`. Qué anatomía hay hoy, dónde se calcula y qué falta. El historial completo
 está en `docs/DECISIONS.md`; la migración paso a paso, en `docs/anatomia/migracion-s0028.md`; la aceptación anatómica,
 en `docs/anatomia/relaciones-tac.md`.
 
@@ -83,7 +83,7 @@ Todos los techos de la aplicación, con su fuente, están en `docs/estado/presup
 
 <!-- presupuestos s0028: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `c7e3a43` el 2026-11-15 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `ab368da` el 2026-11-15 con `tools/docs/estado.ts`.
 
 | Techo                                               |  Límite (B) |  Actual (B) | Margen (B) | Decisión |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- |
