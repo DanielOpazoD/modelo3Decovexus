@@ -90,6 +90,31 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
   fitJunctions(vessels);
   continuePortalBranches(vessels);
   startRenalVeinsAtHilum(vessels);
+  regularIvcWhereMeasured(vessels);
+}
+
+/** Tramo de la VCI de s0028 donde se mide en VExUS (z, mm): de 2 cm bajo la suprahepática derecha a 1 cm de la aurícula. */
+export const S0028_IVC_MEASUREMENT_Z: readonly [number, number] = [-55, 5];
+/**
+ * La VCI de s0028 tiene un calibre regular donde se mide (decisión 396). La de su TAC va de 8,7 mm de radio tras el hígado a
+ * 12,5 a 2 cm de la aurícula, y la fisiología la escala entera con el radio de referencia (`ivcSupra.refRadius`, 10 mm: el
+ * diámetro de la verdad): la imagen daba la verdad × radio local / 10, y el sano (18,7 mm) medía 23,5 a 2 cm de la aurícula,
+ * por encima del corte de 2 cm del VExUS. En el tramo de medida lleva el radio de referencia; la apertura del TAC queda en la
+ * entrada a la aurícula. Modelo idealizado (decisión 361). Solo construcción.
+ */
+function regularIvcWhereMeasured(vessels: VesselDef[]): void {
+  const reference = vessels.find((v) => v.id === 'ivcSupra' && v.flowFactor === undefined)?.refRadius;
+  const ivc = vessels.find((v) => v.id === 'ivcInfra' && v.flowFactor === undefined);
+  if (reference === undefined || !ivc) return;
+  const [lo, hi] = S0028_IVC_MEASUREMENT_Z;
+  // Un nodo en el extremo alto del tramo, donde lo cruce el eje: la apertura del TAC queda en su último centímetro.
+  const nodes = ivc.tube.nodes.flatMap((n, k, all) => {
+    const next = all[k + 1];
+    if (!next || !(n.p[2] < hi && next.p[2] > hi)) return [n];
+    const t = (hi - n.p[2]) / (next.p[2] - n.p[2]);
+    return [n, { ...n, p: n.p.map((x, i) => x + t * (next.p[i] - x)) as Vec3, r: reference }];
+  });
+  ivc.tube = { ...ivc.tube, nodes: nodes.map((n) => (n.p[2] >= lo && n.p[2] <= hi ? { ...n, r: reference } : n)) };
 }
 
 /**
