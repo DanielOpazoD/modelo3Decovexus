@@ -12316,3 +12316,12 @@ prueba la CI, tardan en Metal 3,6 y 1,4 ms. La nativa conservaba los programas o
 difiere en puntos aislados de moteado y un tramo de interfaz (redondeo entre implementaciones; L2 relativa 2,6–4 % frente a
 0,03–0,6 % de dos cargas iguales); las láminas no cambian. El alumno ve los programas que valida la CI.
 **Verificación.** `renalNetwork.test.ts` (selección por persona y GPU), láminas subxifoidea e intercostal, fps alternados.
+
+## 407. Las columnas del espectro se empalman con la anterior
+
+**Contexto.** En el espectro PW aparecían líneas negras verticales. El espectro no tenía chasquidos (600 columnas, +2,9 dB como
+máximo): los instantes de columna bailan ~0,2 ms y, a ~1 px por columna, redondear cada borde por su lado dejaba píxeles sin pintar.
+**Decisión.** `SweepTimeline.place`: la columna empieza donde acabó la anterior si el hueco es de redondeo (≤ 2 px); una pausa
+mayor de la adquisición sigue en negro.
+**Consecuencias.** Sin líneas en la lámina renal en congestión grave. El eje temporal compartido con el ECG no cambia.
+**Verificación.** `sweep.test.ts`: con instantes que bailan, 0 huecos (con `span`, más de 0); una pausa de 10 columnas sigue negra.

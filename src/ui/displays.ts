@@ -260,7 +260,7 @@ export class SpectrogramView {
       if (col.prfHz !== pw.prfHz) continue;
       if (col.t <= this.#lastDrawnT) continue;
       if (!this.#timeline.ready(col.t, dtCol)) break;
-      const [x0, x1] = this.#timeline.span(col.t, dtCol, pxPerSec, W);
+      const [x0, x1] = this.#timeline.place(col.t, dtCol, pxPerSec, W);
       this.#lastDrawnT = col.t;
       const colPx = x1 - x0;
       if (colPx <= 0) continue;
