@@ -408,3 +408,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [402](DECISIONS.md#L12266) | La red interlobar de s0028: arteria junto a su vena y vasos en todo el riñón | vigente |
 | [403](DECISIONS.md#L12277) | El refinamiento PW se dirige a la sangre del vaso pequeño | vigente |
 | [404](DECISIONS.md#L12287) | Al colocar o mover la puerta, la población PW se releva en fundido | vigente |
+| [405](DECISIONS.md#L12297) | El bucle adquiere en cuanto termina la GPU, sin esperar otra RAF | vigente |
