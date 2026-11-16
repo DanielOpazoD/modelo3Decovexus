@@ -18,6 +18,7 @@ interface Particle {
 interface ControlledState {
   scatterers: Particle[];
   tick: number;
+  fadeLeft: number;
   rng: { float(): number; gaussian(): number; range(lo: number, hi: number): number };
 }
 const PRF = 1000;
@@ -99,6 +100,7 @@ function acquire(scenario: Scenario, chunks = [1, 1]) {
   });
   state.scatterers = [particle];
   state.tick = 1; // This isolates renewal, not the separate partial-reclassification limitation.
+  state.fadeLeft = 0; // …ni el relevo en fundido de la siembra (decisión 404): la partícula ya es toda la población.
   state.rng = { float: () => 0, gaussian: () => 0, range: () => 0 };
   const re = new Float32Array(2),
     im = new Float32Array(2);
