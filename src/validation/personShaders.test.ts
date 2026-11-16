@@ -14,7 +14,7 @@ import scanConvertRevision from './fixtures/scanconvert-axial-334.json';
 import renalRevision from './fixtures/renal-shaders-339.json';
 import renalInterior from './fixtures/s0028-renal-interior-shaders.json';
 import tubeCapacity from './fixtures/tube-capacity-402-shaders.json';
-import { layoutBefore402 } from './support/layoutBefore402';
+import { layoutBefore402 } from '../../tools/build/layoutBefore402';
 import { loadShaderGraph } from './support/shaderGraph';
 
 const root = process.cwd();

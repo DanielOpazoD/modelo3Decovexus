@@ -8,7 +8,7 @@ import { HEART_SHAPE, heartShapeGlsl } from '../anatomy/organs/heart';
 import { S0028_HEART } from '../anatomy/people/s0028/cpu';
 import * as PASSES from '../ultrasound/shaders/passes.glsl';
 import baseline from './fixtures/s0028-shader-default.json';
-import { layoutBefore402 } from './support/layoutBefore402';
+import { layoutBefore402 } from '../../tools/build/layoutBefore402';
 import { S0028_BUNDLE as bundle } from './support/legacyPerson/anatomyBundle';
 
 it('conserva byte a byte los ocho GLSL default fijados (tablas renales 339; programas restantes 326)', () => {
