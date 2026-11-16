@@ -54,14 +54,15 @@ function view(id: StartPoint['id'], extra: Partial<ProbePose> = {}): { pose: Pro
  * bajo la pared del flanco, casi nada (`none`, < 0,3·δ: el empuje se lo lleva). La línea central de la intercostal no
  * corta vasos (el ligamento venoso) y la de la transversa epigástrica pasa entre la VCI y la aorta hasta la vértebra.
  */
-/** La esplenorrenal es solo de s0028 (decisión 408): el torso procedural de estas pruebas no tiene bazo. */
+/**
+ * La esplenorrenal (decisión 408) y la aorta sagital (411) son solo de s0028: el torso procedural de estas pruebas no tiene bazo
+ * y su pose de aorta no se buscó en él.
+ */
+type LegacyId = Exclude<StartPoint['id'], 'splenorenal' | 'aortaSagittal'>;
 const LEGACY_POINTS = START_POINTS.filter(
-  (sp): sp is StartPoint & { id: Exclude<StartPoint['id'], 'splenorenal'> } => sp.id !== 'splenorenal',
+  (sp): sp is StartPoint & { id: LegacyId } => sp.id !== 'splenorenal' && sp.id !== 'aortaSagittal',
 );
-const CENTRAL_LANDMARK: Record<
-  Exclude<StartPoint['id'], 'splenorenal'>,
-  { landmark: Tissue; vessel?: RegExp; approach: 'full' | 'half' | 'none' }
-> = {
+const CENTRAL_LANDMARK: Record<LegacyId, { landmark: Tissue; vessel?: RegExp; approach: 'full' | 'half' | 'none' }> = {
   subxiphoid: { landmark: Tissue.Blood, vessel: /^ivc/, approach: 'full' },
   epigastric: { landmark: Tissue.Vertebra, approach: 'full' },
   intercostal: { landmark: Tissue.LigamentumVenosum, approach: 'full' },

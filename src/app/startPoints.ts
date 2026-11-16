@@ -20,7 +20,8 @@ export interface StartPoint {
     | 'renal'
     | 'hepatorenal'
     | 'portalSubcostal'
-    | 'splenorenal';
+    | 'splenorenal'
+    | 'aortaSagittal';
   label: string;
   phi: number;
   z: number;
@@ -194,6 +195,18 @@ export const START_POINTS: readonly StartPoint[] = [
     tilt: 0.275,
     hint: 'Bazo y riñón izquierdo en coronal desde la línea axilar posterior izquierda, entre costillas. Compara el bazo con la corteza renal y busca la interfase esplenorrenal; la espiración profunda baja el riñón.',
   },
+  {
+    // Decisión 411: sagital paramediano izquierdo en el epigastrio, por debajo de la subxifoidea; búsqueda sobre la anatomía fija de s0028.
+    id: 'aortaSagittal',
+    label: 'Aorta',
+    color: '#e0786a',
+    phi: 1.7,
+    z: -125,
+    yaw: -0.016,
+    rock: 0.098,
+    tilt: 0.084,
+    hint: 'Aorta abdominal en eje largo sobre las vértebras. Busca el tronco celíaco y, debajo, la mesentérica superior que corre paralela por delante, con la vena renal izquierda entre las dos.',
+  },
 ];
 
 /** Offline landmark/ray calibration of the shared BodyParts3D-derived torso; see REFERENCE_TORSO.md. */
@@ -259,6 +272,8 @@ const REFERENCE_POSES = {
   portalSubcostal: { phi: 1.6, z: -95, yaw: -0.509852, rock: 0.39367, tilt: -0.007846 },
   // [EXTRAPOLACIÓN PROPIA] la de s0028 (decisión 408): sin búsqueda en este torso
   splenorenal: { phi: -0.2, z: -70, yaw: 0.123, rock: -0.219, tilt: 0.275 },
+  // [EXTRAPOLACIÓN PROPIA] la de s0028 (decisión 411): sin búsqueda en este torso
+  aortaSagittal: { phi: 1.7, z: -125, yaw: -0.016, rock: 0.098, tilt: 0.084 },
 } satisfies Record<StartPoint['id'], Pick<StartPoint, 'phi' | 'z' | 'yaw' | 'rock' | 'tilt'>>;
 const REFERENCE_POINTS: readonly StartPoint[] = START_POINTS.map((sp) => ({
   ...sp,
@@ -295,6 +310,8 @@ export const ABDOMINAL_POSES = {
   portalSubcostal: { phi: 2.85, z: -95, yaw: -0.622104, rock: 0.080718, tilt: 0.136272 },
   // [EXTRAPOLACIÓN PROPIA] la de s0028 (decisión 408): sin búsqueda en el abdomen registrado
   splenorenal: { phi: -0.2, z: -70, yaw: 0.123, rock: -0.219, tilt: 0.275 },
+  // [EXTRAPOLACIÓN PROPIA] la de s0028 (decisión 411): sin búsqueda en el abdomen registrado
+  aortaSagittal: { phi: 1.7, z: -125, yaw: -0.016, rock: 0.098, tilt: 0.084 },
 } as const;
 const ABDOMINAL_POINTS: readonly StartPoint[] = START_POINTS.map((sp) => ({
   ...sp,
@@ -355,6 +372,9 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   hepatorenal: { phi: 3.2, z: -95, yaw: -0.8, rock: -0.188, tilt: -0.281 },
   // Decisión 408: bazo craneal en el campo cercano y riñón izquierdo debajo, con la interfase; búsqueda con su hito en s0028Windows.
   splenorenal: { phi: -0.2, z: -70, yaw: 0.123, rock: -0.219, tilt: 0.275 },
+  // Decisión 411: aorta en eje largo con el origen del tronco celíaco y la mesentérica superior en el plano, y la renal izquierda
+  // entre las dos (a ≤ 3 mm del plano); búsqueda con su hito en s0028Windows.
+  aortaSagittal: { phi: 1.7, z: -125, yaw: -0.016, rock: 0.098, tilt: 0.084 },
   // Decisión 395: con sus interlobares hacia el borde convexo, la media recorre el plano a lo largo del haz (coseno 0,93; antes
   // la cruzaba a 57°) y el riñón se ve 107 mm.
   renal: { phi: 3.25, z: -130, yaw: -0.378, rock: 0.199, tilt: 0.011 },

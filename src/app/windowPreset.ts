@@ -16,6 +16,7 @@ const TERRITORY = {
   renal: 'renal',
   hepatorenal: 'renal',
   splenorenal: 'renal',
+  aortaSagittal: 'caval',
 } as const satisfies Record<StartPoint['id'], string>;
 
 /** Explicit starting equipment per window, independent of case/diagnosis and prior window.

@@ -533,8 +533,8 @@ button.secondary {
    de las reglas que ajusta: una consulta de medios no suma especificidad. */
 @media (max-height: 860px) {
   .windows {
-    /* 256 px: la novena ventana (esplenorrenal, decisión 408) añade una fila al grupo renal */
-    max-height: 256px;
+    /* 290 px: la esplenorrenal (decisión 408) y la aorta (411) añaden una fila al grupo renal y otra al de la VCI */
+    max-height: 290px;
   }
   .rail-head {
     height: 32px;

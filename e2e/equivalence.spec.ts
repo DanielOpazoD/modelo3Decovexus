@@ -38,6 +38,7 @@ for (const reference of [false, true])
         'hepatorenal',
         'portalSubcostal',
         'splenorenal',
+        'aortaSagittal',
       ]);
       for (const r of report) {
         const tag = `${id}/${r.id}: ${JSON.stringify(r)}`;

@@ -19,10 +19,11 @@ export const WINDOW_GROUPS = [
     ],
   },
   {
-    label: 'VCI',
+    label: 'VCI y aorta',
     windows: [
       ['epigastric', 'Eje corto'],
       ['subxiphoid', 'Eje largo'],
+      ['aortaSagittal', 'Aorta'],
     ],
   },
   {
@@ -35,7 +36,7 @@ export const WINDOW_GROUPS = [
   },
 ] as const satisfies readonly { label: string; windows: readonly (readonly [StartPoint['id'], string])[] }[];
 
-/** Menú y marcas 3D comparten las mismas nueve posiciones; no son límites al movimiento libre. */
+/** Menú y marcas 3D comparten las mismas diez posiciones; no son límites al movimiento libre. */
 export function windowMenuPoints(torso: Pick<Torso, 'a' | 'b' | 'profile' | 'person'>): readonly StartPoint[] {
   const points = startPointsFor(torso, torso.person?.assets.identity ?? CURRENT_BUNDLE);
   return WINDOW_GROUPS.flatMap(({ windows }) => windows.map(([id]) => points.find((sp) => sp.id === id)!));

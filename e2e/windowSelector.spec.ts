@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { bootWithoutErrors, budget, windowAcquired, withinFrames } from './support';
 
-test('el selector ofrece nueve accesos en cuatro territorios y Enter abre la porta subcostal en 2D', async ({ page }, info) => {
+test('el selector ofrece diez accesos en cuatro territorios y Enter abre la porta subcostal en 2D', async ({ page }, info) => {
   budget(120_000);
   const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=s0028');
   await expect(page.getByRole('heading', { name: 'Ventanas', exact: true })).toBeVisible();
@@ -12,11 +12,11 @@ test('el selector ofrece nueve accesos en cuatro territorios y Enter abre la por
   const expected = [
     ['Porta', ['Intrahepática', 'Subcostal']],
     ['Suprahepáticas', ['Intercostal', 'Subcostal']],
-    ['VCI', ['Eje corto', 'Eje largo']],
+    ['VCI y aorta', ['Eje corto', 'Eje largo', 'Aorta']],
     ['Renal', ['Focalizada', 'Hepatorrenal', 'Esplenorrenal']],
   ] as const;
   await expect(menu.locator('.win-group')).toHaveCount(4);
-  await expect(menu.locator('.win-card')).toHaveCount(9);
+  await expect(menu.locator('.win-card')).toHaveCount(10);
   for (const [name, labels] of expected) {
     const group = menu.getByRole('group', { name, exact: true });
     await expect(group.locator('.win-name')).toHaveText([...labels]);
