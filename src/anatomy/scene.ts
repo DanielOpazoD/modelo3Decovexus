@@ -20,7 +20,7 @@ import {
 import { abdomenQuery } from './organs/abdomen';
 import { BOWEL_WALL_MM, bowelQuery, bowelRadii } from './organs/bowel';
 import { GALLBLADDER_WALL_MM, gallbladderBody, gallbladderGradient, gallbladderSdf, type GallbladderShape } from './organs/gallbladder';
-import { domeFloor, heartOuterSdf } from './organs/heart';
+import { domeFloor, heartOuterSdf, type HeartBeat } from './organs/heart';
 import {
   ATLAS_KIDNEY_SINUS,
   KIDNEY_RADII,
@@ -1083,6 +1083,8 @@ export interface VesselCaliber {
   ivcSupraApScale?: number;
   /** Descenso caudal del diafragma en este instante (mm, 0 en espiración): baja la cortina pulmonar. */
   diaphragmCaudalMm: number;
+  /** Ventrículos en este instante del latido (decisión 410); sin él, en reposo. */
+  heartBeat?: HeartBeat;
 }
 
 export const BASELINE_CALIBER: VesselCaliber = {

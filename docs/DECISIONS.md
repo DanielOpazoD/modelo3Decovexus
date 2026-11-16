@@ -12349,3 +12349,14 @@ de la confluencia, delante de la bifurcación, y siguen a su porta. La porción 
 **Consecuencias.** Un corte subcostal derecho por el ligamento enseña porta, arteria redonda y colédoco encima (el corte del
 colédoco). El techo JS de s0028 sube 4 KiB (la tríada lo pasaba en 470 B).
 **Verificación.** `s0028Vessels.test.ts`: huecos de pared > 0,3 mm, lados en el ligamento, cruce y coplanaridad ≤ 3 mm.
+
+## 410. Laten los ventrículos y la aurícula derecha
+
+**Contexto.** El responsable pidió un corazón «más realista, móvil/contráctil». El corazón era un esquema estático (limitación
+`schematic-static-heart`): la fisiología tenía fase cardíaca, pero la anatomía no la usaba.
+**Decisión.** La fisiología calcula el vaciado de los ventrículos desde la R (sístole de duración casi fija, llenado rápido,
+diástasis y contracción auricular, que falta sin onda a; el VD por `rvFunction`) [ESTIMADO]. La anatomía encoge sus cavidades
+dentro del contorno del reposo: VI 10 % largo y 33 % corto, VD 15 % y 20 %, y la AD, que se llena mientras ellos se vacían, 15 %
+más baja hacia su suelo, donde entra la cava (su anchura no cambia). CPU y GPU reciben el mismo vaciado (`uMotion`).
+**Consecuencias.** La pared se engruesa en sístole; en la subxifoidea el techo de la AD se mueve ~8 mm con cada latido. Sin coste.
+**Verificación.** `heartBeat.test.ts`; huellas de la revisión 410 con su inversa (`heartBefore410`); equivalencia e2e en vivo.

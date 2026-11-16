@@ -1,4 +1,5 @@
 import { bowelRadii } from './organs/bowel';
+import { heartBeatOf } from './organs/heart';
 import type { Vec3 } from '../core/vec3';
 import type { PhysiologySample } from '../physiology/engine';
 import { VESSEL_META, type VesselId } from '../physiology/vessels';
@@ -77,6 +78,7 @@ export class AnatomyQuery {
       ivcApScale: s.ivc.dApMm / s.ivc.dLatMm,
       ivcSupraApScale: supra.dApMm / supra.dLatMm,
       diaphragmCaudalMm: s.resp.diaphragmCaudalMm,
+      heartBeat: heartBeatOf(s.ventricles),
     };
     this.lastSample = s;
     this.lastCaliber = caliber;

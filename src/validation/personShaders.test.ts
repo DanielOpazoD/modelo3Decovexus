@@ -14,6 +14,8 @@ import scanConvertRevision from './fixtures/scanconvert-axial-334.json';
 import renalRevision from './fixtures/renal-shaders-339.json';
 import renalInterior from './fixtures/s0028-renal-interior-shaders.json';
 import tubeCapacity from './fixtures/tube-capacity-402-shaders.json';
+import heartBeat from './fixtures/heart-beat-410-shaders.json';
+import { heartBefore410 } from '../../tools/build/heartBefore410';
 import { layoutBefore402 } from '../../tools/build/layoutBefore402';
 import { loadShaderGraph } from './support/shaderGraph';
 
@@ -99,13 +101,38 @@ it('conserva los programas de main salvo G334, la anatomía/A0 339 y el interior
       );
       writeFileSync(join(root, 'src/validation/fixtures/tube-capacity-402-shaders.json'), JSON.stringify(revision, null, 2) + '\n');
     }
-    expect(result[mode]).toEqual({ ...before402, ...tubeCapacity[mode] });
+    const before410: Record<string, { default: string; s0028: string }> = { ...before402, ...tubeCapacity[mode] };
+    // Mantenimiento de la revisión 410 (latido de los ventrículos): `VEXUS_UPDATE_HEART_BEAT_SHADERS=1` la reescribe con los
+    // programas que difieren de los de antes; la prueba de abajo comprueba que la diferencia es solo la del corazón.
+    if (process.env.VEXUS_UPDATE_HEART_BEAT_SHADERS) {
+      const revision = heartBeat as Record<string, Record<string, { default: string; s0028: string }>>;
+      revision[mode] = Object.fromEntries(
+        Object.entries(result[mode]).filter(
+          ([name, value]) => value.default !== before410[name].default || value.s0028 !== before410[name].s0028,
+        ),
+      );
+      writeFileSync(join(root, 'src/validation/fixtures/heart-beat-410-shaders.json'), JSON.stringify(revision, null, 2) + '\n');
+    }
+    expect(result[mode]).toEqual({ ...before410, ...heartBeat[mode] });
   }
+});
+
+it('el latido de la decisión 410 solo cambia las cavidades del corazón y la ranura de uMotion', () => {
+  // Con el corazón de antes, los 40 programas (default y s0028) son exactamente los de la revisión anterior.
+  const source = programs(false, heartBefore410).source;
+  const previous = Object.fromEntries(
+    baseline.source.programs.map((p) => [
+      p.name,
+      p.name === 'FRAG_SCANCONVERT' ? scanConvertRevision.source : { default: p.sha256, s0028: p.s0028Sha256 },
+    ]),
+  );
+  expect(source).toEqual({ ...previous, ...renalRevision.source, ...renalInterior.source, ...tubeCapacity.source });
+  expect(Object.keys(heartBeat.source).length).toBeGreaterThan(0);
 });
 
 it('la capacidad de tubos de la decisión 402 solo mueve constantes de disposición de la textura de escena', () => {
   // Con las constantes de antes, los 40 programas (default y s0028) son exactamente los de la revisión anterior.
-  const source = programs(false, layoutBefore402).source;
+  const source = programs(false, (text) => layoutBefore402(heartBefore410(text))).source;
   const previous = Object.fromEntries(
     baseline.source.programs.map((p) => [
       p.name,

@@ -199,8 +199,15 @@ export const SCENE_UNIFORMS: readonly UniformSpec[] = [
     // descenso diafragmático (mm), dirección xyz
     value: (_s, c) => [c.sample.resp.diaphragmCaudalMm, ...RespiratoryDeformation.direction],
   },
-  /** velocidad del diafragma (mm/s) */
-  { name: 'uRespVel', type: 'float', value: (_s, c) => [c.sample.resp.diaphragmVelocityMmS] },
+  /**
+   * velocidad del diafragma (mm/s) y vaciado del VI y del VD en este instante del latido (decisión 410), en la misma ranura que
+   * ocupaba la velocidad sola: el presupuesto de ranuras de B no crece
+   */
+  {
+    name: 'uMotion',
+    type: 'vec3',
+    value: (_s, c) => [c.sample.resp.diaphragmVelocityMmS, c.sample.ventricles?.lv ?? 0, c.sample.ventricles?.rv ?? 0],
+  },
   {
     name: 'uCompC',
     type: 'vec4',

@@ -100,16 +100,19 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
   líquidos no bajan el llenado de 2 mmHg.
 - **Área regional de cava superior estimada** (`ivc-regional-area-estimated`, 172): la cava abdominal conserva un único compartimento de volumen; la unión/entrada auricular usa una sección propia, dependiente de presión de unión menos pleural y retrasada 0,2 s. Q/A, CPU, GPU y 3D comparten esa elipse. La ley regional y la transición gruesa por el hiato requieren calibración/registro independientes; no existe un volumen torácico adicional ni waterfall completo.
 - **Sin movimiento cardíaco transmitido a hígado/cava** (`no-cardiac-tissue-motion`); la
-  respiración es el único movimiento tisular, y el corazón (decisión 85) no late.
+  respiración es el único movimiento tisular. Desde la decisión 410 laten las cavidades del corazón (ventrículos y AD), pero su
+  contorno no se mueve y no empuja al hígado ni a la cava.
 - **Sin bazo en legacy** (`no-spleen`): el atlas añade un bazo estimado; no es una segmentación fuente.
 - **Esqueleto torácico procedural estimado** (`thoracic-skeleton-estimated`, decisión 166; alternativa sin atlas): existen doce pares funcionales y esternón compartidos en CPU, GPU y 3D. Las costillas 11/12 terminan libremente; sus recorridos se ajustan al diseño LUS (errores máximos de ajuste 2,66 y 0,80 mm, no errores clínicos). Los arcos 5–10 y sus inserciones aproximadas se preservan. Falta registrar el conjunto con un mismo adulto, estrechamiento superior, asimetrías, articulaciones, clavículas/escápulas acústicas y región diafragmática completa. Las superficies costales no tienen tapas ni articulaciones detalladas. Manubrio/cuerpo son hueso y xifoides cartílago estimado; no representa variabilidad de osificación. Ninguna validación clínica independiente está cerrada.
 - **El corazón es un esquema estático** (`schematic-static-heart`, decisión 85): cuatro elipsoides con su miocardio, los
   tabiques y los orificios auriculoventriculares abiertos, sin valvas, sin grandes vasos de la base (vena cava superior,
   raíz aórtica, tronco pulmonar), sin seno coronario ni venas pulmonares; el pericardio es la capa de 1,5 mm del tejido del
   mediastino que dibuja su cara (no un tejido propio: el 33.º tejido costaría dos ranuras de uniforms de la pasada B), y el
-  esófago y la ácigos son parte de ese tejido. No late (`no-cardiac-tissue-motion`) y es el mismo en todos los casos: la AD
-  no se dilata con la congestión ni con la insuficiencia tricuspídea grave (la fisiología no tiene volumen auricular del que
-  sacarlo). Sus cavidades no tienen flujo en el color ni en el PW, salvo el chorro de la VCI que entra en la AD (la luz de su
+  esófago y la ácigos son parte de ese tejido. Desde la decisión 410 laten los ventrículos y la AD: sus cavidades se encogen
+  dentro de un contorno fijo (la pared se engruesa en sístole; la base no desciende), el VD según su función sistólica y la AD
+  bajando su techo hacia el suelo, sin la AI; la curva de vaciado es [ESTIMADO] y no sale del lazo de presiones. Es el mismo en todos los
+  casos: la AD no se dilata con la congestión ni con la insuficiencia tricuspídea grave (la fisiología no tiene volumen
+  auricular del que sacarlo). Sus cavidades no tienen flujo en el color ni en el PW, salvo el chorro de la VCI que entra en la AD (la luz de su
   tubo). Con la VCI dilatada de la congestión (×1,57) el embudo que no cabe en la aurícula se recorta en su suelo (a 5 mm de
   la cúpula) y contra el tabique interauricular: un borde de 1–5 mm donde gana el corazón. El suelo del corazón es la
   distancia al plano tangente de la cúpula con su pendiente limitada a 2 (`heartFloor`): en el pliegue entre las hemicúpulas

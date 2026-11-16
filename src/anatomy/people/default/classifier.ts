@@ -138,7 +138,7 @@ export function classifyInside(
   if (tube && !ivc?.outside) return ivc ? { ...tube, boundaryDistance: Math.min(tube.boundaryDistance, ivc.cut) } : tube;
   if (dDome < 0) {
     // tórax (decisión 85): el corazón en su saco, el mediastino o el pulmón; la capa del pericardio dibuja su cara
-    const t = thorax(m, dDome, floor, scene.person?.cpu);
+    const t = thorax(m, dDome, floor, scene.person?.cpu, caliber.heartBeat);
     const face = t.ifd < NONE.interfaceDistance ? { interface: Interface.Pericardium, interfaceDistance: t.ifd } : {};
     // su distancia a la frontera cuenta también la columna y la pared (como el retroperitoneo)
     const bd = Math.min(t.bd, spineDistance, -depth - wallMm);
