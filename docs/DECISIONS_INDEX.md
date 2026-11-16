@@ -413,3 +413,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [407](DECISIONS.md#L12320) | Las columnas del espectro se empalman con la anterior | vigente |
 | [408](DECISIONS.md#L12329) | Ventana esplenorrenal: bazo y riñón izquierdo en coronal | vigente |
 | [409](DECISIONS.md#L12341) | Tríada portal de s0028: colédoco y arteria hepática junto a la porta | vigente |
+| [410](DECISIONS.md#L12353) | Laten los ventrículos y la aurícula derecha | vigente |

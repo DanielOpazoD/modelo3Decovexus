@@ -882,13 +882,13 @@ export const TWINS: readonly TwinPair[] = [
     cpu: [
       {
         file: 'src/anatomy/organs/heart.ts',
-        symbols: ['heartShift', 'heartFrame', 'raFrame', 'raSdf', 'heartChambers', 'raInferiorZ', 'ivcAtrium', 'thorax'],
+        symbols: ['heartShift', 'heartFrame', 'raFrame', 'raSdf', 'heartChambers', 'heartChambersAt', 'raInferiorZ', 'ivcAtrium', 'thorax'],
       },
     ],
     gpu: [
       {
         file: 'src/anatomy/organs/heart.ts',
-        symbols: ['heartShift', 'heartFrame', 'raFrame', 'raSdf', 'heartChambers', 'raInferiorZ', 'ivcAtrium', 'thorax'],
+        symbols: ['heartShift', 'heartFrame', 'raFrame', 'raSdf', 'heartChambers', 'heartChambersAt', 'raInferiorZ', 'ivcAtrium', 'thorax'],
         templates: ['HEART_GLSL'],
       },
     ],

@@ -183,7 +183,7 @@ export function classifyInside(
   if (heart.d < 0) {
     // Sus cavidades (el esquema encajado a su TAC, `S0028_HEART`) son sangre y el resto de la máscara, miocardio. Con el recorte
     // por la cúpula de la otra persona, más alta, casi toda la máscara quedaba como «mediastino», con textura de hígado.
-    const t = thorax(m, -1e3, -1e3, scene.person?.cpu);
+    const t = thorax(m, -1e3, -1e3, scene.person?.cpu, caliber.heartBeat);
     // Toda cavidad lleva su pared libre: a menos de `S0028_HEART_WALL_MM` del contorno es miocardio (decisión 369).
     return t.tissue === Tissue.Blood && -heart.d > S0028_HEART_WALL_MM
       ? { ...NONE, tissue: Tissue.Blood, boundaryDistance: Math.min(t.bd, -heart.d - S0028_HEART_WALL_MM) }
@@ -191,7 +191,7 @@ export function classifyInside(
   }
   if (dDome < 0) {
     // tórax (decisión 85): el corazón en su saco, el mediastino o el pulmón; la capa del pericardio dibuja su cara
-    const t = thorax(m, dDome, floor, scene.person?.cpu);
+    const t = thorax(m, dDome, floor, scene.person?.cpu, caliber.heartBeat);
     const face = t.ifd < NONE.interfaceDistance ? { interface: Interface.Pericardium, interfaceDistance: t.ifd } : {};
     // su distancia a la frontera cuenta también la columna y la pared (como el retroperitoneo)
     const bd = Math.min(t.bd, spineDistance, -depth - wallMm);

@@ -84,6 +84,25 @@ export interface HeartShape {
   };
 }
 export const HEART_SHAPE: HeartShape = { origin: HEART_ORIGIN, axes: HEART_AXES, cavities: HEART_CAVITIES };
+
+/**
+ * Latido del corazón (decisión 410): escala de los semiejes de sus cavidades, [VI largo, VI corto, VD largo, VD corto, AD].
+ * Los ventrículos se encogen alrededor de su centro; los tabiques y el epicardio se quedan en su sitio (los del reposo), de modo
+ * que la pared se engruesa en sístole. [ESTIMADO] Telesístole de un adulto sano: el VI acorta 10 % su eje largo y 33 % el corto
+ * (diámetro 40 → 27 mm, fracción de eyección ≈ 60 %); el VD, 15 % y 20 % (cambio de área ≈ 35 %), por su función sistólica. La
+ * AD se llena mientras los ventrículos se vacían: es la del reposo (su TAC) en la telesístole y un 15 % más baja tras la
+ * contracción auricular: su techo baja hacia el suelo, donde entra la cava, que no se mueve, y su anchura junto a la entrada no
+ * cambia (la subxifoidea sigue viendo la cava entrar en ella, decisión 391).
+ */
+export type HeartBeat = readonly [number, number, number, number, number];
+export const HEART_AT_REST: HeartBeat = [1, 1, 1, 1, 1];
+export const CHAMBER_SHORTENING = { lvLong: 0.1, lvShort: 0.33, rvLong: 0.15, rvShort: 0.2, ra: 0.15 } as const;
+export function heartBeatOf(ventricles?: { lv: number; rv: number }): HeartBeat {
+  if (!ventricles) return HEART_AT_REST;
+  const k = CHAMBER_SHORTENING,
+    { lv, rv } = ventricles;
+  return [1 - k.lvLong * lv, 1 - k.lvShort * lv, 1 - k.rvLong * rv, 1 - k.rvShort * rv, 1 - k.ra * (1 - lv)];
+}
 const shapeOf = (person?: AnatomyPerson): HeartShape => person?.heart ?? HEART_SHAPE;
 /** Estimated inferior approach lip, derived from the existing atrium and orifice thickness. */
 export const raApproachTopZ = (shape: HeartShape): number =>
@@ -220,16 +239,29 @@ export function ivcAtrium(m: Vec3, floor: number, person?: AnatomyPerson): { cav
 
 /**
  * Distancias (mm, negativas dentro) a las cavidades del VI, VD, AD y AI, con los tabiques tallados: el VD, a `ivs` del VI;
- * la AD, a `ias` de la AI y a `avs` del VI. Sin el recorte de la cúpula.
+ * la AD, a `ias` de la AI y a `avs` del VI. Sin el recorte de la cúpula. Con `beat`, los ventrículos en ese instante del latido;
+ * los tabiques se tallan siempre desde el VI en reposo.
  */
-export function heartChambers(m: Vec3, person?: AnatomyPerson): [number, number, number, number] {
+export function heartChambers(m: Vec3, person?: AnatomyPerson, beat: HeartBeat = HEART_AT_REST): [number, number, number, number] {
+  return heartChambersAt(m, person, beat);
+}
+
+/** `heartChambers` en un instante del latido. @twin organo-corazon */
+export function heartChambersAt(m: Vec3, person: AnatomyPerson | undefined, beat: HeartBeat): [number, number, number, number] {
   const q = heartFrame(m, person);
   const cav = shapeOf(person).cavities;
-  const lv = sdEllipsoidLocal(q, cav.lv.r);
-  const rv = Math.max(sdEllipsoidLocal([q[0] - cav.rv.c[0], q[1] - cav.rv.c[1], q[2] - cav.rv.c[2]], cav.rv.r), W.ivs - lv);
+  const lv0 = sdEllipsoidLocal(q, cav.lv.r);
+  const lv = sdEllipsoidLocal(q, [cav.lv.r[0] * beat[0], cav.lv.r[1] * beat[1], cav.lv.r[2] * beat[1]]);
+  const rvR: Vec3 = [cav.rv.r[0] * beat[2], cav.rv.r[1] * beat[3], cav.rv.r[2] * beat[3]];
+  const rv = Math.max(sdEllipsoidLocal([q[0] - cav.rv.c[0], q[1] - cav.rv.c[1], q[2] - cav.rv.c[2]], rvR), W.ivs - lv0);
   const a = registeredHeartPoint(m, person);
   const la = sdEllipsoidLocal([a[0] - cav.la.c[0], a[1] - cav.la.c[1], a[2] - cav.la.c[2]], cav.la.r);
-  const ra = Math.max(raSdf(m, person), Math.max(W.ias - la, W.avs - lv));
+  // la AD, más baja hacia su polo inferior (en su marco, z = −r_z): el suelo por donde entra la cava no se mueve
+  const f = raFrame(m, person),
+    r = cav.ra.r,
+    s = beat[4];
+  const raBeat = sdEllipsoidLocal([f[0], f[1], f[2] + (1 - s) * r[2]], [r[0], r[1], r[2] * s]);
+  const ra = Math.max(raBeat, Math.max(W.ias - la, W.avs - lv0));
   return [lv, rv, ra, la];
 }
 
@@ -249,17 +281,19 @@ export interface ThoraxClass {
  * y es una cota salvo junto al borde de una hemicúpula (el suelo no es allí una distancia); `classify` le suma la columna
  * y la pared.
  */
-export function thorax(m: Vec3, dDome: number, floor: number, person?: AnatomyPerson): ThoraxClass {
+export function thorax(m: Vec3, dDome: number, floor: number, person?: AnatomyPerson, beat: HeartBeat = HEART_AT_REST): ThoraxClass {
   const b = MED.bound;
   const out = Math.hypot(m[0] - b.c[0], m[1] - b.c[1], m[2] - b.c[2]) - b.r;
   if (out > 0) return { tissue: Tissue.Lung, bd: Math.min(-dDome, out), ifd: 1e3 };
-  const c = heartChambers(m, person);
+  // las cavidades laten (decisión 410); el epicardio y la grasa salen de las del reposo
+  const c0 = heartChambers(m, person);
+  const c = beat === HEART_AT_REST ? c0 : heartChambers(m, person, beat);
   const p = W.pericardium;
   let cav = 1e3;
   let epi = 1e3;
   for (let i = 0; i < 4; i++) {
     cav = Math.min(cav, Math.max(c[i], floor + p + WALL4[i]));
-    epi = Math.min(epi, c[i] - WALL4[i]);
+    epi = Math.min(epi, c0[i] - WALL4[i]);
   }
   if (cav < 0) return { tissue: Tissue.Blood, bd: -cav, ifd: 1e3 };
   // el epicardio, recortado a la capa del pericardio sobre la cúpula
@@ -267,7 +301,7 @@ export function thorax(m: Vec3, dDome: number, floor: number, person?: AnatomyPe
   if (epiC < 0) return { tissue: Tissue.Myocardium, bd: Math.min(-epiC, cav), ifd: 1e3 };
   if (epi < p) return { tissue: Tissue.Mediastinum, bd: Math.min(epiC, -dDome), ifd: epiC };
   const pad = MED.padMm * Math.min(1, Math.max(0, 1 + floor / MED.padHeightMm));
-  const fe = Math.min(c[0] - W.lv - pad, c[1] - W.rv - pad, c[2] - W.ra, c[3] - W.la);
+  const fe = Math.min(c0[0] - W.lv - pad, c0[1] - W.rv - pad, c0[2] - W.ra, c0[3] - W.la);
   const fat = (fe - p - MED.fatMm) / (1 + MED.padMm / MED.padHeightMm);
   // la columna del mediastino posterior: elipse en (x, y) cortada por arriba en `top`
   const k = person?.assets.buffers.abdominal ? MED.atlasColumn : MED.column;
@@ -325,6 +359,8 @@ const V4 = [
 export const HEART_GLSL = /* glsl */ `
 const vec3 HV[${V3.length}] = vec3[${V3.length}](${V3.map(vec).join(',')});
 const vec4 HW[${V4.length}] = vec4[${V4.length}](${V4.map(vec).join(',')});
+const vec4 HEART_SHORTENING = ${vec([CHAMBER_SHORTENING.lvLong, CHAMBER_SHORTENING.lvShort, CHAMBER_SHORTENING.rvLong, CHAMBER_SHORTENING.rvShort])};
+const float RA_SHORTENING = ${CHAMBER_SHORTENING.ra.toFixed(4)};
 const mat3 HB = mat3(HV[1], HV[2], HV[3]);
 vec3 heartShift() { return uAbdominalAtlasEnabled!=0 ? ${vec(HEART_ATLAS_SHIFT)} : vec3(0.0); }
 vec3 heartFrame(vec3 m) { return (m - heartShift() - HV[0]) * HB; }
@@ -338,12 +374,15 @@ vec3 epiNormal(vec3 m, vec4 e, float epi) {
   return normalize(epi == e.x ? HB * (q / (HV[4] * HV[4])) : epi == e.y ? HB * ((q - HV[5]) / (HV[6] * HV[6]))
     : epi == e.z ? vec3(g.x, g.y * HW[5].z + g.z * HW[5].w, g.z * HW[5].z - g.y * HW[5].w) : (m - heartShift() - HV[9]) / (HV[10] * HV[10]));
 }
-vec4 heartChambers(vec3 m) {
+vec4 heartChambersAt(vec3 m, vec4 b, float s) {
   vec3 q = heartFrame(m);
-  float lv = sdEllipsoidLocal(q, HV[4]);
+  float lv0 = sdEllipsoidLocal(q, HV[4]);
+  float lv = sdEllipsoidLocal(q, HV[4] * b.xyy);
   float la = sdEllipsoidLocal(m - heartShift() - HV[9], HV[10]);
-  return vec4(lv, max(sdEllipsoidLocal(q - HV[5], HV[6]), HW[1].x - lv), max(raSdf(m), max(HW[1].y - la, HW[1].z - lv)), la);
+  float ra = sdEllipsoidLocal(raFrame(m) + vec3(0.0, 0.0, (1.0 - s) * HV[8].z), HV[8] * vec3(1.0, 1.0, s));
+  return vec4(lv, max(sdEllipsoidLocal(q - HV[5], HV[6] * b.zww), HW[1].x - lv0), max(ra, max(HW[1].y - la, HW[1].z - lv0)), la);
 }
+vec4 heartChambers(vec3 m) { return heartChambersAt(m, vec4(1.0), 1.0); }
 // (cavidad de la AD tallada y recortada por el suelo hF, fuera de ella a más de IVC_ORIFICE_MM sobre él (1/0), cota de sus
 // fronteras)
 float raInferiorZ(vec2 p) {
@@ -369,11 +408,12 @@ int thorax(vec3 m, float dDome, out float bd, out float ifd, inout vec3 n) {
   float outside = distance(m, HW[4].xyz) - HW[4].w;
   bd = min(-dDome, outside);
   if (outside > 0.0) return T_LUNG;
-  vec4 c = heartChambers(m);
+  vec4 c0 = heartChambers(m);
+  vec4 c = heartChambersAt(m, vec4(1.0) - HEART_SHORTENING * uMotion.yyzz, 1.0 - RA_SHORTENING * (1.0 - uMotion.y));
   float p = HW[1].w;
   vec4 cc = max(c, vec4(hF + p) + HW[0]);
   float cav = min(min(cc.x, cc.y), min(cc.z, cc.w));
-  vec4 e = c - HW[0];
+  vec4 e = c0 - HW[0];
   float epi = min(min(e.x, e.y), min(e.z, e.w));
   bd = -cav;
   if (cav < 0.0) return T_BLOOD;

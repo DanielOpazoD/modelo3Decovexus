@@ -7,6 +7,7 @@ import { validatePatient } from './patientState';
 import { RespiratoryModel, type RespiratorySample } from './respiratory';
 import { RhythmGenerator, gauss } from './rhythm';
 import { RightAtriumModel } from './rightAtrium';
+import { ventricularEmptying, type VentricularEmptying } from './ventricles';
 import { VenousNetwork, defaultNetworkParams, hvRadiusScaleFromPressure, ivcPtmFromDiameter, type NetworkOutputs } from './venousNetwork';
 import { hepaticFlowShares, INTERLOBAR_FLOW_SHARE, portalFlowShares, VESSEL_IDS, type VesselAreas, type VesselId } from './vessels';
 
@@ -18,6 +19,8 @@ export interface PhysiologySample {
   t: number;
   ecgMv: number;
   cardiacPhase: number;
+  /** Vaciado de los ventrículos en este instante (decisión 410): mueve sus cavidades en la anatomía. */
+  ventricles?: VentricularEmptying;
   beatIndex: number;
   lastR: number;
   rr: number;
@@ -382,6 +385,7 @@ export class PhysiologyEngine {
       t,
       ecgMv: this.rhythm.ecg(t),
       cardiacPhase: this.rhythm.cardiacPhase(t),
+      ventricles: ventricularEmptying(t - beat.tR, beat.rr, this.patient),
       beatIndex: beat.index,
       lastR: beat.tR,
       rr: beat.rr,

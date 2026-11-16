@@ -235,7 +235,7 @@ vec3 toMaterial(vec3 p) {
 }
 
 vec3 tissueVelocity(vec3 m) {
-  return uResp.yzw * (uRespVel * respWeight(m));
+  return uResp.yzw * (uMotion.x * respWeight(m));
 }
 
 float domeLift(float x, float y, vec4 dome) {

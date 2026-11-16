@@ -967,7 +967,7 @@
     ["uRefr", "_u5e"],
     ["uRefrK", "_u5f"],
     ["uResp", "_u5g"],
-    ["uRespVel", "_u5h"],
+    ["uMotion", "_u5h"],
     ["uReverb", "_u5i"],
     ["uRibParams", "_u5j"],
     ["uRxNoise", "_u5k"],
