@@ -228,6 +228,9 @@ it('una pared estimada no disputa un órgano medido (decisión 376): en las celd
         if (organs.length) {
           yielded++;
           expect(owners, p.join(',')).not.toContain('wall');
+          // Y el clasificador no la pinta encima: como la GPU (`k==16`), sin dueño pared no hay capa de pared. Antes la CPU
+          // dibujaba aquí grasa de pared y la GPU el asa (la cáscara de la ventana de la aorta, decisión 411).
+          expect(at(p).wall, p.join(',')).toBeUndefined();
           // Control en el mismo punto: con la misma pared tomada por medida, el órgano y la pared chocan.
           expect(s0028Owners(p, { ...q, estimated: false }).owners.map((w) => w.id)).toContain('wall');
         } else if (owners.includes('wall')) estimatedWall++;
