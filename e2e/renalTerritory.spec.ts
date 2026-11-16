@@ -30,14 +30,18 @@ for (const [id, pattern] of [
         el.value = '50';
         el.dispatchEvent(new Event('input', { bubbles: true }));
       });
-    const particleCount = await page.evaluate(() => {
+    const population = await page.evaluate(() => {
       const t = window.__vexusTest!;
       t.advance(30);
       t.advance(8);
       t.sim().render();
-      return t.sim().sampleVolume.particleCount;
+      const v = t.sim().sampleVolume;
+      return { particles: v.particleCount, refined: v.refinedVessels.size, extras: v.extrasInRefinedBlood };
     });
-    expect(particleCount).toBe(1280);
+    // Refinamiento dirigido (decisión 403): la sangre del vaso pequeño lleva cuatro veces más dispersores; el resto, los 320.
+    expect(population.refined).toBeGreaterThan(0);
+    expect(population.particles).toBeGreaterThan(320);
+    expect(population.extras).toBe(true);
     await page.locator('#freeze').click();
     await expect(page.locator('#freeze')).toHaveAttribute('aria-pressed', 'true');
     // Activating teacher mode changes the active tab; reveal the case only after acquisition.
@@ -88,10 +92,19 @@ for (const caseId of ['normal-adult', 'severe-congestion'] as const)
       t.advance(30);
       t.advance(8);
       t.sim().render();
-      return { vessel: t.sim().gateInfo?.vessel, particles: t.sim().sampleVolume.particleCount };
+      const v = t.sim().sampleVolume;
+      return {
+        vessel: t.sim().gateInfo?.vessel,
+        particles: v.particleCount,
+        refined: [...v.refinedVessels],
+        extras: v.extrasInRefinedBlood,
+      };
     });
     expect(vessel.vessel).toMatch(/^interlobarArtery/);
-    expect(vessel.particles).toBe(1280);
+    // Refinamiento dirigido (decisión 403): la sangre de la arteria pequeña lleva cuatro veces más dispersores; el resto, los 320.
+    expect(vessel.refined.some((id) => id.startsWith('interlobarArtery'))).toBe(true);
+    expect(vessel.particles).toBeGreaterThan(320);
+    expect(vessel.extras).toBe(true);
     await page.locator('#freeze').click();
     await expect(page.locator('#freeze')).toHaveAttribute('aria-pressed', 'true');
     // Activating teacher mode changes the active tab; reveal the case only after acquisition.
