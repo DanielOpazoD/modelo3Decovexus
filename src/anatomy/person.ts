@@ -43,6 +43,11 @@ export interface AnatomyPerson {
   readonly capsuleFatTissues?: readonly number[];
   /** Tras colocar las ramas procedurales: el eje de los vasos madre como curva (más nodos, mismos extremos). */
   readonly smoothVessels?: (vessels: VesselDef[]) => void;
+  /**
+   * Red interlobar de la persona (s0028, decisión 402): cambia las interlobares madre y devuelve sus ramas, que van al final de la
+   * lista, tras las hepáticas (no mueven el índice, la semilla de su forma, de ningún otro tubo).
+   */
+  readonly renalNetwork?: (vessels: VesselDef[]) => VesselDef[];
   readonly regional?: ReturnType<typeof createSourceQueries> &
     ReturnType<typeof createWallQueries> &
     ReturnType<typeof createSolidsQueries>;

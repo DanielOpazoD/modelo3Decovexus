@@ -71,7 +71,7 @@ import {
   type TubeHit,
 } from './primitives';
 import { DIAPHRAGM_THICKNESS_MM, LIVER_CAPSULE_MM, Tissue } from './tissues';
-import { SCENE_TUBE_CAPACITY } from './tubeCapacity';
+import { HEPATIC_TUBE_CEILING } from './tubeCapacity';
 import { buildHepaticBranches, buildVesselTree, tubeShapeClassOf, wallThicknessMm, type DuctDef, type VesselDef } from './vesselTree';
 
 export { wallThicknessMm };
@@ -454,7 +454,7 @@ export class AnatomyScene {
       (m) => -this.liverInteriorMargin(m),
       7,
       (m) => Math.min(this.liverInteriorMargin(m), this.ligamentumVenosumSdf(m)),
-      this.hasAbdominalAtlas ? SCENE_TUBE_CAPACITY - this.vessels.length - tree.ducts.length : Infinity,
+      this.hasAbdominalAtlas ? HEPATIC_TUBE_CEILING - this.vessels.length - tree.ducts.length : Infinity,
       person.cpu.hepaticBranchesPerParent,
     );
     // la forma orgánica de las suprahepáticas y la porta (decisión 90): su semilla es su índice en la lista de la GPU (el H2.w
@@ -464,6 +464,7 @@ export class AnatomyScene {
       const cls = tubeShapeClassOf(v.id);
       return cls ? { ...v, tube: { ...v.tube, shape: tubeShapeOf(i, cls, v.tube.nodes) } } : v;
     });
+    this.vessels.push(...(person.cpu.renalNetwork?.(this.vessels) ?? []));
     this.ducts = person.cpu.placeDucts?.(tree.ducts) ?? tree.ducts;
     // Solo los vasos «madre»: las ramas procedurales comparten id y no deben sustituirlos
     this.vesselById = new Map(this.vessels.filter((v) => v.flowFactor === undefined).map((v) => [v.id, v]));

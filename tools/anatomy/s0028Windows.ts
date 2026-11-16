@@ -386,7 +386,11 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
     right = tube('pvRight'),
     hv = tube('hvRight'),
     // Confluencia: los últimos 40 mm de la derecha y de la media, que llegan a la cava por un lado y por otro.
-    interlobar = scene.vesselById.get('interlobarVein2')!.tube.nodes.map((n) => n.p),
+    // El tramo interlobar de la vena media: sus tres últimos nodos (desde la decisión 402 la madre empieza en su arcuata).
+    interlobar = scene.vesselById
+      .get('interlobarVein2')!
+      .tube.nodes.slice(-3)
+      .map((n) => n.p),
     // Cava en eje largo hasta su entrada en la aurícula derecha (decisión 391): VExUS la mide a 1–2 cm de esa entrada, junto a la
     // suprahepática. Hasta entonces el hito acababa en z −30 mm, cuando el tórax de s0028 aún no tenía aurícula (la tiene desde la
     // decisión 356), y la entrada quedaba en el borde del sector con la aurícula fuera.

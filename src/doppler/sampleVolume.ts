@@ -199,6 +199,12 @@ interface Scatterer {
   /** Importancia de la medida (r/r_siembra)² de la sangre en un tubo afilado y su raíz (amplitud); 1 en el resto. */
   imp: number;
   ampImp: number;
+  /**
+   * Amplitud de su población (decisión 403): ½ en la sangre de un vaso refinado, que lleva cuatro veces más dispersores; 1 en el
+   * resto; 0 en un extra que ya no está en esa sangre. `extra`: sembrado por el refinamiento, solo en esa sangre.
+   */
+  pop: number;
+  extra: boolean;
 }
 
 export interface GateComposition {
@@ -220,6 +226,10 @@ export function particleAmplitudeScale(count: number): number {
   if (!Number.isInteger(count) || count <= 0) throw new RangeError('Invalid PW particle count');
   return Math.sqrt(N_SCATTERERS / count);
 }
+/** Densidad del refinamiento numérico (decisión 128): la sangre de un vaso pequeño, con cuatro veces más dispersores. */
+const REFINE = 4;
+/** Su amplitud por dispersor, que conserva la potencia esperada (½). */
+const REFINED_POP = particleAmplitudeScale(REFINE * N_SCATTERERS);
 /** Reclasificación (luz que crece o mengua): cada 96 ticks (≈37 ms a 2,6 kHz) se visita un cuarto de los dispersores, otro
  * en cada turno. La sangre en su corriente que la luz deja fuera no espera a la visita (decisión 294). */
 const RECLASSIFY_EVERY = 96;
@@ -433,7 +443,8 @@ function inv3(m: readonly number[]): number[] {
 
 export class SampleVolumeIQ {
   private scatterers: Scatterer[] = [];
-  private particleAmplitudeScale = 1;
+  /** Vasos refinados de la siembra en curso (decisión 403). */
+  private refined: ReadonlySet<VesselId> = new Set();
   private rng: SeededRandom;
   private tick = 0;
   private weightEpoch = 0;
@@ -478,6 +489,16 @@ export class SampleVolumeIQ {
   /** Numerical population only; not a physiological blood-cell count. */
   get particleCount(): number {
     return this.scatterers.length;
+  }
+
+  /** Vasos cuya sangre lleva el refinamiento dirigido en la siembra en curso (decisión 403). */
+  get refinedVessels(): ReadonlySet<VesselId> {
+    return this.refined;
+  }
+
+  /** ¿Está toda la población extra en la sangre de un vaso refinado (o muda)? Para las pruebas. */
+  get extrasInRefinedBlood(): boolean {
+    return this.scatterers.every((s) => !s.extra || s.pop === 0 || this.isRefinedBlood(s));
   }
 
   get lastComposition(): GateComposition {
@@ -748,7 +769,10 @@ export class SampleVolumeIQ {
       lumen: null,
       imp: 1,
       ampImp: 1,
+      pop: 1,
+      extra: false,
     };
+    s.pop = this.popOf(s);
     this.gateOf(m, d, s.g);
     // Todo dispersor sembrado al azar entra en rampa: el tejido (40 dB sobre la sangre) y también la sangre, que puede
     // aparecer en el centro de la puerta; de golpe era una línea vertical en el espectrograma.
@@ -764,19 +788,55 @@ export class SampleVolumeIQ {
   private reseed(phys: PhysiologySample): void {
     this.findJunctions();
     this.scatterers.length = 0;
+    this.refined = new Set();
     for (let i = 0; i < N_SCATTERERS; i++) this.scatterers.push(this.randomScatterer(phys));
     this.updateComposition();
-    // Numerical refinement for a small lumen relative to the lateral beam.
+    // Numerical refinement for a small lumen relative to the lateral beam (decisión 128), dirigido a su sangre (decisión 403): de
+    // las 3·N siembras uniformes que antes se sumaban a toda la caja quedan solo las que caen en la sangre de un vaso pequeño, y
+    // esa sangre suena con amplitud ½. Tejido y vasos grandes conservan N dispersores con amplitud 1: la potencia esperada de
+    // cada parte es la de 4·N uniformes con amplitud ½, y el coste ya no se cuadruplica por una arteria al lado de la vena.
     // Geometry and observable sample-volume weight only; never case or grade.
-    const refine = Object.entries(this.composition.vessels).some(([id, weight]) => {
-      const vessel = this.anatomy.scene.vesselById.get(id as VesselId);
-      return weight >= 0.02 && vessel && Math.max(...vessel.tube.nodes.map((n) => n.r)) <= 2 * this.gate!.lateralSigmaMm;
-    });
-    if (refine) {
-      for (let i = N_SCATTERERS; i < 4 * N_SCATTERERS; i++) this.scatterers.push(this.randomScatterer(phys));
+    const refined = new Set(
+      (Object.entries(this.composition.vessels) as [VesselId, number][])
+        .filter(([id, weight]) => {
+          const vessel = this.anatomy.scene.vesselById.get(id);
+          return weight >= 0.02 && vessel && Math.max(...vessel.tube.nodes.map((n) => n.r)) <= 2 * this.gate!.lateralSigmaMm;
+        })
+        .map(([id]) => id),
+    );
+    if (refined.size) {
+      this.refined = refined;
+      for (const s of this.scatterers) s.pop = this.popOf(s);
+      for (let i = N_SCATTERERS; i < REFINE * N_SCATTERERS; i++) {
+        const s = this.randomScatterer(phys);
+        if (!this.isRefinedBlood(s)) continue;
+        s.extra = true;
+        this.scatterers.push(s);
+      }
       this.updateComposition();
     }
-    this.particleAmplitudeScale = particleAmplitudeScale(this.scatterers.length);
+  }
+
+  private isRefinedBlood(s: Scatterer): boolean {
+    return s.isBlood && s.vessel !== null && this.refined.has(s.vessel);
+  }
+
+  /** Amplitud de población de un dispersor original (decisión 403). */
+  private popOf(s: Scatterer): number {
+    return this.isRefinedBlood(s) ? REFINED_POP : 1;
+  }
+
+  /**
+   * El reemplazo de un dispersor (entrada por una cara, siembra al azar) conserva la población dirigida (decisión 403): el de un
+   * extra solo puede ser sangre de un vaso refinado; si el punto nuevo no lo es, se siembra al azar en esa sangre (hasta 32
+   * intentos; si no aparece, queda mudo).
+   */
+  private adopt(old: Scatterer, s: Scatterer, phys: PhysiologySample): Scatterer {
+    if (!old.extra) return s;
+    for (let i = 0; !this.isRefinedBlood(s) && i < 32; i++) s = this.randomScatterer(phys);
+    s.extra = true;
+    s.pop = this.isRefinedBlood(s) ? REFINED_POP : 0;
+    return s;
   }
 
   /**
@@ -1065,7 +1125,7 @@ export class SampleVolumeIQ {
     const vessels: Partial<Record<VesselId, number>> = {};
     let wsum = 0;
     for (const s of this.scatterers) {
-      const w = this.weightAt(s.g) * s.imp;
+      const w = this.weightAt(s.g) * s.imp * s.pop * s.pop;
       wsum += w;
       if (s.isBlood) {
         blood += w;
@@ -1080,7 +1140,8 @@ export class SampleVolumeIQ {
     }
     this.composition = {
       bloodFraction: wsum > 0 ? blood / wsum : 0,
-      bloodWeight: this.scatterers.length > 0 ? blood / this.scatterers.length : 0,
+      // por dispersor de la población base (decisión 403): los extras cuentan con su potencia
+      bloodWeight: blood / N_SCATTERERS,
       arterialFraction: wsum > 0 ? art / wsum : 0,
       wallFraction: wsum > 0 ? wall / wsum : 0,
       vessels,
@@ -1166,7 +1227,7 @@ export class SampleVolumeIQ {
         const motion = this.gateVectorToWorld([c[0] - o0, c[1] - o1, c[2] - o2]);
         if (s.isBlood) {
           this.delta = deltaPrev;
-          this.scatterers[j] = this.motionEntry([c[0], c[1], c[2]], motion, phys);
+          this.scatterers[j] = this.adopt(s, this.motionEntry([c[0], c[1], c[2]], motion, phys), phys);
           continue;
         }
         s.fading = true;
@@ -1226,7 +1287,7 @@ export class SampleVolumeIQ {
           this.gateOf(m, delta, s.g);
           if (s.rampLeft <= 0) {
             // ya se apagó fuera: entra otro por la cara opuesta a lo largo de su salida
-            s = this.motionEntry([s.g[0], s.g[1], s.g[2]], s.exitMotion, phys);
+            s = this.adopt(s, this.motionEntry([s.g[0], s.g[1], s.g[2]], s.exitMotion, phys), phys);
             this.scatterers[j] = s;
           }
         } else if (s.stream) {
@@ -1295,7 +1356,7 @@ export class SampleVolumeIQ {
           if ((wasInside && (!inTube || !flowIn || leftLumen || leftDomain)) || stray) {
             if (!this.wrapUpstream(s, prev, dArc >= 0 ? 1 : -1, stray ? 0 : Math.abs(dArc) * 1.001 + 1e-9)) {
               this.delta = prev;
-              s = this.randomScatterer(phys);
+              s = this.adopt(s, this.randomScatterer(phys), phys);
               this.delta = delta;
               this.scatterers[j] = s;
             }
@@ -1313,7 +1374,7 @@ export class SampleVolumeIQ {
           s.g[1] = g1;
           s.g[2] = g2;
           if (s.isBlood && flowIn && !(Math.abs(g0) <= hA && Math.abs(g1) <= hL && Math.abs(g2) <= hE)) {
-            s = this.motionEntry([g0, g1, g2], this.gateVectorToWorld([g0 - f0x, g1 - f1x, g2 - f2x]), phys);
+            s = this.adopt(s, this.motionEntry([g0, g1, g2], this.gateVectorToWorld([g0 - f0x, g1 - f1x, g2 - f2x]), phys), phys);
             this.scatterers[j] = s;
           }
         } else if (s.isBlood) {
@@ -1326,7 +1387,7 @@ export class SampleVolumeIQ {
           // Transport at every emitted pulse, with periodic overshoot preserved: no density clumps at PRF/8.
           // The replacement already occupies this pulse's position: its echo is evaluated in this same pulse.
           if (!(Math.abs(s.g[0]) <= hA && Math.abs(s.g[1]) <= hL && Math.abs(s.g[2]) <= hE)) {
-            s = this.chordReenter(s, phys);
+            s = this.adopt(s, this.chordReenter(s, phys), phys);
             this.scatterers[j] = s;
           }
         } else if (!(stationaryTissue && s.weightEpoch === weightEpoch)) {
@@ -1369,6 +1430,7 @@ export class SampleVolumeIQ {
           s.stream = stream;
           s.vessel = q.vessel;
           s.tissue = q.tissue;
+          s.pop = s.extra ? (this.isRefinedBlood(s) ? REFINED_POP : 0) : this.popOf(s);
           s.flowBasis = q.flowBasis ? [q.flowBasis[0], q.flowBasis[1], q.flowBasis[2]] : [0, 0, 0];
           s.imp = 1;
           s.ampImp = 1;
@@ -1437,7 +1499,7 @@ export class SampleVolumeIQ {
           s.amp += s.dAmp;
           s.rampLeft--;
         }
-        const a = s.amp * weight * s.ampImp;
+        const a = s.amp * weight * s.ampImp * s.pop;
         sr += a * cr;
         si += a * ci;
       }
@@ -1445,8 +1507,8 @@ export class SampleVolumeIQ {
       const nr = this.rng.gaussian() * NOISE_STD;
       const ni = this.rng.gaussian() * NOISE_STD;
       this.transmissionNow += (g.transmission - this.transmissionNow) * TRANSMISSION_ALPHA;
-      re[offset + k] = (sr * this.particleAmplitudeScale * this.transmissionNow + nr) * this.equipment.gain;
-      im[offset + k] = (si * this.particleAmplitudeScale * this.transmissionNow + ni) * this.equipment.gain;
+      re[offset + k] = (sr * this.transmissionNow + nr) * this.equipment.gain;
+      im[offset + k] = (si * this.transmissionNow + ni) * this.equipment.gain;
       this.tick++;
       if (this.tick % (RECLASSIFY_EVERY * 4) === 0) this.updateComposition();
     }

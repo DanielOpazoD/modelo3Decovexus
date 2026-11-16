@@ -622,13 +622,19 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
 
 ## Resolución numérica del volumen PW
 
-- `pw-adaptive-sampling-resolution`: el refinamiento 320→1280 depende del
-  calibre máximo del tubo y su peso geométrico frente al ancho lateral del haz.
-  No representa una densidad humana de eritrocitos ni garantiza convergencia
-  para todo vaso fino o rama procedural. La potencia se conserva en esperanza
-  estadística; cambian las realizaciones de speckle. El máximo de cuatro veces
-  acota el coste. No resuelve la limitación previa de reclasificación parcial,
-  el vaso acompañante fuera de plano ni la separación arterial/venosa.
+- `pw-adaptive-sampling-resolution`: el refinamiento (×4 en la sangre del vaso
+  pequeño, decisión 403) depende del calibre máximo del tubo y su peso geométrico
+  frente al ancho lateral del haz. No representa una densidad humana de
+  eritrocitos ni garantiza convergencia para todo vaso fino o rama procedural.
+  La potencia se conserva en esperanza estadística; cambian las realizaciones de
+  speckle. Un extra que la respiración saca de esa sangre se resiembra en ella al
+  azar (no por la cara opuesta) o queda mudo. No resuelve la limitación previa de
+  reclasificación parcial.
+- `s0028-renal-network-estimated`: la red interlobar de s0028 (decisión 402) sigue
+  las columnas de corteza de su TAC, pero el TAC sin contraste no muestra los
+  vasos intrarrenales: su número (16 pares), sus calibres, la arcuata y la pareja
+  de cada arteria con su vena son estimados. Los vasos de menos de 1 mm apenas
+  colorean (`color-emulated-estimator`).
 
 ## Señales docentes sincronizadas
 

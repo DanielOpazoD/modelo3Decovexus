@@ -405,3 +405,5 @@ Generado por `npm run docs:index` — no editar a mano.
 | [399](DECISIONS.md#L12236) | Tras el corte, la escena procedural queda como apoyo de pruebas, fuera del producto | vigente |
 | [400](DECISIONS.md#L12246) | El mapa de ocupación evita leer los campos de s0028 que valen 16 en la celda | vigente |
 | [401](DECISIONS.md#L12257) | s0028 es la persona por defecto: primer paso del corte | vigente |
+| [402](DECISIONS.md#L12266) | La red interlobar de s0028: arteria junto a su vena y vasos en todo el riñón | vigente |
+| [403](DECISIONS.md#L12277) | El refinamiento PW se dirige a la sangre del vaso pequeño | vigente |

@@ -13,11 +13,13 @@ import baseline from './fixtures/person-shaders-main.json';
 import scanConvertRevision from './fixtures/scanconvert-axial-334.json';
 import renalRevision from './fixtures/renal-shaders-339.json';
 import renalInterior from './fixtures/s0028-renal-interior-shaders.json';
+import tubeCapacity from './fixtures/tube-capacity-402-shaders.json';
+import { layoutBefore402 } from './support/layoutBefore402';
 import { loadShaderGraph } from './support/shaderGraph';
 
 const root = process.cwd();
 const hash = (text: string) => createHash('sha256').update(text).digest('hex');
-function programs(privateExtension = false) {
+function programs(privateExtension = false, rewrite: (text: string) => string = (text) => text) {
   const sources = readSources(join(root, 'src'));
   if (privateExtension)
     sources.push({
@@ -45,7 +47,10 @@ function programs(privateExtension = false) {
             .filter(([name, value]) => /^(FRAG_\w+|VERT)$/.test(name) && typeof value === 'string')
             .map(([name, value]) => [
               name,
-              { default: hash(value as string), s0028: hash(specialize(value as string, { person: 's0028', bundle: S0028_BUNDLE })) },
+              {
+                default: hash(rewrite(value as string)),
+                s0028: hash(rewrite(specialize(value as string, { person: 's0028', bundle: S0028_BUNDLE }))),
+              },
             ]),
         ),
       ];
@@ -82,8 +87,33 @@ it('conserva los programas de main salvo G334, la anatomía/A0 339 y el interior
     }
     // El interior renal (decisión 341) sólo cambia los programas s0028 que clasifican: sus default son los de antes.
     for (const [name, value] of Object.entries(renalInterior[mode])) expect(value.default, name).toBe(previous[name].default);
-    expect(result[mode]).toEqual({ ...previous, ...renalInterior[mode] });
+    const before402: Record<string, { default: string; s0028: string }> = { ...previous, ...renalInterior[mode] };
+    // Mantenimiento de la revisión 402 (capacidad de tubos): `VEXUS_UPDATE_TUBE_CAPACITY_SHADERS=1` la reescribe con los programas
+    // que difieren de los de antes; la prueba de abajo comprueba que la diferencia es solo de constantes de disposición.
+    if (process.env.VEXUS_UPDATE_TUBE_CAPACITY_SHADERS) {
+      const revision = tubeCapacity as Record<string, Record<string, { default: string; s0028: string }>>;
+      revision[mode] = Object.fromEntries(
+        Object.entries(result[mode]).filter(
+          ([name, value]) => value.default !== before402[name].default || value.s0028 !== before402[name].s0028,
+        ),
+      );
+      writeFileSync(join(root, 'src/validation/fixtures/tube-capacity-402-shaders.json'), JSON.stringify(revision, null, 2) + '\n');
+    }
+    expect(result[mode]).toEqual({ ...before402, ...tubeCapacity[mode] });
   }
+});
+
+it('la capacidad de tubos de la decisión 402 solo mueve constantes de disposición de la textura de escena', () => {
+  // Con las constantes de antes, los 40 programas (default y s0028) son exactamente los de la revisión anterior.
+  const source = programs(false, layoutBefore402).source;
+  const previous = Object.fromEntries(
+    baseline.source.programs.map((p) => [
+      p.name,
+      p.name === 'FRAG_SCANCONVERT' ? scanConvertRevision.source : { default: p.sha256, s0028: p.s0028Sha256 },
+    ]),
+  );
+  expect(source).toEqual({ ...previous, ...renalRevision.source, ...renalInterior.source });
+  expect(Object.keys(tubeCapacity.source).length).toBeGreaterThan(0);
 });
 
 it('un uniform/símbolo privado nuevo no altera ningún programa default', () => {

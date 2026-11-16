@@ -1,6 +1,6 @@
 # Estado vigente: presupuestos
 
-Actualizado: 2026-11-15 sobre main `315d870`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
+Actualizado: 2026-11-16 sobre main `5be2aa2`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
 su valor actual. Los techos no se suben para obtener verde (decisión 322); subir uno es una decisión propia, declarada en
 la PR y en `docs/DECISIONS.md`.
 
@@ -22,7 +22,7 @@ la PR y en `docs/DECISIONS.md`.
 
 <!-- tabla generada por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `315d870` el 2026-11-15 con `tools/docs/estado.ts`. No se copian a mano.
+Medido en el candidato basado en main `5be2aa2` el 2026-11-16 con `tools/docs/estado.ts`. No se copian a mano.
 
 | Techo                                               |      Límite |      Actual |     Margen | Unidad   | Decisión | Fuente                                 |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- | -------- | -------------------------------------- |
@@ -31,12 +31,12 @@ Medido en el candidato basado en main `315d870` el 2026-11-15 con `tools/docs/es
 | `abdominal-direct.gzip.bin`                         |   9.048.961 |   9.048.961 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `abdominal-surface.gzip.bin`                        |   6.291.456 |   6.014.991 |    276.465 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `anatomy.glsl.js`                                   |     122.880 |      23.152 |     99.728 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `anatomyScene.js`                                   |     122.880 |      16.727 |    106.153 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `anatomyScene.js`                                   |     122.880 |      16.788 |    106.092 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `annotation-capacity.gzip.bin`                      |     856.999 |     334.410 |    522.589 | B        | 320      | `tools/ci/bundleBudgets.ts`            |
-| `bootstrap.js`                                      |     343.040 |     253.553 |     89.487 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `bootstrap.js`                                      |     343.040 |     254.193 |     88.847 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | B        | 321      | `tools/ci/bundleBudgets.ts`            |
-| `cpu.js`                                            |     122.880 |      69.985 |     52.895 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cpu.js`                                            |     122.880 |      14.398 |    108.482 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `cpu.js`                                            |     122.880 |      75.333 |     47.547 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cutMapView.js`                                     |     122.880 |      16.838 |    106.042 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cutMapWorker.js`                                   |     122.880 |        3721 |    119.159 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `deformation.js`                                    |     122.880 |        1559 |    121.321 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -53,7 +53,7 @@ Medido en el candidato basado en main `315d870` el 2026-11-15 con `tools/docs/es
 | `query.js`                                          |     122.880 |        3703 |    119.177 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `reference-body.bin`                                |        2080 |        2080 |          0 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `retroperitoneum.js`                                |     122.880 |        5328 |    117.552 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `runtime.js`                                        |     122.880 |      28.561 |     94.319 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `runtime.js`                                        |     122.880 |      28.565 |     94.315 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `runtime.js`                                        |     122.880 |        1631 |    121.249 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `series.js`                                         |     122.880 |        2204 |    120.676 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
@@ -61,8 +61,8 @@ Medido en el candidato basado en main `315d870` el 2026-11-15 con `tools/docs/es
 | `startPoints.js`                                    |     122.880 |      10.400 |    112.480 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `structureIdentity.js`                              |     122.880 |        1609 |    121.271 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.gzip.bin`                                 |   9.672.026 |   5.539.098 |  4.132.928 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
-| `surfaces.js`                                       |     122.880 |        5730 |    117.150 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.js`                                       |     122.880 |         485 |    122.395 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
+| `surfaces.js`                                       |     122.880 |        5730 |    117.150 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `teacherTab.js`                                     |     122.880 |      46.743 |     76.137 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `testHooks.js`                                      |     122.880 |      69.912 |     52.968 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `thoracic-atlas.gzip.bin`                           |   6.291.456 |   4.444.037 |  1.847.419 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -72,8 +72,8 @@ Medido en el candidato basado en main `315d870` el 2026-11-15 con `tools/docs/es
 | `three.js`                                          |     385.024 |     369.177 |     15.847 | B        | 307      | `tools/ci/bundleBudgets.ts`            |
 | `units.js`                                          |     122.880 |         388 |    122.492 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `vesselTree.js`                                     |     122.880 |     109.671 |     13.209 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.044.742 |     25.338 | B        | 322      | `tools/ci/personBundles.ts`            |
-| JS clausura s0028 (Workers y ganchos incluidos)     |   1.132.544 |   1.132.504 |         40 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.045.443 |     24.637 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura s0028 (Workers y ganchos incluidos)     |   1.140.736 |   1.138.557 |       2179 | B        | 322      | `tools/ci/personBundles.ts`            |
 | Descarga del paquete s0028 (gzip)                   |  25.000.000 |  21.199.547 |  3.800.453 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   9.048.961 | 10.461.041 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |

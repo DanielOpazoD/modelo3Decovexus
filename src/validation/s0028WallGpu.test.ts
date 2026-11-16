@@ -8,15 +8,17 @@ import { HEART_SHAPE, heartShapeGlsl } from '../anatomy/organs/heart';
 import { S0028_HEART } from '../anatomy/people/s0028/cpu';
 import * as PASSES from '../ultrasound/shaders/passes.glsl';
 import baseline from './fixtures/s0028-shader-default.json';
+import { layoutBefore402 } from './support/layoutBefore402';
 import { S0028_BUNDLE as bundle } from './support/legacyPerson/anatomyBundle';
 
 it('conserva byte a byte los ocho GLSL default fijados (tablas renales 339; programas restantes 326)', () => {
   for (const [name, hash] of Object.entries(baseline)) {
     const source = Object.entries(PASSES).find(([key]) => key === name)?.[1];
     if (typeof source !== 'string') throw new Error('Programa ausente');
+    // con las constantes de disposición de antes de la capacidad de tubos de la decisión 402: lo demás, byte a byte
     expect(
       createHash('sha256')
-        .update(personShader(source, { person: 'current' }))
+        .update(layoutBefore402(personShader(source, { person: 'current' })))
         .digest('hex'),
       name,
     ).toBe(hash);
