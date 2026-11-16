@@ -19,7 +19,8 @@ export interface StartPoint {
     | 'portalTrunk'
     | 'renal'
     | 'hepatorenal'
-    | 'portalSubcostal';
+    | 'portalSubcostal'
+    | 'splenorenal';
   label: string;
   phi: number;
   z: number;
@@ -181,6 +182,18 @@ export const START_POINTS: readonly StartPoint[] = [
     tilt: -0.031699,
     hint: 'Porta subcostal: PW en el tronco, lejos de la bifurcación. 15 cm; foco 10 cm.',
   },
+  {
+    // Decisión 408: coronal por la línea axilar posterior izquierda, entre costillas; búsqueda sobre la anatomía fija de s0028.
+    id: 'splenorenal',
+    label: 'Esplenorrenal',
+    color: '#d99ac0',
+    phi: -0.2,
+    z: -70,
+    yaw: 0.123,
+    rock: -0.219,
+    tilt: 0.275,
+    hint: 'Bazo y riñón izquierdo en coronal desde la línea axilar posterior izquierda, entre costillas. Compara el bazo con la corteza renal y busca la interfase esplenorrenal; la espiración profunda baja el riñón.',
+  },
 ];
 
 /** Offline landmark/ray calibration of the shared BodyParts3D-derived torso; see REFERENCE_TORSO.md. */
@@ -244,6 +257,8 @@ const REFERENCE_POSES = {
     tilt: -0.41084,
   },
   portalSubcostal: { phi: 1.6, z: -95, yaw: -0.509852, rock: 0.39367, tilt: -0.007846 },
+  // [EXTRAPOLACIÓN PROPIA] la de s0028 (decisión 408): sin búsqueda en este torso
+  splenorenal: { phi: -0.2, z: -70, yaw: 0.123, rock: -0.219, tilt: 0.275 },
 } satisfies Record<StartPoint['id'], Pick<StartPoint, 'phi' | 'z' | 'yaw' | 'rock' | 'tilt'>>;
 const REFERENCE_POINTS: readonly StartPoint[] = START_POINTS.map((sp) => ({
   ...sp,
@@ -278,6 +293,8 @@ export const ABDOMINAL_POSES = {
   hepatorenal: { phi: 2.96, z: -115.333, yaw: -0.008, rock: -0.114, tilt: -0.253 },
   // [EXTRAPOLACIÓN PROPIA] Reborde derecho registrado; rama portal derecha, no tronco (213).
   portalSubcostal: { phi: 2.85, z: -95, yaw: -0.622104, rock: 0.080718, tilt: 0.136272 },
+  // [EXTRAPOLACIÓN PROPIA] la de s0028 (decisión 408): sin búsqueda en el abdomen registrado
+  splenorenal: { phi: -0.2, z: -70, yaw: 0.123, rock: -0.219, tilt: 0.275 },
 } as const;
 const ABDOMINAL_POINTS: readonly StartPoint[] = START_POINTS.map((sp) => ({
   ...sp,
@@ -336,6 +353,8 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   // Decisión 383 (valoración del responsable): el riñón pasa de 66 a 82 mm en el plano, sale el duodeno y queda una costilla
   // en el borde en vez de dos cruzando el campo. El colon sigue a un lado: con hígado como ventana no hay pose que lo evite.
   hepatorenal: { phi: 3.2, z: -95, yaw: -0.8, rock: -0.188, tilt: -0.281 },
+  // Decisión 408: bazo craneal en el campo cercano y riñón izquierdo debajo, con la interfase; búsqueda con su hito en s0028Windows.
+  splenorenal: { phi: -0.2, z: -70, yaw: 0.123, rock: -0.219, tilt: 0.275 },
   // Decisión 395: con sus interlobares hacia el borde convexo, la media recorre el plano a lo largo del haz (coseno 0,93; antes
   // la cruzaba a 57°) y el riñón se ve 107 mm.
   renal: { phi: 3.25, z: -130, yaw: -0.378, rock: 0.199, tilt: 0.011 },

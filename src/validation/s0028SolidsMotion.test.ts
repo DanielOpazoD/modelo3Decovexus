@@ -42,7 +42,11 @@ beforeAll(() => {
 }, 60_000);
 // Planos de referencia fijos de P2 y P3 (las poses que s0028 heredaba), no las ventanas de inicio del producto: las huellas y
 // los recuentos de esta prueba se midieron sobre ellos, y una ventana puede moverse sin que cambie la mecánica del contacto.
-const poses = () => startPointsFor(scene.torso, B).map((p) => ({ ...p, ...ABDOMINAL_POSES[p.id] }));
+// La esplenorrenal (decisión 408) no es uno de ellos: no tiene plano heredado.
+const poses = () =>
+  startPointsFor(scene.torso, B)
+    .filter((p) => p.id !== 'splenorenal')
+    .map((p) => ({ ...p, ...ABDOMINAL_POSES[p.id] }));
 
 it('contacto: P3 conserva la carta P2 y su U; los 30 contactos s0028 quedan fijados, con la grasa que cede (decisión 360)', () => {
   const values = [];

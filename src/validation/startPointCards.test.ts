@@ -54,17 +54,17 @@ describe('Tarjetas de ventanas: la ventana actual', () => {
 });
 
 describe('Selector por territorio (212)', () => {
-  it('ofrece cuatro grupos y ocho accesos únicos, compartidos con las marcas 3D', () => {
+  it('ofrece cuatro grupos y nueve accesos únicos, compartidos con las marcas 3D', () => {
     expect(WINDOW_GROUPS.map((group) => group.label)).toEqual(['Porta', 'Suprahepáticas', 'VCI', 'Renal']);
     expect(WINDOW_GROUPS.map((group) => group.windows.map(([id]) => id))).toEqual([
       ['portal', 'portalSubcostal'],
       ['intercostal', 'subcostal'],
       ['epigastric', 'subxiphoid'],
-      ['renal', 'hepatorenal'],
+      ['renal', 'hepatorenal', 'splenorenal'],
     ]);
     const visible = windowMenuPoints(torso);
-    expect(visible).toHaveLength(8);
-    expect(new Set(visible.map((point) => point.id)).size).toBe(8);
+    expect(visible).toHaveLength(9);
+    expect(new Set(visible.map((point) => point.id)).size).toBe(9);
     for (const point of visible) expect(START_POINTS).toContain(point);
     expect(visible.some((point) => point.id === 'flank' || point.id === 'portalTrunk')).toBe(false);
   });

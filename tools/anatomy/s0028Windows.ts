@@ -12,7 +12,7 @@ import { S0028_HEART } from '../../src/anatomy/people/s0028/cpu';
 import { AnatomyQuery } from '../../src/anatomy/query';
 import { Tissue } from '../../src/anatomy/tissues';
 import { NORMAL_ADULT } from '../../src/cases';
-import { dot, length, sub, type Vec3 } from '../../src/core/vec3';
+import { dot, length, normalize, sub, type Vec3 } from '../../src/core/vec3';
 import { PhysiologyEngine, type PhysiologySample } from '../../src/physiology/engine';
 import type { VesselId } from '../../src/physiology/vessels';
 import { contactCoupling, probeContact } from '../../src/probe/contact';
@@ -367,6 +367,10 @@ export function s0028AtriumWindow(anatomy: AnatomyQuery, sample: PhysiologySampl
 
 /** Riñón derecho de s0028: centro y eje largo de su máscara (componentes principales), en mm LAS. */
 const KIDNEY = { center: [-50.5, -27.7, -128.1] as Vec3, u: [0.274, -0.462, 0.844] as Vec3 };
+/** Riñón izquierdo de s0028 (`S0028_KIDNEY_FRAMES[1]`): centro y eje largo hacia el polo superior. */
+const LEFT_KIDNEY = { center: [70.7, -27.3, -112.7] as Vec3, u: [-0.2537, -0.2372, 0.9377] as Vec3 };
+/** Centroide del bazo de s0028 (clasificador, rejilla de 3 mm: 90 ml, z de −94 a −31). */
+const SPLEEN: Vec3 = [107.9, -29.9, -60.5];
 
 function along(nodes: Vec3[], step = 5): Vec3[] {
   const out: Vec3[] = [];
@@ -481,6 +485,22 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
       long: KIDNEY.u,
       through: liver,
       behind: new Set([Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalPelvis]),
+      maxAngle: 0.7,
+    },
+    // Esplenorrenal (decisión 408): por la línea axilar posterior izquierda, plano coronal con el bazo arriba (campo cercano,
+    // craneal) y el riñón izquierdo debajo y más hondo, y la interfase entre los dos. El plano contiene el eje bazo–riñón.
+    {
+      id: 'splenorenal',
+      phi: [-0.9, 0.3],
+      z: [-110, -40],
+      depthMm: 160,
+      points: [
+        SPLEEN,
+        [100, -30, -85] as Vec3,
+        ...[0, 20, 38].map((d) => LEFT_KIDNEY.center.map((x, i) => x + d * LEFT_KIDNEY.u[i]) as Vec3),
+      ],
+      pivot: [82, -31, -82] as Vec3,
+      long: normalize(sub(SPLEEN, LEFT_KIDNEY.center)),
       maxAngle: 0.7,
     },
     // Riñón en eje largo con la vena interlobar media en el plano: es la que se interroga en el Doppler renal de VExUS.

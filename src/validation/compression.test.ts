@@ -54,7 +54,14 @@ function view(id: StartPoint['id'], extra: Partial<ProbePose> = {}): { pose: Pro
  * bajo la pared del flanco, casi nada (`none`, < 0,3·δ: el empuje se lo lleva). La línea central de la intercostal no
  * corta vasos (el ligamento venoso) y la de la transversa epigástrica pasa entre la VCI y la aorta hasta la vértebra.
  */
-const CENTRAL_LANDMARK: Record<StartPoint['id'], { landmark: Tissue; vessel?: RegExp; approach: 'full' | 'half' | 'none' }> = {
+/** La esplenorrenal es solo de s0028 (decisión 408): el torso procedural de estas pruebas no tiene bazo. */
+const LEGACY_POINTS = START_POINTS.filter(
+  (sp): sp is StartPoint & { id: Exclude<StartPoint['id'], 'splenorenal'> } => sp.id !== 'splenorenal',
+);
+const CENTRAL_LANDMARK: Record<
+  Exclude<StartPoint['id'], 'splenorenal'>,
+  { landmark: Tissue; vessel?: RegExp; approach: 'full' | 'half' | 'none' }
+> = {
   subxiphoid: { landmark: Tissue.Blood, vessel: /^ivc/, approach: 'full' },
   epigastric: { landmark: Tissue.Vertebra, approach: 'full' },
   intercostal: { landmark: Tissue.LigamentumVenosum, approach: 'full' },
@@ -165,7 +172,7 @@ describe('la sonda comprime el tejido (decisión 63): solo empuja y la pared baj
     let maxShift = -Infinity;
     let maxPush = 0;
     let where = '';
-    for (const sp of START_POINTS)
+    for (const sp of LEGACY_POINTS)
       for (const lift of [-6, -2, 0, 2])
         for (const rock of [-0.5, 0, 0.5])
           for (const tilt of [-0.4, 0, 0.4]) {
@@ -236,7 +243,7 @@ describe('la sonda comprime el tejido (decisión 63): solo empuja y la pared baj
     // 14,8 flanco y 17,4 renal. La VCI de la subxifoidea de 123 → 107 mm, el ligamento venoso de la intercostal de
     // 132 → 116,5, la VCI del flanco de 127 → 112,5 y la corteza renal de 39 → 38,5; con la decisión 83, 18,6 en la
     // epigástrica (la vértebra de 134,5 → 117,5) y 24,0 en la subcostal (la VSH media de 90,5 → 81)
-    for (const sp of START_POINTS) {
+    for (const sp of LEGACY_POINTS) {
       const { pose, frame, k } = view(sp.id);
       const rigid = probeFrame(pose, torso, tr);
       const d = k.summary.indentMm;
@@ -268,7 +275,7 @@ describe('la sonda comprime el tejido (decisión 63): solo empuja y la pared baj
   it('lo hondo: más allá del alcance nada se mueve; los vasos y el riñón a más de 60 mm, menos que la cara', () => {
     // gemelo (mundo): ≤ 11,6 / 7,7 / 9,4 / 13,6 mm (subxifoidea, intercostal, flanco, renal; el riñón está justo
     // bajo la pared del renal) con δ de 15–20 mm; alcance 172 / 124 / 117 / 133 mm
-    for (const sp of START_POINTS) {
+    for (const sp of LEGACY_POINTS) {
       const { frame, k } = view(sp.id);
       expect(k.reachMm, sp.id).toBeLessThan(180);
       let worst = 0;
@@ -299,7 +306,7 @@ describe('la sonda comprime el tejido (decisión 63): solo empuja y la pared baj
 
   it('con la sonda levantada no hay contacto ni deformación: la identidad exacta', () => {
     // 12 mm: también la subxifoidea, cuyo talón (26° de basculación) hunde la piel 6 mm con la sonda en contacto
-    for (const sp of START_POINTS)
+    for (const sp of LEGACY_POINTS)
       for (const lift of [12, 20]) {
         const { frame, k } = view(sp.id, { lift });
         expect(k.summary.indentMm).toBe(0);

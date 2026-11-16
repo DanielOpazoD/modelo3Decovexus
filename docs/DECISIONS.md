@@ -12325,3 +12325,15 @@ máximo): los instantes de columna bailan ~0,2 ms y, a ~1 px por columna, redond
 mayor de la adquisición sigue en negro.
 **Consecuencias.** Sin líneas en la lámina renal en congestión grave. El eje temporal compartido con el ECG no cambia.
 **Verificación.** `sweep.test.ts`: con instantes que bailan, 0 huecos (con `span`, más de 0); una pausa de 10 columnas sigue negra.
+
+## 408. Ventana esplenorrenal: bazo y riñón izquierdo en coronal
+
+**Contexto.** El responsable pidió una ventana de bazo y riñón «de alto nivel». s0028 tiene bazo (90 ml) y riñón izquierdo (122 ml)
+de su TAC, pero ninguna ventana los miraba.
+**Decisión.** Novena ventana, `splenorenal`, en el grupo renal: coronal por la línea axilar posterior izquierda, entre costillas, con
+el bazo craneal en el campo cercano y el riñón izquierdo debajo, y su interfase. Pose por la búsqueda de `find-s0028-poses.ts` con un
+hito propio (centroide del bazo, su polo inferior y tres puntos del eje del riñón); preajuste renal (14 cm). Las otras personas
+heredan la misma pose sin búsqueda [EXTRAPOLACIÓN PROPIA]; el torso procedural no entra en sus pruebas de compresión (no tiene bazo).
+**Consecuencias.** Se ven bazo, riñón con seno, la flexura esplénica del colon y el receso pulmonar, con dos sombras costales. El
+carril bajo crece 26 px (230 → 256) para la segunda fila renal.
+**Verificación.** `s0028Windows.test.ts` (hito visible, sonda apoyada; despejado ≥ 0,6 como las intercostales), tarjetas y estilos.
