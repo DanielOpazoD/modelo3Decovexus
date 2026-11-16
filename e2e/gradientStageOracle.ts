@@ -9,6 +9,7 @@ import { specializeAbdominalShader } from '../src/ultrasound/sceneShader';
 import { FRAG_RAWFIELD_GRADIENT, FRAG_RAWFIELD_GRADIENT_STEERED, VERT } from '../src/ultrasound/shaders/passes.glsl';
 import { readSources } from '../tools/build/glslMinify';
 import { bindingNames, compactBindings } from '../tools/build/glslUniformNames';
+import { personBindingAbi } from '../tools/build/personShaderAbi';
 import type { GLProgram } from '../src/ultrasound/gl';
 import type { FrameInputs } from '../src/ultrasound/renderer';
 
@@ -37,11 +38,11 @@ const referenceBody = `
     return vec2(0.0);`;
 
 export function gradientOraclePayload(root = process.cwd()) {
-  const names = bindingNames(
-    readSources(join(root, 'src'))
-      .map((source) => source.code)
-      .join('\n'),
-  );
+  // los mismos nombres compactos que el build (`glslUniformNames`): la ABI fijada, no el orden alfabético de hoy (decisión 410)
+  const code = readSources(join(root, 'src'))
+    .map((source) => source.code)
+    .join('\n');
+  const names = personBindingAbi(bindingNames(code), code);
   const anatomy = anatomyGlsl(true);
   const raw = block(FRAG_RAWFIELD_GRADIENT, /Cls\s+rawClass\s*\([^)]*\)\s*\{/g).text;
   const base = block(FRAG_RAWFIELD_GRADIENT, /vec2\s+mediumField\s*\([^)]*\)\s*\{/g);
