@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "date": "2026-11-16",
- "main": "5be2aa2",
+ "main": "c214d00",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -65,7 +65,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 254193
+   "actual": 255773
   },
   {
    "what": "`candidate-manifest.bin`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 75333
+   "actual": 75909
   },
   {
    "what": "`cutMapView.js`",
@@ -225,7 +225,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 28565
+   "actual": 1631
   },
   {
    "what": "`runtime.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1631
+   "actual": 28565
   },
   {
    "what": "`series.js`",
@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 10400
+   "actual": 10893
   },
   {
    "what": "`structureIdentity.js`",
@@ -289,7 +289,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 485
+   "actual": 5730
   },
   {
    "what": "`surfaces.js`",
@@ -297,7 +297,7 @@
    "unit": "B",
    "decision": 318,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 5730
+   "actual": 485
   },
   {
    "what": "`teacherTab.js`",
@@ -377,15 +377,15 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1045443
+   "actual": 1047516
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
-   "limit": 1140736,
+   "limit": 1144832,
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1138557
+   "actual": 1141206
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,7 +624,7 @@
  ],
  "s0028DescriptorSha256": "3201286d10bc1723cd95729be079cba3813a1376fc461b0a524716c3b0533f8c",
  "tests": {
-  "vitestFiles": 349,
+  "vitestFiles": 350,
   "slowFiles": 39,
   "e2eSpecs": 91,
   "e2eTestCalls": 150,

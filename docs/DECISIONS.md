@@ -12337,3 +12337,15 @@ heredan la misma pose sin búsqueda [EXTRAPOLACIÓN PROPIA]; el torso procedural
 **Consecuencias.** Se ven bazo, riñón con seno, la flexura esplénica del colon y el receso pulmonar, con dos sombras costales. El
 carril bajo crece 26 px (230 → 256) para la segunda fila renal.
 **Verificación.** `s0028Windows.test.ts` (hito visible, sonda apoyada; despejado ≥ 0,6 como las intercostales), tarjetas y estilos.
+
+## 409. Tríada portal de s0028: colédoco y arteria hepática junto a la porta
+
+**Contexto.** En s0028 el colédoco iba a 3,5–11 mm de la porta y cortaba en oblicuo el plano del tronco; la hepática propia subía
+7–22 mm por delante, y la arteria y los hepáticos atravesaban la porta izquierda y las suprahepáticas. No había corte con la tríada.
+**Decisión.** Rutas propias de s0028 [EXTRAPOLACIÓN PROPIA, el TAC sin contraste no las muestra]: la hepática propia anteromedial a
+1–2 mm de la pared portal; cruza por delante del tronco y por detrás del hepático común y sigue a la porta derecha hasta su rama
+anterior. El colédoco va paralelo a la porta, anterolateral y en su mismo plano, arqueado sobre la arteria; los hepáticos nacen
+de la confluencia, delante de la bifurcación, y siguen a su porta. La porción intrapancreática y el cístico no cambian de regla.
+**Consecuencias.** Un corte subcostal derecho por el ligamento enseña porta, arteria redonda y colédoco encima (el corte del
+colédoco). El techo JS de s0028 sube 4 KiB (la tríada lo pasaba en 470 B).
+**Verificación.** `s0028Vessels.test.ts`: huecos de pared > 0,3 mm, lados en el ligamento, cruce y coplanaridad ≤ 3 mm.
