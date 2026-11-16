@@ -283,6 +283,9 @@ function fitJunctions(vessels: VesselDef[]): void {
  *   mesentérica nace de la cara anterior de la aorta, cruza por delante de la vena renal izquierda y baja a la izquierda de su
  *   vena; la renal derecha pasa por detrás de la cava. La hepática común atravesaba el tronco portal por su centro: sale del
  *   tronco celíaco por encima de la confluencia y queda por delante de la porta, y la hepática propia continúa desde ahí.
+ * - Tríada portal (decisión 409): la hepática propia sube anteromedial a la porta, a 2 mm de su pared, cruza por delante del
+ *   tronco y por detrás del hepático común (el corte clásico del colédoco: la arteria redonda entre conducto y porta) y sigue
+ *   a la porta derecha hasta su rama anterior; antes iba 7–22 mm por delante y cruzaba la suprahepática media.
  */
 const ROUTES: Partial<Record<VesselDef['id'], { keep: readonly ('first' | 'last')[]; nodes: readonly (readonly number[])[] }>> = {
   portalSmv: {
@@ -312,18 +315,23 @@ const ROUTES: Partial<Record<VesselDef['id'], { keep: readonly ('first' | 'last'
   commonHepaticArtery: {
     keep: ['first'],
     nodes: [
-      [3, 10, -74, 2.4],
-      [-2, 20, -72, 2.4],
-      [-5, 24, -70, 2.4],
+      [2, 4.5, -76, 2.4],
+      [1, 12, -73.5, 2.4],
+      [-1, 18.5, -72.5, 2.4],
     ],
   },
   hepaticArtery: {
-    keep: ['last'],
+    keep: [],
     nodes: [
-      [-5, 24, -70, 2.6],
-      [-7, 29, -62, 2.5],
-      [-17, 34, -49, 2.3],
-      [-45, 28, -39, 2.1],
+      [-1, 18.5, -72.5, 2.4],
+      [-6.1, 19.2, -72.5, 2.4],
+      [-13.5, 22.2, -72.3, 2.4],
+      [-24, 20.9, -74.8, 2.3],
+      [-33, 15.8, -76.3, 2.2],
+      [-41.3, 18.3, -69.4, 2.1],
+      [-52, 19, -59.5, 2],
+      [-60, 17, -53, 1.9],
+      [-67, 14, -46, 1.7],
     ],
   },
   renalArteryRight: {
@@ -466,15 +474,49 @@ export function smoothS0028Vessels(vessels: VesselDef[]): void {
 const S0028_GALLBLADDER_CENTER: Vec3 = [-65, 37, -84];
 
 /**
+ * Conductos de la tríada portal de s0028 (decisión 409), nodos (x, y, z, radio) en mm LAS. El colédoco, desde la cabeza del
+ * páncreas, va anterolateral a la porta a 1,5 mm de su pared y se adelanta sobre la hepática derecha, que cruza entre los dos; la
+ * confluencia biliar queda delante y encima de la bifurcación portal, y cada hepático sigue a su porta. Antes el colédoco iba
+ * a 3,5–11 mm de la porta y los hepáticos cruzaban la porta izquierda y las suprahepáticas. [EXTRAPOLACIÓN PROPIA: el TAC sin
+ * contraste biliar no los muestra; es la disposición habitual del ligamento hepatoduodenal.]
+ */
+const S0028_BILE_DUCTS: Partial<Record<DuctDef['id'], readonly (readonly number[])[]>> = {
+  cbd: [
+    [-15.5, 17, -91, 2.6],
+    [-14.1, 21.1, -82.2, 2.5],
+    [-19.1, 25.3, -80.6, 2.4],
+    [-25.4, 27.8, -77.7, 2.4],
+    [-31.5, 25.7, -71.7, 2.4],
+    [-40, 25, -60, 2.4],
+  ],
+  rightHepaticDuct: [
+    [-40, 25, -60, 1.6],
+    [-52, 24.5, -55, 1.4],
+    [-70, 18, -42, 1.2],
+  ],
+  leftHepaticDuct: [
+    [-40, 25, -60, 1.5],
+    [-36, 32, -59, 1.4],
+    [-31, 40, -57.5, 1.3],
+    [-15, 40, -55.5, 1.2],
+    [13, 44, -40, 1.1],
+  ],
+};
+/** El colédoco de referencia se conserva por debajo de esta altura (mm): su porción intrapancreática, recortada en la papila. */
+const S0028_CBD_FLOOR_Z = -100;
+
+/**
  * Vía biliar de s0028 (decisión 384). La de referencia se trazó para la otra persona: aquí su colédoco recorría 26 mm por dentro de
  * la luz del duodeno y se veía como un anillo de pared gruesa sin sentido junto al riñón, y su cístico nacía a 14 mm de la
- * vesícula. El colédoco termina donde sale del duodeno (la papila, en su pared) y el cístico nace en la vesícula de esta persona.
+ * vesícula. El colédoco termina donde sale del duodeno (la papila, en su pared) y el cístico nace en la vesícula de esta persona;
+ * por encima de la cabeza del páncreas, colédoco y hepáticos siguen a la porta (`S0028_BILE_DUCTS`, decisión 409).
  * `sourceValue` es la distancia con signo a una máscara de la fuente. Solo construcción: CPU, Worker y GPU reciben los mismos nodos.
  */
 export function placeS0028Ducts(ducts: DuctDef[], sourceValue: (p: Vec3, name: string) => { d: number }): DuctDef[] {
   const lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   const span = (a: Vec3, b: Vec3) => Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
   const inside = (p: Vec3, name: string) => sourceValue(p, name).d < 0;
+  const own = (id: DuctDef['id']) => S0028_BILE_DUCTS[id]?.map(([x, y, z, r]) => ({ p: [x, y, z] as Vec3, r }));
   let cbd = ducts.find((d) => d.id === 'cbd')!.tube.nodes;
   if (inside(cbd[0].p, 'digestiveTract'))
     // Del extremo distal hacia el hilio, a pasos de 0,5 mm: el primer punto fuera del tubo digestivo es el nuevo extremo.
@@ -487,6 +529,7 @@ export function placeS0028Ducts(ducts: DuctDef[], sourceValue: (p: Vec3, name: s
         break outer;
       }
     }
+  cbd = [...cbd.filter((n) => n.p[2] < S0028_CBD_FLOOR_Z), ...own('cbd')!];
   // Cístico: recto desde el colédoco hasta el primer punto de la vesícula. De todos los puntos del colédoco se toma el que
   // llega sin cruzar tubo digestivo, hígado ni páncreas y, entre esos, el de camino más corto.
   let cystic: { join: Vec3; neck: Vec3; cost: number } | null = null;
@@ -518,6 +561,7 @@ export function placeS0028Ducts(ducts: DuctDef[], sourceValue: (p: Vec3, name: s
       ];
       return { ...duct, tube: { ...duct.tube, nodes } };
     }
-    return duct;
+    const nodes = own(duct.id);
+    return nodes ? { ...duct, tube: { ...duct.tube, nodes } } : duct;
   });
 }
