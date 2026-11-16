@@ -16,15 +16,8 @@ y la aplicación, con el coste medido (decisión 401): s0028 es la persona por d
 
 ## Falta
 
-**Coste.** La regla pide 60 fps con la sonda quieta en cada estado del banco. s0028 da 30–60 (la otra, 60); detalle en
-`docs/estado/imagen.md`. Al mover, el contacto ya no es el límite (de 35 a 10 ms por pose, PR 63). Lo que queda es la GPU de la
-ecografía (15–23 ms; la otra, 5–7). Saltar las clasificaciones de elevación de B la baja un 30–40 %: en el plano de las ventanas, el
-37–66 % de las muestras de s0028 tienen `bd ≤ 3 mm`. La grasa mesentérica y perirrenal y los contenidos digestivos salen todos con
-`bd = 0`, porque vienen de máscaras de vóxel sin distancia. Un `bd` que sea cota de verdad (TS = GLSL, imagen idéntica)
-necesita la distancia a esas máscaras, que hoy no existe: un dato nuevo (por ejemplo, un radio seguro por celda de 3 mm calculado
-offline), con su coste de memoria y descarga. Su techo es moderado: de esas clasificaciones, solo el 52–67 % tienen el mismo tejido
-a ±se, así que un `bd` perfecto ahorraría un 16–25 % del cuadro. Ya se probó sin ganancia tomar la distancia al campo fuente más
-cercano; la rejilla vascular de 8 mm da un 5–17 % (PR 65).
+**Coste.** Cumplido el 16-11-2026: 58–62 fps con la sonda quieta en los ocho estados del banco (decisiones 405 y 406; detalle en
+`docs/estado/imagen.md`). Al mover, 26–37 fps; el límite es el contacto en la CPU.
 
 La palanca grande es abaratar cada clasificación: s0028 lee unos 19 campos fuente por punto y, sin leerlos (experimento que rompe
 la imagen, solo para medir), el cuadro baja de 21–23 a 12,6–14 ms. Aprobado por el responsable el 15-11-2026, en curso: un mapa de ocupación por celda de
