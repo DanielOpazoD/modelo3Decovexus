@@ -7,16 +7,20 @@ const PAIRS: readonly (readonly [string, string])[] = [
   [
     `
 // Vesícula en ayunas de esta persona (decisión 413): la pera de uGbNodes con su gradiente exacto, sin el canal del atlas, que
-// en su TAC está contraída (gemelo: gallbladderPearSdf; las mismas operaciones que gallbladderSdf sin atlas).
-float s28GbPear(vec3 m,out vec3 n){
+// en su TAC está contraída (gemelo: gallbladderPearSdf; las mismas operaciones que gallbladderSdf sin atlas). Sin bucles, como
+// toda la política P3: un tramo por línea, en el orden de la CPU.
+void s28GbJoin(vec3 m,vec4 a,vec4 b,inout float d,inout vec3 n){
   vec3 g;
+  float di=gbSegment(m,a,b,g);
+  float h=clamp(0.5+0.5*(di-d)/uGbExtra.x,0.0,1.0);
+  n=mix(g,n,h);
+  d=smoothMin(d,di,uGbExtra.x);
+}
+float s28GbPear(vec3 m,out vec3 n){
   float d=gbSegment(m,uGbNodes[0],uGbNodes[1],n);
-  for(int i=1;i<4;i++){
-    float di=gbSegment(m,uGbNodes[i],uGbNodes[i+1],g);
-    float h=clamp(0.5+0.5*(di-d)/uGbExtra.x,0.0,1.0);
-    n=mix(g,n,h);
-    d=smoothMin(d,di,uGbExtra.x);
-  }
+  s28GbJoin(m,uGbNodes[1],uGbNodes[2],d,n);
+  s28GbJoin(m,uGbNodes[2],uGbNodes[3],d,n);
+  s28GbJoin(m,uGbNodes[3],uGbNodes[4],d,n);
   return d;
 }`,
     '',

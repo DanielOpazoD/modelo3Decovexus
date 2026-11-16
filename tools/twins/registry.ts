@@ -795,7 +795,7 @@ export const TWINS: readonly TwinPair[] = [
     gpu: [
       { file: 'src/anatomy/organs/gallbladder.ts', symbols: ['gbSegment', 'gallbladderSdf'], templates: ['GALLBLADDER_GLSL'] },
       // La pera en ayunas de s0028 (decisión 413): la misma cadena sin el canal del atlas.
-      { file: 'src/anatomy/gpu/s0028Solids.glsl.ts', symbols: ['s28GbPear'], templates: ['S0028_SOLIDS_GLSL'] },
+      { file: 'src/anatomy/gpu/s0028Solids.glsl.ts', symbols: ['s28GbPear', 's28GbJoin'], templates: ['S0028_SOLIDS_GLSL'] },
     ],
     evidence: [
       { kind: 'gpu', file: 'e2e/gallbladderGradient.spec.ts', title: 'pared vesicular: gradiente de la unión suave CPU/GPU' },

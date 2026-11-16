@@ -84,6 +84,12 @@ float s28PLA(vec3 p,int k){return texelFetch(uAbdominalAtlas,ivec3(S28A_OFF[k]+f
 float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+floor((p-S28T_LO[k])/1.5+0.5)),0).g;}
 `;
 
+/** Los tramos de la pera vesicular tras el primero (decisión 413), uno por línea: la política P3 no lleva bucles. */
+const S28_GB_JOINS = Array.from(
+  { length: GALLBLADDER_NODES - 2 },
+  (_, i) => 's28GbJoin(m,uGbNodes[' + (i + 1) + '],uGbNodes[' + (i + 2) + '],d,n);',
+).join('\n  ');
+
 /**
  * Política P3 en la GPU (decisión 321, r3), par GLSL de `s0028Owners` y de la rama s0028 de `scene.ts`. Sin bucles en
  * este código ni en lo que llama (las funciones `s28P*`): cada campo se lee por su caja y, a menos de un vóxel de su
@@ -95,6 +101,7 @@ float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+fl
  * @twin s0028-interior-renal
  * @twin s0028-grasa-amplia
  * @twin s0028-gradiente-renal
+ * @twin organo-vesicula
  */
 export const S0028_SOLIDS_GLSL = /* glsl */ `
 const vec3 S28F_LO[2]=vec3[](${B.solids.boxes.map((b) => vec(b.originMm)).join(',')});
@@ -149,16 +156,18 @@ bool s28PFatIn(vec3 p,int b){
 }
 void s28PAdd(inout int n,inout int k,inout float d,int id,float v){if(v<0.0){if(n==0){k=id;d=v;}n++;}}
 // Vesícula en ayunas de esta persona (decisión 413): la pera de uGbNodes con su gradiente exacto, sin el canal del atlas, que
-// en su TAC está contraída (gemelo: gallbladderPearSdf; las mismas operaciones que gallbladderSdf sin atlas).
-float s28GbPear(vec3 m,out vec3 n){
+// en su TAC está contraída (gemelo: gallbladderPearSdf; las mismas operaciones que gallbladderSdf sin atlas). Sin bucles, como
+// toda la política P3: un tramo por línea, en el orden de la CPU.
+void s28GbJoin(vec3 m,vec4 a,vec4 b,inout float d,inout vec3 n){
   vec3 g;
+  float di=gbSegment(m,a,b,g);
+  float h=clamp(0.5+0.5*(di-d)/uGbExtra.x,0.0,1.0);
+  n=mix(g,n,h);
+  d=smoothMin(d,di,uGbExtra.x);
+}
+float s28GbPear(vec3 m,out vec3 n){
   float d=gbSegment(m,uGbNodes[0],uGbNodes[1],n);
-  for(int i=1;i<${GALLBLADDER_NODES - 1};i++){
-    float di=gbSegment(m,uGbNodes[i],uGbNodes[i+1],g);
-    float h=clamp(0.5+0.5*(di-d)/uGbExtra.x,0.0,1.0);
-    n=mix(g,n,h);
-    d=smoothMin(d,di,uGbExtra.x);
-  }
+  ${S28_GB_JOINS}
   return d;
 }
 // Dueños independientes de un punto material (gemelo: s0028Owners): cuántos hay; k y d, el primero (con un solo dueño,

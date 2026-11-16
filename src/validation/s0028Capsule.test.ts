@@ -72,9 +72,10 @@ it('en la escena, la cápsula sube donde al otro lado hay grasa perirrenal o mes
         bin[exterior] = (bin[exterior] ?? 0) + 1;
       }
   // Medido el 13-11-2026 en un nodo de cada dos: 66 puntos con grasa perirrenal al otro lado y 879 con mesentérica suben; 452 con
-  // grasa de pared, 443 con músculo y 521 con diafragma, no.
+  // grasa de pared, 443 con músculo y 521 con diafragma, no. El 16-11-2026, 633 con mesentérica, y 590 con la vesícula en ayunas
+  // (decisión 413): los 43 que faltan miraban a la grasa de la fosa vesicular, que ahora ocupa la vesícula llena.
   expect(lit[Tissue.PerirenalFat]).toBeGreaterThan(40);
-  expect(lit[Tissue.MesentericFat]).toBeGreaterThan(600);
+  expect(lit[Tissue.MesentericFat]).toBeGreaterThan(500);
   expect(dark[Tissue.Fat]).toBeGreaterThan(300);
   expect(dark[Tissue.Muscle]).toBeGreaterThan(300);
   expect(dark[Tissue.Diaphragm]).toBeGreaterThan(300);
