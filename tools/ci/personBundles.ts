@@ -28,7 +28,9 @@ export interface PersonBundleGraph {
 // Decisión 364: +16 KiB sobre los 45 de la 357. s0028 ya es la única persona con trabajo nuevo (REGLAS, rumbo 1) y cada mejora
 // de su imagen añade GLSL propio; con 251 B de margen no cabía la siguiente.
 // Decisión 402: +8 KiB para su red interlobar (16 pares de arteria y vena: datos generados, no código); la pasaba en 5,9 KiB.
-export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 69 * KB;
+// Decisión 409: +4 KiB para la tríada portal (rutas de colédoco, hepáticos y arteria: datos), que la pasaba en 470 B, y lo que
+// piden el latido (410) y la ventana de la aorta (411) encima: 2,3 KiB medidos con las tres.
+export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 73 * KB;
 export const DEFAULT_JS_BUDGET = TOTAL_JS_BUDGET;
 export const S0028_JS_BUDGET = PERSON_JS_CEILING;
 

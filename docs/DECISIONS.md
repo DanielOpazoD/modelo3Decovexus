@@ -12346,5 +12346,6 @@ carril bajo crece 26 px (230 → 256) para la segunda fila renal.
 1–2 mm de la pared portal; cruza por delante del tronco y por detrás del hepático común y sigue a la porta derecha hasta su rama
 anterior. El colédoco va paralelo a la porta, anterolateral y en su mismo plano, arqueado sobre la arteria; los hepáticos nacen
 de la confluencia, delante de la bifurcación, y siguen a su porta. La porción intrapancreática y el cístico no cambian de regla.
-**Consecuencias.** Un corte subcostal derecho por el ligamento enseña porta, arteria redonda y colédoco encima (el corte del colédoco).
+**Consecuencias.** Un corte subcostal derecho por el ligamento enseña porta, arteria redonda y colédoco encima (el corte del
+colédoco). El techo JS de s0028 sube 4 KiB (la tríada lo pasaba en 470 B).
 **Verificación.** `s0028Vessels.test.ts`: huecos de pared > 0,3 mm, lados en el ligamento, cruce y coplanaridad ≤ 3 mm.
