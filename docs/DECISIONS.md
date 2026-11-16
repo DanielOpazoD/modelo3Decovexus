@@ -12283,3 +12283,13 @@ amplitud ½; tejido y vasos grandes conservan N con amplitud 1. La potencia espe
 esa sangre se resiembra en ella (o queda mudo); la composición pondera por la amplitud al cuadrado.
 **Consecuencias.** Renal de s0028: 437 dispersores, ~35 fps en PW (máquina cargada); igual muestreo de la arteria.
 **Verificación.** `pwSamplingDensity` (solo extras en esa sangre, composición conservada), `pwStationaryWeight` (caché bit a bit).
+
+## 404. Al colocar o mover la puerta, la población PW se releva en fundido
+
+**Contexto.** Evaluación del 15-11-2026: al colocar la puerta PW el espectro arrancaba con una línea blanca vertical de todo el rango.
+Medido al saltar la puerta del parénquima a la porta: una banda de +20 a +41 dB lejos del flujo durante ~45 ms. Al resembrar, la
+población saliente desaparecía de un pulso al siguiente y su eco de tejido (40 dB sobre la sangre) era un escalón para el filtro de pared.
+**Decisión.** Al resembrar, la saliente sigue girando con el eco de su último pulso y se apaga mientras la nueva se enciende, con un
+fundido de coseno de 64 pulsos (≈ 25 ms a 2,6 kHz), dentro de los 0,1 s que la captura ya descarta tras una frontera del receptor.
+**Consecuencias.** Sin banda: +4 dB como máximo; queda un brillo breve junto a la línea de base. El coste del relevo es despreciable.
+**Verificación.** `pwGateJump.test.ts` (falla sin el relevo: +34 dB), `pwStationaryWeight` (caché bit a bit), lámina de la porta.

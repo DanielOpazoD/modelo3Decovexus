@@ -256,6 +256,22 @@ function startIdentityChange(s: Scatterer, rng: SeededRandom): void {
   s.pending = { ampFactor: 0.7 + 0.6 * rng.float() };
   startAmpRamp(s, 0);
 }
+/**
+ * Relevo de la población al resembrar (decisión 404): la saliente se apaga y la nueva se enciende con un fundido de coseno de
+ * RESEED_FADE_TICKS pulsos (≈ 25 ms a 2,6 kHz). Antes la saliente desaparecía de un pulso al siguiente: un escalón del eco del
+ * tejido, 40 dB sobre la sangre, que el filtro de pared dejaba pasar como una banda de +20 a +41 dB en todo el espectro (la
+ * línea blanca al colocar o mover la puerta).
+ */
+const RESEED_FADE_TICKS = 64;
+const reseedFade = (left: number): number => 0.5 - 0.5 * Math.cos((Math.PI * (RESEED_FADE_TICKS - left)) / RESEED_FADE_TICKS);
+/** Eco de un dispersor de la población saliente: su amplitud del último pulso y su fasor, que sigue girando. */
+interface Retiring {
+  a: number;
+  cr: number;
+  ci: number;
+  rotC: number;
+  rotS: number;
+}
 /** Ruido electrónico relativo a la sangre a transmisión 1 ([EXTRAPOLACIÓN PROPIA]). */
 const NOISE_STD = 0.0004;
 
@@ -445,6 +461,9 @@ export class SampleVolumeIQ {
   private scatterers: Scatterer[] = [];
   /** Vasos refinados de la siembra en curso (decisión 403). */
   private refined: ReadonlySet<VesselId> = new Set();
+  /** Población saliente del último relevo y pulsos que quedan de su fundido (decisión 404). */
+  private retiring: Retiring[] = [];
+  private fadeLeft = 0;
   private rng: SeededRandom;
   private tick = 0;
   private weightEpoch = 0;
@@ -516,6 +535,7 @@ export class SampleVolumeIQ {
       Math.hypot(g.center[0] - this.gate.center[0], g.center[1] - this.gate.center[1], g.center[2] - this.gate.center[2]) >
         0.5 * this.halfAxial ||
       Math.abs(g.lengthMm - this.gate.lengthMm) > 0.5;
+    if (moved && this.gate) this.retire();
     this.gate = g;
     if (!Number.isFinite(this.transmissionNow)) this.transmissionNow = g.transmission;
     this.halfAxial = g.lengthMm / 2 + 2.5 * g.pulseSigmaMm;
@@ -785,6 +805,23 @@ export class SampleVolumeIQ {
     return this.makeScatterer(this.gateToWorld(this.randomInBox()), phys, true);
   }
 
+  /**
+   * La población actual pasa a saliente con el eco de su último pulso (la puerta de antes). Si otro fundido seguía en curso, lo
+   * que sonaba entonces era la mezcla de las dos: la saliente hereda las dos con sus pesos de ese pulso.
+   */
+  private retire(): void {
+    const e = this.fadeLeft > 0 ? reseedFade(this.fadeLeft) : 1;
+    const out = this.scatterers.map((s): Retiring => ({
+      a: e * s.amp * this.weightAt(s.g) * s.ampImp * s.pop,
+      cr: s.cr,
+      ci: s.ci,
+      rotC: s.rotC,
+      rotS: s.rotS,
+    }));
+    if (e < 1) for (const r of this.retiring) out.push({ ...r, a: r.a * (1 - e) });
+    this.retiring = out;
+  }
+
   private reseed(phys: PhysiologySample): void {
     this.findJunctions();
     this.scatterers.length = 0;
@@ -815,6 +852,13 @@ export class SampleVolumeIQ {
       }
       this.updateComposition();
     }
+    // La población nueva entra con el fundido del relevo, no dispersor a dispersor (decisión 404).
+    for (const s of this.scatterers) {
+      s.amp += s.dAmp * s.rampLeft;
+      s.dAmp = 0;
+      s.rampLeft = 0;
+    }
+    this.fadeLeft = RESEED_FADE_TICKS;
   }
 
   private isRefinedBlood(s: Scatterer): boolean {
@@ -1502,6 +1546,22 @@ export class SampleVolumeIQ {
         const a = s.amp * weight * s.ampImp * s.pop;
         sr += a * cr;
         si += a * ci;
+      }
+      if (this.fadeLeft > 0) {
+        // relevo de la población (decisión 404): la saliente sigue girando y se apaga mientras la nueva se enciende
+        const e = reseedFade(this.fadeLeft);
+        let rr = 0,
+          ri = 0;
+        for (const r of this.retiring) {
+          const cr = r.cr * r.rotC - r.ci * r.rotS;
+          r.ci = r.cr * r.rotS + r.ci * r.rotC;
+          r.cr = cr;
+          rr += r.a * cr;
+          ri += r.a * r.ci;
+        }
+        sr = sr * e + rr * (1 - e);
+        si = si * e + ri * (1 - e);
+        if (--this.fadeLeft === 0) this.retiring = [];
       }
       // Ruido electrónico: independiente de la transmisión (no se atenúa con la profundidad).
       const nr = this.rng.gaussian() * NOISE_STD;
