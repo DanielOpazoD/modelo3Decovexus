@@ -105,12 +105,10 @@ frente a 17–19). La ecografía tarda 7–9 ms de GPU por cuadro. Lo que queda 
 resolver el contacto de la sonda cuesta unos 5 ms por pose (`bodyDepth`) y, si el cuadro termina tarde, la siguiente RAF llega antes
 que la valla o que la reserva de turno.
 
-## Cadencia de s0028 (medida el 15-11-2026; condición del corte)
+## Cadencia de s0028 (medida el 16-11-2026; condición del corte cumplida)
 
-Lo anterior es de la otra persona: s0028 aún no cumple la regla del coste (`docs/REGLAS.md`). M4, Metal, las dos en la misma sesión:
-en el banco (`npm run fidelity -- --abdomen s0028`), 30–60 fps quieta (la subxifoidea, 30) frente a 60 en los ocho estados. Al mover,
-el contacto de s0028 costaba ~37 ms por pose y ahora 10 (PR 63, mismo resultado bit a bit): subxifoidea de 19 a 30 fps con el carril
-3D (la otra, 52–55). Quieta, el cuadro espera la GPU: la ecografía cuesta 15–23 ms (`gpuTimings`; la otra, 5–7); por pasada, la
-clasificación B 15,9 ms (8,9) y A0 5,5 (1,3). Saltar las clasificaciones de elevación de B la baja un 30–40 %: en s0028 la grasa
-visceral y los contenidos digestivos salen con `bd = 0` y las disparan siempre. La rejilla de 8 mm (397) y el mapa de ocupación de
-campos (400) bajan el cuadro un 5–17 % y un 5–11 %. Plan en `docs/anatomia/corte-s0028.md`.
+s0028 cumple la regla del coste (`docs/REGLAS.md`): en el banco (`npm run fidelity -- --abdomen s0028`), 58–62 fps quieta en los
+ocho estados (M4, Metal, con carga ajena; antes 30–60). Dos causas, ninguna de la imagen: el programa único de B en la GPU nativa,
+con tres copias del clasificador (12 ms; por etapas, 3,6, decisión 406), y el ritmo del bucle, que perdía una RAF cuando la valla
+llegaba justo después del refresco (decisión 405). La ecografía cuesta 5–7 ms de GPU por cuadro (antes 15–19). Al mover la sonda,
+26–37 fps: el límite pasa a ser el contacto en la CPU (10 ms por pose, PR 63) y la carga ajena de la máquina.
