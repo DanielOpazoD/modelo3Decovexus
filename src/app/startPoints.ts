@@ -358,6 +358,7 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   portalTrunk: { phi: 3.25, z: -80, yaw: 0.032, rock: 0.122, tilt: 0.26 },
   // Decisión 386 (valoración del responsable: «con dudas», 3 de 5): oblicua subcostal clásica, con la porta principal y su rama
   // derecha en eje largo sobre la cava y la aorta. Sustituye a la de la decisión 381, que solo enseñaba el codo de la bifurcación.
+  // Decisión 412: el colédoco y la hepática propia corren paralelos sobre la porta en este plano.
   portalSubcostal: { phi: 1.6, z: -100, yaw: -1.2, rock: 0.131, tilt: 0.15 },
   // Decisión 383 (valoración del responsable): el plano contiene el tramo final de la suprahepática derecha y su unión con la
   // cava; antes solo el 38 % de ese tramo quedaba en el plano y una sombra ocupaba un tercio del sector. Decisión 388: la huella

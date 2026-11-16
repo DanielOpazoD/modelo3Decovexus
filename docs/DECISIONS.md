@@ -12371,3 +12371,15 @@ superior, que baja paralela por delante (a ≤ 3 mm del plano), con la renal izq
 `find-s0028-poses.ts`; las otras personas heredan la misma [EXTRAPOLACIÓN PROPIA]; preajuste de la VCI.
 **Consecuencias.** El carril bajo crece hasta 290 px (una fila más en el grupo de la VCI), lo mismo que en pantallas altas.
 **Verificación.** `s0028Windows.test.ts` (hito visible, despejado ≥ 0,75), tarjetas, estilos y las e2e de equivalencia.
+
+## 412. Tríada portal en paralelo en la subcostal portal
+
+**Contexto.** El responsable: «la idea es que la tríada portal se vea con las 3 estructuras paralelas». Con la decisión 409 la
+arteria cruzaba entre colédoco y porta, y los dos entraban y salían del plano de la subcostal portal (unos 5 mm del colédoco dentro).
+**Decisión.** Imagen idealizada del eje largo del hilio: colédoco delante, hepática propia en medio y porta detrás, apilados y
+paralelos al tronco portal y a la rama derecha, dentro del plano de la ventana (sin la «cabeza de ratón» del corte transversal).
+Colédoco 5 mm y arteria 4,4–4,8 mm, para que su luz se vea negra pese al espesor del haz. La confluencia biliar queda delante de la
+porta derecha [EXTRAPOLACIÓN PROPIA]. La pose no cambia: girarla 2,3° cerraba el corte gris de la bifurcación pero acortaba la luz
+portal de 79 a 59 mm (decisión 386).
+**Consecuencias.** Tres tubos paralelos en unos 40 mm de la ventana.
+**Verificación.** `s0028Vessels.test.ts` (huecos > 0,3 mm, orden de profundidad y separación constante en el plano); capa lenta.

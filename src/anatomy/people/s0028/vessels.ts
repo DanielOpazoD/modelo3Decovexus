@@ -283,9 +283,9 @@ function fitJunctions(vessels: VesselDef[]): void {
  *   mesentérica nace de la cara anterior de la aorta, cruza por delante de la vena renal izquierda y baja a la izquierda de su
  *   vena; la renal derecha pasa por detrás de la cava. La hepática común atravesaba el tronco portal por su centro: sale del
  *   tronco celíaco por encima de la confluencia y queda por delante de la porta, y la hepática propia continúa desde ahí.
- * - Tríada portal (decisión 409): la hepática propia sube anteromedial a la porta, a 2 mm de su pared, cruza por delante del
- *   tronco y por detrás del hepático común (el corte clásico del colédoco: la arteria redonda entre conducto y porta) y sigue
- *   a la porta derecha hasta su rama anterior; antes iba 7–22 mm por delante y cruzaba la suprahepática media.
+ * - Tríada portal (decisiones 409 y 412): la hepática propia corre paralela al tronco portal y a su rama derecha, a 1,5 mm de su
+ *   pared y entre ella y el colédoco, en el plano de la subcostal portal (la imagen clásica del hilio: tres tubos paralelos), y
+ *   sigue a la porta derecha hasta su rama anterior; antes iba 7–22 mm por delante y cruzaba la suprahepática media.
  */
 const ROUTES: Partial<Record<VesselDef['id'], { keep: readonly ('first' | 'last')[]; nodes: readonly (readonly number[])[] }>> = {
   portalSmv: {
@@ -317,21 +317,21 @@ const ROUTES: Partial<Record<VesselDef['id'], { keep: readonly ('first' | 'last'
     nodes: [
       [2, 4.5, -76, 2.4],
       [1, 12, -73.5, 2.4],
-      [-1, 18.5, -72.5, 2.4],
+      [-6, 21, -72.5, 2.4],
     ],
   },
   hepaticArtery: {
     keep: [],
     nodes: [
-      [-1, 18.5, -72.5, 2.4],
-      [-6.1, 19.2, -72.5, 2.4],
-      [-13.5, 22.2, -72.3, 2.4],
-      [-24, 20.9, -74.8, 2.3],
-      [-33, 15.8, -76.3, 2.2],
-      [-41.3, 18.3, -69.4, 2.1],
-      [-52, 19, -59.5, 2],
-      [-60, 17, -53, 1.9],
-      [-67, 14, -46, 1.7],
+      [-6, 21, -72.5, 2.4],
+      [-17.6, 22.2, -76.9, 2.4],
+      [-25.2, 22, -73.7, 2.34],
+      [-33.4, 21, -70.2, 2.28],
+      [-41, 19.7, -66.9, 2.22],
+      [-50, 18.2, -62.9, 2.16],
+      [-60.4, 16.5, -58.4, 2.1],
+      [-67, 16.4, -51, 1.9],
+      [-69.5, 15.2, -46, 1.8],
     ],
   },
   renalArteryRight: {
@@ -474,29 +474,34 @@ export function smoothS0028Vessels(vessels: VesselDef[]): void {
 const S0028_GALLBLADDER_CENTER: Vec3 = [-65, 37, -84];
 
 /**
- * Conductos de la tríada portal de s0028 (decisión 409), nodos (x, y, z, radio) en mm LAS. El colédoco, desde la cabeza del
- * páncreas, va anterolateral a la porta a 1,5 mm de su pared y se adelanta sobre la hepática derecha, que cruza entre los dos; la
- * confluencia biliar queda delante y encima de la bifurcación portal, y cada hepático sigue a su porta. Antes el colédoco iba
- * a 3,5–11 mm de la porta y los hepáticos cruzaban la porta izquierda y las suprahepáticas. [EXTRAPOLACIÓN PROPIA: el TAC sin
- * contraste biliar no los muestra; es la disposición habitual del ligamento hepatoduodenal.]
+ * Conductos de la tríada portal de s0028 (decisiones 409 y 412), nodos (x, y, z, radio) en mm LAS. El colédoco sube desde la
+ * cabeza del páncreas y, sobre el tronco portal, corre paralelo a él delante de la hepática propia, a 1,2 mm de su pared, en el
+ * plano de la subcostal portal; la confluencia biliar queda delante de la porta derecha, y cada hepático sigue a su porta. Antes
+ * de la decisión 409 el colédoco iba a 3,5–11 mm de la porta y los hepáticos cruzaban la porta izquierda y las suprahepáticas.
+ * [EXTRAPOLACIÓN PROPIA: el TAC sin contraste biliar no los muestra; es la imagen idealizada del eje largo del hilio.]
  */
 const S0028_BILE_DUCTS: Partial<Record<DuctDef['id'], readonly (readonly number[])[]>> = {
   cbd: [
-    [-15.5, 17, -91, 2.6],
-    [-14.1, 21.1, -82.2, 2.5],
-    [-19.1, 25.3, -80.6, 2.4],
-    [-25.4, 27.8, -77.7, 2.4],
-    [-31.5, 25.7, -71.7, 2.4],
-    [-40, 25, -60, 2.4],
+    [-25, 15, -103, 2.6],
+    [-22, 22.5, -92, 2.6],
+    [-19.5, 28, -84, 2.6],
+    [-17.9, 29.4, -78, 2.6],
+    [-25.6, 29.2, -74.8, 2.56],
+    [-34.3, 28.3, -71, 2.52],
+    [-41.9, 27, -67.7, 2.48],
+    [-49.1, 25.8, -64.5, 2.44],
+    [-55.1, 24.7, -61.9, 2.4],
   ],
   rightHepaticDuct: [
-    [-40, 25, -60, 1.6],
-    [-52, 24.5, -55, 1.4],
-    [-70, 18, -42, 1.2],
+    [-55.1, 24.7, -61.9, 1.6],
+    [-61.2, 22.6, -59, 1.6],
+    [-67.5, 22, -52, 1.4],
+    [-70, 22.5, -45, 1.3],
   ],
   leftHepaticDuct: [
-    [-40, 25, -60, 1.5],
-    [-36, 32, -59, 1.4],
+    [-55.1, 24.7, -61.9, 1.5],
+    [-51, 31.5, -61, 1.45],
+    [-41, 35.5, -61, 1.4],
     [-31, 40, -57.5, 1.3],
     [-15, 40, -55.5, 1.2],
     [13, 44, -40, 1.1],
