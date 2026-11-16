@@ -68,3 +68,47 @@ describe('Espectrograma en el eje temporal del ECG', () => {
         });
       }
 });
+
+describe('Columnas empalmadas (decisión 407)', () => {
+  // Instantes de columna con el baile medido en la aplicación (hasta 0,24 ms de 6,16): con `span` quedaban píxeles sin pintar
+  // entre columnas seguidas, líneas negras verticales en el espectro.
+  const run = (useplace: boolean, skip: (k: number) => boolean = () => false) => {
+    const W = 860,
+      secondsVisible = 860 / (50 * 3.2),
+      pxPerSec = W / secondsVisible,
+      dtCol = 16 / 2597;
+    const tl = new SweepTimeline();
+    const filled = new Uint8Array(W);
+    let state = 7;
+    const rnd = () => (state = (state * 1664525 + 1013904223) >>> 0) / 4294967296;
+    let t = 1,
+      k = 0;
+    for (let frame = 0; frame < 400; frame++) {
+      t += 1 / 60;
+      const { shiftPx } = tl.advance(t, pxPerSec);
+      filled.copyWithin(0, shiftPx);
+      filled.fill(0, W - shiftPx);
+      for (;;) {
+        const tc = 1 + k * dtCol + 0.00024 * rnd();
+        if (!tl.ready(tc, dtCol)) break;
+        k++;
+        if (skip(k)) continue;
+        const [x0, x1] = useplace ? tl.place(tc, dtCol, pxPerSec, W) : tl.span(tc, dtCol, pxPerSec, W);
+        filled.fill(1, x0, x1);
+      }
+    }
+    // píxeles sin pintar entre el primero y el último pintados (sin el borde derecho aún por llegar)
+    const first = filled.indexOf(1),
+      last = filled.lastIndexOf(1);
+    let holes = 0;
+    for (let x = first; x <= last; x++) if (!filled[x]) holes++;
+    return holes;
+  };
+  it('sin huecos de redondeo entre columnas seguidas', () => {
+    expect(run(false), 'control: con span quedaban huecos').toBeGreaterThan(0);
+    expect(run(true)).toBe(0);
+  });
+  it('una pausa real de la adquisición (más de dos píxeles) sigue en negro', () => {
+    expect(run(true, (k) => k % 400 >= 380 && k % 400 < 390)).toBeGreaterThan(10);
+  });
+});
