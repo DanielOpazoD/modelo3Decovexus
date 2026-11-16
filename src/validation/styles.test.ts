@@ -72,21 +72,29 @@ function px(decls: string, prop: string): number {
 }
 
 describe('Carril: las tarjetas de las ventanas (decisiones 75 y 83)', () => {
-  it('los cuatro grupos y sus ocho accesos caben en el carril bajo sin reducir texto, foco ni área de pulsación', () => {
+  it('los cuatro grupos y sus nueve accesos caben en el carril bajo sin reducir texto, foco ni área de pulsación', () => {
     expect(WINDOW_GROUPS).toHaveLength(4);
-    expect(WINDOW_GROUPS.reduce((n, group) => n + group.windows.length, 0)).toBe(8);
+    expect(WINDOW_GROUPS.reduce((n, group) => n + group.windows.length, 0)).toBe(9);
     expect(ownRule('.win-options')).toMatch(/grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
     const buttonHeight = px(ownRule('.win-card'), 'min-height');
     expect(buttonHeight).toBeGreaterThanOrEqual(32);
     expect(px(ownRule('.win-name'), 'font-size')).toBeGreaterThanOrEqual(12);
     expect(px(ownRule('.win-group-title'), 'font-size')).toBeGreaterThanOrEqual(12);
-    // Cada grupo: título (14 px) + margen (2 px) + una fila de botones (32 px).
-    const groupHeight = px(ownRule('.win-group-title'), 'line-height') + 2 + buttonHeight;
-    const contentHeight = 4 * groupHeight + 3 * px(rule('.windows'), 'gap') + 8;
+    // Cada grupo: título (14 px) + margen (2 px) + sus filas de botones (32 px, separadas 4); el renal tiene dos desde la
+    // esplenorrenal (decisión 408).
+    const rowGap = px(ownRule('.win-options'), 'gap');
+    const contentHeight =
+      WINDOW_GROUPS.reduce((h, group) => {
+        const rows = Math.ceil(group.windows.length / 2);
+        return h + px(ownRule('.win-group-title'), 'line-height') + 2 + rows * buttonHeight + (rows - 1) * rowGap;
+      }, 0) +
+      3 * px(rule('.windows'), 'gap') +
+      8;
     expect(contentHeight).toBeLessThanOrEqual(px(mediaRule('(max-height: 860px)', '.windows'), 'max-height'));
     expect(rule('.windows')).toMatch(/overflow-y:\s*auto/);
     expect(px(rule('.windows'), 'max-height')).toBeLessThanOrEqual(290);
-    expect(px(mediaRule('(max-height: 860px)', '.windows'), 'max-height')).toBeLessThanOrEqual(230);
+    // el 3D y el corte conservan su sitio en pantallas bajas: el carril crece solo lo de la fila renal (230 → 256)
+    expect(px(mediaRule('(max-height: 860px)', '.windows'), 'max-height')).toBeLessThanOrEqual(256);
     expect(ownRule('.win-card:focus-visible')).toMatch(/z-index:\s*[1-9]/);
     expect(ownRule('.win-card:focus-visible')).toMatch(/position:\s*relative/);
   });
