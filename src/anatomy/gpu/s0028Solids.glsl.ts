@@ -84,11 +84,9 @@ float s28PLA(vec3 p,int k){return texelFetch(uAbdominalAtlas,ivec3(S28A_OFF[k]+f
 float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+floor((p-S28T_LO[k])/1.5+0.5)),0).g;}
 `;
 
-/** Los tramos de la pera vesicular tras el primero (decisión 413), uno por línea: la política P3 no lleva bucles. */
-const S28_GB_JOINS = Array.from(
-  { length: GALLBLADDER_NODES - 2 },
-  (_, i) => 's28GbJoin(m,uGbNodes[' + (i + 1) + '],uGbNodes[' + (i + 2) + '],d,n);',
-).join('\n  ');
+// La pera vesicular de s0028 (decisión 413) va desenrollada en `s28GbPear`, un tramo por línea: la política P3 no lleva bucles y
+// el build renombra las funciones GLSL, así que su nombre no puede salir de una cadena JS. Son los cuatro tramos de cinco nodos.
+if (GALLBLADDER_NODES !== 5) throw new Error('La pera vesicular de s0028 desenrolla cuatro tramos: cambió GALLBLADDER_NODES');
 
 /**
  * Política P3 en la GPU (decisión 321, r3), par GLSL de `s0028Owners` y de la rama s0028 de `scene.ts`. Sin bucles en
@@ -167,7 +165,9 @@ void s28GbJoin(vec3 m,vec4 a,vec4 b,inout float d,inout vec3 n){
 }
 float s28GbPear(vec3 m,out vec3 n){
   float d=gbSegment(m,uGbNodes[0],uGbNodes[1],n);
-  ${S28_GB_JOINS}
+  s28GbJoin(m,uGbNodes[1],uGbNodes[2],d,n);
+  s28GbJoin(m,uGbNodes[2],uGbNodes[3],d,n);
+  s28GbJoin(m,uGbNodes[3],uGbNodes[4],d,n);
   return d;
 }
 // Dueños independientes de un punto material (gemelo: s0028Owners): cuántos hay; k y d, el primero (con un solo dueño,
