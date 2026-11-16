@@ -68,7 +68,9 @@ export function classifyWall(
         },
       };
   }
-  if (q?.kind !== 'known' || q.depthMm >= q.interfaceMm)
+  // La pared solo si es su dueña, como en la GPU (`k==16`): una pared estimada no disputa un órgano medido (decisión 376), y aquí
+  // tampoco lo pinta encima; antes la CPU dibujaba pared donde la máscara del asa la reclamaba y la GPU, el asa.
+  if (owner !== 'wall' || q?.kind !== 'known' || q.depthMm >= q.interfaceMm)
     return { final: false, wallMm: d - (q?.kind === 'known' ? q.depthMm - q.interfaceMm : 1e3), solids };
   // Capas de la pared de esta persona (decisión 352): la grasa y la banda vienen de su TAC; la fascia superficial es estimada. La
   // vaina anterior se ve desde la grasa y desde el músculo: una cara que solo se dibujaba por un lado quedaba a medio trazo.

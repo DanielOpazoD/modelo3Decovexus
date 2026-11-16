@@ -12360,3 +12360,14 @@ dentro del contorno del reposo: VI 10 % largo y 33 % corto, VD 15 % y 20 %, y la
 más baja hacia su suelo, donde entra la cava (su anchura no cambia). CPU y GPU reciben el mismo vaciado (`uMotion`).
 **Consecuencias.** La pared se engruesa en sístole; en la subxifoidea el techo de la AD se mueve ~8 mm con cada latido. Sin coste.
 **Verificación.** `heartBeat.test.ts`; huellas de la revisión 410 con su inversa (`heartBefore410`); equivalencia e2e en vivo.
+
+## 411. Ventana de la aorta sagital con sus ramas
+
+**Contexto.** El responsable pidió ver las ramas de la aorta abdominal. s0028 tiene tronco celíaco, mesentérica superior y renales,
+pero ninguna ventana las mostraba en eje largo.
+**Decisión.** Décima ventana, `aortaSagittal` («Aorta»), en el grupo de la VCI, que pasa a «VCI y aorta»: sagital paramediano en el
+epigastrio, por debajo de la subxifoidea; la aorta en eje largo sobre las vértebras, el origen del tronco celíaco y la mesentérica
+superior, que baja paralela por delante (a ≤ 3 mm del plano), con la renal izquierda entre las dos. Pose por la búsqueda de
+`find-s0028-poses.ts`; las otras personas heredan la misma [EXTRAPOLACIÓN PROPIA]; preajuste de la VCI.
+**Consecuencias.** El carril bajo crece hasta 290 px (una fila más en el grupo de la VCI), lo mismo que en pantallas altas.
+**Verificación.** `s0028Windows.test.ts` (hito visible, despejado ≥ 0,75), tarjetas, estilos y las e2e de equivalencia.

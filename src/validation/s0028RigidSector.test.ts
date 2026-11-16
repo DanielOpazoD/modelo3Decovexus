@@ -99,10 +99,21 @@ it('compresión rígida s0028: vértebras y sacro quietos en todo el sector de l
       counts[`${pose.id} D${D}`] = axial;
     }
   }
-  // Con dientes: la columna está en el sector de ocho ventanas; en el flanco, en su borde profundo, entre los dos riñones. El
-  // tronco portal, intercostal lateral, no la alcanza; tampoco la intercostal desde la decisión 383, que mira a la unión de la
-  // suprahepática con la cava y deja la columna fuera del sector (0 muestras).
-  for (const id of ['subxiphoid', 'epigastric', 'subcostal', 'flank', 'portal', 'renal', 'hepatorenal', 'portalSubcostal', 'splenorenal'])
+  // Con dientes: la columna está en el sector de diez ventanas (la aorta sagital la tiene debajo, decisión 411); en el flanco,
+  // en su borde profundo, entre los dos riñones. El tronco portal, intercostal lateral, no la alcanza; tampoco la intercostal
+  // desde la decisión 383, que mira a la unión de la suprahepática con la cava y deja la columna fuera del sector (0 muestras).
+  for (const id of [
+    'subxiphoid',
+    'epigastric',
+    'subcostal',
+    'flank',
+    'portal',
+    'renal',
+    'hepatorenal',
+    'portalSubcostal',
+    'splenorenal',
+    'aortaSagittal',
+  ])
     for (const D of [0, 10, 20]) expect(counts[`${id} D${D}`], `${id} D${D}`).toBeGreaterThan(id === 'flank' ? 50 : 10);
 });
 

@@ -503,6 +503,27 @@ export function s0028WindowTargets(scene: AnatomyScene): WindowTarget[] {
       long: normalize(sub(SPLEEN, LEFT_KIDNEY.center)),
       maxAngle: 0.7,
     },
+    // Aorta sagital (decisión 411): eje largo de la aorta sobre las vértebras, con el origen del tronco celíaco y la mesentérica
+    // superior, que baja paralela por delante; el plano contiene el eje craneocaudal.
+    {
+      id: 'aortaSagittal',
+      phi: [1.2, 2.0],
+      // por debajo de la subxifoidea (z −46), para que las dos ventanas no se solapen en el torso
+      z: [-140, -85],
+      depthMm: 180,
+      points: [
+        [16, -16, -77],
+        [16, -11, -98],
+        [16, -7, -120],
+        [12, -8, -83],
+        [15, 5, -106],
+        [12, 19, -115],
+        [11, 24, -133],
+      ] as Vec3[],
+      pivot: [14, 0, -100] as Vec3,
+      long: [0, 0, 1] as Vec3,
+      maxAngle: 0.7,
+    },
     // Riñón en eje largo con la vena interlobar media en el plano: es la que se interroga en el Doppler renal de VExUS.
     {
       id: 'renal',

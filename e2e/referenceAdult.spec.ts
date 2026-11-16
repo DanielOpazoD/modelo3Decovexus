@@ -43,6 +43,7 @@ test('el adulto de referencia carga el mismo campo corporal para imagen y consul
     'hepatorenal',
     'portalSubcostal',
     'splenorenal',
+    'aortaSagittal',
   ]);
   for (const row of result.windows) {
     expect(row.interiorAgreement, row.id).toBe(1);

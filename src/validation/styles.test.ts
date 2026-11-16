@@ -72,16 +72,16 @@ function px(decls: string, prop: string): number {
 }
 
 describe('Carril: las tarjetas de las ventanas (decisiones 75 y 83)', () => {
-  it('los cuatro grupos y sus nueve accesos caben en el carril bajo sin reducir texto, foco ni área de pulsación', () => {
+  it('los cuatro grupos y sus diez accesos caben en el carril bajo sin reducir texto, foco ni área de pulsación', () => {
     expect(WINDOW_GROUPS).toHaveLength(4);
-    expect(WINDOW_GROUPS.reduce((n, group) => n + group.windows.length, 0)).toBe(9);
+    expect(WINDOW_GROUPS.reduce((n, group) => n + group.windows.length, 0)).toBe(10);
     expect(ownRule('.win-options')).toMatch(/grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
     const buttonHeight = px(ownRule('.win-card'), 'min-height');
     expect(buttonHeight).toBeGreaterThanOrEqual(32);
     expect(px(ownRule('.win-name'), 'font-size')).toBeGreaterThanOrEqual(12);
     expect(px(ownRule('.win-group-title'), 'font-size')).toBeGreaterThanOrEqual(12);
     // Cada grupo: título (14 px) + margen (2 px) + sus filas de botones (32 px, separadas 4); el renal tiene dos desde la
-    // esplenorrenal (decisión 408).
+    // esplenorrenal (decisión 408) y el de la VCI desde la aorta (411).
     const rowGap = px(ownRule('.win-options'), 'gap');
     const contentHeight =
       WINDOW_GROUPS.reduce((h, group) => {
@@ -93,8 +93,9 @@ describe('Carril: las tarjetas de las ventanas (decisiones 75 y 83)', () => {
     expect(contentHeight).toBeLessThanOrEqual(px(mediaRule('(max-height: 860px)', '.windows'), 'max-height'));
     expect(rule('.windows')).toMatch(/overflow-y:\s*auto/);
     expect(px(rule('.windows'), 'max-height')).toBeLessThanOrEqual(290);
-    // el 3D y el corte conservan su sitio en pantallas bajas: el carril crece solo lo de la fila renal (230 → 256)
-    expect(px(mediaRule('(max-height: 860px)', '.windows'), 'max-height')).toBeLessThanOrEqual(256);
+    // el 3D y el corte conservan su sitio en pantallas bajas: el carril crece solo lo de las filas renal y de la VCI
+    // (230 → 290), y nunca más que en pantallas altas
+    expect(px(mediaRule('(max-height: 860px)', '.windows'), 'max-height')).toBeLessThanOrEqual(290);
     expect(ownRule('.win-card:focus-visible')).toMatch(/z-index:\s*[1-9]/);
     expect(ownRule('.win-card:focus-visible')).toMatch(/position:\s*relative/);
   });
