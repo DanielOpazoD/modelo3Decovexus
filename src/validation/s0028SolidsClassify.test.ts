@@ -4,6 +4,8 @@ import { beforeAll, expect, it, vi } from 'vitest';
 import { personShader } from '../anatomy/gpu/personShader';
 import { HALF } from '../anatomy/halfFloat';
 import { Interface } from '../anatomy/interfaces';
+import { GALLBLADDER_WALL_MM, gallbladderPearSdf } from '../anatomy/organs/gallbladder';
+import { S0028_GALLBLADDER } from '../anatomy/people/s0028/gallbladder';
 import { torsoDepth } from '../anatomy/primitives';
 import { AnatomyQuery } from '../anatomy/query';
 import { S0028_RENAL_INTERIOR as R } from '../anatomy/s0028RenalInteriorData';
@@ -241,11 +243,13 @@ it('una pared estimada no disputa un órgano medido (decisión 376): en las celd
   expect(estimatedWall).toBeGreaterThan(15000);
 });
 
-it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los cinco pares del censo', () => {
+it('testigos de conflicto de la e2e GPU (r3): la CPU da U con los dos dueños del par, en los cuatro pares del censo', () => {
   // Eran nueve hasta la decisión 373 (el intestino deja de pisar la banda alisada), ocho hasta la 377, que recorta el hígado y el
-  // bazo contra la pared, y seis hasta la 387: el riñón derecho alargado se aplana contra el intestino y deja de pisarlo.
-  expect(conflicts.pairs).toHaveLength(5);
-  for (const gone of ['bowel+wall', 'liver+wall', 'spleen+wall', 'bowel+kidney_right']) expect(conflicts.pairs).not.toContain(gone);
+  // bazo contra la pared, seis hasta la 387 (el riñón derecho alargado se aplana contra el intestino y deja de pisarlo) y cinco
+  // hasta la 413: la vesícula en ayunas es su pera, dentro de ella el intestino cede, y fuera ya no hay máscara contraída.
+  expect(conflicts.pairs).toHaveLength(4);
+  for (const gone of ['bowel+wall', 'liver+wall', 'spleen+wall', 'bowel+kidney_right', 'bowel+gallbladder'])
+    expect(conflicts.pairs).not.toContain(gone);
   for (const [x, y, z, k] of conflicts.points) {
     const c = at([x, y, z]);
     expect(c.solids?.state, `${x},${y},${z}`).toBe('conflict');
@@ -790,8 +794,9 @@ it('el duodeno y el intestino delgado de s0028 llevan contenido, no líquido ane
         // Sólo donde el tubo digestivo es el único dueño y ningún vaso cruza la luz (en la banda de pared hay conflicto).
         const owner = ids(c).join('+');
         if (c.solids?.state !== 'known' || c.vesselHit || (owner !== 'stomach' && owner !== 'bowel')) continue;
-        // La vesícula de este TAC, contraída, queda pegada al duodeno: su luz sí es líquido y se dibuja con su propia regla.
-        if (s0028SourceValue(p, 'gallbladder').d < 4) continue;
+        // La vesícula queda pegada al duodeno y al colon: su luz sí es líquido y se dibuja con su propia regla (su pera en ayunas
+        // desde la decisión 413).
+        if (gallbladderPearSdf(p, S0028_GALLBLADDER) - GALLBLADDER_WALL_MM < 4) continue;
         // Dentro de la banda de pared manda la pared, también donde es estimada.
         const wall = s0028WallAt(p);
         if (wall?.kind === 'known' && wall.depthMm < wall.interfaceMm) continue;

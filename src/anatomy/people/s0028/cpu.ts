@@ -8,6 +8,7 @@ import { installS0028Assets } from './assets';
 import { S0028_CAPSULE_FAT_TISSUES, S0028_LUMBAR_BODY_RADIUS_MM } from './solidsData';
 import { createSourceQueries } from './atlas';
 import { classifyInside, classifyWall } from './classifier';
+import { S0028_GALLBLADDER } from './gallbladder';
 import { createSolidsQueries } from './solids';
 import { placeS0028Ducts, placeS0028Vessels, smoothS0028Vessels } from './vessels';
 import { createWallQueries } from './wall';
@@ -73,6 +74,7 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     curveVessels: placeS0028Vessels,
     smoothVessels: smoothS0028Vessels,
     placeDucts: (ducts) => placeS0028Ducts(ducts, source.s0028SourceValue),
+    gallbladder: S0028_GALLBLADDER,
     // Con 23 ramas propias del TAC quedan 55 tubos para las procedurales: seis por madre llegan a las once (decisión 358).
     hepaticBranchesPerParent: 6,
     lumbarBodyRadiusMm: S0028_LUMBAR_BODY_RADIUS_MM,

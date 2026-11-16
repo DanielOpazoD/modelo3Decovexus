@@ -791,8 +791,12 @@ export const TWINS: readonly TwinPair[] = [
     id: 'organo-vesicula',
     what: 'Vesícula: segmentos y unión suave con su gradiente exacto.',
     kind: 'cpu-glsl',
-    cpu: [{ file: 'src/anatomy/organs/gallbladder.ts', symbols: ['gbSegment', 'gallbladderSdf'] }],
-    gpu: [{ file: 'src/anatomy/organs/gallbladder.ts', symbols: ['gbSegment', 'gallbladderSdf'], templates: ['GALLBLADDER_GLSL'] }],
+    cpu: [{ file: 'src/anatomy/organs/gallbladder.ts', symbols: ['gbSegment', 'gallbladderSdf', 'gallbladderPearSdf'] }],
+    gpu: [
+      { file: 'src/anatomy/organs/gallbladder.ts', symbols: ['gbSegment', 'gallbladderSdf'], templates: ['GALLBLADDER_GLSL'] },
+      // La pera en ayunas de s0028 (decisión 413): la misma cadena sin el canal del atlas.
+      { file: 'src/anatomy/gpu/s0028Solids.glsl.ts', symbols: ['s28GbPear'], templates: ['S0028_SOLIDS_GLSL'] },
+    ],
     evidence: [
       { kind: 'gpu', file: 'e2e/gallbladderGradient.spec.ts', title: 'pared vesicular: gradiente de la unión suave CPU/GPU' },
       E.equivalence,

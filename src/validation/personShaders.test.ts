@@ -15,6 +15,8 @@ import renalRevision from './fixtures/renal-shaders-339.json';
 import renalInterior from './fixtures/s0028-renal-interior-shaders.json';
 import tubeCapacity from './fixtures/tube-capacity-402-shaders.json';
 import heartBeat from './fixtures/heart-beat-410-shaders.json';
+import gallbladder from './fixtures/gallbladder-413-shaders.json';
+import { gallbladderBefore413 } from '../../tools/build/gallbladderBefore413';
 import { heartBefore410 } from '../../tools/build/heartBefore410';
 import { layoutBefore402 } from '../../tools/build/layoutBefore402';
 import { loadShaderGraph } from './support/shaderGraph';
@@ -113,13 +115,47 @@ it('conserva los programas de main salvo G334, la anatomía/A0 339 y el interior
       );
       writeFileSync(join(root, 'src/validation/fixtures/heart-beat-410-shaders.json'), JSON.stringify(revision, null, 2) + '\n');
     }
-    expect(result[mode]).toEqual({ ...before410, ...heartBeat[mode] });
+    const before413: Record<string, { default: string; s0028: string }> = { ...before410, ...heartBeat[mode] };
+    // Mantenimiento de la revisión 413 (vesícula en ayunas de s0028): `VEXUS_UPDATE_GALLBLADDER_SHADERS=1` la reescribe con los
+    // programas que difieren de los de antes; la prueba de abajo comprueba que la diferencia es solo la de la vesícula de s0028.
+    if (process.env.VEXUS_UPDATE_GALLBLADDER_SHADERS) {
+      const revision = gallbladder as Record<string, Record<string, { default: string; s0028: string }>>;
+      revision[mode] = Object.fromEntries(
+        Object.entries(result[mode]).filter(
+          ([name, value]) => value.default !== before413[name].default || value.s0028 !== before413[name].s0028,
+        ),
+      );
+      writeFileSync(join(root, 'src/validation/fixtures/gallbladder-413-shaders.json'), JSON.stringify(revision, null, 2) + '\n');
+    }
+    // La vesícula de la decisión 413 solo cambia programas de s0028: sus default son los de antes.
+    for (const [name, value] of Object.entries(gallbladder[mode] as Record<string, { default: string }>))
+      expect(value.default, name).toBe(before413[name].default);
+    expect(result[mode]).toEqual({ ...before413, ...gallbladder[mode] });
   }
+});
+
+it('la vesícula en ayunas de la decisión 413 solo cambia el dueño y la luz vesicular de s0028', () => {
+  // Con la vesícula de antes, los 40 programas (default y s0028) son exactamente los de la revisión anterior.
+  const source = programs(false, gallbladderBefore413).source;
+  const previous = Object.fromEntries(
+    baseline.source.programs.map((p) => [
+      p.name,
+      p.name === 'FRAG_SCANCONVERT' ? scanConvertRevision.source : { default: p.sha256, s0028: p.s0028Sha256 },
+    ]),
+  );
+  expect(source).toEqual({
+    ...previous,
+    ...renalRevision.source,
+    ...renalInterior.source,
+    ...tubeCapacity.source,
+    ...heartBeat.source,
+  });
+  expect(Object.keys(gallbladder.source).length).toBeGreaterThan(0);
 });
 
 it('el latido de la decisión 410 solo cambia las cavidades del corazón y la ranura de uMotion', () => {
   // Con el corazón de antes, los 40 programas (default y s0028) son exactamente los de la revisión anterior.
-  const source = programs(false, heartBefore410).source;
+  const source = programs(false, (text) => heartBefore410(gallbladderBefore413(text))).source;
   const previous = Object.fromEntries(
     baseline.source.programs.map((p) => [
       p.name,
@@ -132,7 +168,7 @@ it('el latido de la decisión 410 solo cambia las cavidades del corazón y la ra
 
 it('la capacidad de tubos de la decisión 402 solo mueve constantes de disposición de la textura de escena', () => {
   // Con las constantes de antes, los 40 programas (default y s0028) son exactamente los de la revisión anterior.
-  const source = programs(false, (text) => layoutBefore402(heartBefore410(text))).source;
+  const source = programs(false, (text) => layoutBefore402(heartBefore410(gallbladderBefore413(text)))).source;
   const previous = Object.fromEntries(
     baseline.source.programs.map((p) => [
       p.name,

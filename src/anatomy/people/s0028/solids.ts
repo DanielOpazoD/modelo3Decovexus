@@ -1,10 +1,12 @@
 import { smoothstep, type Vec3 } from '../../../core/vec3';
 import { HALF } from '../../halfFloat';
+import { GALLBLADDER_WALL_MM, gallbladderPearSdf } from '../../organs/gallbladder';
 import type { PersonAssets } from '../../personAssets';
 import { S0028_RENAL_INTERIOR as R } from '../../s0028RenalInteriorData';
 import { S0028_RENAL_INTERIOR_RUNS } from '../../s0028RenalInteriorRuns';
 import { sourceDistance, sourceDistanceReader, sourceLabel } from '../../sourceVolume';
 import { S0028_BUNDLE as B } from './descriptor';
+import { S0028_GALLBLADDER } from './gallbladder';
 import { s0028FatPages, s0028RenalPages, s0028WideFatPages } from './solidsData';
 import type { S0028WallSample } from './wall';
 /** O máscara fuente automática; D derivación reproducible; E hipótesis acotada; U desconocido (decisión 321). */
@@ -93,7 +95,8 @@ export function createSolidsQueries(assets: PersonAssets) {
     // Borde D de la máscara. El dueño sigue siendo U: su interior lo rotula `s0028RenalInterior` (E) y sin rótulo es U.
     ['kidneyRight', 'kidney_right', 'U'],
     ['kidneyLeft', 'kidney_left', 'U'],
-    ['gallbladder', 'gallbladder', 'O'],
+    // Su dueño es la pera en ayunas, una hipótesis E (decisión 413); el campo queda en la tabla por el orden de los índices.
+    ['gallbladder', 'gallbladder', 'E'],
     ['bladder', 'bladder', 'O'],
     ['digestiveTract', ['stomach', 'bowel', 'bowel', 'bowel'], 'O'],
     ['posteriorMuscle', ['iliopsoas_left', 'iliopsoas_right', 'autochthon_left', 'autochthon_right'], 'O'],
@@ -108,6 +111,13 @@ export function createSolidsQueries(assets: PersonAssets) {
     ['heart', 'heart', 'E'],
   ];
   const FIELDS = TABLE.map(([name]) => B.fields.find((f) => f.name === name)!);
+  /**
+   * Vesícula en ayunas (decisión 413): su dueño es la pera de `S0028_GALLBLADDER` hasta la cara externa de su pared, no la máscara
+   * contraída del TAC (campo 5), y dentro de ella ceden las vísceras blandas que la rodean (hígado, bazo, páncreas, vejiga y tubo
+   * digestivo, campos 0, 1, 2, 6 y 7): la fosa se adapta a la vesícula llena, como el ángulo hepático del colon bajo su fondo.
+   */
+  const GALLBLADDER_FIELD = 5,
+    YIELDS_TO_GALLBLADDER: ReadonlySet<number> = new Set([0, 1, 2, 6, 7]);
   // Vasos fuente (P5): no son dueños P3, pero la grasa compatible D tampoco puede reclamar su interior. Los nodos de grasa
   // nunca caen en un campo P1 (rejillas alineadas); la lámina subvóxel de los vasos sí (revisión r2: 9/800.000 muestras).
   const VESSELS = ['aorta', 'inferior_vena_cava', 'portal_vein_and_splenic_vein'].map((name) => B.fields.find((f) => f.name === name)!);
@@ -336,11 +346,13 @@ export function createSolidsQueries(assets: PersonAssets) {
     if (!abdominalAtlas || !thoracicAtlas) throw new Error('Clasificador P3 sin s0028');
     const owners: S0028Owner[] = [];
     let kidneyMm = 16;
+    const gallbladder = gallbladderPearSdf(p, S0028_GALLBLADDER) - GALLBLADDER_WALL_MM;
     for (let i = 0; i < TABLE.length; i++) {
+      if (gallbladder < 0 && YIELDS_TO_GALLBLADDER.has(i)) continue;
       const f = FIELDS[i],
         data = f.asset === 'abdominal' ? abdominalAtlas : thoracicAtlas,
         dims = B[f.asset].textureDimensions,
-        d = sourceDistance(data, p, f, dims);
+        d = i === GALLBLADDER_FIELD ? gallbladder : sourceDistance(data, p, f, dims);
       if (i === 3 || i === 4) kidneyMm = Math.min(kidneyMm, d);
       if (!(d < 0)) continue;
       const [, id, certainty] = TABLE[i];
