@@ -12305,3 +12305,14 @@ el RAF arma la consulta: con la pestaña oculta no se dibuja.
 **Consecuencias.** M4 con carga ajena, tres rondas alternadas, cinco ventanas: de 26–33 a 32–40 fps (+17 % de media; +23 % renal,
 porta y hepatorrenal). La imagen no cambia.
 **Verificación.** `gpuFramePacer.test.ts` (sin contar esperas ni liberar vallas; la cesión intacta); e2e de navegación en la CI.
+
+## 406. s0028 usa también en la GPU nativa las pasadas por etapas
+
+**Contexto.** En Metal, la ecografía de s0028 tardaba 15–19 ms de GPU por cuadro: B en un solo programa con tres copias del
+clasificador (12 ms) y A0 de una marcha (5). Las pasadas por etapas de las decisiones 190–192, hechas para SwiftShader y las que
+prueba la CI, tardan en Metal 3,6 y 1,4 ms. La nativa conservaba los programas originales para no cambiar ni el último bit.
+**Decisión.** Para s0028, B y A0 van por etapas en cualquier GPU; la otra persona y la escena sin atlas no cambian.
+**Consecuencias.** Cuadro GPU de 5–7 ms; 53–59 fps en seis ventanas con la sonda quieta (antes ~30), con carga ajena. La envolvente
+difiere en puntos aislados de moteado y un tramo de interfaz (redondeo entre implementaciones; L2 relativa 2,6–4 % frente a
+0,03–0,6 % de dos cargas iguales); las láminas no cambian. El alumno ve los programas que valida la CI.
+**Verificación.** `renalNetwork.test.ts` (selección por persona y GPU), láminas subxifoidea e intercostal, fps alternados.

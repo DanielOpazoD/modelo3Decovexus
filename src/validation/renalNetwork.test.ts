@@ -93,7 +93,7 @@ describe('red renal continua dentro del parénquima (339)', () => {
 });
 
 // Fixtures de identidad para seleccionar programas: no son una instalación anatómica s0028.
-it('limita A0 nativo y el seno nuevo a current; conserva selección SwiftShader y s0028', () => {
+it('limita A0 nativo con precálculo y el seno nuevo a current; s0028 va por etapas también en la GPU nativa (decisión 406)', () => {
   for (const identity of ['current', 's0028'] as const)
     for (const backend of ['Metal', 'SwiftShader']) {
       const scoped = new AnatomyScene(NORMAL_ADULT, undefined, {
@@ -112,8 +112,8 @@ it('limita A0 nativo y el seno nuevo a current; conserva selección SwiftShader 
           : (extension(name) as unknown)) as typeof gl.getExtension;
       gl.getParameter = (key: number) => (key === 999999 ? backend : (parameter(key) as unknown));
       const renderer = new UltrasoundRenderer(rec.canvas, scoped, CONVEX_C35_PROFILE);
-      expect(renderer.transmissionHitsPipeline).toBe(identity === 'current' || backend === 'SwiftShader' ? 'staged-atlas' : 'line');
-      expect(!!Reflect.get(renderer, 'rawStages')).toBe(backend === 'SwiftShader');
+      expect(renderer.transmissionHitsPipeline).toBe('staged-atlas');
+      expect(!!Reflect.get(renderer, 'rawStages')).toBe(backend === 'SwiftShader' || identity === 's0028');
       renderer.dispose();
       expect(rec.misuse).toEqual([]);
     }

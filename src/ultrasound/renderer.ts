@@ -549,7 +549,10 @@ export class UltrasoundRenderer {
     this.gl = gl;
     const debug = gl.getExtension('WEBGL_debug_renderer_info');
     const renderer = debug ? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)) : '';
-    const stageRaw = currentScene.hasAbdominalAtlas && (!renderer || /SwiftShader/i.test(renderer));
+    // B y A0 por etapas (decisiones 190–192): en SwiftShader, para caber en sus límites; en s0028 también en la GPU nativa (decisión
+    // 406), donde el programa único de B, con tres copias del clasificador, tardaba 12 ms y por etapas 3,6 (A0, de 5 a 1,4).
+    const stageRaw =
+      currentScene.hasAbdominalAtlas && (!renderer || /SwiftShader/i.test(renderer) || currentScene.identity.person === 's0028');
     // A0 precalcula centros; Metal conserva bisección/reflejo inline y B nativo.
     this.transmissionHitsPipeline =
       currentScene.hasAbdominalAtlas && (stageRaw || currentScene.identity.person === 'current') ? 'staged-atlas' : 'line';
@@ -568,7 +571,8 @@ export class UltrasoundRenderer {
             a0Finish: stageRaw ? FRAG_TRANS_HITS_FINISH : FRAG_TRANS_HITS_CACHED,
           }
         : { transmissionHits: FRAG_TRANS_HITS };
-    // Keep native/legacy B unchanged. Staging is selected by the actual renderer, never by a test URL.
+    // Keep native/legacy B unchanged for the other persons. Staging is selected by the actual renderer or the person (s0028,
+    // decisión 406), never by a test URL.
     const rawFragments: Record<string, string> = stageRaw
       ? {
           rawElevation: FRAG_RAWFIELD_ELEVATION,
