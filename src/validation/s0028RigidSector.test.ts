@@ -31,6 +31,7 @@ import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
  * acompañaba a la pared (12,9 mm con la carta anterior), pero quedaba entera por encima de la profundidad comprimida D y esta
  * prueba, que mira desde D, no la veía; con la pared 1 mm más fina asoman 0,4 mm por debajo. Desde la decisión 383 también la
  * hepatorrenal (11,1 mm): su pose nueva apoya entre costillas y, con el diafragma 10 mm más bajo, una queda bajo el borde de la cara.
+ * Desde la decisión 408, la esplenorrenal (5,1 mm): apoya entre costillas en la línea axilar posterior izquierda.
  */
 const RIBS_UNDER_FACE = new Set([
   'subcostal',
@@ -41,6 +42,7 @@ const RIBS_UNDER_FACE = new Set([
   'portalSubcostal',
   'flank',
   'hepatorenal',
+  'splenorenal',
 ]);
 const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, sample: PhysiologySample;
@@ -100,7 +102,7 @@ it('compresión rígida s0028: vértebras y sacro quietos en todo el sector de l
   // Con dientes: la columna está en el sector de ocho ventanas; en el flanco, en su borde profundo, entre los dos riñones. El
   // tronco portal, intercostal lateral, no la alcanza; tampoco la intercostal desde la decisión 383, que mira a la unión de la
   // suprahepática con la cava y deja la columna fuera del sector (0 muestras).
-  for (const id of ['subxiphoid', 'epigastric', 'subcostal', 'flank', 'portal', 'renal', 'hepatorenal', 'portalSubcostal'])
+  for (const id of ['subxiphoid', 'epigastric', 'subcostal', 'flank', 'portal', 'renal', 'hepatorenal', 'portalSubcostal', 'splenorenal'])
     for (const D of [0, 10, 20]) expect(counts[`${id} D${D}`], `${id} D${D}`).toBeGreaterThan(id === 'flank' ? 50 : 10);
 });
 

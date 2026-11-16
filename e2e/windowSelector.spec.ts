@@ -13,7 +13,7 @@ test('el selector ofrece nueve accesos en cuatro territorios y Enter abre la por
     ['Porta', ['Intrahepática', 'Subcostal']],
     ['Suprahepáticas', ['Intercostal', 'Subcostal']],
     ['VCI', ['Eje corto', 'Eje largo']],
-    ['Renal', ['Focalizada', 'Hepatorrenal']],
+    ['Renal', ['Focalizada', 'Hepatorrenal', 'Esplenorrenal']],
   ] as const;
   await expect(menu.locator('.win-group')).toHaveCount(4);
   await expect(menu.locator('.win-card')).toHaveCount(9);

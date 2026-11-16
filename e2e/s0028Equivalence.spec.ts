@@ -31,6 +31,7 @@ for (const id of CASES)
       'renal',
       'hepatorenal',
       'portalSubcostal',
+      'splenorenal',
     ]);
     for (const r of report) {
       const tag = `${id}/${r.id}: ${JSON.stringify(r)}`;

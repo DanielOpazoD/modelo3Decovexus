@@ -42,12 +42,13 @@ test('el adulto de referencia carga el mismo campo corporal para imagen y consul
     'renal',
     'hepatorenal',
     'portalSubcostal',
+    'splenorenal',
   ]);
   for (const row of result.windows) {
     expect(row.interiorAgreement, row.id).toBe(1);
-    // Las ventanas vasculares mantienen su cobertura de sangre. La vista
-    // parenquimatosa se valida con corteza/hígado en hepatorenal.spec.ts, sin inventar vasos.
-    if (row.id !== 'hepatorenal') expect(row.bloodCells, row.id).toBeGreaterThan(0);
+    // Las ventanas vasculares mantienen su cobertura de sangre. Las vistas parenquimatosas (hepatorrenal, que se valida con
+    // corteza/hígado en hepatorenal.spec.ts, y esplenorrenal, bazo y riñón) no tienen por qué cortar vasos: sin inventarlos.
+    if (row.id !== 'hepatorenal' && row.id !== 'splenorenal') expect(row.bloodCells, row.id).toBeGreaterThan(0);
     expect(row.vesselAgreement, row.id).toBe(1);
   }
   expect(result.windows.find((r) => r.id === 'subxiphoid')!.bloodCells).toBeGreaterThan(50);

@@ -37,6 +37,7 @@ for (const reference of [false, true])
         'renal',
         'hepatorenal',
         'portalSubcostal',
+        'splenorenal',
       ]);
       for (const r of report) {
         const tag = `${id}/${r.id}: ${JSON.stringify(r)}`;
