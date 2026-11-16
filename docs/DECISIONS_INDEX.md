@@ -409,3 +409,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [403](DECISIONS.md#L12277) | El refinamiento PW se dirige a la sangre del vaso pequeño | vigente |
 | [404](DECISIONS.md#L12287) | Al colocar o mover la puerta, la población PW se releva en fundido | vigente |
 | [405](DECISIONS.md#L12297) | El bucle adquiere en cuanto termina la GPU, sin esperar otra RAF | vigente |
+| [406](DECISIONS.md#L12309) | s0028 usa también en la GPU nativa las pasadas por etapas | vigente |
