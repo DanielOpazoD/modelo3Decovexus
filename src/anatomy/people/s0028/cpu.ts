@@ -15,6 +15,7 @@ import { GASTRIC_WALL } from '../../organs/abdomen';
 import { HEART_ATLAS_SHIFT, HEART_AXES, type HeartShape } from '../../organs/heart';
 import { orthonormalBasis } from '../../primitives';
 import { Tissue } from '../../tissues';
+import { placeS0028RenalNetwork } from './renalNetwork';
 
 /** Riñones de s0028 (0 derecho, 1 izquierdo), medidos en sus máscaras: centroide, eje principal y dirección de la muesca hiliar. */
 /**
@@ -79,6 +80,7 @@ export function createS0028Cpu(assets: PersonAssets): InstalledCpuPerson {
     // Su fila de interlobares va hacia el borde convexo (−v de su marco renal), que en su ventana renal mira a la sonda: con el giro
     // de la otra persona (−0,4π) iban de delante atrás y el alumno las tomaba a 57° del haz (decisión 395).
     interlobarTurn: S0028_INTERLOBAR_TURN,
+    renalNetwork: placeS0028RenalNetwork,
     heart: S0028_HEART,
     // Marco de cada riñón, de su máscara: centro, eje largo (componente principal) y dirección del hilio (su muesca). Sitúa los
     // vasos del hilio y las interlobares en el riñón de esta persona; el parénquima sigue saliendo del rótulo del TAC.

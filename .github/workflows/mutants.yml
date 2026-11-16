@@ -28,6 +28,7 @@ on:
       - 'src/validation/s0028SolidsClassify.test.ts'
       - 'src/validation/s0028Capsule.test.ts'
       - 'src/validation/s0028Windows.test.ts'
+      - 'src/validation/s0028RenalNetwork.test.ts'
       - 'src/validation/s0028Vessels.test.ts'
       - 'src/validation/s0028SolidsPackage.test.ts'
       - 'src/validation/s0028TissueLook.test.ts'

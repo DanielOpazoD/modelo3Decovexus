@@ -48,7 +48,8 @@ import { DIAPHRAGM_AXIS_CORE, DIAPHRAGM_JOIN_MM, RIB_ANTERIOR_END, SPINE_SHAPE, 
 import { MAX_RIBS, SCENE_UNIFORMS_GLSL } from './sceneUniforms';
 
 export const MAX_TUBES = SCENE_TUBE_CAPACITY;
-export const MAX_NODES = 640;
+/** 800 desde la red interlobar de s0028 (decisión 402): s0028 usaba 603 de 640. */
+export const MAX_NODES = 800;
 /** Texels de la cabecera de cada tubo (H0–H4; H4, la forma orgánica, desde la decisión 90). */
 export const TUBE_HEADER_TEXELS = 5;
 export const NODE_BASE = MAX_TUBES * TUBE_HEADER_TEXELS;

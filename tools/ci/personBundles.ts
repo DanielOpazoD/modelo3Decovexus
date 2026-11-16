@@ -27,7 +27,8 @@ export interface PersonBundleGraph {
 // Decisión 357: y 4 KiB para el árbol portal de la persona (18 ramas medidas en su TAC: datos, no código); lo pasaba en 1,3 KiB.
 // Decisión 364: +16 KiB sobre los 45 de la 357. s0028 ya es la única persona con trabajo nuevo (REGLAS, rumbo 1) y cada mejora
 // de su imagen añade GLSL propio; con 251 B de margen no cabía la siguiente.
-export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 61 * KB;
+// Decisión 402: +8 KiB para su red interlobar (16 pares de arteria y vena: datos generados, no código); la pasaba en 5,9 KiB.
+export const PERSON_JS_CEILING = TOTAL_JS_BUDGET + 69 * KB;
 export const DEFAULT_JS_BUDGET = TOTAL_JS_BUDGET;
 export const S0028_JS_BUDGET = PERSON_JS_CEILING;
 

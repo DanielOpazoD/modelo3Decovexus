@@ -42,6 +42,11 @@ describe('caché espacial: IQ idéntica bit a bit a la ruta por pulso', () => {
           expect(b).toEqual(d);
           expect(cached.lastComposition).toEqual(reference.lastComposition);
         }
-        expect(cached.particleCount).toBe(renal ? 1280 : 320);
+        // Refinamiento dirigido (decisión 403): en la renal solo la sangre de la arteria pequeña lleva cuatro veces más dispersores.
+        if (renal) {
+          expect(cached.particleCount).toBeGreaterThan(320);
+          expect(cached.refinedVessels.size).toBeGreaterThan(0);
+          expect(cached.extrasInRefinedBlood).toBe(true);
+        } else expect(cached.particleCount).toBe(320);
       });
 });

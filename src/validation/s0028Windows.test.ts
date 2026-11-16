@@ -162,7 +162,9 @@ it('la ventana renal ofrece una vena interlobar a lo largo del haz, y sus interl
   // la S pequeña de la renal monofásica, cerca del suelo, salía bifásica. Medido el 15-11-2026: cos 0,93 con 1,3 mm a la pared.
   const frame = S0028_KIDNEY_FRAMES[0];
   for (const id of ['interlobarVein1', 'interlobarVein2', 'interlobarVein3', 'interlobarArtery2'] as const) {
-    const nodes = person.scene.vessels.find((v) => v.id === id && v.flowFactor === undefined)!.tube.nodes;
+    // el tramo interlobar: desde la decisión 402 la vena empieza en su arcuata y la arteria acaba en ella (dos nodos cada una)
+    const all = person.scene.vessels.find((v) => v.id === id && v.flowFactor === undefined)!.tube.nodes;
+    const nodes = id.includes('Vein') ? all.slice(-3) : all.slice(0, 3);
     const d = nodes[0].p.map((x, i) => x - nodes.at(-1)!.p[i]);
     const toBorder = -(d[0] * frame.hilum[0] + d[1] * frame.hilum[1] + d[2] * frame.hilum[2]) / Math.hypot(...d);
     // la vena va del borde al seno (sentido del flujo); la arteria al revés: lo que cuenta es la dirección

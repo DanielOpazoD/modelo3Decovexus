@@ -62,10 +62,11 @@ export const s0028Cpu: MutantManifest = {
     {
       name: 'interlobares-de-delante-atras',
       origin: 'decisión 395',
-      breaks: 'Las interlobares de s0028 vuelven al giro de la otra persona: cruzan el plano renal y la puerta queda a 57° del vaso.',
+      breaks:
+        'Las interlobares de s0028 vuelven al giro de la otra persona: cruzan el plano renal y la puerta queda a 57° del vaso; desde la decisión 402, la red de datos deja de coincidir con el árbol de la persona.',
       from: 'export const S0028_INTERLOBAR_TURN = 0;',
       to: 'export const S0028_INTERLOBAR_TURN = -0.4 * Math.PI;',
-      tests: ['src/validation/s0028Windows.test.ts'],
+      tests: ['src/validation/s0028Windows.test.ts', 'src/validation/s0028RenalNetwork.test.ts'],
     },
   ],
 };

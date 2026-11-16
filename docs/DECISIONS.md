@@ -12262,3 +12262,24 @@ en la página de revisión y en la aplicación local, con el coste medido: 30–
 s0028; la otra persona queda en `?abdomen=atlas` y la escena procedural en `?abdomen=legacy` hasta retirarlas.
 **Consecuencias.** El alumno ve s0028. Las PR siguientes retiran la otra persona del producto y portan o retiran sus pruebas (399).
 **Verificación.** `s0028Bundle.test.ts`; la e2e completa en la CI de esta PR, con las pruebas de la otra persona fijadas a `atlas`.
+
+## 402. La red interlobar de s0028: arteria junto a su vena y vasos en todo el riñón
+
+**Contexto.** El responsable (15-11-2026): arteria y vena renales van juntas (la PW da trazado arterial y venoso) y no en un solo plano.
+Había tres pares en la fila de la ventana (a ±4° de abanico, ningún vaso) y la puerta del alumno solo con vena (arteria 0,3 %).
+**Decisión.** 3 madres y 13 pares nuevos por las columnas de corteza del TAC, alrededor del seno y hacia los polos, con arcuata; la arteria
+pegada a su vena (pared común), sobre todo en elevación; la vena madre a 1,5 mm de radio (antes 2,1), mismo trayecto y `refRadius`.
+Capacidad 160 tubos y 800 nodos (las hepáticas siguen con 128); techo JS de s0028 +8 KiB. [EXTRAPOLACIÓN PROPIA: la disposición.]
+**Consecuencias.** Vasos al abanicar −8°…+12° y deslizar ±8°; puerta del alumno con arteria 7–9 % y vena 60 %. Los vasos finos apenas
+colorean (`color-emulated-estimator`). La PW renal refinaba ×4 (403).
+**Verificación.** `s0028RenalNetwork.test.ts`, `personShaders` (solo constantes de disposición), lámina PW, trampas de s0028.
+
+## 403. El refinamiento PW se dirige a la sangre del vaso pequeño
+
+**Contexto.** El refinamiento de la decisión 128 cuadruplicaba toda la caja si un vaso pequeño pesaba ≥ 2 %. Con la arteria junto a la
+vena (402), la PW renal de s0028 pasó de 320 a 1280 dispersores y de 54 a 12 fps en la aplicación.
+**Decisión.** Misma regla de disparo; de las 3·N siembras extra quedan solo las que caen en la sangre de esos vasos, que suena con
+amplitud ½; tejido y vasos grandes conservan N con amplitud 1. La potencia esperada de cada parte no cambia. Un extra que sale de
+esa sangre se resiembra en ella (o queda mudo); la composición pondera por la amplitud al cuadrado.
+**Consecuencias.** Renal de s0028: 437 dispersores, ~35 fps en PW (máquina cargada); igual muestreo de la arteria.
+**Verificación.** `pwSamplingDensity` (solo extras en esa sangre, composición conservada), `pwStationaryWeight` (caché bit a bit).
