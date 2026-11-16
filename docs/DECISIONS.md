@@ -12293,3 +12293,15 @@ población saliente desaparecía de un pulso al siguiente y su eco de tejido (40
 fundido de coseno de 64 pulsos (≈ 25 ms a 2,6 kHz), dentro de los 0,1 s que la captura ya descarta tras una frontera del receptor.
 **Consecuencias.** Sin banda: +4 dB como máximo; queda un brillo breve junto a la línea de base. El coste del relevo es despreciable.
 **Verificación.** `pwGateJump.test.ts` (falla sin el relevo: +34 dB), `pwStationaryWeight` (caché bit a bit), lámina de la porta.
+
+## 405. El bucle adquiere en cuanto termina la GPU, sin esperar otra RAF
+
+**Contexto.** s0028 iba a ~30 fps en todas las ventanas con la GPU ocupada solo 12–17 ms por cuadro y el hilo principal ocioso
+(90 %). Con un cuadro en vuelo (342), si la valla terminaba justo después del refresco, el siguiente esperaba una RAF entera.
+**Opciones.** Dos cuadros en vuelo (rompe el contrato de la 342); abaratar la GPU (en curso, más lento); o lo decidido.
+**Decisión.** Si el RAF encuentra la GPU ocupada, se consulta la valla cada ~1 ms hasta 18 ms (`GpuFramePacer.settled`, que no
+cuenta esperas) y se adquiere en cuanto termina. Sigue un solo cuadro en vuelo; la cesión tras dos RAF de espera no cambia. Solo
+el RAF arma la consulta: con la pestaña oculta no se dibuja.
+**Consecuencias.** M4 con carga ajena, tres rondas alternadas, cinco ventanas: de 26–33 a 32–40 fps (+17 % de media; +23 % renal,
+porta y hepatorrenal). La imagen no cambia.
+**Verificación.** `gpuFramePacer.test.ts` (sin contar esperas ni liberar vallas; la cesión intacta); e2e de navegación en la CI.

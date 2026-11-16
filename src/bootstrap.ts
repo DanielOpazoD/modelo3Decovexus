@@ -7,7 +7,7 @@ import { compareTissueGrids } from './app/equivalenceCheck';
 import { ErrorBudget } from './app/errorBudget';
 import { errorLog, errorMessage } from './app/errorLog';
 import { FirstGpuFrame } from './app/firstGpuFrame';
-import { GpuFramePacer } from './app/gpuFramePacer';
+import { EARLY_CHECK_MS, GpuFramePacer } from './app/gpuFramePacer';
 import { gpuPageTurns as gpuTurns } from './app/gpuPageTurns';
 import { ProbeAnimator } from './app/probeAnimation';
 import { SimulationSession } from './app/session';
@@ -653,7 +653,78 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       return work;
     }
 
+    /**
+     * Adquisición de un cuadro (con la GPU libre): avanza, dibuja y envía la ecografía y el 3D, y deja su valla en vuelo. La
+     * llaman el RAF y la comprobación temprana de la valla (decisión 405).
+     */
+    function acquire(now: number): void {
+      // Acumular el tiempo entre cuadros adquiridos, con el mismo techo de 0,25 s.
+      const dt = Math.min(0.25, (now - last) / 1000);
+      last = now;
+      // undefined conserva el drenaje conservador si frame lanza tras enviar trabajo parcial.
+      let gpuWork: boolean | undefined;
+      try {
+        gpuWork = frame(now, dt);
+      } finally {
+        // Drain even a partially submitted frame before another page prepares
+        // contexts. No lease is released merely because JS returned or threw.
+        try {
+          if (gpuWork !== false) {
+            const contexts = [sim().renderer.gl];
+            if (nav && (gpuWork === undefined || nav.renderRevision !== submittedNavRevision)) contexts.push(nav.gpuContext);
+            gpuFramePacer.submit(...contexts);
+            submittedNavRevision = nav?.renderRevision ?? 0;
+          }
+        } finally {
+          // submit puede lanzar después de crear una valla válida: el turno
+          // debe registrarse también para poder liberarlo cuando termine.
+          gpuTurns.submitted();
+          if (gpuWork === false) gpuTurns.completed();
+        }
+      }
+      loopFrames++;
+      if (loopFrames === 1) markStartup('frame:first');
+      if (loopFrames === 2) markStartup('frame:second');
+      if (loopDegraded) {
+        loopDegraded = false; // se recuperó: el aviso de error persistente ya no aplica
+        if (!gpu.lost) banner.hide();
+      }
+    }
+
+    /**
+     * Comprobación temprana de la valla (decisión 405): si el RAF encontró la GPU ocupada, se mira cada ~1 ms hasta el refresco
+     * siguiente y, en cuanto termina, se adquiere sin esperar otra RAF. Sigue habiendo un solo cuadro en vuelo (decisión 342); solo
+     * se aprovecha el resto del intervalo. La arma únicamente el RAF: con la pestaña oculta no dibuja nada.
+     */
+    let earlyCheck = 0;
+    let earlyFrom = 0;
+    function armEarlyCheck(): void {
+      if (earlyCheck) return;
+      earlyFrom = performance.now();
+      earlyCheck = window.setTimeout(checkEarly, 1);
+    }
+    function checkEarly(): void {
+      earlyCheck = 0;
+      try {
+        if (!gpuFramePacer.inFlight) return;
+        if (!gpuFramePacer.settled()) {
+          if (performance.now() - earlyFrom < EARLY_CHECK_MS) earlyCheck = window.setTimeout(checkEarly, 1);
+          return;
+        }
+        const gpuReady = gpuFramePacer.ready();
+        if (!gpuFramePacer.inFlight) gpuTurns.completed();
+        if (gpuReady && gpuTurns.ready) acquire(performance.now());
+      } catch (e) {
+        if (!gpuFramePacer.inFlight) gpuTurns.dispose();
+        errorLog.report(e instanceof NonFiniteStateError ? 'fisiología' : 'bucle', e);
+      }
+    }
+
     function loop(now: number): void {
+      if (earlyCheck) {
+        clearTimeout(earlyCheck);
+        earlyCheck = 0;
+      }
       try {
         firstGpuFrame.poll();
         const gpuReady = gpuFramePacer.ready();
@@ -662,40 +733,11 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
           // El Worker, los rótulos y las franjas 2D siguen presentando la instantánea
           // disponible. No encolar ecografía, 3D ni la conversión GPU del modo M.
           if (!panel.venousComparisonOpen) drawAcquiredViews(sim(), now, false);
+          if (gpuFramePacer.inFlight) armEarlyCheck();
           requestAnimationFrame(loop);
           return;
         }
-        // Acumular el tiempo entre cuadros adquiridos, con el mismo techo de 0,25 s.
-        const dt = Math.min(0.25, (now - last) / 1000);
-        last = now;
-        // undefined conserva el drenaje conservador si frame lanza tras enviar trabajo parcial.
-        let gpuWork: boolean | undefined;
-        try {
-          gpuWork = frame(now, dt);
-        } finally {
-          // Drain even a partially submitted frame before another page prepares
-          // contexts. No lease is released merely because JS returned or threw.
-          try {
-            if (gpuWork !== false) {
-              const contexts = [sim().renderer.gl];
-              if (nav && (gpuWork === undefined || nav.renderRevision !== submittedNavRevision)) contexts.push(nav.gpuContext);
-              gpuFramePacer.submit(...contexts);
-              submittedNavRevision = nav?.renderRevision ?? 0;
-            }
-          } finally {
-            // submit puede lanzar después de crear una valla válida: el turno
-            // debe registrarse también para poder liberarlo cuando termine.
-            gpuTurns.submitted();
-            if (gpuWork === false) gpuTurns.completed();
-          }
-        }
-        loopFrames++;
-        if (loopFrames === 1) markStartup('frame:first');
-        if (loopFrames === 2) markStartup('frame:second');
-        if (loopDegraded) {
-          loopDegraded = false; // se recuperó: el aviso de error persistente ya no aplica
-          if (!gpu.lost) banner.hide();
-        }
+        acquire(now);
       } catch (e) {
         if (!gpuFramePacer.inFlight) gpuTurns.dispose();
         errorLog.report(e instanceof NonFiniteStateError ? 'fisiología' : 'bucle', e);

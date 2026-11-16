@@ -6,6 +6,8 @@ type PendingGpuContext = { gl: WebGL2RenderingContext; sync: WebGLSync | null };
  * (GPU por software, otra vista preparando sus recursos), el caso para el que existe la cesión.
  */
 export const YIELD_AFTER_WAITS = 2;
+/** Tope de la comprobación temprana de la valla tras un RAF (ms): poco más de un refresco a 60 Hz (decisión 405). */
+export const EARLY_CHECK_MS = 18;
 
 /** Una adquisición en vuelo por vista: la CPU no acumula cuadros por delante de la GPU. */
 export class GpuFramePacer {
@@ -61,6 +63,21 @@ export class GpuFramePacer {
     // Si la espera fue larga, ceder una RAF con la cola vacía permite que otra vista
     // prepare sus recursos antes de volver a ocupar la GPU. Sin demora fija.
     return !this.inFlight && !yieldFrame;
+  }
+
+  /**
+   * ¿Terminó ya la GPU el cuadro en vuelo? Consulta sin espera que no cuenta como espera ni libera vallas (eso lo hace `ready`).
+   * El bucle la usa entre dos RAF (decisión 405): con la ecografía de s0028 (12–17 ms de GPU) la valla llegaba justo después del
+   * refresco y el cuadro siguiente esperaba otra RAF entera, 30 fps con la GPU ociosa la mitad del tiempo.
+   */
+  settled(): boolean {
+    for (const { gl, sync } of this.#pending) {
+      if (gl.isContextLost()) continue;
+      if (!sync) return false;
+      const status = gl.clientWaitSync(sync, 0, 0);
+      if (status !== gl.ALREADY_SIGNALED && status !== gl.CONDITION_SATISFIED) return false;
+    }
+    return true;
   }
 
   submit(...contexts: WebGL2RenderingContext[]): void {

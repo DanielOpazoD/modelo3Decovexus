@@ -284,4 +284,37 @@ describe('Adquisiciones sin cola de cuadros GPU', () => {
     expect(gl.deleteSync.mock.calls).toEqual([[sync], [failedAgain], [repaired]]);
     expect(gl.flush).toHaveBeenCalledTimes(3);
   });
+
+  it('la comprobación temprana (decisión 405) mira la valla sin contar esperas ni liberarla, y un RAF de espera no cede', () => {
+    const { pacer, gl, context, sync } = fixture();
+    expect(pacer.settled()).toBe(true);
+    pacer.submit(context);
+    // el RAF encuentra la GPU ocupada una vez
+    expect(pacer.ready()).toBe(false);
+    // entre dos RAF, muchas consultas: ninguna cuenta como espera ni borra la valla
+    for (let i = 0; i < 20; i++) expect(pacer.settled()).toBe(false);
+    expect(gl.deleteSync).not.toHaveBeenCalled();
+    gl.clientWaitSync.mockReturnValue(gl.CONDITION_SATISFIED);
+    expect(pacer.settled()).toBe(true);
+    expect(pacer.inFlight).toBe(true);
+    // la adquisición temprana: con una sola espera de RAF no se cede el cuadro
+    expect(pacer.ready()).toBe(true);
+    expect(gl.deleteSync).toHaveBeenCalledExactlyOnceWith(sync);
+    // una valla que no se pudo crear no está terminada: la repara `ready` en el RAF
+    gl.fenceSync.mockReturnValue(null);
+    expect(() => pacer.submit(context)).toThrow('crear la valla');
+    expect(pacer.settled()).toBe(false);
+  });
+
+  it('con la GPU lenta (dos o más RAF de espera) la comprobación temprana no evita la cesión', () => {
+    const { pacer, gl, context } = fixture();
+    pacer.submit(context);
+    for (let raf = 0; raf < YIELD_AFTER_WAITS; raf++) expect(pacer.ready()).toBe(false);
+    gl.clientWaitSync.mockReturnValue(gl.ALREADY_SIGNALED);
+    expect(pacer.settled()).toBe(true);
+    // al terminar tras una cola lenta, `ready` cede una RAF como antes
+    expect(pacer.ready()).toBe(false);
+    expect(pacer.inFlight).toBe(false);
+    expect(pacer.ready()).toBe(true);
+  });
 });
