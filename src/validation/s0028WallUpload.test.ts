@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { expect, it, vi } from 'vitest';
 import { HALF } from '../anatomy/halfFloat';
 import { s0028FieldMaskPages } from '../anatomy/people/s0028/fieldMask';
@@ -8,17 +6,17 @@ import { s0028RenalPages, s0028WideFatPages } from '../anatomy/people/s0028/soli
 import { createAbdominalTexture } from '../ultrasound/abdominalTexture';
 import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
 import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
+import { s0028Raw } from './support/legacyPerson/loadS0028Fixture';
 import { s0028FatPages, setS0028Solids } from './support/legacyPerson/s0028Solids';
 import { s0028WallUploads, setS0028Wall } from './support/legacyPerson/s0028Wall';
 import { fixturePerson } from './support/legacyPerson/state';
 
 it('sube los 16 tiles RG16F y centros como vistas de la carta cargada en el único atlas P1, sin copiar el atlas ni derivar la carta S−dN', () => {
   installAnatomyBundle(B);
-  const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
   const data = new Uint16Array(B.abdominal.rawBytes / 2),
-    capacity = raw('annotation-capacity');
+    capacity = s0028Raw('annotation-capacity');
   setAbdominalAtlas(data);
-  setS0028Wall(capacity, raw('skin-polar'));
+  setS0028Wall(capacity, s0028Raw('skin-polar'));
   setS0028Solids(capacity);
   const storage = vi.fn(),
     uploads: { x: number; y: number; z: number; w: number; h: number; d: number; input: Uint16Array }[] = [];
@@ -122,8 +120,7 @@ it('las teselas apiladas en z dejan huecos U NaN junto a celdas D/E: la carta no
   // Página 1 de la tesela 3 (interfaz/código) y página 0 de la 4 (posterior U) son cortes z contiguos del atlas: el
   // filtro trilineal mezcla el vecino aun con peso 0 y NaN·0 = NaN. El lector GLSL lee esquinas con texelFetch.
   installAnatomyBundle(B);
-  const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
-  setS0028Wall(raw('annotation-capacity'), raw('skin-polar'));
+  setS0028Wall(s0028Raw('annotation-capacity'), s0028Raw('skin-polar'));
   const uploads = s0028WallUploads();
   expect(uploads[4].offset[2]).toBe(uploads[3].offset[2] + 2);
   const at = (tile: number, page: number, x: number, y: number, k: number) => HALF[uploads[tile].data[((page * 91 + y) * 65 + x) * 2 + k]];

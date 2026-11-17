@@ -3,8 +3,6 @@
  * vería un ecografista: el hito dentro del sector y sin hueso, pulmón ni cartílago delante; sector acoplado y limpio. La usan la
  * búsqueda (`find-s0028-poses.ts`) y la prueba (`s0028Windows.test.ts`): la misma medida decide la pose y la vigila.
  */
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { uncompress } from '../../src/anatomy/compression';
 import { HEART_ATLAS_SHIFT } from '../../src/anatomy/organs/heart';
 import { heartChamber } from '../../src/anatomy/organs/heartChamber';
@@ -17,28 +15,15 @@ import { PhysiologyEngine, type PhysiologySample } from '../../src/physiology/en
 import type { VesselId } from '../../src/physiology/vessels';
 import { contactCoupling, probeContact } from '../../src/probe/contact';
 import { CONVEX_C35 as TR, pointOnLine, type ProbePose } from '../../src/probe/probe';
-import { setAbdominalAtlas } from '../../src/validation/support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE, installAnatomyBundle } from '../../src/validation/support/legacyPerson/anatomyBundle';
-import { setAbdominalBody } from '../../src/validation/support/legacyPerson/referenceBody';
-import { setS0028Solids } from '../../src/validation/support/legacyPerson/s0028Solids';
-import { setS0028Wall } from '../../src/validation/support/legacyPerson/s0028Wall';
-import { AnatomyScene } from '../../src/validation/support/legacyPerson/scene';
-import { setThoracicAtlas } from '../../src/validation/support/legacyPerson/thoracicAtlas';
+import { loadS0028Fixture } from '../../src/validation/support/legacyPerson/loadS0028Fixture';
+import type { AnatomyScene } from '../../src/validation/support/legacyPerson/scene';
 
 /** Centro de la aurícula derecha de s0028 en el marco del modelo, leído en su TAC (decisión 356): (−24, 27, 32) mm. */
 export const S0028_RA_CENTER = S0028_HEART.cavities.ra.c.map((x, i) => x + HEART_ATLAS_SHIFT[i]) as Vec3;
 
-/** La persona s0028 completa en Node, con la fisiología del adulto sano en apnea espiratoria. */
+/** La persona s0028 completa en Node (`loadS0028Fixture`), con la fisiología del adulto sano en apnea espiratoria. */
 export function loadS0028(): { scene: AnatomyScene; anatomy: AnatomyQuery; sample: PhysiologySample } {
-  const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
-  installAnatomyBundle(S0028_BUNDLE);
-  setAbdominalAtlas(new Uint16Array(raw('abdominal-direct')));
-  setThoracicAtlas(new Uint16Array(raw('thoracic-direct')));
-  const capacity = raw('annotation-capacity');
-  setS0028Wall(capacity, raw('skin-polar'));
-  setS0028Solids(capacity);
-  setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
-  const scene = new AnatomyScene(NORMAL_ADULT);
+  const { scene } = loadS0028Fixture();
   const engine = new PhysiologyEngine({ ...NORMAL_ADULT, respiratoryPattern: 'apnea-expiratory' }, scene.vesselAreas());
   for (let i = 0; i < Math.round(2 / engine.clock.dt); i++) engine.step();
   return { scene, anatomy: new AnatomyQuery(scene), sample: engine.sample };

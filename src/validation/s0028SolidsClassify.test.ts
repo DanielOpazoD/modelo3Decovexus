@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it, vi } from 'vitest';
 import { personShader } from '../anatomy/gpu/personShader';
 import { HALF } from '../anatomy/halfFloat';
@@ -23,30 +21,20 @@ import type { CutMapInit, CutMapRequest, CutMapResponse } from '../ui/cutMapWork
 import conflicts from './fixtures/s0028-conflict-witnesses.json';
 import cysts from './fixtures/s0028-cyst-witnesses.json';
 import fat from './fixtures/s0028-fat-r1.json';
-import { abdominalAtlas, setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
-import { abdominalBody, setAbdominalBody } from './support/legacyPerson/referenceBody';
+import { abdominalAtlas } from './support/legacyPerson/abdominalAtlas';
+import { S0028_BUNDLE as B } from './support/legacyPerson/anatomyBundle';
+import { loadS0028Fixture } from './support/legacyPerson/loadS0028Fixture';
+import { abdominalBody } from './support/legacyPerson/referenceBody';
 import { s0028CompatibleFat, s0028Owners, setS0028Solids } from './support/legacyPerson/s0028Solids';
 import wideSamples from './fixtures/s0028-wide-fat.json';
 import { s0028SourceValue } from './support/legacyPerson/s0028Source';
-import { s0028WallAt, setS0028Wall } from './support/legacyPerson/s0028Wall';
-import { AnatomyScene, BASELINE_CALIBER, type Classification } from './support/legacyPerson/scene';
-import { setThoracicAtlas, thoracicAtlas } from './support/legacyPerson/thoracicAtlas';
+import { s0028WallAt } from './support/legacyPerson/s0028Wall';
+import { type AnatomyScene, BASELINE_CALIBER, type Classification } from './support/legacyPerson/scene';
+import { thoracicAtlas } from './support/legacyPerson/thoracicAtlas';
 
-const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, capacity: ArrayBuffer, skin: ArrayBuffer;
 beforeAll(() => {
-  installAnatomyBundle(B);
-  setAbdominalAtlas(new Uint16Array(raw('abdominal-direct')));
-  setThoracicAtlas(new Uint16Array(raw('thoracic-direct')));
-  capacity = raw('annotation-capacity');
-  skin = raw('skin-polar');
-  setS0028Wall(capacity, skin);
-  setS0028Solids(capacity);
-  setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
-  scene = new AnatomyScene(NORMAL_ADULT);
-  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
-  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+  ({ scene, capacity, skin } = loadS0028Fixture());
 }, 60_000);
 const at = (p: Vec3) => scene.classify(p, BASELINE_CALIBER);
 const ids = (c: Classification) => c.solids?.owners.map((o) => o.id) ?? [];

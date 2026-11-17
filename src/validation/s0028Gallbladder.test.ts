@@ -1,32 +1,15 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { GALLBLADDER_WALL_MM, gallbladderPearSdf } from '../anatomy/organs/gallbladder';
 import { S0028_GALLBLADDER } from '../anatomy/people/s0028/gallbladder';
 import { Tissue } from '../anatomy/tissues';
-import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
-import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
-import { setAbdominalBody } from './support/legacyPerson/referenceBody';
-import { setS0028Solids } from './support/legacyPerson/s0028Solids';
+import { loadS0028Fixture } from './support/legacyPerson/loadS0028Fixture';
 import { s0028SourceValue } from './support/legacyPerson/s0028Source';
-import { setS0028Wall } from './support/legacyPerson/s0028Wall';
-import { AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
-import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
+import { type AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
 
-const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene;
 beforeAll(() => {
-  installAnatomyBundle(B);
-  setAbdominalAtlas(new Uint16Array(raw('abdominal-direct')));
-  setThoracicAtlas(new Uint16Array(raw('thoracic-direct')));
-  const capacity = raw('annotation-capacity');
-  setS0028Wall(capacity, raw('skin-polar'));
-  setS0028Solids(capacity);
-  setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
-  scene = new AnatomyScene(NORMAL_ADULT);
-  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura: el tope de 10 s por defecto se agota con un runner lento.
+  ({ scene } = loadS0028Fixture());
 }, 60_000);
 
 /** Puntos de una rejilla de `step` mm sobre la caja de la pera, con su distancia a la luz (oráculo: la pera de los datos). */
