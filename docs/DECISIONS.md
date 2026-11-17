@@ -12431,3 +12431,15 @@ cota: medida, no gana. Descartadas.
 **Consecuencias.** La misma señal, bit a bit. CPU de `generate` en la porta de s0028, −21 a −43 %; `s0028ExamChain.test.ts`, −23 %
 (las dos versiones a la vez, carga 8–10). +206 B de JS: quedan 109 B del techo de s0028.
 **Verificación.** `tubeDistance.test.ts` (las dos frente a la `tubeQuery` de antes) y `pwJunctionDomain.test.ts` (mismo arco e IQ).
+
+## 417. La CPU de s0028 también usa el mapa de ocupación
+
+**Contexto.** La decisión 400 dio el mapa a la GPU y dejó la CPU igual: `s0028Owners` leía sus 15 campos en cada punto y
+`s0028RigidSpan`, seis por muestra. Lo pagan el corte (Worker), el contacto al mover la sonda y las pruebas de s0028.
+**Opciones.** Un mapa por signo no vale (`kidneyMm` usa la distancia renal positiva) ni hace falta: el bit apagado ya garantiza 16.
+**Decisión.** La CPU consulta ese mapa (`s0028FieldsNear`, par de `nearS28`) y no lee el campo con el bit apagado en `s0028Owners`
+y `s0028RigidSpan`: vale 16 exacto, lo que devolvería `sourceDistance`. Se calcula una vez, al primer uso, y es el que sube la
+GPU. De paso, `s0028SourceValue` busca su campo por nombre en un mapa (lo buscaba en la lista del descriptor en cada consulta).
+**Consecuencias.** Mismo resultado bit a bit. Pareado contra `main` (M4, carga 5): `s0028Owners` −53 %, `s0028RigidSpan` −42 %,
+`scene.classify` −35 % (−11 % el mapa), contacto −10 %. +272 B de JS: quedan 6524 B bajo el techo de s0028, que no cambia.
+**Verificación.** `s0028FieldMaskCpu.test.ts` (365 388 puntos y 780 líneas, con el mapa y sin él; con dientes), `s0028Depth.test.ts`.
