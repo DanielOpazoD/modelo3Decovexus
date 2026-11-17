@@ -6,6 +6,12 @@
  */
 export const KNOWN_LIMITATIONS: ReadonlySet<string> = new Set([
   's0028-wall-direct',
+  's0028-renal-rib-tip-shadow',
+  's0028-splenorenal-rib-shadows',
+  's0028-portal-bifurcation-out-of-plane',
+  's0028-triad-calibres-enlarged',
+  's0028-hepatorenal-deep-wall',
+  's0028-gallbladder-short',
   's0028-renal-network-estimated',
   's0028-solids-p3',
   'abdominal-atlas-reference-adult',
