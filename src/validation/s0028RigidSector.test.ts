@@ -1,6 +1,4 @@
 // @tier slow
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { compressionSample, rigidNode, tableAt, uncompress } from '../anatomy/compression';
 import { AnatomyQuery } from '../anatomy/query';
@@ -10,14 +8,10 @@ import type { Vec3 } from '../core/vec3';
 import { PhysiologyEngine, type PhysiologySample } from '../physiology/engine';
 import { probeContact } from '../probe/contact';
 import { CONVEX_C35 } from '../probe/probe';
-import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
-import { setAbdominalBody } from './support/legacyPerson/referenceBody';
-import { setS0028Solids } from './support/legacyPerson/s0028Solids';
+import { S0028_BUNDLE as B } from './support/legacyPerson/anatomyBundle';
+import { loadS0028Fixture } from './support/legacyPerson/loadS0028Fixture';
 import { s0028SourceValue } from './support/legacyPerson/s0028Source';
-import { setS0028Wall } from './support/legacyPerson/s0028Wall';
-import { AnatomyScene } from './support/legacyPerson/scene';
-import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
+import type { AnatomyScene } from './support/legacyPerson/scene';
 
 /**
  * Compresión rígida s0028 (r3) en líneas radiales de todo el sector, no en una rejilla cartesiana de ±100 mm, que no llega
@@ -44,20 +38,10 @@ const RIBS_UNDER_FACE = new Set([
   'hepatorenal',
   'splenorenal',
 ]);
-const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, sample: PhysiologySample;
 beforeAll(() => {
-  installAnatomyBundle(B);
-  setAbdominalAtlas(new Uint16Array(raw('abdominal-direct')));
-  setThoracicAtlas(new Uint16Array(raw('thoracic-direct')));
-  const capacity = raw('annotation-capacity');
-  setS0028Wall(capacity, raw('skin-polar'));
-  setS0028Solids(capacity);
-  setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
-  scene = new AnatomyScene(NORMAL_ADULT);
+  ({ scene } = loadS0028Fixture());
   sample = new PhysiologyEngine(NORMAL_ADULT, scene.vesselAreas()).sample;
-  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
-  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
 }, 60_000);
 
 it('compresión rígida s0028: vértebras y sacro quietos en todo el sector de las diez ventanas, con D = 0/10/20 mm', () => {

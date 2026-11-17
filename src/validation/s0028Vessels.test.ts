@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { MAX_NODES, MAX_TUBE_SEGMENTS } from '../anatomy/gpu/anatomy.glsl';
 import { gallbladderPearSdf } from '../anatomy/organs/gallbladder';
@@ -16,35 +14,21 @@ import type { Vec3 } from '../core/vec3';
 import { probeContact } from '../probe/contact';
 import { CONVEX_C35 } from '../probe/probe';
 import witnesses from './fixtures/s0028-trunk-witnesses.json';
-import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
-import { setAbdominalBody } from './support/legacyPerson/referenceBody';
-import { setS0028Solids } from './support/legacyPerson/s0028Solids';
+import { S0028_BUNDLE as B } from './support/legacyPerson/anatomyBundle';
+import { loadS0028Fixture } from './support/legacyPerson/loadS0028Fixture';
 import { s0028SourceValue } from './support/legacyPerson/s0028Source';
-import { setS0028Wall } from './support/legacyPerson/s0028Wall';
 import { AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
 import { fixturePerson } from './support/legacyPerson/state';
-import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
 
-const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, foreign: AnatomyScene;
 beforeAll(() => {
-  installAnatomyBundle(B);
-  setAbdominalAtlas(new Uint16Array(raw('abdominal-direct')));
-  setThoracicAtlas(new Uint16Array(raw('thoracic-direct')));
-  const capacity = raw('annotation-capacity');
-  setS0028Wall(capacity, raw('skin-polar'));
-  setS0028Solids(capacity);
-  setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
-  scene = new AnatomyScene(NORMAL_ADULT);
+  ({ scene } = loadS0028Fixture());
   // Control: la misma persona con los troncos de la otra (sin los ganchos de las decisiones 345 y 354).
   const person = fixturePerson();
   foreign = new AnatomyScene(NORMAL_ADULT, undefined, {
     ...person,
     cpu: { ...person.cpu, curveVessels: undefined, smoothVessels: undefined },
   });
-  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
-  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
 }, 60_000);
 const mothers = (s: AnatomyScene) => s.vessels.filter((v) => v.flowFactor === undefined);
 const axis = (s: AnatomyScene, id: string) => s.vesselById.get(id as never)!.tube.nodes;

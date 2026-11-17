@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { Interface } from '../anatomy/interfaces';
 import { wallFaceGradient, wallFaceSd } from '../anatomy/organs/wall';
@@ -11,30 +9,14 @@ import type { Vec3 } from '../core/vec3';
 import { contactCoupling, firstCrossing, probeContact } from '../probe/contact';
 import { CONVEX_C35, probeFrame } from '../probe/probe';
 import { s0028Depth, setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
-import { setAbdominalBody } from './support/legacyPerson/referenceBody';
-import { setS0028Solids } from './support/legacyPerson/s0028Solids';
-import { s0028InsideWall, setS0028Wall } from './support/legacyPerson/s0028Wall';
+import { S0028_BUNDLE as B } from './support/legacyPerson/anatomyBundle';
+import { loadS0028Fixture } from './support/legacyPerson/loadS0028Fixture';
+import { s0028InsideWall } from './support/legacyPerson/s0028Wall';
 import { AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
-import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
 let scene: AnatomyScene;
 let atlas: Uint16Array;
 beforeAll(() => {
-  installAnatomyBundle(B);
-  const raw = new Uint8Array(gunzipSync(readFileSync('src/anatomy/s0028/abdominal-direct.gzip.bin')));
-  atlas = new Uint16Array(raw.buffer);
-  setAbdominalAtlas(atlas);
-  const thorax = new Uint8Array(gunzipSync(readFileSync('src/anatomy/s0028/thoracic-direct.gzip.bin')));
-  setThoracicAtlas(new Uint16Array(thorax.buffer));
-  const auxiliary = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
-  const capacity = auxiliary('annotation-capacity');
-  setS0028Wall(capacity, auxiliary('skin-polar'));
-  setS0028Solids(capacity);
-  const profile = new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin'));
-  setAbdominalBody(new Float32Array(profile.buffer));
-  scene = new AnatomyScene(NORMAL_ADULT);
-  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
-  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+  ({ scene, abdominal: atlas } = loadS0028Fixture());
 }, 60_000);
 
 it('profundidad B alimenta signo, magnitud, caras profundas y respiración, también fuera de caja', () => {

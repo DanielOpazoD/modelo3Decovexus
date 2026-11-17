@@ -1,6 +1,4 @@
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it, vi } from 'vitest';
 import { compressionReachMm, compressionSample, uncompress } from '../anatomy/compression';
 import { Interface } from '../anatomy/interfaces';
@@ -15,30 +13,18 @@ import { probeContact } from '../probe/contact';
 import { CONVEX_C35 } from '../probe/probe';
 import { cutMapDirections, cutMapPoint } from '../ui/cutMapGeometry';
 import type { CutMapInit, CutMapRequest, CutMapResponse } from '../ui/cutMapWorker';
-import { abdominalAtlas, setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
-import { abdominalBody, setAbdominalBody } from './support/legacyPerson/referenceBody';
-import { setS0028Solids } from './support/legacyPerson/s0028Solids';
+import { abdominalAtlas } from './support/legacyPerson/abdominalAtlas';
+import { S0028_BUNDLE as B } from './support/legacyPerson/anatomyBundle';
+import { loadS0028Fixture } from './support/legacyPerson/loadS0028Fixture';
+import { abdominalBody } from './support/legacyPerson/referenceBody';
 import { s0028SourceValue } from './support/legacyPerson/s0028Source';
-import { setS0028Wall } from './support/legacyPerson/s0028Wall';
-import { AnatomyScene } from './support/legacyPerson/scene';
-import { setThoracicAtlas, thoracicAtlas } from './support/legacyPerson/thoracicAtlas';
+import type { AnatomyScene } from './support/legacyPerson/scene';
+import { thoracicAtlas } from './support/legacyPerson/thoracicAtlas';
 
-const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 let scene: AnatomyScene, capacity: ArrayBuffer, skin: ArrayBuffer, sample: PhysiologySample;
 beforeAll(() => {
-  installAnatomyBundle(B);
-  setAbdominalAtlas(new Uint16Array(raw('abdominal-direct')));
-  setThoracicAtlas(new Uint16Array(raw('thoracic-direct')));
-  capacity = raw('annotation-capacity');
-  skin = raw('skin-polar');
-  setS0028Wall(capacity, skin);
-  setS0028Solids(capacity);
-  setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
-  scene = new AnatomyScene(NORMAL_ADULT);
+  ({ scene, capacity, skin } = loadS0028Fixture());
   sample = new PhysiologyEngine(NORMAL_ADULT, scene.vesselAreas()).sample;
-  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
-  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
 }, 60_000);
 // Planos de referencia fijos de P2 y P3 (las poses que s0028 heredaba), no las ventanas de inicio del producto: las huellas y
 // los recuentos de esta prueba se midieron sobre ellos, y una ventana puede moverse sin que cambie la mecánica del contacto.

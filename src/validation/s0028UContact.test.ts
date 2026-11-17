@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { nodeSin, warpAt, warpBound } from '../anatomy/compression';
 import { HALF } from '../anatomy/halfFloat';
@@ -7,14 +5,11 @@ import { torsoDepth, torsoDepthGradient, torsoSkinPoint } from '../anatomy/primi
 import { respiratoryWeightGradient } from '../anatomy/respiratoryNormals';
 import { indexedSurfaces } from '../anatomy/s0028Surface';
 import { startPointsFor } from '../app/startPoints';
-import { NORMAL_ADULT } from '../cases';
 import { smoothstep, type Vec3 } from '../core/vec3';
 import { CONTACT, probeContact, type ProbeContact } from '../probe/contact';
 import { CONVEX_C35, type ProbePose } from '../probe/probe';
-import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
-import { setAbdominalBody } from './support/legacyPerson/referenceBody';
-import { setS0028Solids } from './support/legacyPerson/s0028Solids';
+import { S0028_BUNDLE as B } from './support/legacyPerson/anatomyBundle';
+import { loadS0028Fixture, s0028Raw } from './support/legacyPerson/loadS0028Fixture';
 import {
   s0028ContactFace,
   s0028ContactInside,
@@ -24,28 +19,16 @@ import {
   s0028WallUploads,
   setS0028Wall,
 } from './support/legacyPerson/s0028Wall';
-import { AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
-import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
+import { type AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
 
 // Ronda r2b-U (decisiones del propietario 04-11-2026): la sonda acopla por la piel en todo el dominio; un nodo U comprime
 // contra la cara interna E del nodo conocido más cercano a ≤12 mm (rotulada) o, sin él, sólo por la piel; la respiración de
 // una celda U es una rampa por profundidad con p10/p90 de la cara interna conocida de su fila.
-const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
 const TILE_WORDS = 65 * 91 * 2 * 2;
 const E_OFFSET = 4096 + B.wall.payloadBytes;
 let scene: AnatomyScene, capacity: ArrayBuffer, skin: ArrayBuffer;
 beforeAll(() => {
-  installAnatomyBundle(B);
-  setAbdominalAtlas(new Uint16Array(raw('abdominal-direct')));
-  setThoracicAtlas(new Uint16Array(raw('thoracic-direct')));
-  capacity = raw('annotation-capacity');
-  skin = raw('skin-polar');
-  setS0028Wall(capacity, skin);
-  setS0028Solids(capacity);
-  setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
-  scene = new AnatomyScene(NORMAL_ADULT);
-  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
-  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+  ({ scene, capacity, skin } = loadS0028Fixture());
 }, 60_000);
 
 const nodeWord = (tiles: Uint16Array, row: number, col: number, k: number) => {
@@ -402,7 +385,7 @@ it('celda U: el peso respiratorio es la rampa por profundidad de su fila; celda 
 });
 
 it('los órganos respiran: ≥95 % de vértices móviles en hígado, bazo, riñones y VCI; ninguno quieto a >40 mm por U', () => {
-  const fields = indexedSurfaces(raw('surfaces'));
+  const fields = indexedSurfaces(s0028Raw('surfaces'));
   const target = ['liver', 'spleen', 'kidneyRight', 'kidneyLeft', 'inferior_vena_cava'];
   const organs = [
     'liver',
@@ -451,7 +434,7 @@ it('sube la rampa por fila a su hueco con halo finito, como vista de la reserva'
   expect(r.data.byteOffset).toBe(B.wallDerived.ramps.offsetBytes + 4096);
   expect(r.data.length).toBe(362);
   // Halo [0,0,652] + [182,2,3]: relleno finito del atlas, sin campos ni teselas (NaN·0 del filtro lineal).
-  const atlas = new Uint16Array(raw('abdominal-direct'));
+  const atlas = new Uint16Array(s0028Raw('abdominal-direct'));
   const [X, Y] = B.abdominal.textureDimensions;
   for (let z = 652; z <= 654; z++)
     for (let y = 0; y < 2; y++) for (let x = 0; x < 182; x++) expect(Number.isFinite(HALF[atlas[((z * Y + y) * X + x) * 2]])).toBe(true);

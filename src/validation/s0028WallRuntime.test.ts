@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { nodeSin } from '../anatomy/compression';
 import { HALF } from '../anatomy/halfFloat';
@@ -15,10 +13,10 @@ import { cross, dot, normalize, smoothstep, sub, type Vec3 } from '../core/vec3'
 import { firstRegionalWallCrossing, probeContact } from '../probe/contact';
 import { CONVEX_C35, probeFrame } from '../probe/probe';
 import chartFixtures from './fixtures/s0028-wall-chart.json';
-import { abdominalAtlas, setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
-import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
-import { abdominalBody, setAbdominalBody } from './support/legacyPerson/referenceBody';
-import { setS0028Solids } from './support/legacyPerson/s0028Solids';
+import { abdominalAtlas } from './support/legacyPerson/abdominalAtlas';
+import { S0028_BUNDLE as B } from './support/legacyPerson/anatomyBundle';
+import { loadS0028Fixture, s0028Raw } from './support/legacyPerson/loadS0028Fixture';
+import { abdominalBody } from './support/legacyPerson/referenceBody';
 import { s0028SourceValue } from './support/legacyPerson/s0028Source';
 import {
   s0028InsideWall,
@@ -29,21 +27,10 @@ import {
   setS0028Wall,
 } from './support/legacyPerson/s0028Wall';
 import { AnatomyScene, BASELINE_CALIBER } from './support/legacyPerson/scene';
-import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
 
 let scene: AnatomyScene;
 beforeAll(() => {
-  installAnatomyBundle(B);
-  const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
-  setAbdominalAtlas(new Uint16Array(raw('abdominal-direct')));
-  setThoracicAtlas(new Uint16Array(raw('thoracic-direct')));
-  const capacity = raw('annotation-capacity');
-  setS0028Wall(capacity, raw('skin-polar'));
-  setS0028Solids(capacity);
-  setAbdominalBody(new Float32Array(new Uint8Array(readFileSync('src/anatomy/abdominal-body.bin')).buffer));
-  scene = new AnatomyScene(NORMAL_ADULT);
-  // Cargar la persona tarda 2 s y unos 7 s bajo cobertura (pared, sólidos y escena, 2,3 s cada uno): el tope de 10 s por defecto
-  // se agota con un runner lento. Mismo plazo que s0028Heart y s0028Capsule.
+  ({ scene } = loadS0028Fixture());
 }, 60_000);
 
 it('el apoyo de las diez poses sin editar usa el cero EDT común', () => {
@@ -299,9 +286,8 @@ it('posterior U no es aire, órgano ni anillo muscular; sus interfaces finas est
 });
 
 it('un paquete enteramente U mantiene el fondo rotulado y nunca produce una banda NaN', () => {
-  const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
-  const capacity = raw('annotation-capacity'),
-    skin = raw('skin-polar');
+  const capacity = s0028Raw('annotation-capacity'),
+    skin = s0028Raw('skin-polar');
   const unknown = capacity.slice(0),
     words = new Uint16Array(unknown, 4096);
   const page = 65 * 91 * 2;
@@ -387,9 +373,8 @@ it('el cruce informado coincide con la cara interna regional física de cada nod
 });
 
 it('rechaza NaN convertido a cero y halos corruptos; un hueco cerrado válido se rellena como estimación y el U abierto sigue U', () => {
-  const raw = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
-  const capacity = raw('annotation-capacity'),
-    skin = raw('skin-polar');
+  const capacity = s0028Raw('annotation-capacity'),
+    skin = s0028Raw('skin-polar');
   const words = new Uint16Array(capacity, 4096);
   const stride = 65 * 91 * 2 * 2;
   const k = 2 * stride + (80 * 65 + 1) * 2;

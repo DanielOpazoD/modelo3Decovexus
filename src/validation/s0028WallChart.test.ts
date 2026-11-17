@@ -1,8 +1,7 @@
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { HALF, toHalf } from '../anatomy/halfFloat';
 import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
+import { s0028Raw } from './support/legacyPerson/loadS0028Fixture';
 import { s0028WallUploads, setS0028Wall } from './support/legacyPerson/s0028Wall';
 
 // Carta de pared idealizada (decisión 373): la que se usa es la del recurso alisada al cargar.
@@ -11,9 +10,8 @@ const TILE = 65 * 91 * 2 * 2,
 let raw: Uint16Array, loaded: Uint16Array[];
 beforeAll(() => {
   installAnatomyBundle(B);
-  const read = (name: string) => new Uint8Array(gunzipSync(readFileSync(`src/anatomy/s0028/${name}.gzip.bin`))).buffer;
-  const capacity = read('annotation-capacity');
-  setS0028Wall(capacity, read('skin-polar'));
+  const capacity = s0028Raw('annotation-capacity');
+  setS0028Wall(capacity, s0028Raw('skin-polar'));
   raw = new Uint16Array(capacity, 4096, 16 * TILE);
   loaded = s0028WallUploads()
     .slice(0, 16)
