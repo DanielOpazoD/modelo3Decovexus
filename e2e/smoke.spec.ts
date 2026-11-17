@@ -1481,6 +1481,20 @@ for (const abdomen of ['legacy', 'atlas'] as const)
     await page.getByRole('button', { name: '25', exact: true }).click();
     if (abdomen === 'legacy') for (let k = 0; k < 5; k++) await page.keyboard.press('[');
     await withinFrames(page, 2, 'profundidad adquirida', contains(page, '#hud-tr', abdomen === 'legacy' ? '13 cm' : '18 cm'));
+    // La franja M encoge el contenedor de la imagen al instante (CSS); el lienzo y la geometría presentada se reajustan en
+    // el cuadro siguiente (`fitCanvases`). Con atlas el HUD ya dice 18 cm desde el arranque y la espera anterior no
+    // garantiza ese cuadro: el punto de clic salía de la presentación estirada y dejaba de valer al llegar el cuadro.
+    await withinFrames(page, 3, 'sector reajustado a la franja M', async () =>
+      page.evaluate(() => {
+        const c = document.getElementById('gl') as HTMLCanvasElement;
+        const d = window.__vexusTest!.sim().renderer.display;
+        const h = Math.max(240, Math.floor(c.clientHeight * Math.min(2, devicePixelRatio)));
+        return (
+          (c.height === h && d.width === c.width && d.height === c.height) ||
+          `lienzo ${c.width}×${c.height}, caja ${c.clientWidth}×${c.clientHeight}, presentación ${d.width}×${d.height}`
+        );
+      }),
+    );
     // la línea M donde la pone el operador (VExUS): a través de la VCI 2 cm por debajo de la desembocadura de las
     // suprahepáticas (legacy: z35 → 15; atlas: z−3 → −23), según la anatomía de CPU. La más perpendicular del tramo (3,5 cm por
     // debajo) sobrestima el colapso ~6 puntos: el eco especular de la pared de enfrente, máximo de frente, se come
