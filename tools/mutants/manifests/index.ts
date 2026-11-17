@@ -3,6 +3,7 @@ import type { MutantManifest } from '../manifest';
 import { blindMode, cases } from './cases';
 import { contact } from './contact';
 import { cutMapWorker } from './cutMapWorker';
+import { elevationShare } from './elevationShare';
 import { s0028Classifier } from './s0028Classifier';
 import { s0028Cpu, s0028Look, s0028Vessels } from './s0028Person';
 import { s0028Solids } from './s0028Solids';
@@ -27,4 +28,5 @@ export const MANIFESTS: readonly MutantManifest[] = [
   s0028Look,
   cases,
   blindMode,
+  elevationShare,
 ];
