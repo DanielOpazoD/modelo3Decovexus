@@ -13,6 +13,7 @@ maqueta 103 no ha pasado la puerta de coste GPU ni una evaluación clínica.
    acotado de `check` cuenta como una carga; no superponer GPU, build ni hook mientras corre.
    Durante la edición usa feedback focalizado según `docs/engineering/iteration.md`; la CI completa
    sigue siendo obligatoria para aceptar el candidato final; el check local completo, solo si no hay CI.
+   Varias PR a la vez (worktrees, pushes por turnos, carga): `docs/engineering/agentes.md`.
 4. Estado vigente por subsistema, corto y con cifras medidas: `docs/estado/` (anatomía, imagen, pruebas y
    presupuestos). La evidencia pesada se cita por `docs/evidence/INDEX.md`, nunca por una ruta absoluta.
    Consulta `docs/DECISIONS_INDEX.md` antes de abrir el historial completo. No conviertas un pendiente
