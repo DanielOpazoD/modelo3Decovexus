@@ -109,8 +109,34 @@ Lo que hay que saber al leerla:
   tejido blando y el modelo, 36,5 mm, porque su pared es continua y no reproduce la línea alba.
 - **Diferencias de definición:** el riñón del modelo incluye el seno y la pelvis (120 frente a 108 ml); la cava del modelo
   es un tubo de calibre suavizado (Dice 0,88); el modelo tiene 35 ml de gas digestivo y el TAC, 88.
-- El intestino delgado, el duodeno, el corazón, la vesícula y los cartílagos costales del TAC quedan cubiertos por tejido
-  propio del modelo en más del 97 % de sus vóxeles.
+- El intestino delgado, el duodeno, el corazón y los cartílagos costales del TAC quedan cubiertos por tejido propio del modelo
+  en más del 97 % de sus vóxeles. La vesícula del TAC (contraída) queda en un 94 % dentro de la luz de la vesícula en ayunas
+  del modelo (decisión 413, tabla siguiente).
+
+### Estimado a propósito: tríada portal y vesícula (decisiones 412 y 413), medido el 16-11-2026
+
+Estas dos no salen del TAC, que no muestra la vía biliar ni la arteria hepática y tiene la vesícula contraída. Son la imagen
+pedagógica habitual (decisión 361), colocada en la anatomía de esta persona. La columna de referencia dice de dónde sale cada cifra.
+
+| Relación básica                                                                    |  Modelo s0028 | Referencia                            | ¿Se cumple?    |
+| ---------------------------------------------------------------------------------- | ------------: | ------------------------------------- | -------------- |
+| Vesícula en ayunas: volumen de la luz (ml)                                         |          21,1 | TAC 4,7 (contraída); en ayunas, 20–50 | Sí, estimada   |
+| Vesícula: largo de fondo a cuello (mm)                                             |            58 | en ayunas, 70–100                     | Corta: su fosa |
+| Vesícula del TAC dentro de la luz de la del modelo (%)                             |            94 | —                                     | Sí             |
+| Vesícula: fondo delante, abajo y afuera del cuello; el cuello mira al hilio        |            sí | disposición habitual                  | Sí             |
+| Vesícula: vasos a menos de 1 mm de la cara externa de su pared                     |       ninguno | —                                     | Sí             |
+| Vesícula: colon desplazado bajo el fondo (ml)                                      |            13 | el fondo apoya en el ángulo hepático  | Sí, estimado   |
+| Tríada en la subcostal portal: colédoco y arteria a ≤ 1 mm del plano (mm seguidos) |            44 | —                                     | Sí             |
+| Tríada: orden en profundidad, colédoco – arteria – porta                           |            sí | eje largo clásico del hilio           | Sí, idealizada |
+| Tríada: separación colédoco–arteria a lo largo del tramo, variación (mm)           |           0,6 | paralelos                             | Sí             |
+| Tríada: calibre del colédoco y de la hepática propia (mm)                          | 5,0 y 4,2–4,8 | ≤ 6 y 3–5                             | Sí             |
+| Tríada: hueco mínimo entre paredes de conducto, arteria, porta y suprahepáticas    |      > 0,3 mm | no se tocan                           | Sí             |
+
+Lo que hay que saber: la vesícula es más corta que una en ayunas típica porque su fosa en esta persona está acotada (el colon
+a 10–14 mm por debajo, una rama de la suprahepática media a 25 mm por fuera y su tributaria a 20 mm por delante). En un corte
+transversal del ligamento la tríada no forma la «cabeza de ratón»: los tres van apilados para verse paralelos en el eje largo.
+Láminas, fuera del repositorio: `.cache/revision/laminas-16-11-triada-vesicula.png`. Las pruebas que vigilan estas filas son
+`s0028Vessels.test.ts` y `s0028Gallbladder.test.ts`. **Falta la revisión del responsable.** No es validación clínica.
 
 Láminas, fuera del repositorio: `relaciones-axial.png`, `relaciones-coronal.png` y `relaciones-sagital.png` (el mismo corte en
 el TAC y en el modelo, con los contornos de las máscaras del TAC sobre los dos). Abiertas y revisadas el 13-11-2026 por
