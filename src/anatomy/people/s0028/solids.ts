@@ -6,6 +6,8 @@ import { S0028_RENAL_INTERIOR as R } from '../../s0028RenalInteriorData';
 import { S0028_RENAL_INTERIOR_RUNS } from '../../s0028RenalInteriorRuns';
 import { sourceDistance, sourceDistanceReader, sourceLabel } from '../../sourceVolume';
 import { S0028_BUNDLE as B } from './descriptor';
+import { buildS0028FieldMask, s0028FieldsNear, type S0028FieldsNear } from './fieldMask';
+import { S0028_MASK_FIELDS } from './fieldMaskFields';
 import { S0028_GALLBLADDER } from './gallbladder';
 import { intHalf, s0028FatPages, s0028RenalPages, s0028WideFatPages } from './solidsData';
 import type { S0028WallSample } from './wall';
@@ -50,6 +52,12 @@ export interface S0028Ownership {
   /** Distancia con signo al borde O de la máscara renal más cercana (mm; 16 fuera de ambas cajas): su contorno acústico. */
   readonly kidneyMm: number;
 }
+
+/**
+ * Sin mapa de ocupación: todos los campos «cerca» en todo punto, como `S28_NEAR=-1` en la GLSL. Es la ruta anterior a la decisión
+ * 417 (cada campo se lee siempre). Solo la usa la prueba de igualdad (`s0028FieldMaskCpu.test.ts`); no es un interruptor de producto.
+ */
+export const S0028_EVERY_FIELD_NEAR: S0028FieldsNear = () => -1;
 
 /** Etiquetas del interior renal (r5): el exportador offline las saca del propio TAC; 0 es U. */
 export const S0028_RENAL_LABEL = { U: 0, cortex: 1, medulla: 2, sinusFat: 3, collectingSystem: 4, sinusUnclassified: 5 } as const;
@@ -134,6 +142,15 @@ export function createSolidsQueries(assets: PersonAssets) {
   const VESSELS = ['aorta', 'inferior_vena_cava', 'portal_vein_and_splenic_vein'].map((name) => B.fields.find((f) => f.name === name)!);
   const insideVessel = (p: Vec3): boolean =>
     VESSELS.some((f) => sourceDistance(f.asset === 'abdominal' ? abdominalAtlas! : thoracicAtlas!, p, f, B[f.asset].textureDimensions) < 0);
+  /**
+   * Mapa de ocupación de los campos (decisiones 400 y 417): el que sube la GPU, calculado una vez al primer uso. `fieldsNear` da
+   * los bits de la celda de un punto; con el de un campo apagado, su distancia es 16 exactamente y la CPU, como la GPU, no lo lee.
+   * `NEAR`, el bit de cada campo de `TABLE`: todo campo del descriptor tiene el suyo (`s0028FieldMaskCpu.test.ts`).
+   */
+  let fieldMask: Uint32Array | undefined;
+  const s0028FieldMask = (): Uint32Array => (fieldMask ??= buildS0028FieldMask(abdominalAtlas, thoracicAtlas));
+  const fieldsNear = s0028FieldsNear(s0028FieldMask);
+  const NEAR = TABLE.map(([name]) => 1 << (S0028_MASK_FIELDS as readonly string[]).indexOf(name));
 
   let fat: Uint16Array | undefined;
   let wideFat: Uint16Array | undefined;
@@ -297,30 +314,31 @@ export function createSolidsQueries(assets: PersonAssets) {
   }
 
   type FieldReader = (x: number, y: number, z: number) => number;
-  let rigidReaders: [FieldReader[], FieldReader[]] | null = null;
-  /** Lectores de los campos de las zonas rígidas, resueltos la primera vez (`sourceDistanceReader`, bit a bit `sourceDistance`). */
-  function rigidFields(): [FieldReader[], FieldReader[]] {
-    if (rigidReaders) return rigidReaders;
-    const reader = (i: number): FieldReader => {
-      const f = FIELDS[i];
-      return sourceDistanceReader(f.asset === 'abdominal' ? abdominalAtlas! : thoracicAtlas!, f, B[f.asset].textureDimensions);
-    };
-    return (rigidReaders = [[3, 4].map(reader), [9, 10, 11, 12].map(reader)]);
-  }
+  let readers: FieldReader[] | null = null;
+  /** Lectores de los campos de `TABLE`, resueltos la primera vez (`sourceDistanceReader`, bit a bit `sourceDistance`). */
+  const fieldReaders = (): FieldReader[] =>
+    (readers ??= FIELDS.map((f) =>
+      sourceDistanceReader(f.asset === 'abdominal' ? abdominalAtlas! : thoracicAtlas!, f, B[f.asset].textureDimensions),
+    ));
+  // Los campos de las zonas rígidas, en su orden de lectura: los riñones y los huesos y cartílagos.
+  const KIDNEY_FIELDS = [3, 4],
+    BONE_FIELDS = [9, 10, 11, 12];
 
   /**
    * Zonas rígidas por dueño en la compresión (r3), a lo largo de la línea E + dir·t del tronco rígido (en apnea, material =
    * rígido): la entrada de cada hueso o cartílago (hasta ocho) y los tramos renales [entrada, salida] (el quiste y el seno
-   * no son máscara renal: quedan entre dos tramos). Pasos de 0,75 mm afinados por bisección.
+   * no son máscara renal: quedan entre dos tramos). Pasos de 0,75 mm afinados por bisección. Un campo que el mapa de ocupación
+   * deja lejos del punto vale 16, no es interior, y no se lee (decisión 417); `near` distinto solo en la prueba de igualdad.
    */
-  function s0028RigidSpan(E: Vec3, dir: Vec3, tMax: number): [number[], number[]] {
-    const [kidneyFields, boneFields] = rigidFields();
+  function s0028RigidSpan(E: Vec3, dir: Vec3, tMax: number, near: S0028FieldsNear = fieldsNear): [number[], number[]] {
+    const read = fieldReaders();
     // el mismo punto para cada campo y el mismo orden de `some`: los riñones (3, 4) y los huesos y cartílagos (9–12)
     const inside = (t: number, kidney: boolean): boolean => {
       const x = E[0] + dir[0] * t,
         y = E[1] + dir[1] * t,
-        z = E[2] + dir[2] * t;
-      return (kidney ? kidneyFields : boneFields).some((read) => read(x, y, z) < 0);
+        z = E[2] + dir[2] * t,
+        bits = near(x, y, z);
+      return (kidney ? KIDNEY_FIELDS : BONE_FIELDS).some((i) => (bits & NEAR[i]) !== 0 && read[i](x, y, z) < 0);
     };
     const edge = (a: number, kidney: boolean): number => {
       if (a < -2) return a + 0.75;
@@ -350,16 +368,20 @@ export function createSolidsQueries(assets: PersonAssets) {
    * Dueños independientes de un punto MATERIAL s0028: cada campo P1 con SDF lineal < 0 (identidad por etiqueta nearest),
    * la banda P2 conocida (1,5 ≤ profundidad < interfaz) y la grasa compatible D, que por definición sólo existe donde ninguna
    * máscara fuente reclama el punto. El hueso dentro de la pared es contenido del complejo P2, no un choque. Sin precedencia:
-   * dos o más dueños son conflicto y se conservan todos.
+   * dos o más dueños son conflicto y se conservan todos. Un campo que el mapa de ocupación deja lejos del punto vale 16: ni dueño ni
+   * contorno renal, y no se lee (decisión 417, como `s28P`); `near` distinto solo en la prueba de igualdad.
    * @twin s0028-duenos
    */
-  function s0028Owners(p: Vec3, q: S0028WallSample | undefined): S0028Ownership {
+  function s0028Owners(p: Vec3, q: S0028WallSample | undefined, near: S0028FieldsNear = fieldsNear): S0028Ownership {
     if (!abdominalAtlas || !thoracicAtlas) throw new Error('Clasificador P3 sin s0028');
     const owners: S0028Owner[] = [];
     let kidneyMm = 16;
-    const gallbladder = gallbladderPearSdf(p, S0028_GALLBLADDER) - GALLBLADDER_WALL_MM;
+    const gallbladder = gallbladderPearSdf(p, S0028_GALLBLADDER) - GALLBLADDER_WALL_MM,
+      bits = near(p[0], p[1], p[2]);
     for (let i = 0; i < TABLE.length; i++) {
       if (gallbladder < 0 && YIELDS_TO_GALLBLADDER.has(i)) continue;
+      // La vesícula es su pera, no el campo: su bit no cuenta.
+      if (i !== GALLBLADDER_FIELD && !(bits & NEAR[i])) continue;
       const f = FIELDS[i],
         data = f.asset === 'abdominal' ? abdominalAtlas : thoracicAtlas,
         dims = B[f.asset].textureDimensions,
@@ -399,5 +421,6 @@ export function createSolidsQueries(assets: PersonAssets) {
     s0028RenalInterior,
     s0028RigidSpan,
     s0028Owners,
+    s0028FieldMask,
   });
 }

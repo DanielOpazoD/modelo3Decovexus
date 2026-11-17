@@ -81,6 +81,25 @@ export function s0028FieldMaskCell(p: Vec3): number {
   return (v[2] * M.dimensions[1] + v[1]) * M.dimensions[0] + v[0];
 }
 
+/** Los campos que pueden bajar de 16 mm en (x, y, z): un bit por campo, en el orden de `S0028_MASK_FIELDS`. */
+export type S0028FieldsNear = (x: number, y: number, z: number) => number;
+
+/**
+ * El mapa de ocupación leído por la CPU (decisión 417), par de `nearS28` con la celda de `s0028FieldMaskCell`: los bits de la celda
+ * de 6 mm que contiene el punto, sin reservar memoria. Con el bit de un campo apagado, `sourceDistance` devuelve 16 exactamente
+ * en toda la celda (sus nodos valen 16 y la trilineal anidada conserva una constante; fuera de su caja ya devolvía 16): no leerlo
+ * y tomar 16 es el mismo número, no una cota. No comprueba la rejilla: fuera de ella el índice cae en otra celda o fuera del mapa
+ * (−1, todos los campos), y da igual, porque allí todo campo queda fuera de su caja y vale 16 se lea o no. Con una coordenada no
+ * finita no hay índice y se leen todos, como sin mapa. `mask` da el mapa (al primer uso).
+ * @twin s0028-mapa-campos
+ */
+export function s0028FieldsNear(mask: () => Uint32Array): S0028FieldsNear {
+  const [o0, o1, o2] = M.originMm,
+    [n0, n1] = M.dimensions,
+    cell = M.cellMm;
+  return (x, y, z) => mask()[(Math.floor((z - o2) / cell) * n1 + Math.floor((y - o1) / cell)) * n0 + Math.floor((x - o0) / cell)] ?? -1;
+}
+
 /** Colocación xyz de cada página 32×32 RG16F del mapa en el atlas abdominal, con el mismo código que la grasa P3. */
 export const s0028FieldMaskPages = (): number[][] => s0028Pages(M.pages);
 

@@ -4,13 +4,14 @@ import { beforeAll, expect, it } from 'vitest';
 import { createSourceQueries } from '../anatomy/people/s0028/atlas';
 import { installS0028Assets } from '../anatomy/people/s0028/assets';
 import { S0028_BUNDLE as B } from '../anatomy/people/s0028/descriptor';
-import { sourceDistance, sourceDistanceReader } from '../anatomy/sourceVolume';
+import { sourceDistance, sourceDistanceReader, sourceLabel } from '../anatomy/sourceVolume';
 import type { Vec3 } from '../core/vec3';
 
 /**
  * Las lecturas rápidas de s0028 (las que el contacto hace ~80 000 veces por pose) dan bit a bit lo mismo que la lectura
- * genérica: la EDT común con su proyección a la caja y cada campo fuente con `sourceDistanceReader`. Si una difiere en un bit,
- * el contacto, el corte y la imagen dejan de ser los de antes sin que ninguna cifra lo diga.
+ * genérica: la EDT común con su proyección a la caja y cada campo fuente con `sourceDistanceReader`; y la consulta por nombre de
+ * la clasificación (`s0028SourceValue`, con el campo resuelto una vez), la distancia y el rótulo de su campo. Si una difiere en un
+ * bit, el contacto, el corte y la imagen dejan de ser los de antes sin que ninguna cifra lo diga.
  */
 let abdominal: Uint16Array, thoracic: Uint16Array;
 let source: ReturnType<typeof createSourceQueries>;
@@ -77,4 +78,29 @@ it('sourceDistanceReader da bit a bit sourceDistance en cada campo fuente de s00
       if (!Object.is(read(p[0], p[1], p[2]), sourceDistance(data, p, f, dims))) bad.push(`${f.name} ${p.join(',')}`);
   }
   expect(bad.slice(0, 5)).toEqual([]);
+});
+
+it('s0028SourceValue da bit a bit sourceDistance y sourceLabel del campo de ese nombre, y rechaza un nombre desconocido', () => {
+  const bad: string[] = [];
+  let inside = 0,
+    labelled = 0;
+  for (const f of B.fields) {
+    const data = f.asset === 'abdominal' ? abdominal : thoracic,
+      dims = B[f.asset].textureDimensions;
+    for (const p of points(f.originMm, f.dimensions, f.pitchMm, 4000)) {
+      const value = source.s0028SourceValue(p, f.name),
+        d = sourceDistance(data, p, f, dims),
+        label = sourceLabel(data, p, f, dims);
+      if (!Object.is(value.d, d) || !Object.is(value.label, label)) bad.push(`${f.name} ${p.join(',')}`);
+      inside += d < 0 ? 1 : 0;
+      labelled += label > 0 ? 1 : 0;
+    }
+  }
+  expect(bad.slice(0, 5)).toEqual([]);
+  // el muestreo tiene dientes: puntos dentro de las máscaras y rótulos no nulos
+  expect(inside).toBeGreaterThan(1000);
+  expect(labelled).toBeGreaterThan(1000);
+  expect(() => source.s0028SourceValue([0, 0, 0], 'liverr')).toThrow('Campo s0028 desconocido: liverr');
+  // el campo se busca por su nombre en un mapa: ninguno se repite en el descriptor
+  expect(new Set(B.fields.map((f) => f.name)).size).toBe(B.fields.length);
 });

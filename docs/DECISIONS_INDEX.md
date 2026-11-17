@@ -420,3 +420,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [414](DECISIONS.md#L12398) | Huellas de shaders: una sola foto vigente | vigente |
 | [415](DECISIONS.md#L12410) | El reparto del haz en elevación junto a un borde usa la distancia al borde | vigente |
 | [416](DECISIONS.md#L12422) | La consulta del dominio en las uniones, sin crear nada | vigente |
+| [417](DECISIONS.md#L12435) | La CPU de s0028 también usa el mapa de ocupación | vigente |

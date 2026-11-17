@@ -4,7 +4,7 @@ import { Interface } from '../../interfaces';
 import { Tissue } from '../../tissues';
 import { S0028_MUSCLE_BACKSCATTER } from '../../gpu/s0028Wall.glsl';
 import { S0028_BUNDLE } from './descriptor';
-import { buildS0028FieldMask, s0028FieldMaskUploads } from './fieldMask';
+import { s0028FieldMaskUploads } from './fieldMask';
 import { S0028_TUBE_SEGMENTS } from './vessels';
 /**
  * Aspecto de las caras de s0028 (decisión 368). La cortical ósea se ve como un arco brillante y continuo aunque el haz no le llegue
@@ -40,17 +40,14 @@ export const S0028_TISSUE_LOOK = Object.freeze({
   // Manguito periportal: lo que distingue una rama portal de una suprahepática a cualquier ángulo (decisión 357).
   [Tissue.VesselWallPortal]: { backscatter: 5.5 },
 });
-function fieldMaskOf(person: InstalledCpuPerson): Uint32Array {
-  return buildS0028FieldMask(person.assets.buffers.abdominal, person.assets.buffers.thoracic);
-}
 export function gpuPlan(person: InstalledCpuPerson): PersonGpuPlan {
   return Object.freeze({
     specializeFragment: (source: string) => personShader(source, { person: 's0028', bundle: S0028_BUNDLE }),
     uploads: [
       ...person.cpu.regional!.s0028WallUploads(),
       ...person.cpu.regional!.s0028SolidsUploads(),
-      // el mapa de ocupación de campos (decisión 400): calculado aquí, una vez, desde los propios campos
-      ...s0028FieldMaskUploads(fieldMaskOf(person)),
+      // el mapa de ocupación de campos (decisión 400): el mismo que consulta la CPU (decisión 417), calculado una vez desde los campos
+      ...s0028FieldMaskUploads(person.cpu.regional!.s0028FieldMask()),
     ],
     tubeSegments: S0028_TUBE_SEGMENTS,
     tissueLook: S0028_TISSUE_LOOK,

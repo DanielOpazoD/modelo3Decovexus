@@ -50,9 +50,12 @@ export function createSourceQueries(assets: PersonAssets) {
     return label >= 128 && label % 128 !== 1;
   }
 
+  // Cada campo P1 por su nombre: la clasificación consulta varios por punto, y buscarlo en la lista del descriptor en cada consulta
+  // era una cuarta parte del tiempo de `scene.classify` (17-11-2026). Los nombres no se repiten (`s0028Depth.test.ts`).
+  const BY_NAME = new Map<string, (typeof B.fields)[number]>(B.fields.map((f) => [f.name, f]));
   /** Consulta CPU de los campos P1 separados; cartílago y pulmón no son una cola ósea. @twin s0028-lector */
   function s0028SourceValue(p: Vec3, name: string): { d: number; label: number } {
-    const f = B.fields.find((f) => f.name === name);
+    const f = BY_NAME.get(name);
     if (!f) throw new Error('Campo s0028 desconocido: ' + name);
     const data = f.asset === 'abdominal' ? abdominalAtlas : thoracicAtlas;
     if (!data) return { d: 16, label: 0 };
