@@ -372,11 +372,13 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
   allá de ±21° (el tórax lateral, de 69 mm de radio en la sección) y la punta de la subxifoidea basculada más allá de
   +18°. La dirección de la sangre no se gira con la jacobiana (los vasos se mueven poco; los superficiales no
   existen).
-- **El grosor de corte rellena las luces con tres planos** (`lumen-fill-three-planes`, decisión 86): la pasada B mezcla el
-  moteado del plano central con el de dos planos a ±σe, así que una luz rellena a unos −6 dB si su semialtura en elevación
-  es menor que σe y nada si es mayor, en lugar de la potencia del haz elevacional fuera de la luz, erfc(√2·h/σ₁): −9 / −15 /
-  −27 dB a 3 / 4 / 6 mm en eje largo a 5 cm. Medido con GPU, las luces de 2–4 mm quedan a −2/−15 dB del hígado y las de
-  5–7 mm a −7/−38 dB según su orientación y dónde caen los planos, dentro de lo que dan la física y las referencias reales.
+- **El grosor de corte rellena las luces con tres planos** (`lumen-fill-three-planes`, decisiones 86 y 415): la pasada B mezcla el
+  moteado del plano central con el de dos planos a ±σe. Desde la decisión 415 el peso de un plano lateral que cae en otro tejido
+  es la cola del haz de dos vías más allá del borde (con la distancia de ese plano a su borde), no un cuarto fijo: una luz de
+  4,4 mm centrada rellena a −13 dB a 1,5 mm de su eje (antes −6 dB) y se ve oscura en 3,4 mm (antes 2,1). Sigue siendo un borde
+  plano visto con tres muestras: no cuenta el tejido que queda más allá de un plano lateral que aún está en la luz (hasta un 8 %
+  del haz) y los tejidos de máscara de vóxel, que no dan distancia, conservan el cuarto. Las cifras con GPU de la decisión 86
+  (luces de 2–4 mm a −2/−15 dB del hígado) son anteriores a este reparto.
 - **Los planos laterales de elevación se saltan los vasos** (`side-plane-skips-tubes`): si el plano
   central está a más de σe + 0,5 mm de una interfaz, los laterales heredan su tejido sin clasificar
   (decisión 24), pero la `bd` del hígado no cuenta los tubos: junto a un vaso fuera del plano, el 1–5 %

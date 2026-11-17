@@ -29,6 +29,7 @@ import { TISSUES, Tissue, attenuationDbPerCm } from '../../anatomy/tissues';
 import { cross, dot, normalize, type Vec3 } from '../../core/vec3';
 import { axialSigmaMm, lateralSigmaMm } from '../../ultrasound/beamModel';
 import { focalGain, frequencyRatio } from '../../ultrasound/beamEcho';
+import { ELEV_BD_MAX_MM, elevationShare } from '../../ultrasound/pleura';
 import { restTexture } from '../../ultrasound/restTexture';
 import { portalTriadGain } from '../../ultrasound/portalTriads';
 import { retroTexture } from '../../ultrasound/retroTexture';
@@ -284,16 +285,21 @@ export function wallTwin(
         gain *= retroTexture(m, tissue, beam);
         return [f[0] * gain, f[1] * gain];
       };
-      const side = (sgn: number): [number, number] => {
+      // Cada lado con su reparto del haz (decisión 415): un cuarto dentro del mismo tejido; junto a un borde, `elevationShare`.
+      const side = (sgn: number): { f: [number, number]; share: number } => {
         const m: Vec3 = [0, 1, 2].map((k) => p[k] + sgn * frame.elevation[k] * se) as Vec3;
-        if (c0.boundaryDistance > se + 0.5) return fieldFor(m, c0.tissue);
-        return fieldFor(m, classifyModel(scene, caliber, m, o.model).tissue);
+        if (c0.boundaryDistance > se + 0.5) return { f: fieldFor(m, c0.tissue), share: 0.25 };
+        const c = classifyModel(scene, caliber, m, o.model);
+        return {
+          f: fieldFor(m, c.tissue),
+          share: c.tissue === c0.tissue ? 0.25 : elevationShare(Math.min(c.boundaryDistance, ELEV_BD_MAX_MM), se),
+        };
       };
       const f0 = fieldFor(p, c0.tissue);
-      const f1 = side(1);
-      const f2 = side(-1);
+      const s1 = side(1);
+      const s2 = side(-1);
       const l0 = Math.hypot(f0[0], f0[1]);
-      const mag = 0.5 * l0 + 0.25 * (Math.hypot(f1[0], f1[1]) + Math.hypot(f2[0], f2[1]));
+      const mag = (1 - s1.share - s2.share) * l0 + (s1.share * Math.hypot(s1.f[0], s1.f[1]) + s2.share * Math.hypot(s2.f[0], s2.f[1]));
       let fr = l0 > 1e-6 ? (f0[0] * mag) / l0 : f0[0];
       let fi = l0 > 1e-6 ? (f0[1] * mag) / l0 : f0[1];
       const clump = TISSUES[c0.tissue].speckleClump ?? 0;

@@ -153,6 +153,22 @@ export function normalCdf(x: number): number {
   return x >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
 }
 
+/** Escala (mm) y tope de la distancia al borde que la pasada de elevación guarda en la fracción de su tejido (decisión 415). */
+export const ELEV_BD_SCALE_MM = 8;
+export const ELEV_BD_MAX_MM = 7.99;
+
+/**
+ * Parte del haz de dos vías que cae al otro lado de un borde, vista desde un plano lateral de elevación (decisión 415). El plano
+ * lateral está a `se` (σ de una vía) del central y a `bd` del borde de su propio tejido: el borde queda a `se − bd` del plano
+ * central, y la parte del haz de dos vías (σ = se/√2) más allá de él es 1 − Φ((se − bd)·√2/se). Antes era un cuarto fijo, y una
+ * luz de 4 mm se veía de 1,5. Con la distancia desconocida (`bd` = 0: tejidos que salen de máscaras de vóxel) sigue el cuarto.
+ * @twin pleura
+ */
+export function elevationShare(bd: number, se: number): number {
+  if (bd <= 0) return 0.25;
+  return 1 - normalCdf((Math.max(se - bd, 0) * Math.SQRT2) / se);
+}
+
 /**
  * σ del borde blando (mm): σ² = (σe·|e_z|)² + (σl·|l_z|)² + σ_taper², con σe y σl las anchuras de DOS
  * vías del haz en elevación y lateral a la profundidad de la pleura y e_z, l_z las componentes
@@ -365,6 +381,11 @@ float normalCdf(float x) {
   float e = 1.0 - poly * exp(-z * z);
   return x >= 0.0 ? 0.5 * (1.0 + e) : 0.5 * (1.0 - e);
 }
+// Parte del haz de dos vías al otro lado de un borde, vista desde un plano lateral de elevación (decisión 415)
+float elevationShare(float bd, float se) {
+  if (bd <= 0.0) return 0.25;
+  return 1.0 - normalCdf(max(se - bd, 0.0) * 1.41421356 / se);
+}
 float curtainEdgeSigmaMm(float se2, float sl, float ez, float lz) {
   return sqrt(se2 * se2 * ez * ez + sl * sl * lz * lz + CURTAIN_TAPER_MM * CURTAIN_TAPER_MM);
 }
@@ -392,10 +413,14 @@ export function mediumFieldGlsl(cached: boolean, phased = false): string {
   vec2 f0 = ${field}(m, se, c.tissue, ${phase}normalize(p - uCurvC), w);
   vec3 p1 = p + uElev * se, p2 = p - uElev * se;
   vec3 m1 = toMaterial(p1), m2 = toMaterial(p2);
-  ivec2 sideT = ${cached ? 'rawElevation()' : 'elevationTissues(m1, m2, se, c, withCurtain)'};
+  vec2 sideBd;
+  ivec2 sideT = ${cached ? 'rawElevation(sideBd)' : 'elevationTissues(m1, m2, se, c, withCurtain, sideBd)'};
   vec2 f1 = ${field}(m1, se, sideT.x, ${phase}normalize(p1 - uCurvC), w);
   vec2 f2 = ${field}(m2, se, sideT.y, ${phase}normalize(p2 - uCurvC), w);
-  float sideMag = 0.5 * length(f0) + 0.25 * (length(f1) + length(f2));
+  // Reparto del haz en elevación (decisión 415): un cuarto a cada lado dentro de un mismo tejido; junto a un borde, la parte del
+  // haz que de verdad cae al otro lado según la distancia del plano lateral a ese borde.
+  vec2 share = vec2(sideT.x == c.tissue ? 0.25 : elevationShare(sideBd.x, se), sideT.y == c.tissue ? 0.25 : elevationShare(sideBd.y, se));
+  float sideMag = (1.0 - share.x - share.y) * length(f0) + (share.x * length(f1) + share.y * length(f2));
   vec2 field = length(f0) > 1e-6 ? f0 * (sideMag / length(f0)) : f0;
   float clump = uTissueClump4[c.tissue / 4][c.tissue % 4];
   if (clump > 0.0) field *= anchoredClump(m, se, clump, float(c.tissue) * TISSUE_SALT_STEP);

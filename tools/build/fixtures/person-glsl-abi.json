@@ -679,7 +679,9 @@
     ["s28PWide", "rP"],
     ["s28Dia", "rQ"],
     ["s28GbPear", "rR"],
-    ["s28GbJoin", "rU"]
+    ["s28GbJoin", "rU"],
+    ["elevationShare", "rV"],
+    ["share", "rY"]
   ],
   "afterDot": [
     "COMP_NODES",
