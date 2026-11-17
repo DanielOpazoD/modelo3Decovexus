@@ -38,6 +38,8 @@ on:
       - 'src/validation/portalReversal.test.ts'
       - 'src/validation/blindMode.test.ts'
       - 'src/validation/s0028IvcSite.test.ts'
+      - 'src/ultrasound/pleura.ts'
+      - 'src/validation/elevationShare.test.ts'
       - 'tools/mutants/**'
       - 'vite.config.ts'
       - 'package.json'
