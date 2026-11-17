@@ -1,6 +1,6 @@
 # Estado vigente: imagen
 
-Actualizado: 2026-11-17 sobre main `94bec05`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
+Actualizado: 2026-11-17 sobre main `af14774`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
 techos los limitan. La explicación de cada pasada está en `docs/ARCHITECTURE.md`; las decisiones, en `docs/DECISIONS.md`.
 
 ## A0 nativa current (339)
@@ -49,7 +49,7 @@ samplers y ranuras de uniforms: decisión 317):
 
 <!-- programas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `94bec05` el 2026-11-17 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `af14774` el 2026-11-17 con `tools/docs/estado.ts`.
 
 | Programa                  | Samplers default / s0028 | Ranuras default / s0028 | Uso de tokens (peor persona) | Uso de ramas |
 | ------------------------- | -----------------------: | ----------------------: | ---------------------------: | -----------: |
