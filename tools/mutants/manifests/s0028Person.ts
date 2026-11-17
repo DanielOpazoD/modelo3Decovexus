@@ -13,6 +13,15 @@ export const s0028Vessels: MutantManifest = {
       tests: ['src/validation/s0028Vessels.test.ts'],
     },
     {
+      name: 'triada-con-la-arteria-cruzando',
+      origin: 'decisión 412',
+      breaks:
+        'La hepática propia vuelve a cruzar por detrás del colédoco y sale del plano: la subcostal portal pierde los tres tubos paralelos.',
+      from: '      [-33.4, 21, -70.2, 2.28],',
+      to: '      [-33, 15.8, -76.3, 2.28],',
+      tests: ['src/validation/s0028Vessels.test.ts'],
+    },
+    {
       name: 'porta-derecha-con-gancho',
       origin: 'decisión 385',
       breaks: 'La porta derecha vuelve a sobrepasar el origen de su rama anterior: gancho en la ventana intrahepática.',
