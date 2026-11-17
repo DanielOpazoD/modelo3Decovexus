@@ -8,8 +8,11 @@ import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../
 import { SCENE_TUBE_CAPACITY } from '../anatomy/tubeCapacity';
 import { tubeQuery } from '../anatomy/primitives';
 import { buildVesselTree, wallThicknessMm } from '../anatomy/vesselTree';
+import { startPointsFor } from '../app/startPoints';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
+import { probeContact } from '../probe/contact';
+import { CONVEX_C35 } from '../probe/probe';
 import witnesses from './fixtures/s0028-trunk-witnesses.json';
 import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
 import { S0028_BUNDLE as B, installAnatomyBundle } from './support/legacyPerson/anatomyBundle';
@@ -351,7 +354,7 @@ it('la vía biliar de s0028 no atraviesa la luz del duodeno y su cístico nace e
   for (const id of ['rightHepaticDuct', 'leftHepaticDuct']) expect(duct(scene, id)[0].p).toEqual(cbd.at(-1)!.p);
 });
 
-it('tríada portal de s0028: colédoco anterolateral, arteria anteromedial y la arteria entre conducto y porta (decisión 409)', () => {
+it('tríada portal de s0028: colédoco, arteria y porta paralelos y apilados en la subcostal portal (decisiones 409 y 412)', () => {
   // Oráculo propio: distancias de pared calculadas aquí sobre los ejes (muestras cada 0,5 mm), sin el lector de la aplicación.
   const tubes = [...mothers(scene), ...scene.ducts];
   const tube = (id: string) => tubes.find((t) => t.id === id)!;
@@ -372,72 +375,62 @@ it('tríada portal de s0028: colédoco anterolateral, arteria anteromedial y la 
       const hit = tubeQuery(q.p, tube(other).tube);
       return { p: q.p, gap: hit.d - q.r - wall(tube(id), q.r) - wall(tube(other), hit.r) };
     });
-  // Ni el colédoco ni la hepática propia tocan la porta ni entre sí; antes el colédoco quedaba a 3,5–11 mm y la arteria a 7–22.
+  // Ni el colédoco ni la hepática propia tocan la porta ni entre sí; antes de la decisión 409 el colédoco quedaba a 3,5–11 mm y
+  // la arteria a 7–22.
   for (const [a, b] of [
     ['cbd', 'pvTrunk'],
     ['cbd', 'pvLeft'],
     ['cbd', 'hepaticArtery'],
     ['hepaticArtery', 'pvTrunk'],
     ['hepaticArtery', 'pvRight'],
+    ['hepaticArtery', 'pvRightAnterior'],
     ['hepaticArtery', 'pvLeft'],
+    ['rightHepaticDuct', 'hepaticArtery'],
     ['rightHepaticDuct', 'pvLeft'],
     ['rightHepaticDuct', 'hvMiddle'],
     ['leftHepaticDuct', 'pvLeft'],
     ['leftHepaticDuct', 'hvLeft'],
   ])
     expect(Math.min(...gaps(a, b).map((g) => g.gap)), `${a}/${b}`).toBeGreaterThan(0.3);
-  // Pegados a la porta: ≥ 8 mm de colédoco y ≥ 25 mm de arteria a 2,5 mm o menos de su pared.
-  expect(gaps('cbd', 'pvTrunk').filter((g) => g.gap <= 2.5).length * 0.5).toBeGreaterThanOrEqual(8);
-  expect(gaps('hepaticArtery', 'pvTrunk').filter((g) => g.gap <= 2.5).length * 0.5).toBeGreaterThanOrEqual(25);
-  // Lados en el ligamento: en el corte de la porta, el colédoco a la derecha del paciente y la arteria a la izquierda, ambos delante.
-  const pv = axis(scene, 'pvTrunk');
-  const dist = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
-  const nearest = (id: string, q: Vec3) => samples(id).reduce((b, s) => (dist(s.p, q) < dist(b.p, q) ? s : b)).p;
-  for (const [i, n] of pv.entries()) {
-    if (n.p[2] < -79 || n.p[2] > -74) continue;
-    const t = pv[i + 1].p.map((v, k) => v - pv[i - 1].p[k]),
-      ant = [0, 1, 0].map((v, k) => v - (t[k] * t[1]) / (t[0] ** 2 + t[1] ** 2 + t[2] ** 2)),
-      right = [t[1] * ant[2] - t[2] * ant[1], t[2] * ant[0] - t[0] * ant[2], t[0] * ant[1] - t[1] * ant[0]].map((v, _, r) =>
-        r[0] > 0 ? -v : v,
-      );
-    const along = (id: string, d: number[]) => nearest(id, n.p).reduce((s, v, k) => s + (v - n.p[k]) * d[k], 0);
-    expect(along('cbd', ant), `colédoco anterior, z${n.p[2]}`).toBeGreaterThan(0);
-    expect(along('cbd', right), `colédoco a la derecha, z${n.p[2]}`).toBeGreaterThan(0);
-    expect(along('hepaticArtery', ant), `arteria anterior, z${n.p[2]}`).toBeGreaterThan(0);
-    expect(along('hepaticArtery', right), `arteria a la izquierda, z${n.p[2]}`).toBeLessThan(0);
+  // Apilados (decisión 412): ≥ 40 mm de arteria a ≤ 2,5 mm de la pared portal y ≥ 40 mm de colédoco a ≤ 2,5 mm de la arterial.
+  const close = (id: string, others: string[]) => {
+    const near = others.map((o) => gaps(id, o));
+    return near[0].filter((_, i) => near.some((g) => g[i].gap <= 2.5)).length * 0.5;
+  };
+  expect(close('hepaticArtery', ['pvTrunk', 'pvRight'])).toBeGreaterThanOrEqual(40);
+  expect(close('cbd', ['hepaticArtery'])).toBeGreaterThanOrEqual(40);
+  // En el plano de la subcostal portal, la imagen clásica: tres tubos paralelos, el colédoco delante, la arteria en medio y la
+  // porta detrás. Coordenadas del plano (lateral, profundidad, elevación) de cada eje, muestreado cada 0,5 mm.
+  const sp = startPointsFor(scene.torso, B).find((p) => p.id === 'portalSubcostal')!;
+  const f = probeContact({ ...sp, rock: sp.rock ?? 0, tilt: sp.tilt ?? 0, lift: 0 }, CONVEX_C35, scene.torso).frame;
+  const inPlane = (ids: string[]) =>
+    ids
+      .flatMap((id) => samples(id))
+      .map(({ p }) => [f.lateral, f.axial, f.elevation].map((u) => p.reduce((s, v, k) => s + (v - f.face[k]) * u[k], 0)))
+      .sort((a, b) => a[0] - b[0]);
+  const at = (line: number[][], lat: number) => {
+    const i = line.findIndex((q) => q[0] >= lat);
+    if (i <= 0) return null;
+    const [a, b] = [line[i - 1], line[i]],
+      t = (lat - a[0]) / Math.max(1e-9, b[0] - a[0]);
+    return a.map((v, k) => v + (b[k] - v) * t);
+  };
+  const [pv, artery, duct] = [inPlane(['pvTrunk', 'pvRight']), inPlane(['hepaticArtery']), inPlane(['cbd', 'rightHepaticDuct'])];
+  const stacked: { lat: number; upper: number; lower: number }[] = [];
+  for (let lat = -40; lat <= 80; lat += 1) {
+    const [p, a, d] = [at(pv, lat), at(artery, lat), at(duct, lat)];
+    // Colédoco y arteria a ≤ 1 mm del plano (enteros dentro del haz), y por orden de profundidad sobre el eje portal.
+    if (!p || !a || !d || Math.abs(a[2]) > 1 || Math.abs(d[2]) > 1 || !(d[1] < a[1] && a[1] < p[1])) continue;
+    stacked.push({ lat, upper: a[1] - d[1], lower: p[1] - a[1] });
   }
-  // El corte del colédoco: en ≥ 3 mm de su eje, la recta hasta el eje portal más cercano atraviesa la luz de la arteria.
-  const crossing = samples('cbd').filter(({ p }) => {
-    const q = nearest('pvTrunk', p);
-    return Array.from({ length: 21 }, (_, k) => p.map((v, a) => v + ((q[a] - v) * k) / 20) as Vec3).some(
-      (m) => tubeQuery(m, tube('hepaticArtery').tube).d < 0,
-    );
-  });
-  expect(crossing.length * 0.5).toBeGreaterThanOrEqual(3);
-  // Un solo corte los contiene: el plano por el tronco portal del ligamento y el colédoco deja a ≤ 3 mm el eje de los dos desde
-  // la cabeza del páncreas hasta pasada la arteria (por encima, el hepático común sube a su confluencia), y la arteria lo
-  // atraviesa entre los dos. Antes el colédoco cruzaba ese plano en oblicuo.
-  const ligament = pv.filter((n) => n.p[2] >= -84).map((n) => n.p),
-    duct = samples('cbd')
-      .filter((q) => q.p[2] >= -84 && q.p[2] <= -68)
-      .map((q) => q.p),
-    points = [...ligament, ...duct],
-    centre = points.reduce<number[]>((s, p) => s.map((v, k) => v + p[k] / points.length), [0, 0, 0]),
-    along = ligament.at(-1)!.map((v, k) => v - ligament[0][k]);
-  // El plano contiene la dirección del tronco: se busca su giro alrededor de ella que deja más cerca el punto más lejano.
-  const across = [along[1], -along[0], 0],
-    third = [
-      along[1] * across[2] - along[2] * across[1],
-      along[2] * across[0] - along[0] * across[2],
-      along[0] * across[1] - along[1] * across[0],
-    ];
-  const unit = (v: number[]) => v.map((x) => x / Math.hypot(...v));
-  let worst = Infinity;
-  for (let deg = 0; deg < 180; deg++) {
-    const n = unit(across).map((v, k) => v * Math.cos((deg * Math.PI) / 180) + unit(third)[k] * Math.sin((deg * Math.PI) / 180));
-    worst = Math.min(worst, Math.max(...points.map((p) => Math.abs(p.reduce((s, v, k) => s + (v - centre[k]) * n[k], 0)))));
-  }
-  expect(worst).toBeLessThan(3);
+  // Medido el 16-11-2026: 44 mm seguidos (lateral 10 a 53); antes la arteria cruzaba entre conducto y porta y los dos entraban y
+  // salían del plano (unos 5 mm del colédoco dentro).
+  expect(stacked.length).toBeGreaterThanOrEqual(38);
+  expect(stacked.at(-1)!.lat - stacked[0].lat).toBe(stacked.length - 1);
+  // Paralelos: la separación conducto–arteria no varía más de 1,5 mm (medido 0,6) y la arteria–porta, solo lo que adelgaza la porta.
+  const spread = (v: number[]) => Math.max(...v) - Math.min(...v);
+  expect(spread(stacked.map((s) => s.upper))).toBeLessThan(1.5);
+  expect(spread(stacked.map((s) => s.lower))).toBeLessThan(4);
 });
 
 it('la rama anterior de la porta derecha continúa a su madre sin gancho (decisión 385)', () => {

@@ -415,3 +415,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [409](DECISIONS.md#L12341) | Tríada portal de s0028: colédoco y arteria hepática junto a la porta | vigente |
 | [410](DECISIONS.md#L12353) | Laten los ventrículos y la aurícula derecha | vigente |
 | [411](DECISIONS.md#L12364) | Ventana de la aorta sagital con sus ramas | vigente |
+| [412](DECISIONS.md#L12375) | Tríada portal en paralelo en la subcostal portal | vigente |
