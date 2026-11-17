@@ -12394,3 +12394,15 @@ externa de su pared; dentro de ella ceden hígado, bazo, páncreas, vejiga y tub
 dentro. CPU y GPU, con la misma pera (`uGbNodes`); el cístico nace en ella [EXTRAPOLACIÓN PROPIA].
 **Consecuencias.** Luz anecoica con refuerzo posterior; sale el par de conflicto intestino + vesícula del censo.
 **Verificación.** `s0028Gallbladder.test.ts`; huellas de la revisión 413 con su inversa (`gallbladderBefore413`); e2e en vivo.
+
+## 414. Huellas de shaders: una sola foto vigente
+
+**Contexto.** Cada cambio deliberado de GLSL añadía una revisión de huellas y una transformación inversa del texto (402, 410, 413),
+que las pruebas componían en cadena: la última PR necesitó tres intentos solo para eso. El coste crecía con cada revisión.
+**Decisión.** `shader-hashes.json` guarda las huellas vigentes de los 40 programas (default y s0028, fuente y transformados),
+comprobadas idénticas a lo que fijaba la cadena. `VEXUS_UPDATE_SHADER_HASHES=s0028` reescribe solo las de la persona y sigue
+exigiendo que los default no cambien; `=all`, las dos. Se retiran las revisiones 334–413 y sus inversas; la foto de main
+`8ed26cf` pasa a `docs/evidence/structure-322-p3`.
+**Consecuencias.** Se pierde la prueba automática de que una revisión pasada «solo cambió X»: lo dice el diff de la foto en cada
+PR. Un cambio de GLSL cuesta un comando. Procedimiento en `docs/engineering/cambio-glsl.md`.
+**Verificación.** `personShaders.test.ts` (foto, 25 programas especializados, símbolo privado) y `s0028WallGpu.test.ts`.

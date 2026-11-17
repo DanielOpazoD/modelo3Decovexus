@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { shaderCosts } from '../../tools/anatomy/s0028-shader-metrics';
 import { minifyGlslBody } from '../../tools/build/glslMinify';
@@ -8,28 +9,28 @@ import { HEART_SHAPE, heartShapeGlsl } from '../anatomy/organs/heart';
 import { S0028_HEART } from '../anatomy/people/s0028/cpu';
 import * as PASSES from '../ultrasound/shaders/passes.glsl';
 import baseline from './fixtures/s0028-shader-default.json';
-import { layoutBefore402 } from '../../tools/build/layoutBefore402';
-import { heartBefore410 } from '../../tools/build/heartBefore410';
 import { S0028_BUNDLE as bundle } from './support/legacyPerson/anatomyBundle';
 
-it('conserva byte a byte los ocho GLSL default fijados (tablas renales 339; programas restantes 326)', () => {
-  for (const [name, hash] of Object.entries(baseline)) {
+it('conserva byte a byte los ocho GLSL de la otra persona fijados en la foto vigente (decisión 414)', () => {
+  // Mantenimiento, tras un cambio deliberado de los programas default: `VEXUS_UPDATE_SHADER_HASHES=all npx vitest run
+  // src/validation/s0028WallGpu.test.ts` reescribe estas ocho huellas (docs/engineering/cambio-glsl.md).
+  const pinned = baseline as Record<string, string>;
+  for (const name of Object.keys(pinned)) {
     const source = Object.entries(PASSES).find(([key]) => key === name)?.[1];
     if (typeof source !== 'string') throw new Error('Programa ausente');
-    // con las constantes de disposición de antes de la capacidad de tubos de la decisión 402 y el corazón de antes del latido
-    // (decisión 410): lo demás, byte a byte
-    expect(
-      createHash('sha256')
-        .update(layoutBefore402(heartBefore410(personShader(source, { person: 'current' }))))
-        .digest('hex'),
-      name,
-    ).toBe(hash);
+    const digest = createHash('sha256')
+      .update(personShader(source, { person: 'current' }))
+      .digest('hex');
+    if (process.env.VEXUS_UPDATE_SHADER_HASHES === 'all') pinned[name] = digest;
+    expect(digest, name).toBe(pinned[name]);
     expect(
       createHash('sha256')
         .update(source + '\n')
         .digest('hex'),
-    ).not.toBe(hash);
+    ).not.toBe(pinned[name]);
   }
+  if (process.env.VEXUS_UPDATE_SHADER_HASHES === 'all')
+    writeFileSync('src/validation/fixtures/s0028-shader-default.json', JSON.stringify(pinned, null, 2) + '\n');
 });
 
 it('s0028 sustituye W global en todos los consumidores alcanzables y lee cuatro soportes geométricos', () => {

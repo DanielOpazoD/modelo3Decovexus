@@ -1,5 +1,9 @@
 {
   "source": {
+    "VERT": {
+      "default": "cb7d7c8fbe026ad16fbed737a720dc286dbaa3802e21c8e527f86b13f1c06b4f",
+      "s0028": "cb7d7c8fbe026ad16fbed737a720dc286dbaa3802e21c8e527f86b13f1c06b4f"
+    },
     "FRAG_TRANS_HITS": {
       "default": "2a7d5ccd6b0a126d569cbbf731cd16c9a0778aba7101f679dc3615ecf4ce8d4d",
       "s0028": "a00008870d53635f63dd4f6edad6824b6854ce6600803cf6355896733522df94"
@@ -27,6 +31,22 @@
     "FRAG_TRANS_SEGMENTS": {
       "default": "638df162cd18b1ddb3e7a5f82180da379f046c976549b041d375091ce15e44b2",
       "s0028": "2b5d6fcf0fc583570298854a45944dfcdc86cdca1412d3d879ac6dfb90b853c3"
+    },
+    "FRAG_TRANS_PREFIX": {
+      "default": "1cdb555a6c5c1b4f2c2eab9fae95a7095d6eb76b17f7c49bd9f8f0e6512d3390",
+      "s0028": "1cdb555a6c5c1b4f2c2eab9fae95a7095d6eb76b17f7c49bd9f8f0e6512d3390"
+    },
+    "FRAG_TRANS_PREFIX_STEERED": {
+      "default": "a389d1fd8b416e007ec2eb576f9515823086643ffb03d40ee1fda40c6c7b46c0",
+      "s0028": "a389d1fd8b416e007ec2eb576f9515823086643ffb03d40ee1fda40c6c7b46c0"
+    },
+    "FRAG_TRANSMISSION": {
+      "default": "20c611e2284f1bdb44abdf4eda8ca3c88da46c69384b42b4551ab346aad4fc5a",
+      "s0028": "20c611e2284f1bdb44abdf4eda8ca3c88da46c69384b42b4551ab346aad4fc5a"
+    },
+    "FRAG_TRANSMISSION_STEERED": {
+      "default": "3c8c50b47a776fcdb8ef701718953ffaac1b53981cdaad989c9543e46c5ab50c",
+      "s0028": "3c8c50b47a776fcdb8ef701718953ffaac1b53981cdaad989c9543e46c5ab50c"
     },
     "FRAG_RAWFIELD": {
       "default": "6a57c6e18370aeb115f34134fe6a8c2fdbb1676a0b6448d4e7440c6ef6950a25",
@@ -76,9 +96,45 @@
       "default": "3885075e25fa5969dc95f56c033b2dc7764902060602e7cfd76d7eb1610e894b",
       "s0028": "f91e006d17b3011beaace5ec372c977ae07971aa912f2d86100683b2750734de"
     },
+    "FRAG_AXIAL": {
+      "default": "2b316516971e18cae075cfb11e625dc67fa344d640d3d2851e1f668940e88214",
+      "s0028": "2b316516971e18cae075cfb11e625dc67fa344d640d3d2851e1f668940e88214"
+    },
+    "FRAG_LATERAL": {
+      "default": "b315bc41cf53e35fc540542c0a731d088620fb7c21e3151ff293e7a8d0c18180",
+      "s0028": "b315bc41cf53e35fc540542c0a731d088620fb7c21e3151ff293e7a8d0c18180"
+    },
+    "FRAG_COMPOUND": {
+      "default": "ea1aa15750f6784b962cbb0c123cea8389dac887ce4ebb504c33a270304521ce",
+      "s0028": "ea1aa15750f6784b962cbb0c123cea8389dac887ce4ebb504c33a270304521ce"
+    },
     "FRAG_COLOR": {
       "default": "0eacff58d5b238c6c1ff5b74f3931c08fe49a2f5eb172c90e053cba0ae45ee6b",
       "s0028": "88e3483e8ca7b0bb94286bbb23ca02d4f68c0c0ba9fe731aa6c722a1252a45a1"
+    },
+    "FRAG_SPECKLE": {
+      "default": "828288ba8e833c7c5c4c92f5bc114120bee665c1493b49575ec3adffbd99d9e4",
+      "s0028": "828288ba8e833c7c5c4c92f5bc114120bee665c1493b49575ec3adffbd99d9e4"
+    },
+    "FRAG_SCANCONVERT": {
+      "default": "694f1eaed0dcc0d2bb471859df14b58265b6ba88640ac2c1390d3d02a24d49b6",
+      "s0028": "694f1eaed0dcc0d2bb471859df14b58265b6ba88640ac2c1390d3d02a24d49b6"
+    },
+    "FRAG_PERSIST": {
+      "default": "eb1d328cf943cbbb3d925f779473fc2d000d80303cb548807d567ef9b5cc497e",
+      "s0028": "eb1d328cf943cbbb3d925f779473fc2d000d80303cb548807d567ef9b5cc497e"
+    },
+    "FRAG_BLIT": {
+      "default": "e8de8fe1550f57de3eabe2bdb1fde69b9fbe514c650d5c6cb0c1cc82f8dc7cdc",
+      "s0028": "e8de8fe1550f57de3eabe2bdb1fde69b9fbe514c650d5c6cb0c1cc82f8dc7cdc"
+    },
+    "FRAG_MLINE": {
+      "default": "6c90f5808308bce19792a21abf61e46744f59526bbc6dfb926d10633f9faa088",
+      "s0028": "6c90f5808308bce19792a21abf61e46744f59526bbc6dfb926d10633f9faa088"
+    },
+    "FRAG_MSTRIP": {
+      "default": "833fb5747329f4f3a909b6852fc2322526b19640ef64a812948ae12e1cb9d9d7",
+      "s0028": "833fb5747329f4f3a909b6852fc2322526b19640ef64a812948ae12e1cb9d9d7"
     },
     "FRAG_TISSUEMAP": {
       "default": "f4f5550cf42e912eb670ea92898c61f8aa753da033cde76a1c45cee710cc2db9",
@@ -99,9 +155,17 @@
     "FRAG_RESP_QUERY": {
       "default": "691bb5c54f7a703ae70fefebbb26ca34788f938840ecf9019a2f41f7155c4e07",
       "s0028": "d6f011361a470b23c0765cb9c03620df917d451712f260645728f791a3e3b43d"
+    },
+    "FRAG_TRIAD_QUERY": {
+      "default": "3a93d0b307a41017638e8a788a729087a60a38f302aa611adbec764c85af24ce",
+      "s0028": "3a93d0b307a41017638e8a788a729087a60a38f302aa611adbec764c85af24ce"
     }
   },
   "productionTransforms": {
+    "VERT": {
+      "default": "83b3809232aa26ae490b35050e44adf17eb255d059b7c594a1eeb45468c44fe9",
+      "s0028": "83b3809232aa26ae490b35050e44adf17eb255d059b7c594a1eeb45468c44fe9"
+    },
     "FRAG_TRANS_HITS": {
       "default": "9181b77675048a85ab8bbde62c89000135f82f98731a1f827c25cd196d8b9860",
       "s0028": "9cd8c15cd3f29f3927f2c217a5b7579c769a2a8bb874b89559399124b9f3af11"
@@ -129,6 +193,22 @@
     "FRAG_TRANS_SEGMENTS": {
       "default": "bc47d7b67c2f4e6aa052e6f6a9d1ec50f6528f1c35602b46296e39ecd32850e3",
       "s0028": "aa3bf2ca3aaf8310dda65eb527956a60905152d51ed4c0f18a8304442b0bf072"
+    },
+    "FRAG_TRANS_PREFIX": {
+      "default": "bf3bba2b8d00f62bf17f2e2dc2f25475b28baa8b70d8246a029a978596ebe356",
+      "s0028": "bf3bba2b8d00f62bf17f2e2dc2f25475b28baa8b70d8246a029a978596ebe356"
+    },
+    "FRAG_TRANS_PREFIX_STEERED": {
+      "default": "93ebe4c2209916b9af58fd5c85c0737526bda71abe767e93f1833e1ff852279d",
+      "s0028": "93ebe4c2209916b9af58fd5c85c0737526bda71abe767e93f1833e1ff852279d"
+    },
+    "FRAG_TRANSMISSION": {
+      "default": "9657c662c38263632fa713f8fd79b004e130e0e01dc4a885a28927037694326e",
+      "s0028": "9657c662c38263632fa713f8fd79b004e130e0e01dc4a885a28927037694326e"
+    },
+    "FRAG_TRANSMISSION_STEERED": {
+      "default": "e78c0762ad153c7c26c4799fccd5310955bac802fd36d0159d6fa5bf86a32abb",
+      "s0028": "e78c0762ad153c7c26c4799fccd5310955bac802fd36d0159d6fa5bf86a32abb"
     },
     "FRAG_RAWFIELD": {
       "default": "0b3f4111a3e2eb4b1e388a1dab4df048245d332a89dd8982c3b15e57992201ef",
@@ -178,9 +258,45 @@
       "default": "a001c8528a8797e8df14de5fdc2972cca92e7dd062c2db12b9d6cbf66978fbce",
       "s0028": "f7f84cfe23aad1142bb3cdd6b4c35cb75c25dc2d47c8ef3663a171bd1ae57322"
     },
+    "FRAG_AXIAL": {
+      "default": "74219fbf35d3246934c4a16cb21aeeaab40e48b3510462a2ceb7a2298c1ceb95",
+      "s0028": "74219fbf35d3246934c4a16cb21aeeaab40e48b3510462a2ceb7a2298c1ceb95"
+    },
+    "FRAG_LATERAL": {
+      "default": "00a14bb8699a597c59a724372def942102ceab65b3b30041802df4d3d5ceadff",
+      "s0028": "00a14bb8699a597c59a724372def942102ceab65b3b30041802df4d3d5ceadff"
+    },
+    "FRAG_COMPOUND": {
+      "default": "b8129c09fd69fcc732611c66d413c716b4e5fd3d81fb634182c34f4648c1fec5",
+      "s0028": "b8129c09fd69fcc732611c66d413c716b4e5fd3d81fb634182c34f4648c1fec5"
+    },
     "FRAG_COLOR": {
       "default": "cebe12703f1387fc918fd05df80ec760a065255f86835917a930ef48b3a3f066",
       "s0028": "9cc5c15e80d9000b0e5cc83eb8c760cb39ec024b3c55025c48f1afe12af3e83f"
+    },
+    "FRAG_SPECKLE": {
+      "default": "c6cd0e5c4867ceffa51f6c65a7617756ad3e359f5231c96e24832a6063245ff1",
+      "s0028": "c6cd0e5c4867ceffa51f6c65a7617756ad3e359f5231c96e24832a6063245ff1"
+    },
+    "FRAG_SCANCONVERT": {
+      "default": "3519e528db90fe86ef113da92386034405e8eaab28be5d986d3ea2dfcebc9983",
+      "s0028": "3519e528db90fe86ef113da92386034405e8eaab28be5d986d3ea2dfcebc9983"
+    },
+    "FRAG_PERSIST": {
+      "default": "f704c0efa4835951c1ed0701bbf1514b4d5e30fc089c80d677e0966834106788",
+      "s0028": "f704c0efa4835951c1ed0701bbf1514b4d5e30fc089c80d677e0966834106788"
+    },
+    "FRAG_BLIT": {
+      "default": "ed874c0e7b30c7a1964255795e7a3162cc00576899edbaeff0db56943088c251",
+      "s0028": "ed874c0e7b30c7a1964255795e7a3162cc00576899edbaeff0db56943088c251"
+    },
+    "FRAG_MLINE": {
+      "default": "8ccc42d44640aa5de4a6b0f1768511fa9cae9a090c637b776d5cb309c48878f0",
+      "s0028": "8ccc42d44640aa5de4a6b0f1768511fa9cae9a090c637b776d5cb309c48878f0"
+    },
+    "FRAG_MSTRIP": {
+      "default": "68b098ee60fc031f856443226506da57bec19044088c3b76927b84a2c000e87c",
+      "s0028": "68b098ee60fc031f856443226506da57bec19044088c3b76927b84a2c000e87c"
     },
     "FRAG_TISSUEMAP": {
       "default": "633256dc448ac04f6c48d2d6940095e31670f99285cfbac9764231bbce214890",
@@ -201,6 +317,10 @@
     "FRAG_RESP_QUERY": {
       "default": "2c401eb3ebd6785f4dbabbceb6eaac7955c6117cbee10f73f37b0a95cdcbf01f",
       "s0028": "d4a809c9f166a2fae9a77db60f8808819a97e444aa797d3ab862ea37c2d38417"
+    },
+    "FRAG_TRIAD_QUERY": {
+      "default": "2c8dc5ec45dab7cc9e97c0b299022996691698397133d407c90a8462773feb1f",
+      "s0028": "2c8dc5ec45dab7cc9e97c0b299022996691698397133d407c90a8462773feb1f"
     }
   }
 }
