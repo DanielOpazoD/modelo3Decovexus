@@ -23,7 +23,7 @@ Descarga: 20.433.526 / 25.000.000 B. Incremento de metadatos: 3.788 / 4.096 B. N
 
 ## Paridad y pruebas
 
-Los 38 fragmentos y el vértice conservan los hashes de **main `8ed26cf`**, de fuente y transformados, para default y s0028 (39/39 en cada comparación). La ABI anterior de r3 daba 4/39 transformados iguales a main; se conserva ese negativo. Un símbolo/uniform privado añadido no altera default. Fixture completa: [person-shaders-main.json](../../../src/validation/fixtures/person-shaders-main.json); mapa ABI con SHA de origen: [person-glsl-abi.json](../../../tools/build/fixtures/person-glsl-abi.json). [Recibo histórico de las correcciones](review-fixes.json), anterior a la restitución del techo default de main; las cifras vigentes están en [clausuras y hashes](closures.json).
+Los 38 fragmentos y el vértice conservan los hashes de **main `8ed26cf`**, de fuente y transformados, para default y s0028 (39/39 en cada comparación). La ABI anterior de r3 daba 4/39 transformados iguales a main; se conserva ese negativo. Un símbolo/uniform privado añadido no altera default. Fixture completa: [person-shaders-main.json](person-shaders-main.json) (foto histórica; la vigente es `src/validation/fixtures/shader-hashes.json`, decisión 414); mapa ABI con SHA de origen: [person-glsl-abi.json](../../../tools/build/fixtures/person-glsl-abi.json). [Recibo histórico de las correcciones](review-fixes.json), anterior a la restitución del techo default de main; las cifras vigentes están en [clausuras y hashes](closures.json).
 
 Paridad default exacta: 82.251 puntos, 10 marcos y 30 contactos. SHA-256:
 

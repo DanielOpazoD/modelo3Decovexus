@@ -29,6 +29,7 @@ mira las láminas; una tabla no recoge lo que ahí se ve. La aceptación es la l
 
 1. **Anatomía TS = GLSL.** Todo cambio en `src/anatomy/*.ts` que afecte a `classify` va también a
    `src/anatomy/gpu/anatomy.glsl.ts` (misma fórmula), con sus uniforms en `anatomy/gpu/sceneUniforms.ts`.
+   Antes de tocar GLSL o datos de la persona, recorre `docs/engineering/cambio-glsl.md` (huellas, gemelos, ABI).
    Los órganos nuevos van como módulo en `src/anatomy/organs/` (TS y GLSL juntos, mismo nombre).
    La e2e `equivalence.spec.ts` exige acuerdo exacto en 50 000 puntos; en la app, pestaña Docente.
 2. **Marco levógiro**: x = izquierda del paciente. El navegador 3D lo espeja con `scale.x = −1`.
