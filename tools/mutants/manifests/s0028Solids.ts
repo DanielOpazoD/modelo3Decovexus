@@ -114,5 +114,21 @@ export const s0028Solids: MutantManifest = {
       to: '  return false;',
       tests: ['src/validation/s0028SolidsPackage.test.ts'],
     },
+    {
+      name: 'vesicula-sin-ceder',
+      origin: 'decisión 413',
+      breaks: 'Dentro de la vesícula en ayunas el hígado y el intestino vuelven a ser dueños: conflicto U en su luz y su pared.',
+      from: '      if (gallbladder < 0 && YIELDS_TO_GALLBLADDER.has(i)) continue;\n',
+      to: '',
+      tests: ['src/validation/s0028Gallbladder.test.ts'],
+    },
+    {
+      name: 'vesicula-duena-la-del-tac',
+      origin: 'decisión 413',
+      breaks: 'El dueño vesicular vuelve a ser la máscara contraída del TAC: la pera en ayunas queda sin dueño fuera de ella.',
+      from: '        d = i === GALLBLADDER_FIELD ? gallbladder : sourceDistance(data, p, f, dims);',
+      to: '        d = sourceDistance(data, p, f, dims);',
+      tests: ['src/validation/s0028Gallbladder.test.ts'],
+    },
   ],
 };

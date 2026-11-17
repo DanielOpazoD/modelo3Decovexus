@@ -4,6 +4,7 @@ import { blindMode, cases } from './cases';
 import { contact } from './contact';
 import { cutMapWorker } from './cutMapWorker';
 import { s0028Classifier } from './s0028Classifier';
+import { s0028Gallbladder } from './s0028Gallbladder';
 import { s0028Cpu, s0028Look, s0028Vessels } from './s0028Person';
 import { s0028Solids } from './s0028Solids';
 import { s0028Wall } from './s0028Wall';
@@ -23,6 +24,7 @@ export const MANIFESTS: readonly MutantManifest[] = [
   structureIdentity,
   startPoints,
   s0028Vessels,
+  s0028Gallbladder,
   s0028Cpu,
   s0028Look,
   cases,

@@ -12,5 +12,14 @@ export const scene: MutantManifest = {
       to: '    const dLv = this.ligamentumVenosumSdf(m);',
       tests: ['src/validation/s0028SolidsClassify.test.ts'],
     },
+    {
+      name: 'vesicula-clasificada-con-el-atlas',
+      origin: 'decisión 413',
+      breaks:
+        'La luz vesicular de s0028 vuelve a salir del canal contraído del atlas mientras su dueño es la pera: pared y luz en otro sitio.',
+      from: "      ? { kind: 'gallbladder', ...ownGallbladder, person: person?.cpu, pear: true }",
+      to: "      ? { kind: 'gallbladder', ...ownGallbladder, person: person?.cpu, pear: false }",
+      tests: ['src/validation/s0028Gallbladder.test.ts'],
+    },
   ],
 };
