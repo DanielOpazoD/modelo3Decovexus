@@ -24,7 +24,7 @@
  */
 import { INTERFACES, Interface, hasCurvatureCoherence, isRibInterface, isWallLayerInterface } from '../../anatomy/interfaces';
 import { torsoDepth } from '../../anatomy/primitives';
-import type { AnatomyScene, VesselCaliber } from '../../anatomy/scene';
+import type { AnatomyScene, Classification, FaceGradient, VesselCaliber } from '../../anatomy/scene';
 import { TISSUES, Tissue, attenuationDbPerCm } from '../../anatomy/tissues';
 import { cross, dot, normalize, type Vec3 } from '../../core/vec3';
 import { axialSigmaMm, lateralSigmaMm } from '../../ultrasound/beamModel';
@@ -79,6 +79,8 @@ const HET_TISSUES: ReadonlySet<Tissue> = new Set([
 ]);
 /** Muestras gruesas de la pasada A (`COARSE_DEPTH` del renderizador). */
 const COARSE = 160;
+/** Alcance máximo del núcleo axial de la pasada C (muestras a cada lado). */
+const AXIAL_MAX = 12;
 /** Frecuencia B efectiva del convexo (MHz, `CONVEX_C35_PROFILE`). */
 export const B_MHZ = 2.5;
 /** Número de onda del eco de interfaz (1/mm): 2π/λ con λ del haz. */
@@ -134,15 +136,104 @@ export interface WallTwinOut {
   rowR: (i: number) => number;
 }
 
+/** Lo que `wallTwin` lee de la clasificación de un punto. */
+type Sample = Pick<Classification, 'tissue' | 'boundaryDistance' | 'interface' | 'interfaceDistance'>;
+
 /** Clasificación del modelo: la de hoy o, en `base`, sin grasa preperitoneal ni caras de pared o costilla. */
 export function classifyModel(scene: AnatomyScene, caliber: VesselCaliber, m: Vec3, model: WallModel) {
-  const c = scene.classify(m, caliber);
+  return ofModel(scene, scene.classify(m, caliber), m, model);
+}
+
+/** La clasificación de la escena `c` en el punto `m`, vista por el modelo. */
+function ofModel<C extends Sample>(scene: AnatomyScene, c: C, m: Vec3, model: WallModel): C {
   if (model === 'wall') return c;
   const wallFace = isWallLayerInterface(c.interface) || isRibInterface(c.interface);
-  // la grasa preperitoneal era músculo
-  const pp = c.tissue === Tissue.Fat && -torsoDepth(m, scene.torso) >= scene.torso.skinMm + scene.torso.fatMm;
-  const tissue = pp ? Tissue.Muscle : c.tissue;
+  const tissue = modelTissue(scene, c.tissue, m, model);
   return wallFace ? { ...c, tissue, interface: Interface.None, interfaceDistance: 1e3 } : { ...c, tissue };
+}
+
+/** El tejido del modelo: en `base` la grasa preperitoneal era músculo. */
+function modelTissue(scene: AnatomyScene, tissue: Tissue, m: Vec3, model: WallModel): Tissue {
+  const pp = model === 'base' && tissue === Tissue.Fat && -torsoDepth(m, scene.torso) >= scene.torso.skinMm + scene.torso.fatMm;
+  return pp ? Tissue.Muscle : tissue;
+}
+
+/** Clasificación de la escena en los puntos de una línea del marco: por fila y por centro grueso de la pasada A. */
+interface LineSamples {
+  /** Por fila: 1, el plano central ya está; 2 y 4, los planos a +σe y −σe. */
+  known: Uint8Array;
+  tissue: Uint8Array;
+  face: Uint8Array;
+  boundaryMm: Float64Array;
+  faceMm: Float64Array;
+  /** Tejido y distancia al borde de los planos a +σe y −σe (decisión 415). */
+  plus: Uint8Array;
+  minus: Uint8Array;
+  plusMm: Float64Array;
+  minusMm: Float64Array;
+  coarse: Uint8Array | null;
+  /** `scene.faceGradient` en el plano central de las filas que dibujan una cara a su alcance. */
+  gradient: Map<number, FaceGradient | null>;
+}
+interface FrameSamples {
+  bowelRadii: Float32Array;
+  frames: Map<string, Map<number, LineSamples>>;
+}
+const FRAME_SAMPLES = new WeakMap<AnatomyScene, WeakMap<VesselCaliber, FrameSamples>>();
+
+/**
+ * Clasificación de un marco, compartida por las variantes de `wallTwin`. El punto de cada (línea, fila), los de sus planos a ±σe y
+ * los centros gruesos de la pasada A son los mismos con cualquier modelo, textura, cara, réplica o parche, y `scene.classify` en
+ * un punto solo depende de la escena y del calibre. Las pruebas que comparan variantes sobre un marco la repetían: 7 de las 12
+ * pasadas de `wallDisplayTwin.test.ts` y 17 de las 24 de `wallTwin.test.ts` caen en un marco ya clasificado, entero o en parte. Se
+ * guarda la de la escena, sin modelo (`ofModel` y `modelTissue` se aplican al leerla), y de ella solo lo que `wallTwin` lee; el
+ * gradiente de la cara (`scene.faceGradient`), que vuelve a clasificar el punto, también.
+ *
+ * La clave lleva todo lo que fija esos puntos (lo que leen `dirOf`, `pointAt`, `rowR` y `elevSigmaMm`), bit a bit. Otra escena,
+ * otro calibre (por identidad) u otra compresión de la sonda (`bowelRadii`) no comparten nada. La escena no debe cambiar de otro
+ * modo entre dos pasadas.
+ */
+function frameSamples(scene: AnatomyScene, caliber: VesselCaliber, frame: TwinFrame, g: TwinGeometry): Map<number, LineSamples> {
+  let byCaliber = FRAME_SAMPLES.get(scene);
+  if (!byCaliber) FRAME_SAMPLES.set(scene, (byCaliber = new WeakMap()));
+  let samples = byCaliber.get(caliber);
+  if (!samples || samples.bowelRadii !== scene.bowelRadii)
+    byCaliber.set(caliber, (samples = { bowelRadii: scene.bowelRadii, frames: new Map() }));
+  const key = [
+    ...frame.center,
+    ...frame.axial,
+    ...frame.lateral,
+    ...frame.elevation,
+    ...[g.depthMm, g.lines, g.samples, g.curvatureRadius, g.halfSector, g.elevFocusMm, g.elevSigma0Mm],
+  ]
+    .map((x) => (Object.is(x, -0) ? '-0' : String(x)))
+    .join(' ');
+  let lines = samples.frames.get(key);
+  if (!lines) samples.frames.set(key, (lines = new Map<number, LineSamples>()));
+  return lines;
+}
+
+/** La línea `j` del marco, con sitio para `rows` filas. */
+function lineSamples(lines: Map<number, LineSamples>, j: number, rows: number): LineSamples {
+  let line = lines.get(j);
+  if (!line) {
+    const bytes = () => new Uint8Array(rows);
+    line = {
+      known: bytes(),
+      tissue: bytes(),
+      face: bytes(),
+      boundaryMm: new Float64Array(rows),
+      faceMm: new Float64Array(rows),
+      plus: bytes(),
+      minus: bytes(),
+      plusMm: new Float64Array(rows),
+      minusMm: new Float64Array(rows),
+      coarse: null,
+      gradient: new Map(),
+    };
+    lines.set(j, line);
+  }
+  return line;
 }
 
 function unitKernel(sigma: number, max: number): number[] {
@@ -198,7 +289,7 @@ export function wallTwin(
   const kAx = new Map<number, number[]>();
   let RA = 0;
   for (let i = i0; i <= i1; i++) {
-    const k = unitKernel(Math.max(0.6, axialSigmaMm(rowR(i), g.beam) / dr), 12);
+    const k = unitKernel(Math.max(0.6, axialSigmaMm(rowR(i), g.beam) / dr), AXIAL_MAX);
     kAx.set(i, k);
     RA = Math.max(RA, (k.length - 1) / 2);
   }
@@ -231,9 +322,45 @@ export function wallTwin(
   const tissueOut = new Uint8Array(nL * nR);
   const faceOut = new Uint8Array(nL * nR);
   const coarseStep = g.depthMm / COARSE;
+  const lines = frameSamples(scene, caliber, frame, g);
+  // la última fila del campo es i1 + RA, con i1 < g.samples y RA ≤ AXIAL_MAX
+  const rows = g.samples + AXIAL_MAX;
   for (let a = 0; a < wL; a++) {
     const j = o.j0 - RL + a;
     const dir = dirOf(j);
+    const line = lineSamples(lines, j, rows);
+    const coarsePoint = (s: number): Vec3 => pointAt(dir, (s + 0.5) * coarseStep);
+    const coarse = (line.coarse ??= Uint8Array.from({ length: COARSE }, (_, s) => scene.classify(coarsePoint(s), caliber).tissue));
+    /** `scene.classify` en el plano central de la fila `i`, cuyo punto es `p`. */
+    const sampleAt = (i: number, p: Vec3): Sample => {
+      if (line.known[i] & 1)
+        return { tissue: line.tissue[i], boundaryDistance: line.boundaryMm[i], interface: line.face[i], interfaceDistance: line.faceMm[i] };
+      const c = scene.classify(p, caliber);
+      line.tissue[i] = c.tissue;
+      line.boundaryMm[i] = c.boundaryDistance;
+      line.face[i] = c.interface;
+      line.faceMm[i] = c.interfaceDistance;
+      line.known[i] |= 1;
+      return c;
+    };
+    /** `scene.faceGradient` en el plano central de la fila `i`, cuyo punto es `p`. */
+    const gradientAt = (i: number, p: Vec3): FaceGradient | null => {
+      let gradient = line.gradient.get(i);
+      if (gradient === undefined) line.gradient.set(i, (gradient = scene.faceGradient(p, caliber)));
+      return gradient;
+    };
+    /** Tejido y distancia al borde de `scene.classify` en el plano a +σe o −σe de la fila `i`, cuyo punto es `m`. */
+    const sideAt = (i: number, sgn: number, m: Vec3): Pick<Sample, 'tissue' | 'boundaryDistance'> => {
+      const bit = sgn > 0 ? 2 : 4;
+      const tissues = sgn > 0 ? line.plus : line.minus;
+      const borderMm = sgn > 0 ? line.plusMm : line.minusMm;
+      if (line.known[i] & bit) return { tissue: tissues[i], boundaryDistance: borderMm[i] };
+      const c = scene.classify(m, caliber);
+      tissues[i] = c.tissue;
+      borderMm[i] = c.boundaryDistance;
+      line.known[i] |= bit;
+      return c;
+    };
     // A: prefijo grueso de un rayo, en amplitud en los centros de fila
     const Tc = new Float64Array(COARSE);
     const shadow = new Float64Array(COARSE);
@@ -242,7 +369,7 @@ export function wallTwin(
     let entered = false;
     let bone = false;
     for (let s = 0; s < COARSE; s++) {
-      const t = classifyModel(scene, caliber, pointAt(dir, (s + 0.5) * coarseStep), o.model).tissue;
+      const t = modelTissue(scene, coarse[s], coarsePoint(s), o.model);
       if (t === Tissue.Air && !entered) {
         Tc[s] = 1;
         shadow[s] = 1;
@@ -271,7 +398,7 @@ export function wallTwin(
       const r = rowR(i);
       const p = pointAt(dir, r);
       const se = elevSigmaMm(r, g);
-      const c0 = classifyModel(scene, caliber, p, o.model);
+      const c0 = ofModel(scene, sampleAt(i, p), p, o.model);
       const fieldFor = (m: Vec3, tissue: Tissue): [number, number] => {
         // con los dispersores fuertes del tejido (decisión 89): nodos de la misma retícula
         const f = speckleSliceField(m, g.latticeMm, se, seedF + tissue * TISSUE_SALT_STEP, st, strongScatter(tissue));
@@ -289,10 +416,11 @@ export function wallTwin(
       const side = (sgn: number): { f: [number, number]; share: number } => {
         const m: Vec3 = [0, 1, 2].map((k) => p[k] + sgn * frame.elevation[k] * se) as Vec3;
         if (c0.boundaryDistance > se + 0.5) return { f: fieldFor(m, c0.tissue), share: 0.25 };
-        const c = classifyModel(scene, caliber, m, o.model);
+        const c = sideAt(i, sgn, m);
+        const tissue = modelTissue(scene, c.tissue, m, o.model);
         return {
-          f: fieldFor(m, c.tissue),
-          share: c.tissue === c0.tissue ? 0.25 : elevationShare(Math.min(c.boundaryDistance, ELEV_BD_MAX_MM), se),
+          f: fieldFor(m, tissue),
+          share: tissue === c0.tissue ? 0.25 : elevationShare(Math.min(c.boundaryDistance, ELEV_BD_MAX_MM), se),
         };
       };
       const f0 = fieldFor(p, c0.tissue);
@@ -313,7 +441,7 @@ export function wallTwin(
       fr *= dg;
       fi *= dg;
       if (!o.noFaces?.includes(c0.interface)) {
-        const [spec, diff] = echoOf(scene, caliber, c0, p, dir, r, se, frame, g, o.noFacets ?? false);
+        const [spec, diff] = echoOf(scene, () => gradientAt(i, p), c0, p, dir, r, se, frame, g, o.noFacets ?? false);
         [fr, fi] = addInterfaceEcho([fr, fi], spec, diff);
       }
       // la transmisión y la ganancia focal de la emisión (decisión 84): el eco, no el transitorio
@@ -406,7 +534,7 @@ export function wallTwin(
  */
 function echoOf(
   scene: AnatomyScene,
-  caliber: VesselCaliber,
+  faceGradient: () => FaceGradient | null,
   c: { interface: Interface; interfaceDistance: number },
   m: Vec3,
   dir: Vec3,
@@ -420,7 +548,7 @@ function echoOf(
   if (face === Interface.None) return [0, 0];
   const reach = INTERFACES[face].twoSided ? IFACE_REACH_MM : IFACE_SHIFT_MM + IFACE_REACH_MM;
   if (c.interfaceDistance > reach * 2.5) return [0, 0];
-  const fg = scene.faceGradient(m, caliber);
+  const fg = faceGradient();
   if (!fg) return [0, 0];
   if (!faceLitFromProbe(face, fg.normal, dir)) return [0, 0];
   const cosI = Math.abs(dot(fg.normal, dir));
