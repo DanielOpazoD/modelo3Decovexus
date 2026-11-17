@@ -79,6 +79,13 @@ reintentos evitan competición local. No se modifica `playwright.config.ts` ni l
 El perfil conserva los observables de las E2E originales; `--backend metal` por sí solo no demuestra
 qué GPU se utilizó: comprobar el renderer real cuando se mida rendimiento.
 
+## Herramientas de diseño, paridad y láminas
+
+Las herramientas con las que se diseña una mejora anatómica de `s0028` y se comprueba su imagen (huecos entre tubos, plano de
+una ventana, encaje de la vesícula, láminas del modo B, paridad CPU/GPU y mapa de tejidos) están en
+[Herramientas de diseño anatómico, paridad y láminas](herramientas.md), cada una con su comando exacto. Las de navegador
+necesitan `npx playwright install chromium` y un servidor ya arrancado (`npm run dev`).
+
 ## Protocolo de medición del corte
 
 El manifiesto del cierre conserva el hash y ubicación del arnés original `measure-single-view.mjs`.
