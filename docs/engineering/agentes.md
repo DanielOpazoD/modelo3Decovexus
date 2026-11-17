@@ -22,7 +22,7 @@ ln -s "$PWD/node_modules" ../wt/<nombre>/node_modules
 
 ## Una sola batería pesada a la vez
 
-`tools/workspace/turno.sh <orden>` toma un cerrojo común a todos los worktrees y corre la orden.
+`tools/workspace/turno.sh <orden>` toma un cerrojo común a todos los worktrees y corre la orden, por orden de llegada.
 `tools/workspace/push-seguro.sh origin <rama>` es lo mismo para `git push` con su gancho completo, esperando además a que baje
 la carga. Ninguno salta ganchos ni toca plazos: solo deciden cuándo empieza la orden.
 
