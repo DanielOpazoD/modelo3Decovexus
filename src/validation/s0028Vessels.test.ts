@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { MAX_NODES, MAX_TUBE_SEGMENTS } from '../anatomy/gpu/anatomy.glsl';
+import { gallbladderPearSdf } from '../anatomy/organs/gallbladder';
 import { S0028_KIDNEY_FRAMES } from '../anatomy/people/s0028/cpu';
+import { S0028_GALLBLADDER } from '../anatomy/people/s0028/gallbladder';
 import { S0028_TUBE_SEGMENTS } from '../anatomy/people/s0028/vessels';
 import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../anatomy/s0028TrunksData';
 import { SCENE_TUBE_CAPACITY } from '../anatomy/tubeCapacity';
@@ -340,8 +342,9 @@ it('la vía biliar de s0028 no atraviesa la luz del duodeno y su cístico nace e
   expect(insideGutMm(duct(before, 'cbd'))).toBeGreaterThan(20);
   expect(insideGutMm(duct(scene, 'cbd'))).toBeLessThan(4);
   expect(insideGutMm(duct(scene, 'cysticDuct'))).toBe(0);
-  // El cístico nace dentro de la vesícula de esta persona (antes, a más de 10 mm) y termina sobre el eje del colédoco.
-  expect(s0028SourceValue(duct(scene, 'cysticDuct')[0].p, 'gallbladder').d).toBeLessThanOrEqual(0);
+  // El cístico nace dentro de la vesícula de esta persona (antes, a más de 10 mm de la del TAC) y termina sobre el eje del
+  // colédoco. Su vesícula es la pera en ayunas desde la decisión 413.
+  expect(gallbladderPearSdf(duct(scene, 'cysticDuct')[0].p, S0028_GALLBLADDER)).toBeLessThanOrEqual(0);
   expect(s0028SourceValue(duct(before, 'cysticDuct')[0].p, 'gallbladder').d).toBeGreaterThan(10);
   const end = duct(scene, 'cysticDuct').at(-1)!.p,
     cbd = duct(scene, 'cbd');

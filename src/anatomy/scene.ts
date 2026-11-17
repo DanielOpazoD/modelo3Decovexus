@@ -344,7 +344,11 @@ export class AnatomyScene {
     ({ liver: this.liver, liverLeft: this.liverLeft, visceralFace: this.visceralFace } = liverLobes(patient.liver.sizeFactor));
     this.umbilicalFissure = UMBILICAL_FISSURE;
     this.ligamentumVenosum = LIGAMENTUM_VENOSUM;
-    this.gallbladder = { ...gallbladderBody(), person: person?.cpu };
+    // La persona puede traer su propia pera (s0028, decisión 413), que manda sobre el canal vesicular de su atlas.
+    const ownGallbladder = person?.cpu.gallbladder;
+    this.gallbladder = ownGallbladder
+      ? { kind: 'gallbladder', ...ownGallbladder, person: person?.cpu, pear: true }
+      : { ...gallbladderBody(), person: person?.cpu };
     // Riñones: eje largo con el polo superior medial y posterior; hilio anteromedial.
     const bR = orthonormalBasis(this.hasAbdominalAtlas ? [0.00120157, -0.14708338, 0.98912337] : [0.22, -0.18, 1], [1, 0.25, 0]);
     const bL = orthonormalBasis(this.hasAbdominalAtlas ? [-0.08034499, -0.15237369, 0.98505175] : [-0.22, -0.18, 1], [-1, 0.25, 0]);

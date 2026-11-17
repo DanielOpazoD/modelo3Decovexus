@@ -12383,3 +12383,14 @@ porta derecha [EXTRAPOLACIÓN PROPIA]. La pose no cambia: girarla 2,3° cerraba 
 portal de 79 a 59 mm (decisión 386).
 **Consecuencias.** Tres tubos paralelos en unos 40 mm de la ventana.
 **Verificación.** `s0028Vessels.test.ts` (huecos > 0,3 mm, orden de profundidad y separación constante en el plano); capa lenta.
+
+## 413. Vesícula en ayunas en s0028
+
+**Contexto.** El responsable pidió «una vesícula biliar más real». La de s0028 era la de su TAC, contraída (4,7 ml): en la ventana
+de la vesícula se veía como una gota de 2,5 cm. Una ecografía VExUS se hace en ayunas, con la vesícula llena.
+**Decisión.** Su vesícula es una pera de 21 ml, unos 6 × 2,4 cm, en la fosa del TAC (contiene el 94 % de la contraída): el cuello
+mira al hilio y el fondo baja delante y afuera hasta el ángulo hepático del colon. Es un dueño propio (hipótesis E) hasta la cara
+externa de su pared; dentro de ella ceden hígado, bazo, páncreas, vejiga y tubo digestivo (13 ml de colon). Sin venas ni pared
+dentro. CPU y GPU, con la misma pera (`uGbNodes`); el cístico nace en ella [EXTRAPOLACIÓN PROPIA].
+**Consecuencias.** Luz anecoica con refuerzo posterior; sale el par de conflicto intestino + vesícula del censo.
+**Verificación.** `s0028Gallbladder.test.ts`; huellas de la revisión 413 con su inversa (`gallbladderBefore413`); e2e en vivo.

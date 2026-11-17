@@ -720,3 +720,11 @@ El duodeno y el intestino delgado se dibujan con el mismo contenido que el estó
 líquido anecoico se leían como vasos. No se distingue un asa colapsada de una con contenido. La vía biliar es la de referencia
 recolocada: el colédoco se corta donde sale del duodeno (la papila no está en ninguna máscara) y el cístico es un tramo recto de
 la vesícula al colédoco. No sale del TAC, que no la segmenta.
+
+### s0028: vesícula en ayunas y tríada paralela (412, 413)
+
+La vesícula de s0028 no es la de su TAC (contraída, 4,7 ml) sino una pera de 21 ml en su fosa, con la forma del módulo de órgano:
+fondo, cuerpo, infundíbulo, bolsa de Hartmann y cuello. Dentro de ella ceden el hígado y el ángulo hepático del colon (13 ml, bajo
+el fondo); no hay compresión ni desplazamiento del colon fuera de la pera. El tamaño es el habitual en ayunas, no una medida de esta
+persona. La tríada del hilio es una imagen idealizada del eje largo: colédoco, hepática propia y porta apilados en el plano de la
+subcostal portal, sin la disposición en «cabeza de ratón» del corte transversal. **[EXTRAPOLACIÓN PROPIA]**.

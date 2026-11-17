@@ -1,5 +1,6 @@
 import type { Vec3 } from '../core/vec3';
 import type { GastricWall } from './organs/abdomen';
+import type { GallbladderShape } from './organs/gallbladder';
 import type { HeartShape } from './organs/heart';
 import type { createSourceQueries } from './people/s0028/atlas';
 import type { createSolidsQueries } from './people/s0028/solids';
@@ -27,6 +28,8 @@ export interface AnatomyPerson {
   readonly curveVessels?: (vessels: VesselDef[]) => void;
   /** Vía biliar de esta persona a partir de la de referencia (s0028, decisión 384); solo construcción. */
   readonly placeDucts?: (ducts: DuctDef[]) => DuctDef[];
+  /** Vesícula propia como pera de nodos (s0028, decisión 413): sustituye a la del atlas, contraída en su TAC. */
+  readonly gallbladder?: Pick<GallbladderShape, 'nodes' | 'blendMm'>;
   /** Tope de ramas hepáticas procedurales por vaso madre, cuando la persona ya trae ramas propias y los tubos van justos. */
   readonly hepaticBranchesPerParent?: number;
   /**

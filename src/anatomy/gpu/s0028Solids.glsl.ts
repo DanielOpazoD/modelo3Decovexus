@@ -1,4 +1,4 @@
-import { GALLBLADDER_WALL_MM } from '../organs/gallbladder';
+import { GALLBLADDER_NODES, GALLBLADDER_WALL_MM } from '../organs/gallbladder';
 import { S0028_BUNDLE as B } from '../people/s0028/descriptor';
 import {
   S0028_RENAL_FACE_MM,
@@ -84,6 +84,10 @@ float s28PLA(vec3 p,int k){return texelFetch(uAbdominalAtlas,ivec3(S28A_OFF[k]+f
 float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+floor((p-S28T_LO[k])/1.5+0.5)),0).g;}
 `;
 
+// La pera vesicular de s0028 (decisión 413) va desenrollada en `s28GbPear`, un tramo por línea: la política P3 no lleva bucles y
+// el build renombra las funciones GLSL, así que su nombre no puede salir de una cadena JS. Son los cuatro tramos de cinco nodos.
+if (GALLBLADDER_NODES !== 5) throw new Error('La pera vesicular de s0028 desenrolla cuatro tramos: cambió GALLBLADDER_NODES');
+
 /**
  * Política P3 en la GPU (decisión 321, r3), par GLSL de `s0028Owners` y de la rama s0028 de `scene.ts`. Sin bucles en
  * este código ni en lo que llama (las funciones `s28P*`): cada campo se lee por su caja y, a menos de un vóxel de su
@@ -95,6 +99,7 @@ float s28PLT(vec3 p,int k){return texelFetch(uThoracicAtlas,ivec3(S28T_OFF[k]+fl
  * @twin s0028-interior-renal
  * @twin s0028-grasa-amplia
  * @twin s0028-gradiente-renal
+ * @twin organo-vesicula
  */
 export const S0028_SOLIDS_GLSL = /* glsl */ `
 const vec3 S28F_LO[2]=vec3[](${B.solids.boxes.map((b) => vec(b.originMm)).join(',')});
@@ -148,21 +153,41 @@ bool s28PFatIn(vec3 p,int b){
   return !(any(lessThan(x,vec3(0.0)))||any(greaterThan(x,S28F_DIM[b]-1.0)));
 }
 void s28PAdd(inout int n,inout int k,inout float d,int id,float v){if(v<0.0){if(n==0){k=id;d=v;}n++;}}
+// Vesícula en ayunas de esta persona (decisión 413): la pera de uGbNodes con su gradiente exacto, sin el canal del atlas, que
+// en su TAC está contraída (gemelo: gallbladderPearSdf; las mismas operaciones que gallbladderSdf sin atlas). Sin bucles, como
+// toda la política P3: un tramo por línea, en el orden de la CPU.
+void s28GbJoin(vec3 m,vec4 a,vec4 b,inout float d,inout vec3 n){
+  vec3 g;
+  float di=gbSegment(m,a,b,g);
+  float h=clamp(0.5+0.5*(di-d)/uGbExtra.x,0.0,1.0);
+  n=mix(g,n,h);
+  d=smoothMin(d,di,uGbExtra.x);
+}
+float s28GbPear(vec3 m,out vec3 n){
+  float d=gbSegment(m,uGbNodes[0],uGbNodes[1],n);
+  s28GbJoin(m,uGbNodes[1],uGbNodes[2],d,n);
+  s28GbJoin(m,uGbNodes[2],uGbNodes[3],d,n);
+  s28GbJoin(m,uGbNodes[3],uGbNodes[4],d,n);
+  return d;
+}
 // Dueños independientes de un punto material (gemelo: s0028Owners): cuántos hay; k y d, el primero (con un solo dueño,
 // el único; ids de la tabla CPU: 9 hueso, 16 banda P2, 17 grasa). b: hueso torácico, lumbosacro, sacro y cartílago;
-// e: vesícula y el riñón más cercano (su borde O es la cara acústica).
+// e: la luz de la vesícula (su pera, decisión 413) y el riñón más cercano (su borde O es la cara acústica). El dueño vesicular llega
+// a la cara externa de su pared; dentro de él ceden el hígado, el bazo, el páncreas, la vejiga y el tubo digestivo.
 int s28POwn(vec3 m,vec4 q,bool valid,out int k,out float d,out vec4 b,out vec2 e){
   int n=0;k=-1;d=16.0;S28_NEAR=nearS28(m);
-  s28PAdd(n,k,d,0,s28PA(m,0));
-  s28PAdd(n,k,d,1,s28PA(m,1));
-  s28PAdd(n,k,d,2,s28PA(m,2));
+  vec3 gn;e.x=s28GbPear(m,gn);
+  float gb=e.x-${GALLBLADDER_WALL_MM.toFixed(3)};bool soft=gb>=0.0;
+  if(soft)s28PAdd(n,k,d,0,s28PA(m,0));
+  if(soft)s28PAdd(n,k,d,1,s28PA(m,1));
+  if(soft)s28PAdd(n,k,d,2,s28PA(m,2));
   float kr=s28PA(m,3),kl=s28PA(m,4);
   s28PAdd(n,k,d,3,kr);
   s28PAdd(n,k,d,4,kl);
-  e=vec2(s28PA(m,5),min(kr,kl));
-  s28PAdd(n,k,d,5,e.x);
-  s28PAdd(n,k,d,6,s28PA(m,6));
-  s28PAdd(n,k,d,7,s28PA(m,7));
+  e.y=min(kr,kl);
+  s28PAdd(n,k,d,5,gb);
+  if(soft)s28PAdd(n,k,d,6,s28PA(m,6));
+  if(soft)s28PAdd(n,k,d,7,s28PA(m,7));
   s28PAdd(n,k,d,8,s28PA(m,8));
   b=vec4(s28PT(m,0),s28PA(m,9),s28PA(m,10),s28PT(m,1));
   // Vértebras, sacro, caderas y costillas: un solo dueño óseo, el primero de la tabla.
@@ -214,7 +239,7 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   if(k==14){c.tissue=T_LUNG;c.bd=-od;vec2 t=vec2(4.5,-4.5);
     c.n=normalize(t.xyy*s28PT(m+t.xyy,2)+t.yyx*s28PT(m+t.yyx,2)+t.yxy*s28PT(m+t.yxy,2)+t.xxx*s28PT(m+t.xxx,2)+vec3(0.0,0.0,1e-4));return;}
   bool renal=k==3||k==4||k==13;
-  vec3 gn;float dGb=e.x+${GALLBLADDER_WALL_MM.toFixed(3)};
+  vec3 gn;float dGb=e.x;
   ${tubes}
   // Corazón (decisión 356): dentro de la máscara, las cavidades de esta persona son sangre y el resto, miocardio; sin el recorte
   // por la cúpula de la otra (suelo a −1000).
@@ -222,7 +247,7 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
   if(k==15){float ifd;c.n=vec3(0.0,0.0,-1.0);
     if(thorax(m,-1000.0,c.bd,ifd,c.n)==T_BLOOD&&-od>${S0028_HEART_WALL_MM.toFixed(1)}){c.tissue=T_BLOOD;c.bd=min(c.bd,-od-${S0028_HEART_WALL_MM.toFixed(1)});}else{c.tissue=T_MYOCARDIUM;c.bd=-od;}
     c.n=vec3(0.0,1.0,0.0);return;}
-  if(dGb<0.0||dGb<uGbExtra.y)gn=abdominalAtlasGradient(m,7);
+  if(dGb<0.0||dGb<uGbExtra.y)s28GbPear(m,gn);
   if(dGb<0.0){c.tissue=T_FLUID;c.bd=-dGb;c.n=gn;c.iface=IF_GALLBLADDER;c.ifd=-dGb;return;}
   if(dGb<uGbExtra.y){c.tissue=T_BILEWALL;c.bd=min(dGb,uGbExtra.y-dGb);c.n=gn;c.iface=IF_GALLBLADDER;c.ifd=dGb;return;}
   // Riñón (r5): corteza y médula E del rótulo del propio TAC dentro de la máscara; seno graso y colector D en el hueco

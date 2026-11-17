@@ -32,6 +32,11 @@ export interface GallbladderShape {
   nodes: readonly GallbladderNode[];
   /** Radio de la unión suave entre tramos (mm). */
   blendMm: number;
+  /**
+   * La luz es la pera de sus nodos aunque la persona tenga atlas abdominal (s0028, decisión 413: su vesícula del TAC está
+   * contraída). Sin él, con atlas, la luz es el canal vesicular del atlas.
+   */
+  pear?: boolean;
 }
 
 /** Luz vesicular del adulto de referencia en ayunas: ~9 cm de largo, cuerpo de 3 cm, ~35 mL. */
@@ -93,7 +98,7 @@ export function gbSegmentGradient(m: Vec3, a: GallbladderNode, b: GallbladderNod
 
 /** Gradiente de la misma unión suave, sin normalizar: su norma calibra el grosor del eco. */
 export function gallbladderGradient(m: Vec3, g: GallbladderShape): Vec3 {
-  if (g.person?.assets.buffers.abdominal) return (g.person?.atlas ?? EMPTY_ATLAS).abdominalAtlasGradient(m, 7);
+  if (!g.pear && g.person?.assets.buffers.abdominal) return (g.person?.atlas ?? EMPTY_ATLAS).abdominalAtlasGradient(m, 7);
   const n = g.nodes;
   let d = gbSegment(m, n[0], n[1]);
   let grad = gbSegmentGradient(m, n[0], n[1]);
@@ -109,7 +114,12 @@ export function gallbladderGradient(m: Vec3, g: GallbladderShape): Vec3 {
 
 /** Distancia con signo a la luz vesicular (negativa dentro; la pared va de 0 a `wallMm`). */
 export function gallbladderSdf(m: Vec3, g: GallbladderShape): number {
-  if (g.person?.assets.buffers.abdominal) return (g.person?.atlas ?? EMPTY_ATLAS).abdominalAtlasSdf(m, 7) + GALLBLADDER_WALL_MM;
+  if (!g.pear && g.person?.assets.buffers.abdominal) return (g.person?.atlas ?? EMPTY_ATLAS).abdominalAtlasSdf(m, 7) + GALLBLADDER_WALL_MM;
+  return gallbladderPearSdf(m, g);
+}
+
+/** Distancia con signo a la pera de los nodos, sin atlas: la cadena de conos con su unión suave. @twin organo-vesicula */
+export function gallbladderPearSdf(m: Vec3, g: Pick<GallbladderShape, 'nodes' | 'blendMm'>): number {
   const n = g.nodes;
   let d = gbSegment(m, n[0], n[1]);
   for (let i = 1; i < n.length - 1; i++) d = smoothMin(d, gbSegment(m, n[i], n[i + 1]), g.blendMm);

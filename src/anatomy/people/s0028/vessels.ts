@@ -2,6 +2,8 @@ import type { Vec3 } from '../../../core/vec3';
 import type { TubeNode } from '../../primitives';
 import { S0028_HEPATIC_BRANCHES, S0028_PORTAL_BRANCHES, S0028_TRUNKS } from '../../s0028TrunksData';
 import type { DuctDef, VesselDef } from '../../vesselTree';
+import { gallbladderPearSdf } from '../../organs/gallbladder';
+import { S0028_GALLBLADDER } from './gallbladder';
 
 /** Un extremo a esta distancia (mm) o menos del eje anterior de un vaso nacía o moría en él. */
 const TOUCH_MM = 3;
@@ -470,8 +472,8 @@ export function smoothS0028Vessels(vessels: VesselDef[]): void {
       v.tube = { ...v.tube, nodes: smoothAxis(v.tube.nodes, v.id in S0028_TRUNKS ? S0028_TUBE_SEGMENTS : S0028_TUBE_SEGMENTS / 2) };
 }
 
-/** Centro de la máscara de la vesícula de s0028 (4,8 ml, contraída), en mm LAS. */
-const S0028_GALLBLADDER_CENTER: Vec3 = [-65, 37, -84];
+/** Centro del cuerpo de la vesícula en ayunas de s0028 (decisión 413), en mm LAS: hacia él se busca el cístico. */
+const S0028_GALLBLADDER_CENTER: Vec3 = S0028_GALLBLADDER.nodes[1].p;
 
 /**
  * Conductos de la tríada portal de s0028 (decisiones 409 y 412), nodos (x, y, z, radio) en mm LAS. El colédoco sube desde la
@@ -513,8 +515,9 @@ const S0028_CBD_FLOOR_Z = -100;
 /**
  * Vía biliar de s0028 (decisión 384). La de referencia se trazó para la otra persona: aquí su colédoco recorría 26 mm por dentro de
  * la luz del duodeno y se veía como un anillo de pared gruesa sin sentido junto al riñón, y su cístico nacía a 14 mm de la
- * vesícula. El colédoco termina donde sale del duodeno (la papila, en su pared) y el cístico nace en la vesícula de esta persona;
- * por encima de la cabeza del páncreas, colédoco y hepáticos siguen a la porta (`S0028_BILE_DUCTS`, decisión 409).
+ * vesícula. El colédoco termina donde sale del duodeno (la papila, en su pared) y el cístico nace en la vesícula de esta persona (su
+ * pera en ayunas desde la decisión 413); por encima de la cabeza del páncreas, colédoco y hepáticos siguen a la porta
+ * (`S0028_BILE_DUCTS`, decisión 409).
  * `sourceValue` es la distancia con signo a una máscara de la fuente. Solo construcción: CPU, Worker y GPU reciben los mismos nodos.
  */
 export function placeS0028Ducts(ducts: DuctDef[], sourceValue: (p: Vec3, name: string) => { d: number }): DuctDef[] {
@@ -546,7 +549,7 @@ export function placeS0028Ducts(ducts: DuctDef[], sourceValue: (p: Vec3, name: s
       let crossed = 0;
       for (let t = 0; t < reach; t += 0.5) {
         const p = lerp(join, S0028_GALLBLADDER_CENTER, t / reach);
-        if (inside(p, 'gallbladder')) {
+        if (gallbladderPearSdf(p, S0028_GALLBLADDER) < 0) {
           const cost = 100 * crossed + t;
           if (!cystic || cost < cystic.cost) cystic = { join, neck: p, cost };
           break;
