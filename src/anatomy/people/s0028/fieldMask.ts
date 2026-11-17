@@ -2,6 +2,7 @@ import type { Vec3 } from '../../../core/vec3';
 import { S0028_FIELD_MASK as M } from '../../s0028FieldMaskData';
 import { S0028_BUNDLE as B } from './descriptor';
 import { S0028_MASK_FIELDS } from './fieldMaskFields';
+import { intHalf, s0028Pages } from './solidsData';
 
 /** 16 mm en half float: el tope al que están recortados todos los campos fuente de s0028 (y lo que vale fuera de su caja). */
 const SIXTEEN = 0x4c00;
@@ -81,18 +82,7 @@ export function s0028FieldMaskCell(p: Vec3): number {
 }
 
 /** Colocación xyz de cada página 32×32 RG16F del mapa en el atlas abdominal, con el mismo código que la grasa P3. */
-export const s0028FieldMaskPages = (): number[][] =>
-  Array.from({ length: M.pages.length / 3 }, (_, i) => {
-    const c = parseInt(M.pages.slice(3 * i, 3 * i + 3), 36);
-    return [(c % 6) * 32, (Math.floor(c / 6) % 8) * 32, Math.floor(c / 48)];
-  });
-
-/** Entero exacto (0–2047) como half float. */
-const intHalf = (n: number): number => {
-  if (n === 0) return 0;
-  const e = Math.floor(Math.log2(n));
-  return ((e + 15) << 10) | ((n / 2 ** e - 1) * 1024);
-};
+export const s0028FieldMaskPages = (): number[][] => s0028Pages(M.pages);
 
 /**
  * Las páginas del mapa en sus colocaciones del atlas abdominal ya asignado: un téxel RG16F por celda, los bits 0–10 en R y los

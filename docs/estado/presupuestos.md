@@ -1,6 +1,6 @@
 # Estado vigente: presupuestos
 
-Actualizado: 2026-11-17 sobre main `94bec05`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
+Actualizado: 2026-11-17 sobre main `af14774`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
 su valor actual. Los techos no se suben para obtener verde (decisión 322); subir uno es una decisión propia, declarada en
 la PR y en `docs/DECISIONS.md`.
 
@@ -22,7 +22,7 @@ la PR y en `docs/DECISIONS.md`.
 
 <!-- tabla generada por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `94bec05` el 2026-11-17 con `tools/docs/estado.ts`. No se copian a mano.
+Medido en el candidato basado en main `af14774` el 2026-11-17 con `tools/docs/estado.ts`. No se copian a mano.
 
 | Techo                                               |      Límite |      Actual |     Margen | Unidad   | Decisión | Fuente                                 |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- | -------- | -------------------------------------- |
@@ -35,8 +35,8 @@ Medido en el candidato basado en main `94bec05` el 2026-11-17 con `tools/docs/es
 | `annotation-capacity.gzip.bin`                      |     856.999 |     334.410 |    522.589 | B        | 320      | `tools/ci/bundleBudgets.ts`            |
 | `bootstrap.js`                                      |     343.040 |     256.608 |     86.432 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | B        | 321      | `tools/ci/bundleBudgets.ts`            |
-| `cpu.js`                                            |     122.880 |      76.334 |     46.546 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cpu.js`                                            |     122.880 |      14.410 |    108.470 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `cpu.js`                                            |     122.880 |      69.852 |     53.028 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cutMapView.js`                                     |     122.880 |      16.838 |    106.042 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cutMapWorker.js`                                   |     122.880 |        3721 |    119.159 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `deformation.js`                                    |     122.880 |        1559 |    121.321 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -53,7 +53,7 @@ Medido en el candidato basado en main `94bec05` el 2026-11-17 con `tools/docs/es
 | `query.js`                                          |     122.880 |        3737 |    119.143 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `reference-body.bin`                                |        2080 |        2080 |          0 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `retroperitoneum.js`                                |     122.880 |        5328 |    117.552 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `runtime.js`                                        |     122.880 |      28.839 |     94.041 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `runtime.js`                                        |     122.880 |      28.634 |     94.246 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `runtime.js`                                        |     122.880 |        1631 |    121.249 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `series.js`                                         |     122.880 |        2204 |    120.676 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
@@ -73,7 +73,7 @@ Medido en el candidato basado en main `94bec05` el 2026-11-17 con `tools/docs/es
 | `units.js`                                          |     122.880 |         388 |    122.492 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `vesselTree.js`                                     |     122.880 |     110.677 |     12.203 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.050.346 |     19.734 | B        | 322      | `tools/ci/personBundles.ts`            |
-| JS clausura s0028 (Workers y ganchos incluidos)     |   1.144.832 |   1.144.723 |        109 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura s0028 (Workers y ganchos incluidos)     |   1.144.832 |   1.138.036 |       6796 | B        | 322      | `tools/ci/personBundles.ts`            |
 | Descarga del paquete s0028 (gzip)                   |  25.000.000 |  21.199.547 |  3.800.453 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   9.048.961 | 10.461.041 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
@@ -103,9 +103,10 @@ Programas especializados (`shaderLimits.test.ts`, decisiones 309 y 320): tokens 
 ## Lectura
 
 - Cada persona tiene su clausura JS, con Workers, worklet y ganchos incluidos (decisión 322, punto 3). Todos los archivos
-  de `dist` pertenecen a una o ambas rutas; el total de su unión es informativo. El techo de default es 1.070.080 B; el de s0028, 1.112.064 B: 1 KiB por el Worker, 28 KiB
-  por el rótulo del interior renal (decisión 341), 4 KiB de margen (decisión 342) y 8 KiB por los vasos y marcos de la persona
-  (decisión 350).
+  de `dist` pertenecen a una o ambas rutas; el total de su unión es informativo. El techo de default es 1.070.080 B; el de
+  s0028, 1.144.832 B, 73 KiB más (`tools/ci/personBundles.ts`): 1 por el Worker, 28 por el rótulo del interior renal (decisión
+  341), 4 de margen (decisión 342), 8 por los vasos y marcos de la persona (decisión 350), 4 por su árbol portal (decisión 357),
+  16 por su GLSL (decisión 364), 8 por su red interlobar (decisión 402) y 4 por su tríada portal (decisión 409).
 - Los activos s0028 están fijados uno a uno (decisiones 317–321); la descarga del paquete completo tiene su propio techo
   de 25.000.000 B (decisión 318). Las texturas RAW se comprueban al cargar, con la misma cuenta que la tabla.
 - Los programas tienen techo de tokens y ramas expandidos (decisión 309) porque el JIT de SwiftShader de la CI muere por

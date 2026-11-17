@@ -63,8 +63,8 @@ export const s0028Classifier: MutantManifest = {
       name: 'peritoneo-en-grasa-sin-carta',
       origin: 'decisión 379',
       breaks: 'La línea del peritoneo se dibuja también en la grasa sin carta de pared, donde no hay cara de la que tomar la normal.',
-      from: "const liverMm = preperitoneal && !SINUS_TISSUE[interior] ? scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d : Infinity;",
-      to: "const liverMm = !SINUS_TISSUE[interior] ? scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d : Infinity;",
+      from: "const liverMm = preperitoneal && !SINUS_TISSUE[interior] ? regional.s0028SourceValue(m, 'liver').d : Infinity;",
+      to: "const liverMm = !SINUS_TISSUE[interior] ? regional.s0028SourceValue(m, 'liver').d : Infinity;",
       tests: ['src/validation/s0028Capsule.test.ts'],
     },
     {

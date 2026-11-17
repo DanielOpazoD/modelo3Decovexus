@@ -1,9 +1,12 @@
+import { createHash } from 'node:crypto';
 import { beforeAll, expect, it, vi } from 'vitest';
+import { encodeS0028RenalRuns } from '../../tools/anatomy/s0028RenalRuns';
 import { personShader } from '../anatomy/gpu/personShader';
 import { HALF } from '../anatomy/halfFloat';
 import { Interface } from '../anatomy/interfaces';
 import { GALLBLADDER_WALL_MM, gallbladderPearSdf } from '../anatomy/organs/gallbladder';
 import { S0028_GALLBLADDER } from '../anatomy/people/s0028/gallbladder';
+import { S0028_RENAL_CODES, s0028RenalRunCodes } from '../anatomy/people/s0028/solids';
 import { torsoDepth } from '../anatomy/primitives';
 import { AnatomyQuery } from '../anatomy/query';
 import { S0028_RENAL_INTERIOR as R } from '../anatomy/s0028RenalInteriorData';
@@ -60,12 +63,19 @@ function fatLook(p: Vec3): Tissue {
 }
 /**
  * Oráculo del interior renal (decisión 341), independiente del lector de la aplicación: expande por su cuenta los tramos
- * del exportador offline. 0 U, 1 corteza, 2 médula, 3 seno graso, 4 colector, 5 seno sin subclasificar.
+ * del exportador offline, con su propio alfabeto. 0 U, 1 corteza, 2 médula, 3 seno graso, 4 colector, 5 seno sin subclasificar.
+ * La primera cifra de un tramo lleva la etiqueta (resto de 6) y la longitud: hasta 47, de 1 a 8 vóxeles; de 48 a 53, 9 más la
+ * cifra siguiente; desde 54, 71 más las dos siguientes.
  */
+const RUN_DIGITS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const RENAL_LABELS = R.boxes.map((_, i) => {
-  const out: number[] = [];
-  for (const [, symbol, length] of RUNS[i].matchAll(/([A-Z])([0-9a-z]*)/gu))
-    for (let n = length ? parseInt(length, 36) : 1; n > 0; n--) out.push('UCMFPS'.indexOf(symbol));
+  const out: number[] = [],
+    digits = [...RUNS[i]].map((c) => RUN_DIGITS.indexOf(c));
+  for (let at = 0; at < digits.length;) {
+    const head = digits[at++],
+      length = head < 48 ? Math.floor(head / 6) + 1 : head < 54 ? 9 + digits[at++] : 71 + 62 * digits[at++] + digits[at++];
+    for (let n = length; n > 0; n--) out.push(head % 6);
+  }
   return out;
 });
 function renalLabel(p: Vec3): number {
@@ -100,6 +110,31 @@ function brick(name: string, step: number, visit: (p: Vec3, d: number) => void):
         visit(p, s0028SourceValue(p, name).d);
       }
 }
+
+it('tramos del interior renal en base 62: los mismos rótulos vóxel a vóxel que con el formato anterior, y los que escribe la herramienta', () => {
+  // SHA-256 de los rótulos de cada caja expandidos del formato anterior (letra y longitud en base 36, main 7ed9cee): compactar
+  // los tramos no cambió ningún vóxel.
+  const before = [
+    'ad62d713a0bf327f970f57c261d99d15842b3d40d3551650b4452aeb38d64017',
+    '16761886b537405c1c31f12666d06a302018edb2a34f1e2466fc779a252c1a38',
+  ];
+  RENAL_LABELS.forEach((labels, i) => {
+    const b = R.boxes[i];
+    expect(labels.length).toBe(b.dimensions[0] * b.dimensions[1] * b.dimensions[2]);
+    expect(createHash('sha256').update(Uint8Array.from(labels)).digest('hex')).toBe(before[i]);
+    // El lector de la aplicación da el código de ese rótulo en cada vóxel, y la herramienta vuelve a escribir los mismos tramos.
+    const codes = s0028RenalRunCodes(RUNS[i], labels.length);
+    expect(codes.every((code, k) => code === S0028_RENAL_CODES[labels[k]])).toBe(true);
+    expect(encodeS0028RenalRuns(codes)).toBe(RUNS[i]);
+    // Solo cifras y letras: una cadena con otros signos reservaría nombres cortos del GLSL en el build.
+    expect(RUNS[i]).toMatch(/^[0-9A-Za-z]+$/);
+  });
+  // Longitudes en el límite de cada forma (1 y 8, 9 y 70, 71 y 3914) y tramos que se parten.
+  const edges = [1, 8, 9, 70, 71, 3914, 3915, 9000].flatMap((n, k) => Array<number>(n).fill(S0028_RENAL_CODES[k % 6]));
+  expect(Array.from(s0028RenalRunCodes(encodeS0028RenalRuns(edges), edges.length))).toEqual(edges);
+  expect(() => s0028RenalRunCodes(RUNS[0].slice(0, -1), RENAL_LABELS[0].length)).toThrow('Interior renal s0028 truncado');
+  expect(() => encodeS0028RenalRuns([0, 9, 7])).toThrow('Código de interior renal inválido: 7');
+});
 
 it('riñón s0028: dueño propio con borde D; corteza y médula sólo donde lo dice el rótulo del propio TAC, sin cápsula; dentro, sólo sus vasos renales', () => {
   // Contrato sustituido (decisión 341): antes todo el interior era U. Ahora manda el rótulo offline; sin rótulo sigue U.

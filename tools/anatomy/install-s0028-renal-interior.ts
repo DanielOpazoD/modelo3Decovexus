@@ -12,7 +12,9 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { HALF } from '../../src/anatomy/halfFloat';
 import { S0028_BUNDLE as B } from '../../src/anatomy/people/s0028/descriptor';
+import { S0028_RENAL_CODES } from '../../src/anatomy/people/s0028/solids';
 import { s0028FatPages } from '../../src/anatomy/people/s0028/solidsData';
+import { encodeS0028RenalRuns, S0028_RENAL_RUNS_FORMAT } from './s0028RenalRuns';
 
 interface SourceBox {
   side: string;
@@ -46,11 +48,8 @@ if (
 if (info.boxes.length !== 2 || info.boxes.some((b, i) => b.side !== ['right', 'left'][i]))
   throw new Error('Se esperan las cajas derecha e izquierda');
 
-/**
- * Código por vóxel: bits 0–2 etiqueta (0 U, 1 corteza, 2 médula, 3 seno graso, 4 colector, 5 seno sin subclasificar);
- * bit 3, hipótesis E.
- */
-const SYMBOL: Record<number, string> = { 0: 'U', 3: 'F', 4: 'P', 9: 'C', 10: 'M', 13: 'S' };
+// Código por vóxel (`S0028_RENAL_CODES`): bits 0–2 etiqueta (0 U, 1 corteza, 2 médula, 3 seno graso, 4 colector, 5 seno sin
+// subclasificar); bit 3, hipótesis E.
 const fillPath = resolve(folder, 'sinus-fill.json');
 const sinusFill = existsSync(fillPath)
   ? (JSON.parse(readFileSync(fillPath, 'utf8')) as Record<string, { dimensions: number[]; count: number; deltas: number[] }>)
@@ -77,27 +76,16 @@ const boxes = info.boxes.map((b) => {
     let at = 0;
     for (const delta of extra.deltas) fill.add((at += delta));
   }
-  let runs = '';
-  let previous = -1;
-  let length = 0;
-  const flush = () => {
-    if (length) runs += SYMBOL[previous] + (length > 1 ? length.toString(36) : '');
-  };
+  const codes = new Uint8Array(voxels);
   for (let i = 0; i < voxels; i++) {
     const byte = HALF[halves[b.pageBase * 2048 + (i >> 1)]];
     if (!Number.isInteger(byte) || byte < 0 || byte > 255) throw new Error('Half no entero');
     const source = (byte >> ((i & 1) << 2)) & 15;
-    if (!(source in SYMBOL) || source === 13) throw new Error('Código de interior renal inválido: ' + source);
+    if (!S0028_RENAL_CODES.includes(source) || source === 13) throw new Error('Código de interior renal inválido: ' + source);
     if (fill.has(i) && source !== 0) throw new Error('El relleno del seno pisa un vóxel ya rotulado');
-    const code = fill.has(i) ? 13 : source;
-    if (code === previous) length++;
-    else {
-      flush();
-      previous = code;
-      length = 1;
-    }
+    codes[i] = fill.has(i) ? 13 : source;
   }
-  flush();
+  const runs = encodeS0028RenalRuns(codes);
   return { side: b.side, originMm: b.originMm, dimensions: b.dimensions, pageBase: b.pageBase, byteCount: b.byteCount, runs };
 });
 
@@ -156,11 +144,6 @@ writeFileSync(
 );
 writeFileSync(
   'src/anatomy/s0028RenalInteriorRuns.ts',
-  header(
-    'Códigos por tramos (xyz, z rápida): U, C corteza, M médula, F seno graso, P colector, S seno sin subclasificar; longitud en base 36.',
-  ) +
-    'export const S0028_RENAL_INTERIOR_RUNS = ' +
-    JSON.stringify(boxes.map((b) => b.runs)) +
-    ' as const;\n',
+  header(S0028_RENAL_RUNS_FORMAT) + 'export const S0028_RENAL_INTERIOR_RUNS = ' + JSON.stringify(boxes.map((b) => b.runs)) + ' as const;\n',
 );
 console.log(JSON.stringify({ sha256, pages: placed, runChars: boxes.map((b) => b.runs.length) }));

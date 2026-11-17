@@ -22,10 +22,12 @@ import { gunzipSync } from 'node:zlib';
 import { HALF, toHalf } from '../../src/anatomy/halfFloat';
 import { S0028_BUNDLE as B } from '../../src/anatomy/people/s0028/descriptor';
 import { S0028_KIDNEY_FRAMES } from '../../src/anatomy/people/s0028/cpu';
+import { s0028RenalRunCodes } from '../../src/anatomy/people/s0028/solids';
 import { s0028FatPages, s0028WideFatPages } from '../../src/anatomy/people/s0028/solidsData';
 import { S0028_RENAL_INTERIOR as R } from '../../src/anatomy/s0028RenalInteriorData';
 import { S0028_RENAL_INTERIOR_RUNS as RUNS } from '../../src/anatomy/s0028RenalInteriorRuns';
 import type { Vec3 } from '../../src/core/vec3';
+import { encodeS0028RenalRuns, S0028_RENAL_RUNS_FORMAT } from './s0028RenalRuns';
 import { loadS0028 } from './s0028Windows';
 
 const INPUT_RAW_SHA256 = 'f93e2d2ea1870a345fa971fd1a2237c58152e4aea79a14b3e785f2eb4025c4de';
@@ -198,38 +200,8 @@ for (let k = 0; k < dims[2]; k++)
 // Interior renal: la caja nueva es el campo sin sus 6 nodos de relleno, como la anterior.
 const pad = (old.dimensions[0] - R.boxes[0].dimensions[0]) / 2;
 const box = { origin: origin.map((v) => v + 1.5 * pad), dims: dims.map((n) => n - 2 * pad) };
-const SYMBOL: Record<number, string> = { 0: 'U', 3: 'F', 4: 'P', 9: 'C', 10: 'M', 13: 'S' };
-const CODE: Record<string, number> = { U: 0, C: 9, M: 10, F: 3, P: 4, S: 13 };
-const decode = (runs: string, n: number) => {
-  const codes = new Uint8Array(n);
-  let k = 0;
-  for (const [, symbol, length] of runs.matchAll(/([A-Z])([0-9a-z]*)/gu)) {
-    const m = length ? parseInt(length, 36) : 1;
-    codes.fill(CODE[symbol], k, k + m);
-    k += m;
-  }
-  if (k !== n) throw new Error('Interior renal truncado');
-  return codes;
-};
-const encode = (codes: Uint8Array) => {
-  let runs = '',
-    previous = -1,
-    length = 0;
-  const flush = () => {
-    if (length) runs += SYMBOL[previous] + (length > 1 ? length.toString(36) : '');
-  };
-  for (const code of codes)
-    if (code === previous) length++;
-    else {
-      flush();
-      previous = code;
-      length = 1;
-    }
-  flush();
-  return runs;
-};
 const oldBox = R.boxes[0],
-  oldCodes = decode(RUNS[0], oldBox.dimensions[0] * oldBox.dimensions[1] * oldBox.dimensions[2]);
+  oldCodes = s0028RenalRunCodes(RUNS[0], oldBox.dimensions[0] * oldBox.dimensions[1] * oldBox.dimensions[2]);
 const codes = new Uint8Array(box.dims[0] * box.dims[1] * box.dims[2]);
 for (let x = 0; x < box.dims[0]; x++)
   for (let y = 0; y < box.dims[1]; y++)
@@ -328,11 +300,9 @@ if (process.argv.includes('--write')) {
   );
   writeFileSync(
     'src/anatomy/s0028RenalInteriorRuns.ts',
-    header(
-      'Códigos por tramos (xyz, z rápida): U, C corteza, M médula, F seno graso, P colector, S seno sin subclasificar; longitud en base 36.',
-    ) +
+    header(S0028_RENAL_RUNS_FORMAT) +
       'export const S0028_RENAL_INTERIOR_RUNS = ' +
-      JSON.stringify([encode(codes), RUNS[1]]) +
+      JSON.stringify([encodeS0028RenalRuns(codes), RUNS[1]]) +
       ' as const;\n',
   );
 }
