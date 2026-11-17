@@ -183,11 +183,33 @@ export function buildHeartMesh(a: AnatomyScene): THREE.Mesh {
   );
 }
 
+/** Vesícula en pera curvada: marching cubes sobre la MISMA distancia que la imagen (fondo, cuerpo, cuello en «S»). */
+function buildGallbladderMesh(a: AnatomyScene): THREE.Mesh {
+  const gbN = a.gallbladder.nodes;
+  const gbLo = [0, 1, 2].map((k) => Math.min(...gbN.map((n) => n.p[k] - n.r)) - 4) as [number, number, number];
+  const gbHi = [0, 1, 2].map((k) => Math.max(...gbN.map((n) => n.p[k] + n.r)) + 4) as [number, number, number];
+  return meshFromSdf(
+    (p) => gallbladderSdf(p, a.gallbladder),
+    gbLo,
+    gbHi,
+    40,
+    new THREE.MeshStandardMaterial({ color: 0x3fb08f, roughness: 0.5, transparent: true, opacity: 0.85 }),
+  );
+}
+
 export function buildOrgans(a: AnatomyScene, surfaces: PersonSurfaces = {}): THREE.Group {
   const abdominalSurface = surfaces.abdominal;
   const g = new THREE.Group();
   if (a.identity.person === 's0028') {
-    for (const f of (surfaces.indexed ?? []).filter((f) => !['thoracicBone', 'cartilage', 'lumbarSacralBone', 'sacrum'].includes(f.name))) {
+    // La vesícula que se ve en la imagen es la pera en ayunas de la persona (decisión 413), no la superficie contraída de su TAC:
+    // el torso dibuja la misma, por marching cubes sobre la misma distancia.
+    const skipped = ['thoracicBone', 'cartilage', 'lumbarSacralBone', 'sacrum', ...(a.gallbladder.pear ? ['gallbladder'] : [])];
+    if (a.gallbladder.pear) {
+      const pear = buildGallbladderMesh(a);
+      pear.name = 'gallbladder';
+      g.add(pear);
+    }
+    for (const f of (surfaces.indexed ?? []).filter((f) => !skipped.includes(f.name))) {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.BufferAttribute(f.positions, 3));
       geometry.setIndex(new THREE.BufferAttribute(f.indices, 1));
@@ -285,17 +307,7 @@ export function buildOrgans(a: AnatomyScene, surfaces: PersonSurfaces = {}): THR
       }),
     ),
   );
-  // Vesícula en pera curvada: marching cubes sobre la MISMA distancia que la imagen (fondo, cuerpo, cuello en «S»)
-  const gbN = a.gallbladder.nodes;
-  const gbLo = [0, 1, 2].map((k) => Math.min(...gbN.map((n) => n.p[k] - n.r)) - 4) as [number, number, number];
-  const gbHi = [0, 1, 2].map((k) => Math.max(...gbN.map((n) => n.p[k] + n.r)) + 4) as [number, number, number];
-  const gb = meshFromSdf(
-    (p) => gallbladderSdf(p, a.gallbladder),
-    gbLo,
-    gbHi,
-    40,
-    new THREE.MeshStandardMaterial({ color: 0x3fb08f, roughness: 0.5, transparent: true, opacity: 0.85 }),
-  );
+  const gb = buildGallbladderMesh(a);
   const heart = buildHeartMesh(a);
   if (!a.hasAbdominalAtlas) g.add(gb);
   g.add(heart);
