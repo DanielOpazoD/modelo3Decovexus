@@ -355,6 +355,13 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
         }
         expect(travel).toBeGreaterThan(0.9);
         const outward = await parity(page);
+        // `parity` ya esperó a la adquisición con la pose final: aquí el marco es el de esa pose. Las lecturas de cada paso,
+        // arriba, son inmediatas y el marco se resuelve en el cuadro siguiente (`settleContact`): mientras no pase un cuadro
+        // comparan el marco anterior consigo mismo. Deslizar parte siempre de la pose actual: un giro en cualquier paso sigue ahí.
+        const settled = await page.evaluate(() => window.__vexusTest!.sim().frame);
+        for (const axis of ['axial', 'lateral', 'elevation'] as const)
+          for (let i = 0; i < 3; i++)
+            expect(settled[axis][i], `${start.name}: ${axis} con la pose deslizada adquirida`).toBeCloseTo(before.frame[axis][i], 8);
         await page.locator('#freeze').evaluate((el: HTMLButtonElement) => el.click());
         // A reverse captured gesture traverses the same route without pinning at
         // the outline or at the old angle stop, from every initial region.

@@ -77,7 +77,15 @@ test('comparación venosa: reloj único, cursor, pausa, escala y cierre accesibl
   const frozen = await page.evaluate(() => window.__vexusTest!.sim().frozen);
   await page.keyboard.press('Space');
   expect(await page.evaluate(() => window.__vexusTest!.sim().frozen)).toBe(frozen);
-  await page.evaluate(() => window.__vexusTest!.advance(1));
+  // El visor se redibuja en cada cuadro del bucle (`renderVenous`), no al avanzar el paciente: sin esperar un cuadro la
+  // comparación leía las trazas de antes del avance, las siguiera o no la vista pausada.
+  const advancedAt = await page.evaluate(() => {
+    window.__vexusTest!.advance(1);
+    return window.__vexusTest!.framesRendered();
+  });
+  await withinFrames(page, 3, 'un cuadro del visor tras avanzar al paciente', async () =>
+    page.evaluate((f) => window.__vexusTest!.framesRendered() > f || 'sin cuadro tras el avance', advancedAt),
+  );
   expect(await dialog.locator('.venous-wave').evaluateAll((els) => els.map((e) => e.getAttribute('d')))).toEqual(pausedPaths);
   await dialog.getByRole('combobox', { name: 'Escala común de velocidad' }).selectOption('10');
   await expect(dialog.locator('.venous-status')).toContainText('fuera de escala');
