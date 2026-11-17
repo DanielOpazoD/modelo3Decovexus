@@ -681,6 +681,30 @@ Corregida `color-absorption-linear-scaling` (174→176): A2 integra α_t(fD) por
 - `probe-contact-plane-estimated` (184): el marco rígido de una sonda sobre el perfil registrado usa cuerdas de la misma piel a ±medio espesor elevacional (6,5 mm para el convexo actual), en vez de la normal puntual discontinua de la tabla. La distancia de presión usa un gradiente estimado a ±1 mm sobre esa misma piel para evitar otro salto al cruzar celdas; se conserva la tolerancia de 0,05 mm del solver. No es un ajuste biomecánico de toda la huella ni una superficie cutánea nueva. Piel, espesor y gradientes físicos permanecen compartidos. Se verifican nudos y barridos finos; no se certifica cualquier maniobra ni una frecuencia universal de cuadros. La apposición hepática inferomedial conserva huecos estimados de hasta 9,01 mm en el dominio ampliado auditado; no se declara resuelta por el cambio de marco. Véase `anatomy/vexus-window-acceptance.md`.
 - `hepatobiliary-connectors-estimated` (285): relación del pedículo y conexión cística estimadas sobre un adulto registrado; sin variantes completas, distensión o ayuno vesicular por caso. La pared de 1,8 mm no es una medición individual. Suavidad de compresión y transición parietal verificadas en poses muestreadas, sin certificación de todas las maniobras ni nueva biomecánica. Véase también `APPROXIMATIONS.md`, decisión 285.
 
+## Ventanas de s0028: medido y aceptado (17-11-2026)
+
+Lo que se midió buscando deuda de imagen y se dejó como está, con la cifra que lo decide. Antes de reabrir uno, repite su medida.
+
+- **Punta de costilla en la ventana renal** (`s0028-renal-rib-tip-shadow`): el plano roza la punta de una costilla en la pared
+  (a 43 mm, en el centro del sector) y deja una sombra fina de unos 15 mm por encima del riñón, sin taparlo. Quitarla pide subir
+  la sonda 3 mm y balancearla 3,4°: la puerta de las interlobares pasa de 90 a 101 mm y en las poses vecinas no se encuentra
+  (la ventana está afinada para ellas, decisión 395).
+- **Sombras costales en la esplenorrenal** (`s0028-splenorenal-rib-shadows`): el acceso es intercostal y el 45 % de las líneas
+  cruza una costilla; el 26 % del riñón izquierdo queda en sombra. Las poses vecinas que lo bajan al 14 % pierden 18 mm de riñón
+  en el plano (de 95 a 77) y la mitad de los hitos.
+- **Corte gris de la porta en su bifurcación, en la subcostal portal** (`s0028-portal-bifurcation-out-of-plane`): el tronco y la
+  rama derecha no caben en un mismo plano y la bifurcación queda 3 mm fuera. Girar la sonda 2,3° la cierra pero baja la luz
+  portal continua de 79 a 59 mm (la decisión 386 exige más de 70). El reparto de la decisión 415 lo oscurece, no lo cierra.
+- **Calibres de la tríada algo grandes** (`s0028-triad-calibres-enlarged`): colédoco de 5 mm y hepática propia de 4,4–4,8 mm
+  (decisión 412). Con 4,4 y 3,6–4,0 mm, ya con el reparto de la decisión 415, vuelven a verse como líneas finas: el eco de sus
+  paredes invade la luz.
+- **Zona oscura profunda de la hepatorrenal** (`s0028-hepatorenal-deep-wall`): a la derecha del riñón, por debajo de 9 cm, el
+  plano sale a la pared posterior (grasa y músculo, hipoecoicos) y cruza otra punta de costilla. No es gas ni un defecto de
+  clasificación.
+- **Vesícula corta y fuera del menú** (`s0028-gallbladder-short`): 58 mm de largo (una en ayunas mide 70–100) porque su fosa
+  está acotada por el colon, a 10–14 mm, y por dos ramas de la suprahepática media, a 20–25 mm (decisión 413). Ninguna de las
+  diez ventanas la muestra en eje largo; se ve desde subcostal derecho (phi 2,4, z −115).
+
 ## Candidato experimental s0028 (317/318)
 
 `s0028-wall-direct`: P2 r2b integra la pared regional en CPU, Worker del corte, 3D y GPU con la regla directa; se
