@@ -248,3 +248,55 @@ it('el riñón derecho de s0028 mide 110 mm, sin pisar a sus vecinos, y la venta
   // La ventana renal enseña 106,9 mm de riñón (decisión 395; antes, 99,1); con el de 91 mm, 80,6.
   expect(renalSection(person.anatomy, person.sample, poseOf('renal', 's0028'), 140).lengthMm).toBeGreaterThan(95);
 });
+
+it('en color, la tríada de la subcostal portal enseña arteria y porta con flujo en el mismo sentido y el colédoco sin flujo (decisión 412)', () => {
+  // Lo que el alumno aprende en esa imagen: de los tres tubos paralelos, el que no se colorea es el colédoco. Oráculo propio: se
+  // recorre el eje de cada tubo en el plano de la ventana y se mira la sangre y su velocidad a lo largo del haz en ese punto.
+  const contact = probeContact(poseOf('portalSubcostal', 's0028'), CONVEX_C35, person.scene.torso);
+  person.anatomy.setProbeCompression(contact);
+  const f = contact.frame;
+  const axisOf = (id: string) =>
+    (person.scene.vessels.find((v) => v.id === id && v.flowFactor === undefined) ?? person.scene.ducts.find((d) => d.id === id))!.tube
+      .nodes;
+  /**
+   * Muestras cada milímetro del eje de un tubo cuya luz corta el plano de imagen (el eje a menos de su radio menos 2 mm del
+   * plano, o a ≤ 1 mm en los finos): el punto del plano bajo el eje, con su tejido y su velocidad hacia la sonda.
+   */
+  const along = (id: string) => {
+    const out: { tissue: Tissue; towards: number | null }[] = [];
+    const nodes = axisOf(id);
+    for (let i = 0; i + 1 < nodes.length; i++) {
+      const [a, b] = [nodes[i], nodes[i + 1]],
+        n = Math.max(1, Math.round(Math.hypot(...a.p.map((v, k) => v - b.p[k]))));
+      for (let s = 0; s < n; s++) {
+        const onAxis = a.p.map((v, k) => v + ((b.p[k] - v) * s) / n),
+          radius = a.r + ((b.r - a.r) * s) / n,
+          elevation = onAxis.reduce((sum, v, k) => sum + (v - f.face[k]) * f.elevation[k], 0);
+        if (Math.abs(elevation) > Math.max(1, radius - 2)) continue;
+        const p = onAxis.map((v, k) => v - elevation * f.elevation[k]) as Vec3;
+        // El eje es anatomía (coordenadas materiales): la sonda apoyada la desplaza a lo largo del haz, dentro del mismo plano.
+        const c = person.anatomy.classifyMaterial(p, person.sample),
+          beam = p.map((v, k) => v - f.curvatureCenter[k]),
+          norm = Math.hypot(...beam);
+        out.push({
+          tissue: c.tissue,
+          towards: c.bloodVelocity ? -c.bloodVelocity.reduce((sum, v, k) => sum + (v * beam[k]) / norm, 0) : null,
+        });
+      }
+    }
+    return out;
+  };
+  const [artery, portal, duct] = [along('hepaticArtery'), along('pvTrunk'), along('cbd')];
+  const share = (samples: typeof artery, ok: (s: (typeof artery)[number]) => boolean) => samples.filter(ok).length / samples.length;
+  const mean = (samples: typeof artery) => samples.reduce((sum, s) => sum + (s.towards ?? 0), 0) / samples.length;
+  // Medido el 17-11-2026: 50, 41 y 41 mm de eje en el plano. Toda la arteria es sangre y el 96 % se aleja de la sonda (su primer
+  // tramo cruza el haz casi de través); la porta, toda. Velocidad media a lo largo del haz: −284 y −42 mm/s.
+  for (const samples of [artery, portal, duct]) expect(samples.length).toBeGreaterThan(30);
+  for (const samples of [artery, portal]) expect(share(samples, (s) => s.tissue === Tissue.Blood && s.towards !== null)).toBe(1);
+  // Las dos se alejan de la sonda (hacia el hígado, azul en el mapa habitual), y la arteria va más deprisa.
+  expect(share(artery, (s) => s.towards! < 0)).toBeGreaterThan(0.9);
+  expect(share(portal, (s) => s.towards! < 0)).toBe(1);
+  expect(mean(artery)).toBeLessThan(2 * mean(portal));
+  // El colédoco es líquido quieto: sin velocidad en ningún punto.
+  expect(share(duct, (s) => s.tissue === Tissue.Fluid && s.towards === null)).toBe(1);
+});
