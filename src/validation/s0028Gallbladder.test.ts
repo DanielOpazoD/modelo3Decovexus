@@ -96,3 +96,60 @@ it('dentro de la vesícula en ayunas no hay conflicto: ceden hígado e intestino
   expect(wall).toBeGreaterThan(1500);
   expect(yielded).toBeGreaterThan(4000);
 });
+
+it('la normal de la vesícula en ayunas es el gradiente de su pera, no el del canal contraído del atlas (decisión 413)', () => {
+  // La cara de la luz da su eco con la normal de `faceGradient`. La persona tiene atlas abdominal (el canal 7 es la vesícula
+  // contraída del TAC): con la pera, la normal debe salir de la misma distancia que clasifica. Oráculo: diferencias centrales
+  // de la pera de los datos.
+  const numeric = (p: Vec3): Vec3 => {
+    const h = 1e-4;
+    return [0, 1, 2].map((k) => {
+      const a: Vec3 = [...p],
+        b: Vec3 = [...p];
+      a[k] += h;
+      b[k] -= h;
+      return (gallbladderPearSdf(a, S0028_GALLBLADDER) - gallbladderPearSdf(b, S0028_GALLBLADDER)) / (2 * h);
+    }) as Vec3;
+  };
+  let n = 0,
+    worst = 0;
+  for (const { p, d } of grid(2.3, 2)) {
+    if (Math.abs(d) > GALLBLADDER_WALL_MM) continue;
+    const face = scene.faceGradient(p, BASELINE_CALIBER, 'gallbladder');
+    expect(face, p.join(',')).not.toBeNull();
+    const ref = numeric(p),
+      norm = Math.hypot(...ref);
+    worst = Math.max(worst, Math.hypot(...face!.normal.map((v, k) => v - ref[k] / norm)));
+    n++;
+  }
+  // Medido el 17-11-2026: 1.261 puntos a menos de una pared de la cara, error máximo 2·10⁻¹⁰.
+  expect(n).toBeGreaterThan(800);
+  expect(worst).toBeLessThan(1e-5);
+});
+
+it('el cístico entra en la vesícula en ayunas por su cuello y llega al colédoco (decisiones 384 y 413)', () => {
+  const cystic = scene.ducts.find((d) => d.id === 'cysticDuct')!.tube.nodes,
+    cbd = scene.ducts.find((d) => d.id === 'cbd')!.tube.nodes,
+    neck = S0028_GALLBLADDER.nodes[S0028_GALLBLADDER.nodes.length - 1],
+    fundus = S0028_GALLBLADDER.nodes[0];
+  const dist = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  // Nace dentro de la luz, en la mitad del cuello (más cerca del cuello que del fondo), y su otro extremo está sobre el colédoco.
+  expect(gallbladderPearSdf(cystic[0].p, S0028_GALLBLADDER)).toBeLessThanOrEqual(0);
+  expect(dist(cystic[0].p, neck.p)).toBeLessThan(dist(cystic[0].p, fundus.p) / 2);
+  const end = cystic[cystic.length - 1].p;
+  let gap = Infinity;
+  for (let i = 0; i + 1 < cbd.length; i++)
+    for (let t = 0; t <= 1; t += 0.01)
+      gap = Math.min(
+        gap,
+        dist(
+          end,
+          cbd[i].p.map((v, k) => v + (cbd[i + 1].p[k] - v) * t),
+        ),
+      );
+  expect(gap).toBeLessThan(0.5);
+  // Largo razonable para un cístico (20–40 mm en la realidad): medido 18,0 mm, a 6,1 mm del cuello y 42 del fondo.
+  const length = dist(cystic[0].p, end);
+  expect(length).toBeGreaterThan(12);
+  expect(length).toBeLessThan(45);
+});
