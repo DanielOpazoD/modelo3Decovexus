@@ -59,8 +59,25 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
         };
       });
     const reports = [await inspect()];
-    for (const name of ['Rotación', 'Basculación', 'Inclinación']) {
+    for (const [name, field] of [
+      ['Rotación', 'yaw'],
+      ['Basculación', 'rock'],
+      ['Inclinación', 'tilt'],
+    ] as const) {
       const slider = page.getByRole('slider', { name, exact: true });
+      // El panel refleja la pose con los cuadros de la aplicación, no al instante: con un runner lento el deslizador aún
+      // mostraba un valor de la animación de la ventana (−7°) y la pose fijada arriba era otra (5°). Leer el «original» antes de
+      // que el panel se ponga al día hacía fallar el regreso, que sí era correcto.
+      await page.waitForFunction(
+        ({ name, field }) => {
+          const el = [...document.querySelectorAll<HTMLInputElement>('input[type=range]')].find((e) =>
+            e.labels?.[0]?.textContent?.includes(name),
+          );
+          const degrees = (window.__vexusTest!.sim().pose[field] * 180) / Math.PI;
+          return !!el && Math.abs(Number(el.value) - degrees) <= 0.5;
+        },
+        { name, field },
+      );
       const original = Number(await slider.inputValue());
       await slider.focus();
       for (let i = 0; i < 3; i++) await slider.press('ArrowRight');
