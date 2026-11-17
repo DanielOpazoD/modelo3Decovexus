@@ -1,5 +1,5 @@
 // @tier slow
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Interface } from '../anatomy/interfaces';
 import { Tissue } from '../anatomy/tissues';
 import { WALL_INTERIOR_MM, brightLines, type BrightLines } from '../app/fidelity/wall';
@@ -10,9 +10,9 @@ import { focalGain } from '../ultrasound/beamEcho';
 import { greyOfLevel, levelOfGrey } from '../ultrasound/greyMap';
 import { ElevationAnchor, type SpeckleAnchorState } from '../ultrasound/speckleField';
 import { fatSeptum, muscleStriation, wallOrientation } from '../ultrasound/wallTexture';
-import { TWIN_GEOMETRY as G, type TwinFrame } from './support/compoundTwin';
+import { TWIN_GEOMETRY as G, type TwinFrame, type TwinGeometry } from './support/compoundTwin';
 import { RATIO_15_DB, SKIRT_DB, TGC, WALL_MM, caliber, engine, scene, t } from './support/wallFixture';
-import { normalFrame, wallTwin, type WallModel, type WallTwinOut } from './support/wallTwin';
+import { classifyModel, normalFrame, wallTwin, type WallModel, type WallTwinOpts, type WallTwinOut } from './support/wallTwin';
 
 // Tiny measurement helpers stay in the test harness, outside production coverage.
 const anchorOf = (f: TwinFrame): SpeckleAnchorState => new ElevationAnchor().update(f.face, f.elevation, 0);
@@ -378,5 +378,66 @@ describe('pared realista con el gemelo de la imagen (decisión 62)', () => {
       // sin la transmisión de la pared, el eco de la costilla se copiaba en su propia sombra a 10–40 % de la media
       expect(shadowA / (sum / n), `sombra: ${shadowB.toExponential(2)} sin réplicas`).toBeLessThan(0.03);
     }
+  });
+
+  it('la clasificación que comparten las variantes de un marco no cambia el gemelo: cada una, sola o tras las demás, bit a bit', () => {
+    // `wallTwin` guarda la clasificación de la escena por marco y por calibre (su identidad): con un calibre recién copiado
+    // (los mismos valores) cada variante la calcula entera; con uno común, la segunda la encuentra hecha
+    const f = VIEWS.flank;
+    const st = anchorOf(f);
+    const patch = { j0: 94, j1: 97, r0: 0, r1: WALL_MM + 2, noPedestal: true };
+    // otros marcos con una sola pieza distinta del de arriba: el centro 4 mm más craneal, el eje o el lateral girados y la
+    // elevación inclinada hacia el eje (los planos a ±σe cruzan las capas de la pared)
+    const turn = (a: Vec3, b: Vec3, rad: number): Vec3 => a.map((x, k) => x * Math.cos(rad) + b[k] * Math.sin(rad)) as Vec3;
+    const frames: TwinFrame[] = [
+      { ...f, center: f.center.map((x, k) => x + 4 * f.lateral[k]) as Vec3 },
+      { ...f, axial: turn(f.axial, f.lateral, 0.02) },
+      { ...f, lateral: turn(f.lateral, f.axial, -0.2) },
+      { ...f, elevation: turn(f.elevation, f.axial, Math.atan(0.6)) },
+    ];
+    const variants: Array<{ o: WallTwinOpts; g?: TwinGeometry; frame?: TwinFrame }> = [
+      { o: { model: 'wall', ...patch } },
+      { o: { model: 'base', ...patch } },
+      { o: { model: 'wall', noTexture: true, ...patch } },
+      { o: { model: 'wall', noFaces: [Interface.Peritoneum], ...patch } },
+      { o: { model: 'wall', noFacets: true, ...patch } },
+      { o: { model: 'base', noTransmission: true, noReverb: true, ...patch } },
+      // otro parche del mismo marco, con el pedestal (±40 líneas más) y otras filas
+      { o: { model: 'wall', j0: 95, j1: 96, r0: 4, r1: WALL_MM + 4 } },
+      // el mismo marco con el doble de líneas: las mismas líneas 94–97 apuntan a otro sitio, nada que compartir
+      { o: { model: 'wall', ...patch }, g: { ...G, lines: 2 * G.lines } },
+      ...frames.map((frame) => ({ o: { model: 'wall' as const, ...patch }, frame })),
+    ];
+    const bytes = (o: WallTwinOut): string =>
+      [o.env, o.tissue, o.face].map((a) => Buffer.from(a.buffer, a.byteOffset, a.byteLength).toString('hex')).join('/');
+    const twin = (k: number, c: typeof caliber): string =>
+      bytes(wallTwin(scene, c, variants[k].frame ?? f, st, variants[k].o, variants[k].g));
+    const classify = vi.spyOn(scene, 'classify');
+    const alone = variants.map((_, k) => twin(k, { ...caliber }));
+    // las variantes no son la misma imagen: el modelo, la textura, la rejilla y el marco cambian la pared
+    for (const k of [1, 2, 7, 8, 9, 10, 11]) expect(alone[k], `variante ${k}`).not.toBe(alone[0]);
+    const forward = { ...caliber };
+    const calls = variants.map((_, k) => {
+      classify.mockClear();
+      expect(twin(k, forward), `variante ${k}`).toBe(alone[k]);
+      return classify.mock.calls.length;
+    });
+    // la primera clasifica su parche entero y las otras cinco del mismo parche, ni un punto
+    expect(calls[0]).toBeGreaterThan(1000);
+    expect(calls.slice(1, 6)).toEqual([0, 0, 0, 0, 0]);
+    // y en el orden contrario, cuando la que llega encuentra solo una parte
+    const backward = { ...caliber };
+    for (let k = variants.length - 1; k >= 0; k--) expect(twin(k, backward), `variante ${k}, en orden inverso`).toBe(alone[k]);
+    // lo guardado es la clasificación de la escena y cada modelo la ve como `classifyModel`: tejido y cara de cada muestra
+    for (const model of ['wall', 'base'] as const) {
+      const o = wallTwin(scene, forward, f, st, { model, ...patch });
+      for (let i = o.i0; i <= o.i1; i++)
+        for (let j = o.j0; j <= o.j1; j++) {
+          const c = classifyModel(scene, caliber, o.point(i, j), model);
+          const k = (i - o.i0) * o.nL + (j - o.j0);
+          expect([o.tissue[k], o.face[k]], `${model}, fila ${i}, línea ${j}`).toEqual([c.tissue, c.interface]);
+        }
+    }
+    classify.mockRestore();
   });
 });
