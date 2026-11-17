@@ -1211,6 +1211,7 @@ export const TWINS: readonly TwinPair[] = [
         file: 'src/ultrasound/pleura.ts',
         symbols: [
           'normalCdf',
+          'elevationShare',
           'curtainEdgeSigmaMm',
           'curtainAirFraction',
           'curtainAirFractionAt',
@@ -1232,6 +1233,7 @@ export const TWINS: readonly TwinPair[] = [
         file: 'src/ultrasound/pleura.ts',
         symbols: [
           'normalCdf',
+          'elevationShare',
           'curtainEdgeSigmaMm',
           'curtainAirFraction',
           'curtainSteerWeight',
@@ -1761,7 +1763,15 @@ export const CONSTANTES_COPIADAS: Readonly<Record<string, readonly string[]>> = 
   'src/anatomy/organs/liver.ts': ['visceralFaceDistance', 'medialCutDistance', 'medialCutNormal'],
   'src/anatomy/organs/heart.ts': ['heartShift', 'raInferiorZ'],
   'src/ultrasound/dopplerTransmission.ts': ['dopplerTransmission'],
-  'src/ultrasound/pleura.ts': ['normalCdf', 'curtainSteerWeight', 'pleuraCapMm', 'seriesPow', 'pleuraSeriesDepths', 'aLineOrder'],
+  'src/ultrasound/pleura.ts': [
+    'normalCdf',
+    'elevationShare',
+    'curtainSteerWeight',
+    'pleuraCapMm',
+    'seriesPow',
+    'pleuraSeriesDepths',
+    'aLineOrder',
+  ],
   'src/ultrasound/compound.ts': ['lookWeight'],
   'src/ultrasound/gasFace.ts': ['bowelGas'],
   'src/ultrasound/interfaceEcho.ts': ['facetTilt', 'wallDiffuseLobe'],

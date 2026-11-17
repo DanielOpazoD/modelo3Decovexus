@@ -12406,3 +12406,15 @@ exigiendo que los default no cambien; `=all`, las dos. Se retiran las revisiones
 **Consecuencias.** Se pierde la prueba automática de que una revisión pasada «solo cambió X»: lo dice el diff de la foto en cada
 PR. Un cambio de GLSL cuesta un comando. Procedimiento en `docs/engineering/cambio-glsl.md`.
 **Verificación.** `personShaders.test.ts` (foto, 25 programas especializados, símbolo privado) y `s0028WallGpu.test.ts`.
+
+## 415. El reparto del haz en elevación junto a un borde usa la distancia al borde
+
+**Contexto.** La pasada B promedia tres planos de elevación (0 y ±σ) con pesos ½, ¼, ¼. Junto a un borde, el cuarto fijo trataba
+el plano lateral como un cuarto entero del haz aunque el borde quedara casi en ese plano: una luz de 4,4 mm centrada se veía oscura
+en 2,1 mm y gris en el resto (deuda «luces pequeñas»), y la porta se cortaba en gris donde salía 3 mm del plano.
+**Decisión.** Si el tejido del plano lateral es otro que el central, su peso es la cola del haz de dos vías (σ/√2) más allá del
+borde, 1 − Φ((σ − bd)·√2/σ), con bd la distancia de ese plano al borde de su tejido (la clasificación ya la da; viaja en la
+fracción del tejido lateral). Dentro de un mismo tejido, y con bd desconocida (máscaras de vóxel), sigue el cuarto: el moteado de
+un tejido uniforme no cambia. Sin clasificaciones nuevas.
+**Consecuencias.** Esa luz se ve oscura en 3,4 mm; la tríada y los vasos finos ganan anchura. Cambian los 25 programas con pasada B.
+**Verificación.** `elevationShare.test.ts` (cola gaussiana por integración; anchura oscura), gemelo de la pared, láminas, e2e.

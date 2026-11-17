@@ -418,3 +418,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [412](DECISIONS.md#L12375) | Tríada portal en paralelo en la subcostal portal | vigente |
 | [413](DECISIONS.md#L12387) | Vesícula en ayunas en s0028 | vigente |
 | [414](DECISIONS.md#L12398) | Huellas de shaders: una sola foto vigente | vigente |
+| [415](DECISIONS.md#L12410) | El reparto del haz en elevación junto a un borde usa la distancia al borde | vigente |

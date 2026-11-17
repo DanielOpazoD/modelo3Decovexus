@@ -21,6 +21,8 @@ import {
   CURTAIN_CONTIGUOUS_SEGMENTS,
   CURTAIN_GAS_KIND,
   CURTAIN_RECORD_MM,
+  ELEV_BD_MAX_MM,
+  ELEV_BD_SCALE_MM,
   pleuraGlsl,
   mediumFieldGlsl,
   wallFieldBodyGlsl,
@@ -993,9 +995,12 @@ uniform sampler2D uRawClass2;
 uniform sampler2D uRawEcho;
 uniform sampler2D uRawElevation;
 uniform float uElevationSide;
-ivec2 rawElevation() {
+// Cada lado guarda su tejido y, en la fracción, la distancia de ese plano al borde de su tejido (decisión 415).
+ivec2 rawElevation(out vec2 bd) {
   ivec2 q=ivec2(gl_FragCoord.xy), d=ivec2(textureSize(uRawClass0,0).x,0);
-  return ivec2(texelFetch(uRawElevation,q,0).r,texelFetch(uRawElevation,q+d,0).r);
+  vec2 v=vec2(texelFetch(uRawElevation,q,0).r,texelFetch(uRawElevation,q+d,0).r);
+  bd=fract(v)*${glslFloat(ELEV_BD_SCALE_MM)};
+  return ivec2(v);
 }
 Cls rawClass() {
   ivec2 q=ivec2(gl_FragCoord.xy);
@@ -1014,12 +1019,18 @@ const ELEVATION_TISSUES_GLSL = /* glsl */ `
 // copia del clasificador para los dos planos; el campo se evalúa después, fuera del bucle.
 // Clasificar los dos planos en un bucle pequeño comparte una copia del clasificador.
 // El campo, sus texturas, warpAt y el eco siguen fuera de bucles (guarda de compilación).
-ivec2 elevationTissues(vec3 plus, vec3 minus, float se, Cls center, bool withCurtain) {
+// Con cada tejido lateral va la distancia de ese plano al borde de su tejido (decisión 415), con el mismo empaquetado que la
+// pasada de elevación por etapas (tejido + distancia en la fracción): los dos caminos dan el mismo número.
+ivec2 elevationTissues(vec3 plus, vec3 minus, float se, Cls center, bool withCurtain, out vec2 sideBd) {
+  sideBd = vec2(0.0);
   if (center.bd > se + 0.5) return ivec2(center.tissue);
   ivec2 tissues;
   for (int i = 0; i < 2; i++) {
     vec3 m = i == 0 ? plus : minus;
-    tissues[i] = classifyWith(m, withCurtain).tissue;
+    Cls s = classifyWith(m, withCurtain);
+    float v = float(s.tissue) + min(max(s.bd, 0.0), ${glslFloat(ELEV_BD_MAX_MM)}) / ${glslFloat(ELEV_BD_SCALE_MM)};
+    tissues[i] = int(v);
+    sideBd[i] = fract(v) * ${glslFloat(ELEV_BD_SCALE_MM)};
   }
   return tissues;
 }
@@ -1040,7 +1051,11 @@ function rawFieldShader(look: Look, stage: RawFieldStage = 'direct'): string {
         ? /* glsl */ `
     Cls c = rawClass();
     vec3 side = uElevationSide > 0.0 ? p + uElev * se : p - uElev * se;
-    oElevation = c.bd > se + 0.5 ? float(c.tissue) : float(classifyWith(toMaterial(side), withCurtain).tissue);
+    oElevation = float(c.tissue);
+    if (c.bd <= se + 0.5) {
+      Cls s = classifyWith(toMaterial(side), withCurtain);
+      oElevation = float(s.tissue) + min(max(s.bd, 0.0), ${glslFloat(ELEV_BD_MAX_MM)}) / ${glslFloat(ELEV_BD_SCALE_MM)};
+    }
     spec = 0.0;
     return vec2(0.0);`
         : stage === 'gradient'
