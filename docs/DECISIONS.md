@@ -12418,3 +12418,16 @@ fracción del tejido lateral). Dentro de un mismo tejido, y con bd desconocida (
 un tejido uniforme no cambia. Sin clasificaciones nuevas.
 **Consecuencias.** Esa luz se ve oscura en 3,4 mm; la tríada y los vasos finos ganan anchura. Cambian los 25 programas con pasada B.
 **Verificación.** `elevationShare.test.ts` (cola gaussiana por integración; anchura oscura), gemelo de la pared, láminas, e2e.
+
+## 416. La consulta del dominio en las uniones, sin crear nada
+
+**Contexto.** En la porta subcostal de s0028 el tronco tiene ocho socios y cada glóbulo consulta su distancia a ellos en cada tick
+lento y al agotar su arco (`SampleVolumeIQ.domainArc`): 270 000 veces por segundo de señal en la congestión grave. Cada consulta
+copiaba el tubo del socio, rehacía su métrica y creaba un resultado de `tubeQuery`: el 35 % de `s0028ExamChain.test.ts`.
+**Opciones.** Segmentos precalculados: otra copia de la cuenta y 1,2 kB, que pasan el techo JS de s0028. Podar segmentos con una
+cota: medida, no gana. Descartadas.
+**Decisión.** `tubeQuery` y la nueva `tubeDistance` (`anatomy/primitives.ts`) comparten el recorrido, `nearestSegment`;
+`tubeDistance` da `d` y `r` sin crear nada, con la sección del socio que `sectionOf` calcula una vez por muestra fisiológica.
+**Consecuencias.** La misma señal, bit a bit. CPU de `generate` en la porta de s0028, −21 a −43 %; `s0028ExamChain.test.ts`, −23 %
+(las dos versiones a la vez, carga 8–10). +206 B de JS: quedan 109 B del techo de s0028.
+**Verificación.** `tubeDistance.test.ts` (las dos frente a la `tubeQuery` de antes) y `pwJunctionDomain.test.ts` (mismo arco e IQ).

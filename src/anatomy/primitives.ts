@@ -591,14 +591,63 @@ function radiusWeight(s: number, smooth: boolean): number {
 export function tubeQuery(p: Vec3, tube: Tube, radiusScale = 1): TubeHit {
   const nodes = tube.nodes;
   const shape = tube.apScale === 1 && tube.shape ? shapeMetric(tube.shape, radiusScale) : null;
-  const smooth = tube.smoothRadius === true;
+  nearestSegment(p, nodes, tube.smoothRadius === true, tube.apScale, shape ? shape.wt : null, shape ? shape.c : 1, radiusScale);
+  const r = noisyRadius(tube);
+  return {
+    d: NEAR[0] - r,
+    rho: NEAR[0] / Math.max(1e-6, r),
+    tangent: [NEAR[5], NEAR[6], NEAR[7]],
+    r,
+    segment: NEAR[2],
+    s: NEAR[3],
+    arc: NEAR[4],
+  };
+}
+
+/** Sección de un tubo en un instante: escala de radio, semieje AP y, si tiene forma y el AP es 1, su métrica (`shapeMetric`). */
+export interface TubeSection {
+  scale: number;
+  ap: number;
+  wt: Vec3 | null;
+  c: number;
+}
+
+/**
+ * La `d` y la `r` de `tubeQuery` sin crear nada (decisión 416): el mismo recorrido con la sección del instante ya calculada
+ * (`section`: su semieje AP en lugar de una copia del tubo, y la métrica en lugar de `shapeMetric` en cada consulta). Devuelve
+ * `d` y deja `r` en `out.r`. Para quien consulta millones de veces la distancia a un tubo vecino (`SampleVolumeIQ.domainArc`).
+ */
+export function tubeDistance(p: Vec3, tube: Tube, section: TubeSection, out: { r: number }): number {
+  nearestSegment(p, tube.nodes, tube.smoothRadius === true, section.ap, section.wt, section.c, section.scale);
+  out.r = noisyRadius(tube);
+  return NEAR[0] - out.r;
+}
+
+/**
+ * Lo que deja `nearestSegment` del segmento que gana: distancia al eje, radio sin ruido, índice, parámetro, arco y tangente. En un
+ * vector de reales y no en variables del módulo: escribir un real en una variable compartida crea un objeto.
+ */
+const NEAR = new Float64Array(8);
+/** Sin segmento que gane: distancia 0, radio 1 y tangente +z. */
+const NEAR_NONE = [0, 1, 0, 0, 0, 0, 0, 1];
+
+/** Radio del segmento que ganó con el ruido de la forma del tubo en su arco. */
+function noisyRadius(tube: Tube): number {
+  const amp = tube.shape?.amp ?? 0;
+  return amp > 0 ? NEAR[1] * (1 + amp * tubeNoise(tube.shape!.seed, NEAR[4])[0]) : NEAR[1];
+}
+
+/** El recorrido de `tubeQuery`: el segmento de menor distancia a su luz (sin el ruido del radio), en `NEAR`. */
+function nearestSegment(
+  p: Vec3,
+  nodes: readonly TubeNode[],
+  smooth: boolean,
+  apScale: number,
+  wt: Vec3 | null,
+  c: number,
+  radiusScale: number,
+): void {
   let bestD = Infinity;
-  let bestDist = 0;
-  let bestR = 1;
-  let bestI = 0;
-  let bestS = 0;
-  let bestArc = 0;
-  let bestT: Vec3 = [0, 0, 1];
   let arc = 0;
   for (let i = 0; i < nodes.length - 1; i++) {
     const a = nodes[i].p;
@@ -625,19 +674,19 @@ export function tubeQuery(p: Vec3, tube: Tube, radiusScale = 1): TubeHit {
     // lateral), que es el caso de la cava. La componente axial (más allá de
     // los extremos del segmento) se conserva: sin ella el tubo no tenía tapa.
     let dist: number;
-    if (tube.apScale !== 1) {
+    if (apScale !== 1) {
       const l = len || 1;
       const tx = abx / l;
       const ty = aby / l;
       const tz = abz / l;
       const along = dx * tx + dy * ty + dz * tz;
       const px = dx - tx * along;
-      const py = (dy - ty * along) / tube.apScale;
+      const py = (dy - ty * along) / apScale;
       const pz = dz - tz * along;
       dist = Math.sqrt(px * px + py * py + pz * pz + along * along);
-    } else if (shape) {
-      const q = dx * shape.wt[0] + dy * shape.wt[1] + dz * shape.wt[2];
-      dist = shape.c * Math.sqrt(dx * dx + dy * dy + dz * dz + q * q);
+    } else if (wt) {
+      const q = dx * wt[0] + dy * wt[1] + dz * wt[2];
+      dist = c * Math.sqrt(dx * dx + dy * dy + dz * dz + q * q);
     } else {
       dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
@@ -646,18 +695,18 @@ export function tubeQuery(p: Vec3, tube: Tube, radiusScale = 1): TubeHit {
     if (d < bestD) {
       const l = len || 1;
       bestD = d;
-      bestDist = dist;
-      bestR = r;
-      bestI = i;
-      bestS = s;
-      bestArc = arc + s * len;
-      bestT = [abx / l, aby / l, abz / l];
+      NEAR[0] = dist;
+      NEAR[1] = r;
+      NEAR[2] = i;
+      NEAR[3] = s;
+      NEAR[4] = arc + s * len;
+      NEAR[5] = abx / l;
+      NEAR[6] = aby / l;
+      NEAR[7] = abz / l;
     }
     arc += len;
   }
-  const amp = tube.shape?.amp ?? 0;
-  const r = amp > 0 ? bestR * (1 + amp * tubeNoise(tube.shape!.seed, bestArc)[0]) : bestR;
-  return { d: bestDist - r, rho: bestDist / Math.max(1e-6, r), tangent: bestT, r, segment: bestI, s: bestS, arc: bestArc };
+  if (bestD === Infinity) NEAR.set(NEAR_NONE);
 }
 
 /**

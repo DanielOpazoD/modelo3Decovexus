@@ -2,7 +2,7 @@ import { hannWindow } from '../core/fft';
 import { SeededRandom } from '../core/random';
 import type { Vec3 } from '../core/vec3';
 import { dopplerShiftHz } from '../core/units';
-import { shapeMetric, tubeNoise, tubeQuery, type Tube } from '../anatomy/primitives';
+import { shapeMetric, tubeDistance, tubeNoise, type Tube, type TubeSection } from '../anatomy/primitives';
 import type { AnatomyQuery } from '../anatomy/query';
 import { vesselApScale, wallThicknessMm, type VesselCaliber } from '../anatomy/scene';
 import type { DuctDef, VesselDef } from '../anatomy/vesselTree';
@@ -89,12 +89,8 @@ interface TubeGeom {
 }
 
 /** Sección del instante de un vaso, la de `tubeQuery`: calibre, semieje AP y métrica de la forma orgánica (sin AP). */
-interface Section {
+interface Section extends TubeSection {
   phys: PhysiologySample | null;
-  scale: number;
-  ap: number;
-  wt: Vec3 | null;
-  c: number;
 }
 
 /** Partícula de sangre sobre la línea de corriente de su tubo (decisión 294). */
@@ -138,12 +134,16 @@ interface Stream {
   domainLeft: number;
 }
 
-/** Zona de una unión: otro tubo cuya luz solapa la de este cerca de la caja (caja material). */
+/**
+ * Zona de una unión: otro tubo cuya luz solapa la de este cerca de la caja (caja material). `sec` es la última sección de ese
+ * tubo que usó `domainArc` (`sectionOf`).
+ */
 interface JunctionZone {
   duct: boolean;
   def: VesselDef | DuctDef;
   lo: Vec3;
   hi: Vec3;
+  sec?: Section;
 }
 
 interface Scatterer {
@@ -354,12 +354,6 @@ function radialProfile(rho: number, n: number, ff: number): number {
   return ((n + 2) / n) * (1 - Math.pow(rho, n)) * ff;
 }
 
-/** El tubo del vaso con el semieje AP del instante. */
-function instantTube(def: VesselDef, caliber: VesselCaliber): Tube {
-  const ap = vesselApScale(def.id, def.tube.apScale, caliber);
-  return ap === def.tube.apScale ? def.tube : { ...def.tube, apScale: ap };
-}
-
 /** ¿Está la corriente más allá del primer o del último nodo (casquete)? */
 function inCap(st: Stream): boolean {
   return (st.seg === 0 && st.s < 0) || (st.seg === st.geom.len.length - 1 && st.s > 1);
@@ -493,8 +487,10 @@ export class SampleVolumeIQ {
   /** Zonas de unión por definición de vaso (solape real de luces cerca de la caja). */
   private junctions = new Map<VesselDef, JunctionZone[]>();
   /** Sección del instante por vaso, de la fisiología de la llamada. */
-  private sections = new Map<VesselDef, Section>();
+  private sections = new Map<VesselDef | DuctDef, Section>();
   private scratch: Vec3 = [0, 0, 0];
+  /** Radio del socio en la última consulta de `domainArc` (`tubeDistance` lo deja aquí). */
+  private hit = { r: 0 };
 
   constructor(
     private readonly anatomy: AnatomyQuery,
@@ -654,13 +650,16 @@ export class SampleVolumeIQ {
     return this.anatomy.caliberFor(this.phys!);
   }
 
-  /** Sección del instante del vaso (calibre, semieje AP, forma), una vez por fisiología. */
-  private sectionOf(def: VesselDef): Section {
+  /**
+   * Sección del instante del vaso (calibre, semieje AP, forma), una vez por fisiología. Un conducto (`duct`) no tiene calibre: la
+   * de `tubeQuery` con escala 1 y su propio semieje AP.
+   */
+  private sectionOf(def: VesselDef | DuctDef, duct = false): Section {
     const known = this.sections.get(def);
     if (known && known.phys === this.phys) return known;
     const caliber = this.caliber();
-    const scale = caliber.radiusScale(def.id);
-    const ap = vesselApScale(def.id, def.tube.apScale, caliber);
+    const scale = duct ? 1 : caliber.radiusScale((def as VesselDef).id);
+    const ap = duct ? def.tube.apScale : vesselApScale((def as VesselDef).id, def.tube.apScale, caliber);
     const shape = ap === 1 && def.tube.shape ? shapeMetric(def.tube.shape, scale) : null;
     const sec: Section = { phys: this.phys, scale, ap, wt: shape ? shape.wt : null, c: shape ? shape.c : 1 };
     this.sections.set(def, sec);
@@ -950,7 +949,7 @@ export class SampleVolumeIQ {
   private domainArc(st: Stream, m: Vec3): number {
     const zones = this.junctions.get(st.def);
     if (!zones) return Infinity;
-    let caliber: VesselCaliber | null = null;
+    const hit = this.hit;
     let own = Number.NaN;
     let arc = Infinity;
     for (const z of zones) {
@@ -959,20 +958,23 @@ export class SampleVolumeIQ {
         arc = Math.min(arc, outside);
         continue;
       }
-      caliber ??= this.caliber();
-      const tube = z.duct ? z.def.tube : instantTube(z.def as VesselDef, caliber);
-      const hit = tubeQuery(m, tube, z.duct ? 1 : caliber.radiusScale(z.def.id as VesselId));
+      // La distancia a la luz del socio es la de `tubeQuery` con su tubo del instante, sin crear ese tubo ni el resultado: su
+      // calibre, su semieje AP y su métrica se calculan una vez por fisiología (decisión 416)
+      let sec = z.sec;
+      if (sec?.phys !== this.phys) sec = z.sec = this.sectionOf(z.def, z.duct);
+      const d = tubeDistance(m, z.def.tube, sec, hit);
       const wall = z.duct ? (z.def as DuctDef).wallMm : wallThicknessMm(z.def as VesselDef, hit.r);
-      const rate = 1 / Math.min(1, tube.apScale);
-      if (!(hit.d < wall)) {
-        arc = Math.min(arc, (hit.d - wall) / rate);
+      const rate = 1 / Math.min(1, sec.ap);
+      if (!(d < wall)) {
+        arc = Math.min(arc, (d - wall) / rate);
         continue;
       }
       // la distancia propia exacta (forma orgánica, semieje AP, casquetes): una aproximación por |off| erraba ~1 mm en la
       // confluencia portal y dejaba un 6 % del peso sanguíneo en la rama equivocada
-      if (Number.isNaN(own)) own = tubeQuery(m, instantTube(st.def, caliber), caliber.radiusScale(st.def.id)).d;
-      if (hit.d < own) return -1;
-      arc = Math.min(arc, (hit.d - own) / (rate + (inCap(st) ? 1 : 0)));
+      // (el radio del socio, `hit.r`, ya se usó en `wall`: la consulta propia puede pisarlo)
+      if (Number.isNaN(own)) own = tubeDistance(m, st.def.tube, this.sectionOf(st.def), hit);
+      if (d < own) return -1;
+      arc = Math.min(arc, (d - own) / (rate + (inCap(st) ? 1 : 0)));
     }
     return 0.8 * arc;
   }
