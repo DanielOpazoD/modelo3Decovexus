@@ -50,7 +50,19 @@ for (const model of ['legacy', 'reference', 'atlas'] as const)
         for (let j = 0; j < 3; j++) expect(now[axis][j]).toBeCloseTo(before[axis][j], 8);
     }
     await page.mouse.up();
+    // El marco de la sonda se resuelve en el cuadro siguiente al gesto (`settleContact`), no en el evento del ratón: las
+    // lecturas de cada paso, arriba, ven el marco anterior mientras no pase un cuadro. Aquí se espera a la adquisición con
+    // la pose final y se comparan sus ejes. Deslizar parte siempre de la pose actual: un giro en cualquier paso sigue ahí.
+    await withinFrames(page, 4, 'adquisición con la pose deslizada', async () =>
+      page.evaluate(() => {
+        const s = window.__vexusTest!.sim(),
+          acquired = s.renderer.displayedAnatomy;
+        return (!!acquired && JSON.stringify(acquired.pose) === JSON.stringify(s.pose)) || 'pose deslizada aún no adquirida';
+      }),
+    );
     const after = await sample();
+    for (const axis of ['axial', 'lateral', 'elevation'] as const)
+      for (let j = 0; j < 3; j++) expect(after[axis][j], `${axis} con la pose deslizada adquirida`).toBeCloseTo(before[axis][j], 8);
     expect(Math.abs(after.pose.phi - before.pose.phi) + Math.abs(after.pose.z - before.pose.z)).toBeGreaterThan(1);
     await page.screenshot({ path: info.outputPath('translation.png') });
     await info.attach('translation-frames', {

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { WINDOW_GROUPS } from '../src/app/windowGroups';
-import { bootWithoutErrors, budget, checkAfterEach } from './support';
+import { bootWithoutErrors, budget, checkAfterEach, withinFrames } from './support';
 
 checkAfterEach();
 
@@ -46,6 +46,18 @@ async function layoutProblems(page: Page): Promise<string[]> {
     return problems;
   });
 }
+
+/**
+ * Espera en cuadros a que la disposición no tenga problemas y, si quedan, los dice. Con `expect.poll` el plazo eran 15 s de
+ * reloj para una comprobación que necesita el hilo principal: tras cambiar de tamaño con la imagen congelada, SwiftShader lo
+ * tuvo ocupado 15,16 s en un corredor lento y el sondeo caducó sin recibir la lista, que era [] (CI 44059006458). La rejilla
+ * de escritorio cambia de columnas con una transición de 0,25 s, 15 cuadros a 60 fps: se dan 30.
+ */
+const layoutSettles = (page: Page, what: string) =>
+  withinFrames(page, 30, what, async () => {
+    const problems = await layoutProblems(page);
+    return problems.length === 0 || JSON.stringify(problems);
+  });
 
 /** Contraste del texto realmente computado, incluidas las superficies translúcidas. */
 async function textContrast(page: Page) {
@@ -106,9 +118,7 @@ test('el espacio claro conserva mandos, lienzos y adquisición congelada de 320 
     ]) {
       await test.step(`${viewport.width} × ${viewport.height}`, async () => {
         await page.setViewportSize(viewport);
-        await expect
-          .poll(() => layoutProblems(page), { message: 'lienzos positivos y controles sin desborde ni recorte horizontal' })
-          .toEqual([]);
+        await layoutSettles(page, 'lienzos positivos y controles sin desborde ni recorte horizontal');
         expect(await acquired(page), 'redimensionar no cambia el reloj ni el cuadro adquirido').toEqual(frozen);
         const contrasts = await textContrast(page);
         for (const sample of contrasts) expect(sample.contrast, `${sample.selector}: WCAG AA texto normal`).toBeGreaterThanOrEqual(4.5);
@@ -161,7 +171,7 @@ test('el espacio claro conserva mandos, lienzos y adquisición congelada de 320 
       await button.focus();
       await button.press('Enter');
       await expect(button).toHaveAttribute('aria-pressed', 'true');
-      await expect.poll(() => layoutProblems(page), { message: `mandos accesibles en modo ${mode}` }).toEqual([]);
+      await layoutSettles(page, `mandos accesibles en modo ${mode}`);
     }
     await page.locator('#cut-toggle').click();
     await expect(page.locator('#cut-toggle')).toHaveAttribute('aria-expanded', 'false');
@@ -176,7 +186,7 @@ test('el espacio claro conserva mandos, lienzos y adquisición congelada de 320 
     await page.locator('#torso-toggle').click();
     await expect(page.locator('#torso-toggle')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('#left-rail')).toBeVisible();
-    await expect.poll(() => layoutProblems(page), { message: 'torso y corte restaurados sin desborde' }).toEqual([]);
+    await layoutSettles(page, 'torso y corte restaurados sin desborde');
     expect(await acquired(page), 'los modos y la disposición no adquieren ni alteran la captura congelada').toEqual(frozen);
     expect(errors).toEqual([]);
   } finally {
