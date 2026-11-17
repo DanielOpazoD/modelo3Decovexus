@@ -56,6 +56,46 @@ describe('Feedback focalizado sin confundirse con aceptación', () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+  it('una rama atrasada solo cuenta lo suyo: lo que la base cambió después de separarse no entra en el plan', () => {
+    const root = mkdtempSync(join(tmpdir(), 'vexus-feedback-fork-'));
+    const env = feedbackGitEnvironment();
+    const git = (...args: string[]) => execFileSync('git', args, { cwd: root, stdio: 'pipe', env }).toString().trim();
+    try {
+      git('init', '-b', 'main');
+      git('config', 'user.name', 'Feedback fixture');
+      git('config', 'user.email', 'fixture@example.invalid');
+      mkdirSync(join(root, 'docs'));
+      mkdirSync(join(root, 'tools'));
+      writeFileSync(join(root, 'docs/guia.md'), 'inicial');
+      writeFileSync(join(root, 'tools/guion.ts'), 'inicial');
+      git('add', '.');
+      git('commit', '-m', 'baseline');
+      // La rama solo toca documentación…
+      git('checkout', '-b', 'rama');
+      writeFileSync(join(root, 'docs/guia.md'), 'de la rama');
+      git('commit', '-am', 'docs');
+      // …y la base avanza después con una herramienta (que por sí sola pediría toda la capa rápida).
+      git('checkout', 'main');
+      writeFileSync(join(root, 'tools/guion.ts'), 'de la base');
+      git('commit', '-am', 'herramienta');
+      git('checkout', 'rama');
+      expect(feedbackPlan(root, ['tools/guion.ts']).mode).toBe('fast');
+      expect(feedbackFiles(root, 'main', [])).toEqual(['docs/guia.md']);
+      expect(feedbackPlan(root, feedbackFiles(root, 'main', [])).mode).toBe('docs');
+      // Lo sin confirmar de la rama sigue contando, y al ponerse al día con la base el resultado no cambia.
+      writeFileSync(join(root, 'docs/nueva.md'), 'nueva');
+      expect(feedbackFiles(root, 'main', [])).toEqual(['docs/guia.md', 'docs/nueva.md']);
+      rmSync(join(root, 'docs/nueva.md'));
+      git('rebase', 'main');
+      expect(feedbackFiles(root, 'main', [])).toEqual(['docs/guia.md']);
+      // Sin ancestro común se compara con la base misma, como antes.
+      git('checkout', '--orphan', 'suelta');
+      git('commit', '-m', 'suelta');
+      expect(feedbackFiles(root, 'main', [])).toEqual(['docs/guia.md']);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
   it.each(['none', 'head', 'index', 'config'])('el hook real detecta contaminación Git: %s', (mutation) => {
     const root = mkdtempSync(join(tmpdir(), 'vexus-hook-'));
     const env = feedbackGitEnvironment();

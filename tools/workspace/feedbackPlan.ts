@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, readFileSync, readlinkSync, statSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
@@ -9,7 +9,7 @@ export function feedbackGitEnvironment(inherited = process.env): NodeJS.ProcessE
   return Object.fromEntries(Object.entries(inherited).filter(([name]) => !name.startsWith('GIT_')));
 }
 
-/** Incluye cambios confirmados, preparados, sin preparar y archivos nuevos; nunca usa la shell. */
+/** Incluye cambios confirmados desde que la rama se separó de la base, preparados, sin preparar y archivos nuevos; nunca usa la shell. */
 export function feedbackFiles(root: string, base: string, explicit: string[]): string[] {
   const git = (...args: string[]) =>
     execFileSync('git', args, { cwd: root, encoding: 'utf8', env: feedbackGitEnvironment() }).split('\0').filter(Boolean);
@@ -25,9 +25,13 @@ export function feedbackFiles(root: string, base: string, explicit: string[]): s
       throw new Error(`Falta la base Git ${base}; ejecuta git fetch origin main o indica --base <ref-local>. El push sigue bloqueado.`);
     }
   }
+  // «En proporción a lo que cambia» (decisión 347) es lo que cambia la rama, no lo que cambió la base desde que se
+  // separaron: una rama atrasada no corre pruebas de más. Sin ancestro común se compara con la base misma, como antes.
+  const fork = spawnSync('git', ['merge-base', base, 'HEAD'], { cwd: root, encoding: 'utf8', env: feedbackGitEnvironment() });
+  const from = fork.status === 0 && fork.stdout.trim() ? fork.stdout.trim() : base;
   const inputs = explicit.length
     ? explicit
-    : [...git('diff', '--name-only', '-z', base, '--'), ...git('ls-files', '--others', '--exclude-standard', '-z')];
+    : [...git('diff', '--name-only', '-z', from, '--'), ...git('ls-files', '--others', '--exclude-standard', '-z')];
   return [
     ...new Set(
       inputs.map((file) => {
