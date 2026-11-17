@@ -33,24 +33,24 @@ export const S0028_LIVER_GAP_MM = 8;
 export const S0028_LIVER_GAP_KIDNEY_MM = 10;
 /** A menos de esto del hígado la pared no dibuja su línea de peritoneo: la cápsula hepática es esa misma línea, no una segunda. */
 export const S0028_LIVER_SEAM_MM = 4;
-/** Colocación xyz de cada página 32×32 RG16F de grasa en el atlas abdominal: x/32 + 6·y/32 + 48·z, tres cifras en base 36. */
-export const s0028FatPages = (): number[][] =>
-  Array.from({ length: B.solids.pages.length / 3 }, (_, i) => {
-    const c = parseInt(B.solids.pages.slice(3 * i, 3 * i + 3), 36);
+/** Colocación xyz de cada página 32×32 RG16F de una tabla en el atlas abdominal: x/32 + 6·y/32 + 48·z, tres cifras en base 36. */
+export const s0028Pages = (pages: string): number[][] =>
+  Array.from({ length: pages.length / 3 }, (_, i) => {
+    const c = parseInt(pages.slice(3 * i, 3 * i + 3), 36);
     return [(c % 6) * 32, (Math.floor(c / 6) % 8) * 32, Math.floor(c / 48)];
   });
-/** Colocación xyz de cada página 32×32 RG16F del interior renal en el atlas abdominal, con el mismo código que la grasa. */
-export const s0028RenalPages = (): number[][] =>
-  Array.from({ length: R.pageCount }, (_, i) => {
-    const c = parseInt(R.pages.slice(3 * i, 3 * i + 3), 36);
-    return [(c % 6) * 32, (Math.floor(c / 6) % 8) * 32, Math.floor(c / 48)];
-  });
-/** Colocación xyz de cada página 32×32 RG16F de la grasa del abdomen a 3 mm, con el mismo código que la grasa P3. */
-export const s0028WideFatPages = (): number[][] =>
-  Array.from({ length: B.wideFat.pages.length / 3 }, (_, i) => {
-    const c = parseInt(B.wideFat.pages.slice(3 * i, 3 * i + 3), 36);
-    return [(c % 6) * 32, (Math.floor(c / 6) % 8) * 32, Math.floor(c / 48)];
-  });
+/** Páginas de la grasa P3 en el atlas abdominal. */
+export const s0028FatPages = (): number[][] => s0028Pages(B.solids.pages);
+/** Páginas del interior renal en el atlas abdominal (`R.pageCount`, tres cifras cada una), con el mismo código que la grasa. */
+export const s0028RenalPages = (): number[][] => s0028Pages(R.pages);
+/** Páginas de la grasa del abdomen a 3 mm, con el mismo código que la grasa P3. */
+export const s0028WideFatPages = (): number[][] => s0028Pages(B.wideFat.pages);
+/** Entero exacto (0–2047) como half float, como lo guarda una página RG16F. */
+export const intHalf = (n: number): number => {
+  if (n === 0) return 0;
+  const e = Math.floor(Math.log2(n));
+  return ((e + 15) << 10) | ((n / 2 ** e - 1) * 1024);
+};
 /** Radio (mm) del cuerpo vertebral lumbar con que su cortical reparte el eco: un cilindro vertical (decisión 368). [ESTIMADO] */
 export const S0028_LUMBAR_BODY_RADIUS_MM = 22;
 /**

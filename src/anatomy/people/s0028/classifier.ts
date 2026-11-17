@@ -49,7 +49,7 @@ export function classifyWall(
   if (solids.state === 'conflict')
     return { final: true, cls: { ...NONE, tissue: Tissue.UnsegmentedSoftTissue, boundaryDistance: 0, solids } };
   for (const name of owner === 'bone' || owner === 'cartilage' ? ['thoracicBone', 'lumbarSacralBone', 'sacrum', 'cartilage'] : []) {
-    const source = scene.person.cpu.regional!.s0028SourceValue(m, name);
+    const source = regional.s0028SourceValue(m, name);
     if (source.d < 0)
       return {
         final: true,
@@ -144,23 +144,23 @@ export function classifyInside(
   spineDistance: number,
   solids?: S0028Ownership,
 ): Classification {
+  const regional = scene.person.cpu.regional!;
   // r5: el interior renal sale del rótulo offline del propio TAC (corteza y médula E, seno graso y colector D); lo demás U.
   const owner = solids?.owners[0]?.id;
   const renal = owner?.startsWith('kidney');
-  const interior = scene.person.cpu.regional!.s0028RenalInterior(m);
+  const interior = regional.s0028RenalInterior(m);
   {
-    const lung = scene.person.cpu.regional!.s0028SourceValue(m, 'lung');
+    const lung = regional.s0028SourceValue(m, 'lung');
     if (lung.d < 0) return { ...NONE, tissue: Tissue.Lung, boundaryDistance: -lung.d };
   }
-  const curtain = null;
-  if (curtain) return curtain;
   const tube = scene.classifyTubes(m, caliber);
   if (tube && tube.interface !== Interface.IvcLumen) return tube;
   // Corazón (decisión 356): dentro de la máscara de esta persona no hay cúpula que recorte (suelo a −1000): la cava entra en su
-  // aurícula con la regla de la decisión 85, y fuera de ella gana el corazón.
-  const heart = scene.person.cpu.regional!.s0028SourceValue(m, 'heart');
-  const [dDome, slope] = [1e3, 1];
-  const floor = heartFloor(dDome, slope);
+  // aurícula con la regla de la decisión 85, y fuera de ella gana el corazón. Sin cúpula analítica (a 1000 mm), tampoco hay tórax
+  // ni diafragma que salgan de ella: el diafragma de esta persona es `s0028Diaphragm`.
+  const heart = regional.s0028SourceValue(m, 'heart');
+  const dDome = 1e3;
+  const floor = heartFloor(dDome, 1);
   // la VCI que entra en la aurícula derecha (decisión 85): dentro de ella no hay pared que dibujar (antes daba un eco de
   // pared brillante y seguía como un anillo dentro de la cavidad): su pared es sangre de la aurícula y su luz conserva el
   // flujo sin cara; fuera de la aurícula, por encima de su suelo, no hay VCI (gana el corazón)
@@ -191,18 +191,6 @@ export function classifyInside(
       ? { ...NONE, tissue: Tissue.Blood, boundaryDistance: Math.min(t.bd, -heart.d - S0028_HEART_WALL_MM) }
       : { ...NONE, tissue: Tissue.Myocardium, boundaryDistance: -heart.d };
   }
-  if (dDome < 0) {
-    // tórax (decisión 85): el corazón en su saco, el mediastino o el pulmón; la capa del pericardio dibuja su cara
-    const t = thorax(m, dDome, floor, scene.person?.cpu, caliber.heartBeat);
-    const face = t.ifd < NONE.interfaceDistance ? { interface: Interface.Pericardium, interfaceDistance: t.ifd } : {};
-    // su distancia a la frontera cuenta también la columna y la pared (como el retroperitoneo)
-    const bd = Math.min(t.bd, spineDistance, -depth - wallMm);
-    return { ...NONE, tissue: t.tissue, boundaryDistance: bd, ...face };
-  }
-  if (dDome < DIAPHRAGM_THICKNESS_MM) {
-    // la mitad abdominal dibuja la cara hepática; la pleural la dibuja el espejo exacto de la pasada A
-    return scene.classifyDiaphragm(dDome);
-  }
   const dGb = gallbladderSdf(m, scene.gallbladder);
   if (dGb < 0)
     return { ...NONE, tissue: Tissue.Fluid, boundaryDistance: -dGb, interface: Interface.GallbladderLumen, interfaceDistance: -dGb };
@@ -224,16 +212,14 @@ export function classifyInside(
       },
       solids!,
     );
-  const kidney = NO_KIDNEY;
-  if (kidney.cls) return kidney.cls;
   if (scene.hasAbdominalAtlas) {
     const abdomen = abdomenQuery(m, scene.person?.cpu);
     if (abdomen) return { ...NONE, ...abdomen };
   }
-  const liver = scene.classifyLiver(m, dDome, 1e3, kidney, dGb - scene.gallbladderWallMm);
+  const liver = scene.classifyLiver(m, dDome, 1e3, NO_KIDNEY, dGb - scene.gallbladderWallMm);
   if (liver) return liver;
   {
-    const muscle = scene.person.cpu.regional!.s0028SourceValue(m, 'posteriorMuscle');
+    const muscle = regional.s0028SourceValue(m, 'posteriorMuscle');
     if (muscle.d < 0 && muscle.label > 0)
       return { ...NONE, tissue: muscle.label <= 2 ? Tissue.Psoas : Tissue.Muscle, boundaryDistance: -muscle.d };
     // Grasa compatible D por vóxel (HU, sin máscara): composición, no compartimento. El TAC dice que es grasa; cómo se ve depende
@@ -241,10 +227,10 @@ export function classifyInside(
     // material hipoecoico del panículo el riñón parecía rodeado de líquido. Dentro de la pared conocida ya decidió `classifyWall`.
     if (owner === 'compatible_fat') {
       // «Dentro»: la carta da geometría de pared en este punto (la misma consulta que la GPU), o está muy por debajo de la piel.
-      const inside = scene.person.cpu.regional!.s0028InsideWall(m);
+      const inside = regional.s0028InsideWall(m);
       const visceral = inside !== null || -depth > S0028_SUBCUTANEOUS_REACH_MM;
       // Junto al riñón (cajas de grasa a 1,5 mm, hasta 30 mm de él) es grasa perirrenal, la más brillante: el riñón resalta.
-      const perirenal = scene.person.cpu.regional!.s0028CompatibleFat(m) !== null;
+      const perirenal = regional.s0028CompatibleFat(m) !== null;
       // Pegada por dentro a la pared es la grasa preperitoneal: hipoecoica como el panículo, no un parche brillante sobre el hígado.
       const preperitoneal = inside !== null && inside < S0028_PREPERITONEAL_MM;
       // Junto al corazón es grasa epicárdica: hipoecoica, no un bloque blanco entre el hígado y las cavidades (decisión 380).
@@ -258,17 +244,17 @@ export function classifyInside(
             : Tissue.MesentericFat;
       // La grasa preperitoneal queda por fuera del peritoneo: su línea va sobre el hígado, también del lado de la grasa (decisión
       // 379). Sin esto la línea sólo se dibujaba donde no hay grasa entre la pared y el hígado.
-      const liverMm = preperitoneal && !SINUS_TISSUE[interior] ? scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d : Infinity;
+      const liverMm = preperitoneal && !SINUS_TISSUE[interior] ? regional.s0028SourceValue(m, 'liver').d : Infinity;
       const peritoneum = liverMm < S0028_LIVER_SEAM_MM ? { interface: Interface.Peritoneum, interfaceDistance: Math.max(liverMm, 0) } : {};
       return renalFace({ ...NONE, tissue: SINUS_TISSUE[interior] ?? fat, boundaryDistance: 0, ...peritoneum }, solids!);
     }
     // Diafragma de esta persona (decisión 348): la máscara de cada órgano ya ganó antes; no corta el hígado.
-    const dome = s0028Diaphragm(scene.person.cpu.regional!, m, -depth);
-    if (dome !== null) return renalFace(scene.classifyDiaphragm(dome, scene.person.cpu.regional!.s0028InsideWall(m) ?? Infinity), solids!);
+    const dome = s0028Diaphragm(regional, m, -depth);
+    if (dome !== null) return renalFace(scene.classifyDiaphragm(dome, regional.s0028InsideWall(m) ?? Infinity), solids!);
     // La cáscara sin máscara entre la cara interna de la pared y el hígado es músculo de la pared, y su peritoneo, la superficie
     // hepática (decisión 361).
-    const inside = scene.person.cpu.regional!.s0028InsideWall(m),
-      liverMm = scene.person.cpu.regional!.s0028SourceValue(m, 'liver').d;
+    const inside = regional.s0028InsideWall(m),
+      liverMm = regional.s0028SourceValue(m, 'liver').d;
     if (
       !SINUS_TISSUE[interior] &&
       inside !== null &&
@@ -321,4 +307,4 @@ const RENAL_TISSUE: Readonly<Record<number, Tissue>> = { 1: Tissue.RenalCortex, 
 const SINUS_TISSUE: Readonly<Record<number, Tissue>> = { 3: Tissue.RenalSinus, 4: Tissue.RenalPelvis, 5: Tissue.RenalSinus };
 
 /** s0028 P3: sin arquitectura ni grasa perirrenal analíticas (Morison sin grasa inventada). */
-const NO_KIDNEY = { cls: null, dPeriMm: 1e3, periThin: false } as const;
+const NO_KIDNEY = { dPeriMm: 1e3, periThin: false } as const;

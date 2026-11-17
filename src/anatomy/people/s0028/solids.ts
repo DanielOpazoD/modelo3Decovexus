@@ -7,7 +7,7 @@ import { S0028_RENAL_INTERIOR_RUNS } from '../../s0028RenalInteriorRuns';
 import { sourceDistance, sourceDistanceReader, sourceLabel } from '../../sourceVolume';
 import { S0028_BUNDLE as B } from './descriptor';
 import { S0028_GALLBLADDER } from './gallbladder';
-import { s0028FatPages, s0028RenalPages, s0028WideFatPages } from './solidsData';
+import { intHalf, s0028FatPages, s0028RenalPages, s0028WideFatPages } from './solidsData';
 import type { S0028WallSample } from './wall';
 /** O máscara fuente automática; D derivación reproducible; E hipótesis acotada; U desconocido (decisión 321). */
 export type S0028Certainty = 'O' | 'D' | 'E' | 'U';
@@ -53,29 +53,40 @@ export interface S0028Ownership {
 
 /** Etiquetas del interior renal (r5): el exportador offline las saca del propio TAC; 0 es U. */
 export const S0028_RENAL_LABEL = { U: 0, cortex: 1, medulla: 2, sinusFat: 3, collectingSystem: 4, sinusUnclassified: 5 } as const;
-const RENAL_CODE: Readonly<Record<string, number>> = { U: 0, C: 9, M: 10, F: 3, P: 4, S: 13 };
+/** Código por vóxel de cada etiqueta (U, corteza, médula, seno graso, colector, seno sin subclasificar): con el bit 3, hipótesis E. */
+export const S0028_RENAL_CODES: readonly number[] = [0, 9, 10, 3, 4, 13];
+/**
+ * Código por vóxel (xyz, z rápida) de los tramos de una caja del interior renal. Cada tramo empieza por una cifra en base 62
+ * (0–9, A–Z, a–z): su resto de 6 es la etiqueta y su cociente da la longitud (0–7: de 1 a 8 vóxeles; 8: 9 más la cifra siguiente;
+ * 9: 71 más las dos siguientes, la primera por 62). Solo cifras y letras: el build reserva como nombre GLSL cada identificador de
+ * una cadena, y una cadena alfanumérica es uno solo. Las escribe `tools/anatomy/s0028RenalRuns.ts`.
+ */
+export function s0028RenalRunCodes(runs: string, voxels: number): Uint8Array {
+  const codes = new Uint8Array(voxels);
+  // Valor de la cifra i: en ASCII, '0' es 48; 'A', 65 (vale 10) y 'a', 97 (vale 36).
+  const digit = (i: number): number => {
+    const c = runs.charCodeAt(i);
+    return c - (c < 58 ? 48 : c < 91 ? 55 : 61);
+  };
+  let at = 0;
+  for (let i = 0; i < runs.length;) {
+    const head = digit(i++),
+      span = Math.floor(head / 6),
+      n = span < 8 ? span + 1 : span === 8 ? 9 + digit(i++) : 71 + 62 * digit(i++) + digit(i++);
+    codes.fill(S0028_RENAL_CODES[head % 6], at, at + n);
+    at += n;
+  }
+  if (at !== voxels) throw new Error('Interior renal s0028 truncado');
+  return codes;
+}
 let renalCodes: readonly Uint8Array[] | undefined;
 /** Código por vóxel de cada caja (xyz, z rápida): bits 0–2 la etiqueta, bit 3 hipótesis E. Se expande una vez. */
 function s0028RenalCodes(): readonly Uint8Array[] {
-  renalCodes ??= R.boxes.map((b, i) => {
-    const codes = new Uint8Array(b.dimensions[0] * b.dimensions[1] * b.dimensions[2]);
-    let at = 0;
-    for (const [, symbol, length] of S0028_RENAL_INTERIOR_RUNS[i].matchAll(/([A-Z])([0-9a-z]*)/gu)) {
-      const n = length ? parseInt(length, 36) : 1;
-      codes.fill(RENAL_CODE[symbol], at, at + n);
-      at += n;
-    }
-    if (at !== codes.length) throw new Error('Interior renal s0028 truncado');
-    return codes;
-  });
+  renalCodes ??= R.boxes.map((b, i) =>
+    s0028RenalRunCodes(S0028_RENAL_INTERIOR_RUNS[i], b.dimensions[0] * b.dimensions[1] * b.dimensions[2]),
+  );
   return renalCodes;
 }
-/** Half exacto de un byte 0…255, como lo guarda la textura RG16F. */
-const byteHalf = (n: number): number => {
-  if (n === 0) return 0;
-  const e = Math.floor(Math.log2(n));
-  return ((e + 15) << 10) | ((n / 2 ** e - 1) * 1024);
-};
 
 export function createSolidsQueries(assets: PersonAssets) {
   const abdominalAtlas = assets.buffers.abdominal,
@@ -167,7 +178,7 @@ export function createSolidsQueries(assets: PersonAssets) {
     const words = new Uint16Array(2048 * R.pageCount);
     s0028RenalCodes().forEach((codes, i) => {
       for (let v = 0; v < codes.length; v += 2)
-        words[2048 * R.boxes[i].pageBase + (v >> 1)] = byteHalf(codes[v] | ((codes[v + 1] ?? 0) << 4));
+        words[2048 * R.boxes[i].pageBase + (v >> 1)] = intHalf(codes[v] | ((codes[v + 1] ?? 0) << 4));
     });
     return s0028RenalPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: words.subarray(2048 * i, 2048 * (i + 1)) }));
   }
