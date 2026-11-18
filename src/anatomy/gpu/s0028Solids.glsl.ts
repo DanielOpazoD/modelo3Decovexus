@@ -285,7 +285,7 @@ void classifyInside(vec3 m,int k,float od,vec3 e,inout Cls c){
 Cls classifyWith(vec3 m,bool withCurtain){
   Cls c;
   c.tissue=T_AIR;c.bd=1e3;c.n=vec3(0,1,0);c.iface=IF_NONE;c.ifd=1e3;c.vessel=-1;
-  c.rho=10.0;c.tangent=vec3(0,0,1);c.kc=0.0;c.uRef=0.0;c.rRef=1.0;c.profN=2.0;
+  c.rho=10.0;c.tangent=vec3(0,0,1);c.kc=0.0;c.uRef=0.0;c.rRef=1.0;c.profN=2.0;c.tgap=1e3;c.shell=1e3;
   float depth=torsoDepth(m);
   if(m.z<uTorso.z||m.z>uTorso.w||depth>0.0)return c;
   float d=-depth;
@@ -377,7 +377,7 @@ export function s0028SolidsShader(source: string, replace: Replace): string {
     // cava sin llaves, y sin ellas la regla valía para todo tubo dentro del corazón (la aorta salía sangre sin pared; la CPU solo
     // la aplica a la cava, decisión 398).
     .replace(/(\w+)\s*=\s*\w+\(m,\s*dDome\s*\*\s*max\(1\.0,\s*-0\.5\s*\/\s*dn\.z\)\);/, '{$& if(k==15)$1=vec3(-1000.0,0.0,1000.0);}');
-  // La única ivec2 del tramo es la lista de candidatos de la rejilla de tubos.
+  // El tramo lleva también la lista de candidatos de la rejilla de tubos y el hueco con los vecinos (decisión 418).
   if (!tubes.includes('dDome=1000.0')) throw new Error('Tubos s0028 sin cúpula');
   if (!tubes.includes('if(k==15)')) throw new Error('Tubos s0028 sin la cava en el corazón');
   // El material del páncreas, el bazo, el tubo digestivo y la vejiga sale del dueño P3: sin el bucle de cuatro campos.

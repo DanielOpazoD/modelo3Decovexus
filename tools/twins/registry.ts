@@ -1212,6 +1212,7 @@ export const TWINS: readonly TwinPair[] = [
         symbols: [
           'normalCdf',
           'elevationShare',
+          'boundaryWithTubes',
           'curtainEdgeSigmaMm',
           'curtainAirFraction',
           'curtainAirFractionAt',
@@ -1227,6 +1228,7 @@ export const TWINS: readonly TwinPair[] = [
           'pleuraTerms',
         ],
       },
+      { file: 'src/validation/support/tubeGap.ts', symbols: ['tubeGap'] },
     ],
     gpu: [
       {
@@ -1247,8 +1249,10 @@ export const TWINS: readonly TwinPair[] = [
           'slidingField',
           'mediumField',
           'wallField',
+          'tubeNearbyGap',
+          'countTubes',
         ],
-        templates: ['PLEURA_GLSL', 'CURTAIN_AIR_GLSL'],
+        templates: ['PLEURA_GLSL', 'CURTAIN_AIR_GLSL', 'TUBE_GAP_GLSL'],
       },
     ],
     evidence: [

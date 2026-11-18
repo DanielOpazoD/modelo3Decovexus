@@ -15,7 +15,15 @@ import {
   TUBE_HEADER_TEXELS,
 } from '../anatomy/gpu/anatomy.glsl';
 import { SCENE_SAMPLERS, evaluateSceneUniforms, uploadSceneUniforms, type SceneUniformValues } from '../anatomy/gpu/sceneUniforms';
-import { TUBE_GRID_WIDTH, buildTubeGrid, tubeGridReach, tubeGridRegions, type TubeGrid, type TubeSphere } from '../anatomy/gpu/tubeGrid';
+import {
+  TUBE_GAP_REACH_MM,
+  TUBE_GRID_WIDTH,
+  buildTubeGrid,
+  tubeGridReach,
+  tubeGridRegions,
+  type TubeGrid,
+  type TubeSphere,
+} from '../anatomy/gpu/tubeGrid';
 import { Interface, interfaceOfVessel } from '../anatomy/interfaces';
 import { BOWEL_ARC, BOWEL_BOUNDS, BOWEL_GROUPS, BOWEL_NODES } from '../anatomy/organs/bowel';
 import type { PersonGpuPlan } from '../anatomy/person';
@@ -1018,12 +1026,20 @@ export class UltrasoundRenderer {
         const j = (i * TUBE_HEADER_TEXELS + 3) * 4;
         return [this.sceneData[j], this.sceneData[j + 1], this.sceneData[j + 2], this.sceneData[j + 3]];
       });
-      const regions = keptIds.map((_, compact) => {
-        const at = compact * TUBE_HEADER_TEXELS * 4;
-        return tubeGridRegions(this.sceneData, (NODE_BASE + this.sceneData[at]) * 4, this.sceneData[at + 1], reaches[compact]);
-      });
+      const regionsAt = (extraMm: number) =>
+        keptIds.map((_, compact) => {
+          const at = compact * TUBE_HEADER_TEXELS * 4;
+          return tubeGridRegions(this.sceneData, (NODE_BASE + this.sceneData[at]) * 4, this.sceneData[at + 1], reaches[compact] + extraMm);
+        });
+      const regions = regionsAt(0);
+      // Los tubos que pasan a menos de TUBE_GAP_REACH_MM de una celda sin poder contener sus puntos: la pasada B los mira para no
+      // saltarse un vaso que queda junto al plano (decisión 418).
+      const near = regionsAt(TUBE_GAP_REACH_MM);
       // 8 mm para toda persona con atlas (decisiones 339 y 397), con la caída de siempre si no cabe
-      this.tubeGrid = buildTubeGrid(spheres, regions, 8) ?? buildTubeGrid(spheres, regions, 16) ?? buildTubeGrid(spheres, regions);
+      this.tubeGrid =
+        buildTubeGrid(spheres, regions, 8, near) ??
+        buildTubeGrid(spheres, regions, 16, near) ??
+        buildTubeGrid(spheres, regions, undefined, near);
       if (this.tubeGrid) {
         const gl = this.gl;
         gl.bindTexture(gl.TEXTURE_2D, this.tubeGridTex);

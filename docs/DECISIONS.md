@@ -12443,3 +12443,16 @@ GPU. De paso, `s0028SourceValue` busca su campo por nombre en un mapa (lo buscab
 **Consecuencias.** Mismo resultado bit a bit. Pareado contra `main` (M4, carga 5): `s0028Owners` −53 %, `s0028RigidSpan` −42 %,
 `scene.classify` −35 % (−11 % el mapa), contacto −10 %. +272 B de JS: quedan 6524 B bajo el techo de s0028, que no cambia.
 **Verificación.** `s0028FieldMaskCpu.test.ts` (365 388 puntos y 780 líneas, con el mapa y sin él; con dientes), `s0028Depth.test.ts`.
+
+## 418. La pasada B cuenta el vaso vecino antes de saltarse los planos laterales
+
+**Contexto.** Lejos de toda interfaz (bd > σe + 0,5 mm) los planos laterales heredan el tejido central (decisión 24), pero la bd
+de un órgano no cuenta los tubos: un vaso que pasa junto al plano sin cortarlo no rellenaba (1,0 % de los píxeles de s0028).
+**Opciones.** Buscar los tubos en cada plano lateral: B +0,8 ms en s0028 y +1,9 ms (+31 %) en la otra persona. Ampliar 4 mm la
+rejilla de tubos: +58 % de segmentos en toda clasificación. Descartadas.
+**Decisión.** El bucle de tubos del clasificador apunta el hueco hasta la pared vecina (`Cls.gap`) y la rejilla lleva por celda
+los tubos «cercanos» (a menos de 4,5 mm); la etapa de clasificación de B añade ese hueco a la bd (`countTubes`, par de
+`boundaryWithTubes`), nunca desde una luz. `classify` no cambia.
+**Consecuencias.** Los flancos de los vasos que siguen fuera del plano rellenan (1,8–4,7 % de la envolvente, hasta −2,8 dB). B
++0,1 ms en s0028 y +0,6 ms en la otra (cuadro +4 %); la rejilla se rehace en 5,6 ms (antes 9,4). 40 programas; +1,7 kB de JS.
+**Verificación.** `s0028SidePlaneTubes.test.ts`, `tubeSegmentGrid.test.ts`, guardas GLSL y láminas de la envolvente (main ≡ main).

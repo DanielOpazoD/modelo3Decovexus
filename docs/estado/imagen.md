@@ -1,6 +1,6 @@
 # Estado vigente: imagen
 
-Actualizado: 2026-11-17 sobre main `a3bd5af`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
+Actualizado: 2026-11-18 sobre main `6eb1ad8`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
 techos los limitan. La explicación de cada pasada está en `docs/ARCHITECTURE.md`; las decisiones, en `docs/DECISIONS.md`.
 
 ## A0 nativa current (339)
@@ -49,13 +49,13 @@ samplers y ranuras de uniforms: decisión 317):
 
 <!-- programas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `a3bd5af` el 2026-11-17 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `6eb1ad8` el 2026-11-18 con `tools/docs/estado.ts`.
 
 | Programa                  | Samplers default / s0028 | Ranuras default / s0028 | Uso de tokens (peor persona) | Uso de ramas |
 | ------------------------- | -----------------------: | ----------------------: | ---------------------------: | -----------: |
 | `FRAG_RAWFIELD`           |                  10 / 10 |               136 / 136 |                         92 % |         92 % |
 | `FRAG_RAWFIELD_ECHO`      |                  16 / 16 |               137 / 137 |                         92 % |         92 % |
-| `FRAG_RAWFIELD_CLASS`     |                  10 / 10 |               136 / 136 |                         92 % |         92 % |
+| `FRAG_RAWFIELD_CLASS`     |                  10 / 10 |               136 / 136 |                         92 % |         93 % |
 | `FRAG_RAWFIELD_ELEVATION` |                  15 / 15 |               137 / 137 |                         92 % |         92 % |
 | `FRAG_RAWFIELD_GRADIENT`  |                  15 / 15 |               138 / 138 |                         92 % |         91 % |
 | `FRAG_TRANS_HITS`         |                    6 / 6 |               101 / 101 |                         92 % |         92 % |

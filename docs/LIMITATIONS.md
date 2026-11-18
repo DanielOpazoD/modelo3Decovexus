@@ -379,10 +379,15 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
   plano visto con tres muestras: no cuenta el tejido que queda más allá de un plano lateral que aún está en la luz (hasta un 8 %
   del haz) y los tejidos de máscara de vóxel, que no dan distancia, conservan el cuarto. Las cifras con GPU de la decisión 86
   (luces de 2–4 mm a −2/−15 dB del hígado) son anteriores a este reparto.
-- **Los planos laterales de elevación se saltan los vasos** (`side-plane-skips-tubes`): si el plano
-  central está a más de σe + 0,5 mm de una interfaz, los laterales heredan su tejido sin clasificar
-  (decisión 24), pero la `bd` del hígado no cuenta los tubos: junto a un vaso fuera del plano, el 1–5 %
-  de los píxeles de hígado no ve su borde en elevación.
+- **Los planos laterales de elevación y los vasos** (`side-plane-skips-tubes`, decisiones 24 y 418): lejos de toda interfaz los
+  planos laterales heredan el tejido central sin clasificar. Desde la decisión 418 la distancia que lo decide cuenta también la
+  pared del tubo más cercano (hasta 4,5 mm) y un vaso que pasa junto al plano rellena. Queda: un vaso más fino que σe que cae
+  entero entre el plano central y uno lateral no toca ninguno de los tres y no se ve; con σe + 0,5 mm > 4,5 mm (en fundamental,
+  por debajo de 18 cm) el alcance se queda corto; y desde la sangre de las cavidades cardíacas y de la unión de la cava con la
+  aurícula la regla no pregunta por los tubos (4 de 56 429 píxeles de las ventanas tienen ahí un plano lateral en otro tejido).
+  La misma herencia sigue en otros bordes cuya distancia tampoco entra en la bd de s0028 (medido el 17-11-2026, píxeles de cada
+  ventana): corteza y médula renales (1,2–1,6 % en las renales), miocardio y cavidades (0,9 % en la subxifoidea), músculo, grasa y
+  hueso de la pared (0,1–0,4 %) y el hígado junto a la vesícula en ayunas (0,4 % en la intrahepática).
 - **Tríadas portales difusas** (`portal-triads-diffuse`, decisiones 78 y 89): las tríadas portales finas son dispersores
   brillantes anclados que multiplican el moteado del hígado. Desde la decisión 89 su brillo tiene cola y es en parte
   especular (más de través que a lo largo del haz, con la ley |cos θ|⁴ sobre el exceso de retrodispersión de la vaina),

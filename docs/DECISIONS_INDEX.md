@@ -421,3 +421,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [415](DECISIONS.md#L12410) | El reparto del haz en elevación junto a un borde usa la distancia al borde | vigente |
 | [416](DECISIONS.md#L12422) | La consulta del dominio en las uniones, sin crear nada | vigente |
 | [417](DECISIONS.md#L12435) | La CPU de s0028 también usa el mapa de ocupación | vigente |
+| [418](DECISIONS.md#L12447) | La pasada B cuenta el vaso vecino antes de saltarse los planos laterales | vigente |

@@ -245,7 +245,7 @@ vec3 wallFaceGradient(vec3 m,int face){
     `
 bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
  c.tissue=T_AIR;c.bd=1e3;c.n=vec3(0,1,0);c.iface=IF_NONE;c.ifd=1e3;c.vessel=-1;
- c.rho=10.0;c.tangent=vec3(0,0,1);c.kc=0.0;c.uRef=0.0;c.rRef=1.0;c.profN=2.0;
+ c.rho=10.0;c.tangent=vec3(0,0,1);c.kc=0.0;c.uRef=0.0;c.rRef=1.0;c.profN=2.0;c.tgap=1e3;c.shell=1e3;
  depth=torsoDepth(m);tn=vec3(0,1,0);
  if(m.z<uTorso.z||m.z>uTorso.w||depth>0.0)return true;
  float d=-depth;

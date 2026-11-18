@@ -106,6 +106,9 @@ export const TUBE_SHAPE = {
   classes: Record<TubeShapeClass, { kappa: readonly [number, number]; amp: number }>;
 };
 
+/** La mayor amplitud del ruido del radio entre las clases de forma: ningún tubo se aparta más que esto, por su radio, de su radio liso. */
+export const TUBE_NOISE_MAX = Math.max(...Object.values(TUBE_SHAPE.classes).map((c) => c.amp));
+
 /** Hash entero de 32 bits («lowbias32», C. Wellons): gemelo exacto de `tubeHash` (GLSL, `uint`). @twin tubos */
 export function tubeHash(x: number): number {
   x ^= x >>> 16;

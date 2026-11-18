@@ -13,6 +13,7 @@ import { s0028WallGlsl } from './s0028WallGlsl';
 import { scene } from './scene';
 import { startPoints } from './startPoints';
 import { structureIdentity } from './structureIdentity';
+import { tubeGrid } from './tubeGrid';
 
 export const MANIFESTS: readonly MutantManifest[] = [
   contact,
@@ -31,4 +32,5 @@ export const MANIFESTS: readonly MutantManifest[] = [
   cases,
   blindMode,
   elevationShare,
+  tubeGrid,
 ];
