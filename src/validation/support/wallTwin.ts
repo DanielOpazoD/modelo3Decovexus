@@ -29,7 +29,8 @@ import { TISSUES, Tissue, attenuationDbPerCm } from '../../anatomy/tissues';
 import { cross, dot, normalize, type Vec3 } from '../../core/vec3';
 import { axialSigmaMm, lateralSigmaMm } from '../../ultrasound/beamModel';
 import { focalGain, frequencyRatio } from '../../ultrasound/beamEcho';
-import { ELEV_BD_MAX_MM, elevationShare } from '../../ultrasound/pleura';
+import { ELEV_BD_MAX_MM, boundaryWithTubes, elevationShare } from '../../ultrasound/pleura';
+import { tubeGap } from './tubeGap';
 import { restTexture } from '../../ultrasound/restTexture';
 import { portalTriadGain } from '../../ultrasound/portalTriads';
 import { retroTexture } from '../../ultrasound/retroTexture';
@@ -160,7 +161,7 @@ function modelTissue(scene: AnatomyScene, tissue: Tissue, m: Vec3, model: WallMo
 
 /** Clasificación de la escena en los puntos de una línea del marco: por fila y por centro grueso de la pasada A. */
 interface LineSamples {
-  /** Por fila: 1, el plano central ya está; 2 y 4, los planos a +σe y −σe. */
+  /** Por fila: 1, el plano central ya está; 2 y 4, los planos a +σe y −σe; 8, el hueco hasta el tubo vecino (decisión 418). */
   known: Uint8Array;
   tissue: Uint8Array;
   face: Uint8Array;
@@ -171,6 +172,8 @@ interface LineSamples {
   minus: Uint8Array;
   plusMm: Float64Array;
   minusMm: Float64Array;
+  /** `tubeGap` en el plano central, donde se pidió. */
+  tubeGapMm: Float64Array;
   coarse: Uint8Array | null;
   /** `scene.faceGradient` en el plano central de las filas que dibujan una cara a su alcance. */
   gradient: Map<number, FaceGradient | null>;
@@ -228,6 +231,7 @@ function lineSamples(lines: Map<number, LineSamples>, j: number, rows: number): 
       minus: bytes(),
       plusMm: new Float64Array(rows),
       minusMm: new Float64Array(rows),
+      tubeGapMm: new Float64Array(rows),
       coarse: null,
       gradient: new Map(),
     };
@@ -361,6 +365,14 @@ export function wallTwin(
       line.known[i] |= bit;
       return c;
     };
+    /** `tubeGap` en el plano central de la fila `i`, cuyo punto es `p` (decisión 418). */
+    const tubeGapAt = (i: number, p: Vec3): number => {
+      if (!(line.known[i] & 8)) {
+        line.tubeGapMm[i] = tubeGap(scene, p, caliber);
+        line.known[i] |= 8;
+      }
+      return line.tubeGapMm[i];
+    };
     // A: prefijo grueso de un rayo, en amplitud en los centros de fila
     const Tc = new Float64Array(COARSE);
     const shadow = new Float64Array(COARSE);
@@ -412,10 +424,13 @@ export function wallTwin(
         gain *= retroTexture(m, tissue, beam);
         return [f[0] * gain, f[1] * gain];
       };
+      // Lejos de toda interfaz los planos laterales heredan el tejido central; la distancia que lo decide cuenta también la pared
+      // del tubo vecino, que `scene.classify` no incluye (decisión 418).
+      const borderMm = boundaryWithTubes(c0.boundaryDistance, c0.tissue, se, () => tubeGapAt(i, p));
       // Cada lado con su reparto del haz (decisión 415): un cuarto dentro del mismo tejido; junto a un borde, `elevationShare`.
       const side = (sgn: number): { f: [number, number]; share: number } => {
         const m: Vec3 = [0, 1, 2].map((k) => p[k] + sgn * frame.elevation[k] * se) as Vec3;
-        if (c0.boundaryDistance > se + 0.5) return { f: fieldFor(m, c0.tissue), share: 0.25 };
+        if (borderMm > se + 0.5) return { f: fieldFor(m, c0.tissue), share: 0.25 };
         const c = sideAt(i, sgn, m);
         const tissue = modelTissue(scene, c.tissue, m, o.model);
         return {

@@ -18,6 +18,7 @@ import {
 } from '../transmission';
 import {
   CURTAIN_AIR_GLSL,
+  TUBE_GAP_GLSL,
   CURTAIN_CONTIGUOUS_SEGMENTS,
   CURTAIN_GAS_KIND,
   CURTAIN_RECORD_MM,
@@ -1009,7 +1010,7 @@ Cls rawClass() {
   Cls c;
   c.tissue=int(a.x);c.bd=a.y;c.iface=int(a.z);c.ifd=a.w;c.n=b.xyz;c.kc=b.w;c.tangent=d.xyz;
   // Flow-only fields are not consumed by the medium or interface echo.
-  c.vessel=-1;c.rho=0.0;c.uRef=0.0;c.rRef=0.0;c.profN=0.0;
+  c.vessel=-1;c.rho=0.0;c.uRef=0.0;c.rRef=0.0;c.profN=0.0;c.tgap=1e3;c.shell=1e3;
   return c;
 }`;
 const ELEVATION_TISSUES_GLSL = /* glsl */ `
@@ -1041,7 +1042,10 @@ function rawFieldShader(look: Look, stage: RawFieldStage = 'direct'): string {
   const mediumBody =
     stage === 'class'
       ? /* glsl */ `
-    Cls c = classifyWith(toMaterial(p), withCurtain);
+    vec3 m = toMaterial(p);
+    Cls c = classifyWith(m, withCurtain);
+    // la distancia al borde que deciden los planos laterales cuenta también el tubo vecino (decisión 418)
+    countTubes(c, m, se);
     oClass0 = vec4(float(c.tissue), c.bd, float(c.iface), c.ifd);
     oClass1 = vec4(c.n, c.kc);
     oClass2 = vec4(c.tangent, 0.0);
@@ -1159,6 +1163,7 @@ vec2 speckleField(vec3 m, float h, float se, float salt, vec3 s) {
 // población: su propia semilla (el moteado no continúa a través de un borde).
 ${fieldForGlsl()}
 
+${stage === 'direct' || stage === 'class' ? TUBE_GAP_GLSL : ''}
 ${stage === 'direct' ? ELEVATION_TISSUES_GLSL : ''}
 ${pleuraGlsl(mediumBody, stage === 'cached')}
 ${look === 'steered' ? steeredRawMainGlsl(mediumBody, stage === 'cached', init) : look0RawMainGlsl(init)}`;

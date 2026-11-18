@@ -44,8 +44,9 @@ import {
 } from '../interfaces';
 import { COMPRESSION_GLSL, PROBE_COMPRESSION } from '../compression';
 import { ORGAN_GLSL } from '../organs';
-import { DIAPHRAGM_AXIS_CORE, DIAPHRAGM_JOIN_MM, RIB_ANTERIOR_END, SPINE_SHAPE, TUBE_SHAPE } from '../primitives';
+import { DIAPHRAGM_AXIS_CORE, DIAPHRAGM_JOIN_MM, RIB_ANTERIOR_END, SPINE_SHAPE, TUBE_NOISE_MAX, TUBE_SHAPE } from '../primitives';
 import { MAX_RIBS, SCENE_UNIFORMS_GLSL } from './sceneUniforms';
+import { TUBE_GAP_REACH_MM, TUBE_GRID_NEAR_BASE } from './tubeGrid';
 
 export const MAX_TUBES = SCENE_TUBE_CAPACITY;
 /** 800 desde la red interlobar de s0028 (decisión 402): s0028 usaba 603 de 640. */
@@ -138,14 +139,22 @@ struct Cls {
   float uRef;
   float rRef;
   float profN;
+  // Tubos vecinos (decisión 418), para la pasada B: tgap, el hueco (mm) hasta la pared del más cercano de los que el bucle de
+  // tubos evaluó, por lo bajo (sin el ruido de su radio; negativo si alguno la contiene); 1e3 sin ninguno. shell, lo que le
+  // falta a la muestra para entrar en la esfera del candidato más cercano que quedó sin evaluar (su hueco no se conoce, pero
+  // no es menor); 1e3 sin ninguno a menos de TUBE_GAP_REACH.
+  float tgap;
+  float shell;
 };
 
 vec2 tubeGridTexel(int i) { int w=textureSize(uTubeGrid,0).x; return texelFetch(uTubeGrid,ivec2(i%w,i/w),0).rg; }
-ivec2 tubeCandidates(vec3 m) {
-  if(uTubeGridEnabled==0) return ivec2(0,uTubeCount);
+// Celda de la rejilla de tubos: primer índice, cuántos candidatos y cuántos tubos «cercanos» les siguen (decisión 418)
+ivec3 tubeCandidates(vec3 m) {
+  if(uTubeGridEnabled==0) return ivec3(0,uTubeCount,0);
   ivec3 q=ivec3(floor((m-uTubeGridOrigin)/uTubeGridPitch)),size=ivec3(uTubeGridSize);
-  if(any(lessThan(q,ivec3(0)))||any(greaterThanEqual(q,size)))return ivec2(0);
-  return ivec2(tubeGridTexel(q.x+size.x*(q.y+size.y*q.z)));
+  if(any(lessThan(q,ivec3(0)))||any(greaterThanEqual(q,size)))return ivec3(0);
+  ivec2 v=ivec2(tubeGridTexel(q.x+size.x*(q.y+size.y*q.z)));
+  return ivec3(v.x,v.y%${TUBE_GRID_NEAR_BASE},v.y/${TUBE_GRID_NEAR_BASE});
 }
 vec4 sceneTexel(int i) { return texelFetch(uSceneTex, ivec2(i % SCENE_TEX_W, i / SCENE_TEX_W), 0); }
 
@@ -596,6 +605,7 @@ float insideWallMm(vec3 m) { return -torsoDepth(m) - (uWall.x + uWall.y + uWall.
 bool classifyWall(vec3 m, out Cls c, out float depth, out vec3 tn) {
   c.tissue = T_AIR; c.bd = 1e3; c.n = vec3(0.0, 1.0, 0.0); c.iface = IF_NONE; c.ifd = 1e3; c.vessel = -1;
   c.rho = 10.0; c.tangent = vec3(0.0, 0.0, 1.0); c.kc = 0.0; c.uRef = 0.0; c.rRef = 1.0; c.profN = 2.0;
+  c.tgap = 1e3; c.shell = 1e3;
   depth = torsoDepth(m);
   tn = vec3(0.0, 1.0, 0.0);
   if (m.z < uTorso.z || m.z > uTorso.w || depth > 0.0) return true;
@@ -667,17 +677,21 @@ void classifyInside(vec3 m, bool withCurtain, float depth, vec3 tn, float dSpine
   else dGb = gallbladderSdf(m, gn);
   // Vasos y conductos (descarte por esfera envolvente)
   int bestT = -1; float bestD = 1e9; float bRho; float bR; int bSeg = 0; float bSegS = 0.0; float bSegArc = 0.0;
-  ivec2 candidates=tubeCandidates(m);
+  ivec3 candidates=tubeCandidates(m);
   for (int candidate = 0; candidate < MAX_TUBES; candidate++) {
     if (candidate >= candidates.y) break;
     int t=uTubeGridEnabled!=0?int(tubeGridTexel(candidates.x+candidate).x):candidate;
     vec4 bs = sceneTexel(t * TUBE_HDR + 3);
-    if (distance(m, bs.xyz) > bs.w) continue;
+    float ds = distance(m, bs.xyz);
+    // fuera de su esfera no la contiene; si pasa cerca, la pasada B preguntará por su hueco (tubeNearbyGap, decisión 418)
+    if (ds > bs.w) { if (ds <= bs.w + ${TUBE_GAP_REACH_MM.toFixed(3)}) c.shell = min(c.shell, ds - bs.w); continue; }
     float rho; float rl; int sg; float ss; float sa;
     float sd = tubeQuery(m, t, rho, rl, sg, ss, sa);
     vec4 hw = sceneTexel(t * TUBE_HDR + 1);
     // pared periportal proporcional al calibre local (misma fórmula que wallThicknessMm)
     float wallMm = int(hw.y + 0.5) == T_WALL_PORTAL ? clamp(0.24 * rl, 0.5, 1.4) : hw.x;
+    // el hueco hasta su pared, por lo bajo: lejos de la luz la distancia va sin el ruido del radio (negativo si la contiene)
+    c.tgap = min(c.tgap, sd - wallMm - ${TUBE_NOISE_MAX.toFixed(4)} * rl);
     if (sd < wallMm && int(hw.w + 0.5) == IF_DUCT && dGb < sd) continue;
     if (sd < wallMm && sd < bestD) { bestD = sd; bestT = t; bRho = rho; bR = rl; bSeg = sg; bSegS = ss; bSegArc = sa; }
   }

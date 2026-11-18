@@ -1,6 +1,9 @@
 import type { MutantManifest } from '../manifest';
 
-/** Reparto del haz en elevación junto a un borde (decisión 415): la función que pesa el plano lateral que cae en otro tejido. */
+/**
+ * Reparto del haz en elevación junto a un borde (decisión 415), la función que pesa el plano lateral que cae en otro tejido, y la
+ * distancia al borde con el vaso vecino que decide si ese plano se clasifica (decisión 418).
+ */
 export const elevationShare: MutantManifest = {
   module: 'src/ultrasound/pleura.ts',
   mutants: [
@@ -27,6 +30,22 @@ export const elevationShare: MutantManifest = {
       from: '  if (bd <= 0) return 0.25;\n',
       to: '',
       tests: ['src/validation/elevationShare.test.ts'],
+    },
+    {
+      name: 'borde-sin-contar-los-tubos',
+      origin: 'decisión 418',
+      breaks: 'La distancia al borde del plano central vuelve a ignorar el vaso vecino: sus planos laterales heredan el tejido central.',
+      from: '  return g <= reach ? g : bd;',
+      to: '  return bd;',
+      tests: ['src/validation/s0028SidePlaneTubes.test.ts'],
+    },
+    {
+      name: 'borde-con-tubos-solo-junto-al-plano',
+      origin: 'decisión 418',
+      breaks: 'El alcance con que se mira el vaso vecino se queda en medio grosor de haz: los planos laterales a σe quedan sin mirar.',
+      from: '  const reach = Math.min(se + 0.5, TUBE_GAP_REACH_MM);',
+      to: '  const reach = Math.min(0.5 * se, TUBE_GAP_REACH_MM);',
+      tests: ['src/validation/s0028SidePlaneTubes.test.ts'],
     },
   ],
 };

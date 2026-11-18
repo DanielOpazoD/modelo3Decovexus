@@ -1,5 +1,8 @@
 import { INTERFACES, Interface, interfaceReflectivity } from '../anatomy/interfaces';
+import { TUBE_GAP_REACH_MM } from '../anatomy/gpu/tubeGrid';
 import { LUNG_CURTAIN } from '../anatomy/organs/lungCurtain';
+import { TUBE_NOISE_MAX } from '../anatomy/primitives';
+import { Tissue } from '../anatomy/tissues';
 import { cross, normalize, type Vec3 } from '../core/vec3';
 import { roughnessCoherence } from './interfaceEcho';
 import { RECEIVER_NOISE, glslFloat } from './receiver';
@@ -167,6 +170,21 @@ export const ELEV_BD_MAX_MM = 7.99;
 export function elevationShare(bd: number, se: number): number {
   if (bd <= 0) return 0.25;
   return 1 - normalCdf((Math.max(se - bd, 0) * Math.SQRT2) / se);
+}
+
+/**
+ * Distancia al borde del plano central con la que la pasada B decide si clasifica sus planos laterales: la de la clasificación
+ * y, además, el hueco hasta la pared del tubo más cercano (decisión 418). `classify` no cuenta los tubos en la de un órgano (el
+ * hígado da la de su cápsula), y sin ellos un vaso que pasa junto al plano sin cortarlo no rellenaba: sus planos laterales
+ * heredaban el tejido central. Solo hasta `TUBE_GAP_REACH_MM`, y no desde una luz, cuya distancia ya es la de su propia pared.
+ * `gap` da ese hueco (`tubeGap`, en el soporte de validación) y solo se pide si hace falta.
+ * @twin pleura
+ */
+export function boundaryWithTubes(bd: number, tissue: Tissue, se: number, gap: () => number): number {
+  const reach = Math.min(se + 0.5, TUBE_GAP_REACH_MM);
+  if (bd <= reach || tissue === Tissue.Blood || tissue === Tissue.Fluid) return bd;
+  const g = gap();
+  return g <= reach ? g : bd;
 }
 
 /**
@@ -399,6 +417,46 @@ float curtainSteerWeight(float r, float D, float fAir) { return D > 0.0 && fAir 
 `;
 
 /**
+ * `boundaryWithTubes` en GLSL, para los programas de la pasada B que clasifican el plano central (el directo y la etapa de
+ * clasificación). `Cls.tgap` y `Cls.shell` salen del bucle de tubos del clasificador; `tubeNearbyGap` añade los tubos que ese
+ * bucle no evaluó: los candidatos fuera de su esfera pero a menos del alcance de ella (solo si `Cls.shell` dice que hay alguno)
+ * y los «cercanos» de la celda de la rejilla. El hueco va por lo bajo (sin el ruido del radio): de más solo cuesta una
+ * clasificación.
+ */
+export const TUBE_GAP_GLSL = /* glsl */ `
+float tubeNearbyGap(vec3 m, float reach, bool shell) {
+  ivec3 cell = tubeCandidates(m);
+  float tgap = 1e3;
+  int first = shell ? 0 : cell.y;
+  for (int k = 0; k < MAX_TUBES; k++) {
+    int i = first + k;
+    if (i >= cell.y + cell.z) break;
+    int t = uTubeGridEnabled != 0 ? int(tubeGridTexel(cell.x + i).x) : i;
+    vec4 bs = sceneTexel(t * TUBE_HDR + 3);
+    float ds = distance(m, bs.xyz);
+    // un tubo no sale de su esfera: más lejos de ella que el alcance no cuenta; los candidatos dentro de la suya ya los evaluó
+    // el clasificador (Cls.tgap)
+    if (ds > bs.w + reach || (i < cell.y && ds <= bs.w)) continue;
+    float rho; float rl; int sg; float ss; float sa;
+    float sd = tubeQuery(m, t, rho, rl, sg, ss, sa);
+    vec4 hw = sceneTexel(t * TUBE_HDR + 1);
+    tgap = min(tgap, sd - (int(hw.y + 0.5) == T_WALL_PORTAL ? clamp(0.24 * rl, 0.5, 1.4) : hw.x) - ${glslFloat(TUBE_NOISE_MAX)} * rl);
+  }
+  return tgap;
+}
+void countTubes(inout Cls c, vec3 m, float se) {
+  float reach = min(se + 0.5, ${glslFloat(TUBE_GAP_REACH_MM)});
+  if (c.bd <= reach || c.tissue == T_BLOOD || c.tissue == T_FLUID) return;
+  float tgap = c.tgap;
+  if (tgap > reach) tgap = min(tgap, tubeNearbyGap(m, reach, c.shell <= reach));
+  if (tgap <= reach) c.bd = tgap;
+}
+`;
+// Keep this template outside the containing GLSL template so the build compacts it.
+const COUNT_TUBES_GLSL = /* glsl */ `
+  countTubes(c, m, se);`;
+
+/**
  * La misma física en GLSL, común a los dos programas de la pasada B (va detrás de `elevationTissues` y `fieldFor`: usa
  * `elevSigma`, `lateralSigmaMm`, `fieldFor`, `anchoredClump`, `interfaceEcho`, `wallFaceEchoFlat`,
  * `scattererField`, `uSeed`, `uElev` y `uCurtain`). Lleva `CURTAIN_AIR_GLSL` (y con él `uHits2`).
@@ -409,7 +467,7 @@ export function mediumFieldGlsl(cached: boolean, phased = false): string {
   const phase = phased ? 'ph0, g, ' : '';
   return /* glsl */ `  vec3 m = toMaterial(p);
   Warp w = anatomyWarpAt(p, m);
-  Cls c = ${cached ? 'rawClass()' : 'classifyWith(m, withCurtain)'};
+  Cls c = ${cached ? 'rawClass()' : 'classifyWith(m, withCurtain)'};${cached ? '' : COUNT_TUBES_GLSL}
   vec2 f0 = ${field}(m, se, c.tissue, ${phase}normalize(p - uCurvC), w);
   vec3 p1 = p + uElev * se, p2 = p - uElev * se;
   vec3 m1 = toMaterial(p1), m2 = toMaterial(p2);

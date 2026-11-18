@@ -681,7 +681,9 @@
     ["s28GbPear", "rR"],
     ["s28GbJoin", "rU"],
     ["elevationShare", "rV"],
-    ["share", "rY"]
+    ["share", "rY"],
+    ["countTubes", "rW"],
+    ["tubeNearbyGap", "rX"]
   ],
   "afterDot": [
     "COMP_NODES",
