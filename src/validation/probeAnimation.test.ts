@@ -77,6 +77,34 @@ describe('Animación hacia un punto de partida', () => {
     }
   });
 
+  it('con la imagen congelada se pausa y sigue al descongelar, sin salto (decisiones 17, 80 y 261)', () => {
+    const epi = byId('epigastric');
+    const renal = byId('renal');
+    let pose = clampPose({ phi: epi.phi, z: epi.z, lift: 0, yaw: epi.yaw, rock: epi.rock ?? 0, tilt: epi.tilt ?? 0 });
+    let live = true;
+    const a = new ProbeAnimator(
+      () => pose,
+      (p) => (pose = clampPose(p)),
+      () => live,
+    );
+    a.goTo(renal);
+    for (let frame = 0; frame < 18; frame++) a.tick(1 / 60);
+    live = false;
+    const held = { ...pose };
+    for (let frame = 0; frame < 180; frame++) a.tick(1 / 60);
+    expect(pose).toEqual(held);
+    expect(a.active).toBe(true);
+    live = true;
+    a.tick(1 / 60);
+    const step = Math.abs(Math.atan2(Math.sin(pose.phi - held.phi), Math.cos(pose.phi - held.phi)));
+    const left = Math.abs(Math.atan2(Math.sin(renal.phi - held.phi), Math.cos(renal.phi - held.phi)));
+    expect(step).toBeGreaterThan(0);
+    expect(step).toBeLessThanOrEqual((3.5 / 60) * left + 1e-12);
+    for (let s = 0; a.active && s < 10; s += 1 / 60) a.tick(1 / 60);
+    expect(a.active).toBe(false);
+    expect(pose).toEqual(clampPose({ ...renal, lift: 0, rock: renal.rock ?? 0, tilt: renal.tilt ?? 0 }));
+  });
+
   it('cruza la costura posterior por el arco corto desde ambos lados, aun con giros amplios', () => {
     const renal = byId('renal');
     for (const phi of [-Math.PI / 2 + 0.02, Math.PI * 1.5 - 0.02]) {

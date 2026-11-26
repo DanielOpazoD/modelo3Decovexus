@@ -22,7 +22,21 @@ describe('valores PW observados con signo de pantalla', () => {
         pulsatilityFraction: 124,
         pulsatilityByBeat: [120, 124, 124, 128],
       }),
-    ).toBe('Vmáx +25.0 · Vmín -6.0 cm/s · mediana 4 lat. · PF 124 % · rango entre 4 latidos 120–128 %');
+    ).toBe('Vmáx +25.0 · Vmín -6.0 cm/s · mediana 4 lat. · PF 124,0 % · rango entre 4 latidos 120,0–128,0 %');
+  });
+  it('la PF portal del resumen no se redondea a la categoría siguiente', () => {
+    const portal = {
+      kind: 'portal' as const,
+      quality: { issue: null },
+      beats: 4,
+      anterogradeSign: 1,
+      vMax: 20,
+      vMin: 10,
+      pulsatilityFraction: 49.96,
+      pulsatilityByBeat: [49.9, 49.95, 49.97, 49.99],
+    };
+    expect(observedVelocitySummary(portal)).toContain('PF menos de 50 % · rango entre 4 latidos 49,9–49,9 %');
+    expect(observedVelocitySummary(portal)).not.toMatch(/(PF |–)50(,0)? %/);
   });
   it('los valores renales son máximos por fase, no nuevas ondas S/D', () => {
     expect(

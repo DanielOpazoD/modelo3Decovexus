@@ -9,7 +9,16 @@ import { hasRespiratoryCycle } from '../../vexus/ivcCollapse';
 import { measurePhysiologyTruth } from '../../vexus/measurements';
 import { button, element, controlId, note, row } from '../controls';
 import type { PanelContext } from './context';
-import { contextText, gradeValueText, patternText, renalText, portalPulsatilityText } from './vexusText';
+import {
+  contextText,
+  gradeValueText,
+  hepaticPeaksText,
+  ivcDiameterText,
+  patternText,
+  renalText,
+  portalPulsatilityText,
+  velocityText,
+} from './vexusText';
 import { VenousViewer } from './venousViewer';
 
 /** Niveles de PEEP de la botonera (cmH₂O). */
@@ -177,7 +186,12 @@ export class TeacherTab {
           return (PEEP_LEVELS as string[]).includes(target) ? (target as PeepLevel) : 'otra';
         },
         (v) => {
-          if (v !== 'otra') this.#apply({ kind: 'peep', cmH2O: Number(v) });
+          if (v === 'otra') return;
+          const cmH2O = Number(v);
+          // la PEEP ya pedida (vigente o en transición) no cambia al paciente: ni intervención ni mediciones archivadas
+          if (cmH2O === sim().physiology.circulation.state.peepTargetCmH2O)
+            this.#announce(`Sin cambios: la PEEP pedida ya es de ${cmH2O} cmH₂O.`);
+          else this.#apply({ kind: 'peep', cmH2O });
         },
       )
       .setAttribute('aria-labelledby', peepLabel.id);
@@ -309,11 +323,11 @@ export class TeacherTab {
         truth =
           `VERDAD FISIOLÓGICA (últimos 6 s)\n` +
           (hasRespiratoryCycle(sim.physiology.samples, t - 6, t)
-            ? `  VCI AP máx/mín ${m.ivcMaxMm.toFixed(1)}/${m.ivcMinMm.toFixed(1)} mm → colapso ${(m.ivcCollapse * 100).toFixed(0)} %\n`
-            : `  VCI AP actual ${s.ivc.dApMm.toFixed(1)} mm · colapsabilidad respiratoria no aplicable: sin ciclo completo\n`) +
-          `  VSH S/D/A ${m.hvS.toFixed(1)}/${m.hvD.toFixed(1)}/${m.hvA.toFixed(1)} cm/s → ${patternText(m.hepaticPattern)}\n` +
-          `  Porta ${m.pvMax.toFixed(1)}/${m.pvMin.toFixed(1)} cm/s → PF ${portalPulsatilityText(m.portalPF)}\n` +
-          `  V. interlobar S/D/mín ${m.rvS.toFixed(1)}/${m.rvD.toFixed(1)}/${m.rvMin.toFixed(1)} cm/s → ${renalText(m.renalPattern)}\n` +
+            ? `  VCI AP máx/mín ${ivcDiameterText(m.ivcMaxMm)}/${ivcDiameterText(m.ivcMinMm)} mm → colapso ${(m.ivcCollapse * 100).toFixed(0)} %\n`
+            : `  VCI AP actual ${ivcDiameterText(s.ivc.dApMm)} mm · colapsabilidad respiratoria no aplicable: sin ciclo completo\n`) +
+          `  VSH S/D/A ${hepaticPeaksText(m.hvS, m.hvD).join('/')}/${velocityText(m.hvA)} cm/s → ${patternText(m.hepaticPattern)}\n` +
+          `  Porta ${velocityText(m.pvMax)}/${velocityText(m.pvMin)} cm/s → PF ${portalPulsatilityText(m.portalPF)}\n` +
+          `  V. interlobar S/D/mín ${velocityText(m.rvS)}/${velocityText(m.rvD)}/${velocityText(m.rvMin)} cm/s → ${renalText(m.renalPattern)}\n` +
           `  Grado C de referencia: ${gradeValueText(g)} · con el contexto del caso: ${gradeValueText(gc)} (mVExUS ${gradeValueText(classifyModifiedVexus(veins, context))})\n`;
       } catch (e) {
         truth = `VERDAD FISIOLÓGICA: — (${errorMessage(e)})\n`;
@@ -356,7 +370,7 @@ export class TeacherTab {
       `t ${t.toFixed(2)} s · latido ${s.beatIndex} · fase ${s.cardiacPhase.toFixed(2)} · resp ${s.resp.volume.toFixed(2)}\n` +
       `P_AD ${s.pRa.toFixed(1)} · P_VCI ${s.pIvc.toFixed(1)} (Ptm ${s.pIvcTransmural.toFixed(1)}) · P_hep ${s.pHepatic.toFixed(1)} · P_abd ${s.pAbd.toFixed(1)} mmHg\n` +
       `Lazo: PAD media ${loop.rapMeanMmHg.toFixed(1)} (llenado ${loop.fillingRapMmHg.toFixed(1)}) · Pmsf ${loop.pmsfMmHg.toFixed(1)} mmHg · GC ${((loop.cardiacOutputMlS * 60) / 1000).toFixed(2)} L/min\n` +
-      `Q_hv ${s.qHepaticVein.toFixed(1)} · Q_pv ${s.qPortal.toFixed(1)} · Q_ha ${s.qHepaticArtery.toFixed(1)} mL/s · VCI AP/lat ${s.ivc.dApMm.toFixed(1)}/${s.ivc.dLatMm.toFixed(1)} mm\n` +
+      `Q_hv ${s.qHepaticVein.toFixed(1)} · Q_pv ${s.qPortal.toFixed(1)} · Q_ha ${s.qHepaticArtery.toFixed(1)} mL/s · VCI AP/lat ${ivcDiameterText(s.ivc.dApMm)}/${s.ivc.dLatMm.toFixed(1)} mm\n` +
       `u VSH dcha ${(s.velocities.hvRight / 10).toFixed(1)} · porta ${(s.velocities.pvTrunk / 10).toFixed(1)} · VCI ${(s.velocities.ivcSupra / 10).toFixed(1)} · v. interlobar ${(s.velocities.interlobarVein2 / 10).toFixed(1)} cm/s\n` +
       gateTxt +
       truth;

@@ -116,19 +116,29 @@ it('sin cortina pulmonar procedural en s0028: A0 no toma la pared regional por p
   }
 });
 
-it('la reverberación tras gas de s0028 no eleva bases negativas: sin NaN detrás del pulmón o del gas', () => {
-  // pow(x, 2) con x < 0 es indefinido en GLSL ES; Metal da NaN y B lo extendía desde el gas hasta el final de la línea.
-  for (const [name, source] of Object.entries(PASSES)) {
-    if (typeof source !== 'string' || !/pow\(\(r - rk\) \/ 1\.2, 2\.0\)/.test(source)) continue;
-    const specialized = personShader(source, { person: 's0028', bundle });
-    expect(specialized, name).not.toMatch(/pow\(\s*\(r\s*-\s*rk\)/);
-    expect(specialized, name).toContain('exp(-0.5*((r-rk)/1.2)*((r-rk)/1.2))');
-    // El default conserva su texto (hash por variante idéntico a main).
+it('la reverberación tras gas no eleva bases negativas, en el default ni en s0028: sin NaN detrás del pulmón o del gas', () => {
+  // pow(x, 2) con x < 0 es indefinido en GLSL ES; Metal da NaN y B lo extendía desde el gas hasta el final de la línea. Desde la
+  // decisión 325 la fuente compartida eleva con z·z; se vigila la forma, no un texto que ya no existe.
+  const loop = /for\s*\(\s*int k\s*=\s*2;\s*k\s*<=\s*4;\s*k\+\+\s*\)/;
+  const negative = /pow\(\s*\(\s*[rs]\s*-[^,;]*\)\s*\/\s*1\.2\s*,\s*2\.0\s*\)/;
+  const names = Object.entries(PASSES)
+    .filter(([, s]) => typeof s === 'string' && loop.test(s))
+    .map(([n]) => n);
+  // Con dientes: las réplicas de B y de la mirada dirigida se analizan siempre (13 programas el 26-11-2026).
+  expect(names).toEqual(expect.arrayContaining(['FRAG_RAWFIELD', 'FRAG_RAWFIELD_STEERED', 'STEERED_FIELD_GLSL']));
+  for (const name of names) {
+    const source = PASSES[name as keyof typeof PASSES] as string;
+    // El default es la fuente tal cual: la especialización solo toca s0028.
     expect(personShader(source, { person: 'current' }), name).toBe(source);
+    for (const glsl of [source, personShader(source, { person: 's0028', bundle })]) {
+      expect(glsl, name).not.toMatch(negative);
+      expect(glsl, name).toMatch(/exp\(\s*-0\.5\s*\*\s*z\s*\*\s*z\s*\)/);
+    }
   }
   // También en el GLSL compactado de producción.
-  const compact = minifyGlslBody([PASSES.FRAG_RAWFIELD], [], undefined, 'join');
-  expect(personShader(compact, { person: 's0028', bundle })).not.toMatch(/pow\(\s*\(r\s*-\s*rk\)/);
+  const compact = personShader(minifyGlslBody([PASSES.FRAG_RAWFIELD], [], undefined, 'join'), { person: 's0028', bundle });
+  expect(compact).not.toMatch(negative);
+  expect(compact).toContain('exp(-0.5*z*z)');
 });
 
 it('la GPU s0028 pesa la celda U con la rampa por profundidad de su fila y la celda D/E como antes (gemelo de la CPU)', () => {

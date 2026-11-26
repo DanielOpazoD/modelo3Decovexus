@@ -9,6 +9,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { MAX_TUBE_SEGMENTS } from '../../src/anatomy/gpu/anatomy.glsl';
 import { VESSEL_IDS } from '../../src/physiology/vessels';
+import { encodeS0028Nodes } from './s0028Base62';
 
 const path = process.argv[2];
 if (!path) throw new Error('Indicar trunks.json');
@@ -54,20 +55,24 @@ for (const [mother, nodes] of tributaries) {
   if (nodes.length < 2 || nodes.length > 5 || nodes.some((n) => n.length !== 4 || n.some((x) => !Number.isFinite(x)) || n[3] < 1))
     throw new Error('Tributaria suprahepática inválida de ' + mother);
 }
+const tenths = (nodes: number[][]) => `tenths('${encodeS0028Nodes(nodes, 10)}')`;
 writeFileSync(
   'src/anatomy/s0028TrunksData.ts',
-  '/** Generado por tools/anatomy/install-s0028-trunks.ts. Troncos de s0028 desde sus máscaras: radio de referencia y nodos x, y, z, r (mm LAS), en el sentido del flujo. */\n' +
-    'export const S0028_TRUNKS = ' +
-    JSON.stringify(Object.fromEntries(ids.map((id) => [id, [Math.round(source.report[id].radiusMedianMm! * 10) / 10, v[id]]]))) +
-    ' as const;\n' +
+  '/** Generado por tools/anatomy/install-s0028-trunks.ts. Nodos x, y, z, r (mm LAS) en el sentido del flujo, en décimas de mm. */\n' +
+    "import { s0028Nodes } from './people/s0028/base62';\n\n" +
+    'const tenths = (s: string) => s0028Nodes(s, 10);\n' +
+    '/** Troncos de s0028 desde sus máscaras: radio de referencia y nodos. */\n' +
+    'export const S0028_TRUNKS = {\n' +
+    ids.map((id) => `  ${id}: [${Math.round(source.report[id].radiusMedianMm! * 10) / 10}, ${tenths(v[id])}],\n`).join('') +
+    '} as const;\n' +
     '/** Ramas portales propias de s0028 además de las de segundo orden: vaso madre (su velocidad y su pared) y nodos, del origen a la punta. */\n' +
-    'export const S0028_PORTAL_BRANCHES = ' +
-    JSON.stringify(branches) +
-    ' as const;\n' +
+    'export const S0028_PORTAL_BRANCHES = [\n' +
+    branches.map(([mother, nodes]) => `  ['${mother}', ${tenths(nodes)}],\n`).join('') +
+    '] as const;\n' +
     '/** Tributarias suprahepáticas propias de s0028: vena madre y nodos, de la punta a la unión (sentido del flujo). */\n' +
-    'export const S0028_HEPATIC_BRANCHES = ' +
-    JSON.stringify(tributaries) +
-    ' as const;\n',
+    'export const S0028_HEPATIC_BRANCHES = [\n' +
+    tributaries.map(([mother, nodes]) => `  ['${mother}', ${tenths(nodes)}],\n`).join('') +
+    '] as const;\n',
 );
 // Testigos de las máscaras, a más de 2,2 mm (porta) y 3 mm (aorta) de su borde: los lee la prueba, no la aplicación.
 if (!(source.witnesses.portal?.length >= 100 && source.witnesses.aorta?.length >= 100 && source.witnesses.hepatic?.length >= 100))

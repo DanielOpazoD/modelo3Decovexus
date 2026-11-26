@@ -17,6 +17,7 @@ import {
 import { defaultEquipment } from '../app/simulator';
 import { C_RECONSTRUCTION_MM_S } from '../core/units';
 import { CONVEX_C35 } from '../probe/probe';
+import { TGC_BANDS } from '../ultrasound/tgcBands';
 
 /** Modelo de dominio del ecógrafo (Fase 1): comandos + invariantes físicas. */
 const ctx: EquipmentContext = { halfSectorRad: CONVEX_C35.halfSector, cMmS: C_RECONSTRUCTION_MM_S };
@@ -93,6 +94,21 @@ describe('Estado del equipo', () => {
     e = reduceEquipment(e, { type: 'tgc', band: 3, db: 99 }, ctx);
     expect(e.bmode.tgcDb[3]).toBe(EQUIPMENT_LIMITS.tgcDb.max);
     expect(normalizeEquipment(e, ctx)).toEqual(e);
+  });
+
+  it('la TGC tiene siempre TGC_BANDS bandas: un parche corto se rellena con 0 y uno largo se recorta', () => {
+    const short = Array<number>(TGC_BANDS - 2).fill(15);
+    const cases = [
+      { tgcDb: short, want: [...short, 0, 0] },
+      { tgcDb: Array<number>(TGC_BANDS + 2).fill(-99), want: Array<number>(TGC_BANDS).fill(EQUIPMENT_LIMITS.tgcDb.min) },
+    ];
+    for (const { tgcDb, want } of cases) {
+      const e = normalizeEquipment({ ...base(), bmode: { ...base().bmode, tgcDb } }, ctx);
+      expect(e.bmode.tgcDb).toEqual(want);
+      expect(normalizeEquipment(e, ctx)).toEqual(e);
+      // la banda más profunda responde a su deslizador
+      expect(reduceEquipment(e, { type: 'tgc', band: TGC_BANDS - 1, db: 12 }, ctx).bmode.tgcDb[TGC_BANDS - 1]).toBe(12);
+    }
   });
 
   it('el controlador avisa en cada comando y nunca expone un estado sin normalizar', () => {

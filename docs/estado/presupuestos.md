@@ -1,6 +1,6 @@
 # Estado vigente: presupuestos
 
-Actualizado: 2026-11-18 sobre main `6eb1ad8`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
+Actualizado: 2026-11-26 sobre main `70e3691`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
 su valor actual. Los techos no se suben para obtener verde (decisión 322); subir uno es una decisión propia, declarada en
 la PR y en `docs/DECISIONS.md`.
 
@@ -22,7 +22,7 @@ la PR y en `docs/DECISIONS.md`.
 
 <!-- tabla generada por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `6eb1ad8` el 2026-11-18 con `tools/docs/estado.ts`. No se copian a mano.
+Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/estado.ts`. No se copian a mano.
 
 | Techo                                               |      Límite |      Actual |     Margen | Unidad   | Decisión | Fuente                                 |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- | -------- | -------------------------------------- |
@@ -33,47 +33,47 @@ Medido en el candidato basado en main `6eb1ad8` el 2026-11-18 con `tools/docs/es
 | `anatomy.glsl.js`                                   |     122.880 |      23.482 |     99.398 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `anatomyScene.js`                                   |     122.880 |      16.864 |    106.016 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `annotation-capacity.gzip.bin`                      |     856.999 |     334.410 |    522.589 | B        | 320      | `tools/ci/bundleBudgets.ts`            |
-| `bootstrap.js`                                      |     343.040 |     256.733 |     86.307 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `bootstrap.js`                                      |     343.040 |     263.711 |     79.329 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | B        | 321      | `tools/ci/bundleBudgets.ts`            |
+| `cpu.js`                                            |     122.880 |      63.797 |     59.083 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cpu.js`                                            |     122.880 |      14.410 |    108.470 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `cpu.js`                                            |     122.880 |      72.581 |     50.299 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `cutMapView.js`                                     |     122.880 |      16.838 |    106.042 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `cutMapWorker.js`                                   |     122.880 |        3721 |    119.159 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `cutMapView.js`                                     |     122.880 |      16.942 |    105.938 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `cutMapWorker.js`                                   |     122.880 |        3844 |    119.036 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `deformation.js`                                    |     122.880 |        1559 |    121.321 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `doppler-worklet.js`                                |     122.880 |        2829 |    120.051 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `gatePlacement.js`                                  |     122.880 |        1200 |    121.680 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `gateTransmission.js`                               |     122.880 |      27.376 |     95.504 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `gateTransmission.js`                               |     122.880 |      27.255 |     95.625 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `index.css`                                         |      20.480 |      20.475 |          5 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `index.js`                                          |     343.040 |        2878 |    340.162 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `loadPinnedAsset.js`                                |     122.880 |        1081 |    121.799 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `navigator3d.js`                                    |     122.880 |      32.167 |     90.713 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `navigator3d.js`                                    |     122.880 |      32.525 |     90.355 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `personAssets.js`                                   |     122.880 |        4287 |    118.593 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `preload-helper.js`                                 |     122.880 |        1417 |    121.463 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `pwMeasurements.js`                                 |     122.880 |      15.821 |    107.059 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `pwMeasurements.js`                                 |     122.880 |      17.529 |    105.351 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `query.js`                                          |     122.880 |        3737 |    119.143 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `reference-body.bin`                                |        2080 |        2080 |          0 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `retroperitoneum.js`                                |     122.880 |        5328 |    117.552 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `runtime.js`                                        |     122.880 |        1631 |    121.249 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `runtime.js`                                        |     122.880 |      26.223 |     96.657 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `runtime.js`                                        |     122.880 |      25.995 |     96.885 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `series.js`                                         |     122.880 |        2204 |    120.676 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `sourceVolume.js`                                   |     122.880 |        2366 |    120.514 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `startPoints.js`                                    |     122.880 |      11.366 |    111.514 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `structureIdentity.js`                              |     122.880 |        1609 |    121.271 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `startPoints.js`                                    |     122.880 |      12.045 |    110.835 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `structureIdentity.js`                              |     122.880 |        1775 |    121.105 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.gzip.bin`                                 |   9.672.026 |   5.539.098 |  4.132.928 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.js`                                       |     122.880 |         485 |    122.395 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
 | `surfaces.js`                                       |     122.880 |        5730 |    117.150 | B        | 318      | `tools/ci/bundleBudgets.ts`            |
-| `teacherTab.js`                                     |     122.880 |      46.743 |     76.137 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `teacherTab.js`                                     |     122.880 |      47.333 |     75.547 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `testHooks.js`                                      |     122.880 |      69.909 |     52.971 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `thoracic-atlas.gzip.bin`                           |   6.291.456 |   4.444.037 |  1.847.419 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `thoracic-direct.gzip.bin`                          |   5.287.620 |   5.287.620 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `thoracic-surface.gzip.bin`                         |   6.291.456 |   3.341.604 |  2.949.852 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `thoracicSurfaceData.js`                            |     122.880 |        3124 |    119.756 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `three.js`                                          |     385.024 |     369.177 |     15.847 | B        | 307      | `tools/ci/bundleBudgets.ts`            |
-| `units.js`                                          |     122.880 |         388 |    122.492 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `units.js`                                          |     122.880 |         575 |    122.305 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `vesselTree.js`                                     |     122.880 |     111.319 |     11.561 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.052.049 |     18.031 | B        | 322      | `tools/ci/personBundles.ts`            |
-| JS clausura s0028 (Workers y ganchos incluidos)     |   1.144.832 |   1.140.057 |       4775 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.062.821 |       7259 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura s0028 (Workers y ganchos incluidos)     |   1.144.832 |   1.141.817 |       3015 | B        | 322      | `tools/ci/personBundles.ts`            |
 | Descarga del paquete s0028 (gzip)                   |  25.000.000 |  21.199.547 |  3.800.453 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   9.048.961 | 10.461.041 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |

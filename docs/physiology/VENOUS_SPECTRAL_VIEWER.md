@@ -57,6 +57,13 @@ Sano en apnea con siete latidos: se exige calidad útil y marcas de señal en lo
 tres territorios. E2E comprueba píxeles de espectro, ECG/cursor, marcas, escala
 independiente, móvil y limpieza al cerrar. El trabajo se limita por cuadro y
 se detiene al cerrar; no debe bloquear con seis segundos de IQ de una sola vez.
+Cada actualización procesa, por territorio, lo llegado desde la anterior más 32
+muestras de recuperación (`venousCatchUpBatch`): el atraso nunca crece y, desde
+los seis segundos de historial, llega a tiempo real en 47 actualizaciones a
+cualquier ritmo de cuadros. Un
+equipo lento baja los fps en lugar de desincronizarse del ECG. Mientras una fila
+se reconstruye no mide («Esperando la reconstrucción IQ»), y cada captura usa los
+latidos de su propia ventana, no solo los del reloj vivo.
 Las pruebas y el aspecto visual no constituyen un banco de validación clínica.
 
 ## Revisión visual móvil
@@ -88,8 +95,10 @@ requiere CI completa y revisión visual, y no equivale a validación clínica.
 
 El coordinador de ventanas reside en app/venousSpectral.ts, porque reutiliza
 colocación de sonda y puerta de la aplicación. El motor Doppler no importa app.
-Profundidad y foco se copian del equipo al crear la adquisición; se inyectan
-como datos para evitar que el visor importe el renderer completo. El diccionario
+El foco se copia del equipo al crear la adquisición; se inyecta como dato para
+evitar que el visor importe el renderer completo. La profundidad B del alumno no
+interviene: la puerta virtual se busca hasta 175 mm y su ventana acústica se mide
+hasta esa misma profundidad. El diccionario
 reversible de GLSL aprovecha los marcadores disponibles para reducir bytes;
 dos bancos de 64 símbolos ASCII conservan los códigos originales y las pruebas
 comparan todos los shaders reconstruidos byte por byte. No se amplían

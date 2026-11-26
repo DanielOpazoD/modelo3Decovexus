@@ -85,6 +85,13 @@ export class FakeElement {
     for (const n of nodes) this.appendChild(typeof n === 'string' ? new FakeText(n) : n);
   }
 
+  replaceChildren(...nodes: Array<FakeElement | FakeText | string>): void {
+    for (const n of this.childNodes) n.parentElement = null;
+    this.childNodes = [];
+    this.html = '';
+    this.append(...nodes);
+  }
+
   setAttribute(k: string, v: string): void {
     this.attrs.set(k, String(v));
   }
@@ -101,8 +108,41 @@ export class FakeElement {
     this.listeners.set(type, [...(this.listeners.get(type) ?? []), fn]);
   }
 
-  dispatch(type: string): void {
-    for (const fn of this.listeners.get(type) ?? []) fn({ type, target: this, stopPropagation: () => undefined });
+  /** `init` añade campos al evento (p. ej. `detail` de un clic de ratón). */
+  dispatch(type: string, init: object = {}): void {
+    for (const fn of this.listeners.get(type) ?? []) fn({ type, target: this, stopPropagation: () => undefined, ...init });
+  }
+
+  remove(): void {
+    if (this.parentElement) this.parentElement.childNodes = this.parentElement.childNodes.filter((n) => n !== this);
+    this.parentElement = null;
+  }
+
+  /** El foco es `activeElement` del `document` falso. */
+  focus(): void {
+    (document as unknown as { activeElement: unknown }).activeElement = this;
+  }
+
+  /** El texto de un cuadro no tiene selección en el DOM falso: la prueba lee `value`. */
+  select(): void {
+    return undefined;
+  }
+
+  contains(n: unknown): boolean {
+    for (let e = n as FakeElement | null; e; e = e.parentElement) if (e === this) return true;
+    return false;
+  }
+
+  /** Solo `etiqueta`, `etiqueta.clase` o `etiqueta:enabled`, lo que piden las pestañas. */
+  querySelector(selector: string): FakeElement | null {
+    const [tagClass, state] = selector.split(':');
+    const [tag, cls] = tagClass.split('.');
+    return (
+      findAll(
+        this,
+        (e) => e.tagName === tag.toUpperCase() && (!cls || e.classList.contains(cls)) && (state !== 'enabled' || !e.disabled),
+      )[0] ?? null
+    );
   }
 
   /** Como el navegador: un clic en una casilla la conmuta y emite `change`. */
@@ -131,9 +171,15 @@ export function findAll(root: FakeElement, pred: (e: FakeElement) => boolean): F
 }
 
 /** Un `document` falso para `vi.stubGlobal('document', …)`: las pestañas crean sus nodos con él. */
-export function fakeDocument(): { body: FakeElement; createElement(tag: string): FakeElement; createTextNode(text: string): FakeText } {
+export function fakeDocument(): {
+  body: FakeElement;
+  activeElement: FakeElement | null;
+  createElement(tag: string): FakeElement;
+  createTextNode(text: string): FakeText;
+} {
   return {
     body: new FakeElement('body'),
+    activeElement: null,
     createElement: (tag: string) => new FakeElement(tag),
     createTextNode: (text: string) => new FakeText(text),
   };

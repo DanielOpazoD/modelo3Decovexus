@@ -1,4 +1,5 @@
 import type { AnatomyScene } from '../../anatomy/scene';
+import { vesselKind } from '../../physiology/vessels';
 
 interface Sample {
   p: readonly number[];
@@ -25,21 +26,22 @@ function samples(nodes: readonly { p: readonly number[]; r: number }[]): Sample[
 }
 
 /**
- * Vasos madre cuyas luces se atraviesan sin estar unidos: pares «a × b: solape en (x, y, z)». Dos vasos están unidos si un extremo
- * de uno toca el eje del otro (nace o muere en él). No cuenta el tramo a menos de `endMm` de un extremo (zona de unión con su propio
- * tronco, donde las hermanas convergen), ni lo que queda por debajo de `floorZ` (pelvis, fuera de las ventanas del examen). Hasta
- * `minMm` de solape de luces es contacto de paredes (1 mm cada una), como la aorta y la cava apoyadas una en otra.
+ * Vasos madre cuyas luces se atraviesan sin estar unidos: pares «a × b: solape en (x, y, z)». Dos vasos están unidos si son del
+ * mismo tipo (una arteria nunca nace ni muere en una vena) y un extremo de uno cae en la luz del otro. No cuenta el tramo a menos
+ * de `endMm` de un extremo (zona de unión con su propio tronco, donde las hermanas convergen), ni lo que queda por debajo de
+ * `floorZ` (pelvis, fuera de las ventanas del examen). Hasta `minMm` de solape de luces es contacto de paredes (1 mm cada una),
+ * como la aorta y la cava apoyadas una en otra.
  */
-export function lumenOverlaps(scene: AnatomyScene, { minMm = 2, endMm = 12, floorZ = -240 } = {}): string[] {
+export function lumenOverlaps(scene: Pick<AnatomyScene, 'vessels'>, { minMm = 2, endMm = 12, floorZ = -240 } = {}): string[] {
   const mothers = scene.vessels.filter((v) => v.flowFactor === undefined);
   const axes = new Map(mothers.map((v) => [v.id, samples(v.tube.nodes)]));
-  const touches = (a: Sample[], b: Sample[]) => [a[0], a[a.length - 1]].some((e) => b.some((q) => distance(e.p, q.p) < q.r + 3));
+  const touches = (a: Sample[], b: Sample[]) => [a[0], a[a.length - 1]].some((e) => b.some((q) => distance(e.p, q.p) < q.r));
   const found: string[] = [];
   for (let i = 0; i < mothers.length; i++)
     for (let j = i + 1; j < mothers.length; j++) {
       const a = axes.get(mothers[i].id)!,
         b = axes.get(mothers[j].id)!;
-      if (touches(a, b) || touches(b, a)) continue;
+      if (vesselKind(mothers[i].id) === vesselKind(mothers[j].id) && (touches(a, b) || touches(b, a))) continue;
       let worst = minMm,
         at: readonly number[] | null = null;
       for (const p of a)

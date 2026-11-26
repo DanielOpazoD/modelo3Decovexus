@@ -190,6 +190,28 @@ describe('Clasificación VExUS C (base A.1, guía §6/§21)', () => {
     expect(renalPatternFromPeaks(5, 20, 1.9)).toBe('monophasic');
   });
 
+  // Decisión 447. A ±50 cm/s (bin 0,78 cm/s) la envolvente mira desde el bin 3 (2,34 cm/s) y una onda bajo ese suelo en el filtro
+  // de pared, en él o hasta ½ bin más arriba (2,73 cm/s) se lee en el suelo + 1 bin, 3,125 cm/s. La S medida en un espectro se
+  // juzga con esa resolución.
+  it('renal: una S que no sube del suelo de su banda no es un pico, y a un bin de él no decide «bifásico» (decisión 447)', () => {
+    const res = { floorCms: 2.34375, stepCms: 0.78125 };
+    // en el suelo con D de 10,16: S/D 0,31, pero la onda cabe bajo el suelo + ½ bin, por debajo de 0,3·D = 3,05
+    expect(renalPatternFromPeaks(3.125, 10.16, 0, 1.77)).toBe('biphasic');
+    expect(renalPatternFromPeaks(3.125, 10.16, 0, 1.77, res)).toBe('monophasic');
+    expect(renalPatternFromPeaks(3.125, 9.2, 0, 1.77, res)).toBe('monophasic');
+    // …salvo que la frontera 0,3·D caiga también en ese intervalo: entonces no se resuelve. Con D 8,2 (0,3·D = 2,46) la onda
+    // puede ser una S de 2,8 cm/s, la de una bifásica verdadera con D 8,6 (S/D 0,33): no es monofásica
+    expect(renalPatternFromPeaks(3.125, 8.2, 0, 1.77, res)).toBe('indeterminate');
+    expect(renalPatternFromPeaks(3.125, 7, 0, 1.77, res)).toBe('indeterminate');
+    // un bin sobre esa lectura: la onda queda entre el suelo y lo leído
+    expect(renalPatternFromPeaks(3.906, 12, 0, 1.77, res)).toBe('indeterminate');
+    expect(renalPatternFromPeaks(3.906, 13.1, 0, 1.77, res)).toBe('monophasic');
+    expect(renalPatternFromPeaks(3.906, 7.5, 0, 1.77, res)).toBe('biphasic');
+    // clara sobre el suelo, como siempre; y la continuidad no cambia
+    expect(renalPatternFromPeaks(4.7, 12, 0, 1.77, res)).toBe('biphasic');
+    expect(renalPatternFromPeaks(3.125, 12, 4, 1.77, res)).toBe('continuous');
+  });
+
   it('fronteras: VCI 20 mm inclusiva, VCI ausente, VCI normal cierra el caso aunque falte todo, porta hepatófuga', () => {
     const normal = { hepatic: 'normal' as const, portalPulsatilityFraction: 10, renal: 'continuous' as const };
     expect(classifyVexusC({ ivcMaxDiameterMm: 20, ...normal }).grade).toBe(1);

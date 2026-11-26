@@ -5,13 +5,14 @@ import { reduceEquipment } from '../app/equipment';
 import { defaultEquipment } from '../app/simulator';
 import { C_RECONSTRUCTION_MM_S, nyquistVelocityCms } from '../core/units';
 import { CONVEX_C35 } from '../probe/probe';
+import { TGC_BANDS } from '../ultrasound/tgcBands';
 
 const ctx = { halfSectorRad: CONVEX_C35.halfSector, cMmS: C_RECONSTRUCTION_MM_S };
 it.each([true, false])('cada ventana reemplaza los ajustes heredados sin elegir vaso ni cambiar modo (atlas=%s)', (atlas) => {
   for (const sp of START_POINTS) {
     let changed = defaultEquipment();
     changed.bmode.gainDb = 20;
-    changed.bmode.tgcDb = [15, 15, 15, 15, 15, 15];
+    changed.bmode.tgcDb = Array<number>(TGC_BANDS).fill(15);
     changed.color = { ...changed.color, invert: true, prfHz: 500, wallFilterHz: 300, gainDb: -10, theta0: 0.2, theta1: 0.5 };
     changed.pw = {
       ...changed.pw,
@@ -32,6 +33,9 @@ it.each([true, false])('cada ventana reemplaza los ajustes heredados sin elegir 
       fresh = reduceEquipment(fresh, cmd, ctx);
     }
     expect(changed, sp.id).toEqual(fresh);
+    // el preajuste deja las TGC_BANDS bandas a 0 y la más profunda sigue respondiendo
+    expect(fresh.bmode.tgcDb, sp.id).toEqual(Array<number>(TGC_BANDS).fill(0));
+    expect(reduceEquipment(changed, { type: 'tgc', band: TGC_BANDS - 1, db: 12 }, ctx).bmode.tgcDb[TGC_BANDS - 1]).toBe(12);
     expect(changed.color.r1).toBeLessThanOrEqual(changed.bmode.depthMm);
     expect(changed.pw.enabled).toBe(false);
     expect(changed.pw.theta).toBe(0);

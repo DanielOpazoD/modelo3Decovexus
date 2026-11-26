@@ -23,12 +23,14 @@ export const CASE_TEACHING: Readonly<Record<CaseId, CaseTeaching>> = {
     context: { raisedIntraAbdominalPressure: true },
     trap:
       'VCI comprimida: el cálculo literal de grado 0 no cierra la interpretación. La presión intraabdominal, por encima de la PAD, comprime la VCI abdominal (≈ 14–16 mm y ' +
-      'colapsable) con la PAD media en 13–14 mmHg. La suprahepática no encaja con esa VCI: drena a la aurícula por encima ' +
-      'del abdomen, la PIA no la toca y conserva la S invertida de la IT funcional con la PAD alta (sin la IT sería ' +
+      'colapsable) con la PAD media en 13–14 mmHg. La suprahepática no encaja con esa VCI: desemboca en la cava justo bajo ' +
+      'el diafragma, por encima del tramo comprimido, y en el simulador las ondas de la aurícula le llegan sin pasar por él, ' +
+      'así que conserva la S invertida de la IT funcional con la PAD alta (sin la IT sería ' +
       'S < D). Una S invertida sola no prueba la congestión (la IT la da también sin ella): lo que impide concluir grado 0 ' +
       'es esa discordancia con la viñeta (presión vesical 16, oliguria, VD disfuncionante). Con «Presión ' +
       'intraabdominal alta» marcada, una VCI < 20 mm ya no cierra el grado en 0: el resultado da el intervalo (0–2 con ' +
-      'las tres venas medidas). La porta sale normal o en el límite (≈ 25–31 %) y el riñón continuo: en el simulador la ' +
+      'las tres venas medidas). La porta sale normal o en el límite (≈ 25–31 %) y el riñón continuo en apnea (respirando, ' +
+      'en el límite con el bifásico): en el simulador la ' +
       'PIA amortigua las ondas que les llegan de la aurícula; en la clínica, además, comprime la vena renal y el riñón, y ' +
       'eso el simulador no lo hace.',
   },

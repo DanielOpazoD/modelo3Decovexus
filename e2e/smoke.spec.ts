@@ -409,14 +409,40 @@ for (const model of ['legacy', 's0028'] as const)
       (window as unknown as { __lc: WEBGL_lose_context }).__lc = ext;
       ext.loseContext();
     });
-    // el evento de pérdida llega del proceso de la GPU, sin cuadros de por medio
-    await expect(page.locator('.banner')).toContainText('Contexto GPU perdido', { timeout: 30_000 });
+    // el evento de pérdida llega del proceso de la GPU, sin cuadros de por medio; el aviso se anuncia
+    await expect(page.locator('.banner[role="alert"]')).toContainText('Contexto GPU perdido', { timeout: 30_000 });
     await page.evaluate(() => (window as unknown as { __lc: WEBGL_lose_context }).__lc.restoreContext());
     // recompila los programas, como al arrancar
     await expect(page.locator('.banner')).toHaveCount(0, { timeout: BOOT_MS });
     await clockRuns(page, 'el reloj sigue, con cuadros completos, tras recuperar el contexto');
     expect(errors).toEqual([]);
   });
+
+test('el navegador 3D sobrevive a la pérdida de su contexto WebGL: la registra y vuelve a dibujarse sin tocar nada', async ({ page }) => {
+  // la restauración vuelve a compilar los programas de three y a subir la anatomía: dos arranques
+  budget(60_000, 2);
+  const errors = await bootWithoutErrors(page, '?e2e=1&abdomen=s0028');
+  expectLoggedErrors(page, [/^navegador3d: contexto WebGL 3D perdido$/]);
+  // el bucle solo pone valla en el contexto 3D cuando este envió un dibujo (`renderRevision`)
+  const navFences = () => page.evaluate(() => window.gpuProgress?.find((row) => row.canvas === 'nav3d')?.fences ?? 0);
+  await expect.poll(navFences, { timeout: BOOT_MS }).toBeGreaterThan(0);
+  await page.evaluate(() => {
+    const gl = document.querySelector<HTMLCanvasElement>('#nav3d canvas')!.getContext('webgl2')!;
+    const ext = gl.getExtension('WEBGL_lose_context')!;
+    (window as unknown as { __lc3d: WEBGL_lose_context }).__lc3d = ext;
+    ext.loseContext();
+  });
+  await expect
+    .poll(() => page.evaluate(() => window.__vexusTest!.loggedErrors()), { timeout: 30_000 })
+    .toContain('navegador3d: contexto WebGL 3D perdido');
+  const lost = await navFences();
+  await page.evaluate(() => (window as unknown as { __lc3d: WEBGL_lose_context }).__lc3d.restoreContext());
+  // sin interacción: la restauración marca la escena estática y el bucle la vuelve a enviar
+  await expect.poll(navFences, { timeout: BOOT_MS }).toBeGreaterThan(lost);
+  await test.info().attach('navegador-3d-restaurado', { body: await page.locator('#nav3d canvas').screenshot(), contentType: 'image/png' });
+  await clockRuns(page, 'el reloj sigue tras recuperar el contexto 3D');
+  expect(errors).toEqual([]);
+});
 
 test('el speckle del parénquima hepático tiene la estadística del hígado: casi de Rayleigh, con la cola de sus dispersores fuertes', async ({
   page,

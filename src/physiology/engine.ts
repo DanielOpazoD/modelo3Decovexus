@@ -1,4 +1,4 @@
-import { arterialCaliberAt, AORTA_MECHANICS } from './arterialCaliber';
+import { arterialCaliberAt, AORTA_MECHANICS, nominalPulseMean } from './arterialCaliber';
 import { SimulationClock } from '../core/clock';
 import { supraIvcAreaMm2, supraIvcSection } from './supraIvc';
 import { Circulation, circulationBaseline, type AppliedIntervention, type Intervention } from './circulation';
@@ -8,7 +8,15 @@ import { RespiratoryModel, type RespiratorySample } from './respiratory';
 import { RhythmGenerator, gauss } from './rhythm';
 import { RightAtriumModel } from './rightAtrium';
 import { ventricularEmptying, type VentricularEmptying } from './ventricles';
-import { VenousNetwork, defaultNetworkParams, hvRadiusScaleFromPressure, ivcPtmFromDiameter, type NetworkOutputs } from './venousNetwork';
+import {
+  VenousNetwork,
+  defaultNetworkParams,
+  HV_COLLAPSE_TRANSMURAL_MMHG,
+  hvRadiusScaleFromPressure,
+  ivcPtmFromDiameter,
+  pulseGain,
+  type NetworkOutputs,
+} from './venousNetwork';
 import { hepaticFlowShares, INTERLOBAR_FLOW_SHARE, portalFlowShares, VESSEL_IDS, type VesselAreas, type VesselId } from './vessels';
 
 /**
@@ -88,6 +96,12 @@ export function nonFiniteFields(s: PhysiologySample): string[] {
  */
 export const IVC_WALL_TAU_S = 0.2;
 
+/**
+ * Constante de tiempo (s) de la media móvil causal del pulso arterial que centra la red: la media del latido sobre su RR
+ * exigía conocer la R siguiente y en FA el pico sistólico seguía a la pausa que venía.
+ */
+export const PULSE_MEAN_TAU_S = 3;
+
 export class PhysiologyEngine {
   readonly clock: SimulationClock;
   readonly patient: PatientState;
@@ -107,6 +121,8 @@ export class PhysiologyEngine {
   private ivcSupraWallAreaMm2: number;
   /** Pmsf del lazo en el paso anterior: su cambio es el volumen que entra o sale de la red (decisión 79). */
   private lastPmsf: number;
+  /** Media móvil causal del pulso arterial (`PULSE_MEAN_TAU_S`): la red recibe p − p̄ y (1 + g·p)/(1 + g·p̄). */
+  private pulseMean: number;
   private readonly shares: ReturnType<typeof hepaticFlowShares> & ReturnType<typeof portalFlowShares>;
 
   constructor(patient: PatientState, areas: VesselAreas, opts: { dt?: number; historySeconds?: number } = {}) {
@@ -117,6 +133,7 @@ export class PhysiologyEngine {
     this.clock = new SimulationClock(opts.dt ?? 0.004);
     this.historySeconds = opts.historySeconds ?? 12;
     this.rhythm = new RhythmGenerator(patient, patient.seed ^ 0x51a7);
+    this.pulseMean = nominalPulseMean(this.rhythm.nominalRR());
     this.respiratory = new RespiratoryModel(patient);
     this.circulation = new Circulation(patient, this.respiratory.pleuralAtEndExpiration());
     this.rightAtrium = new RightAtriumModel(patient, this.rhythm, () => this.circulation.atrialLoad);
@@ -137,7 +154,8 @@ export class PhysiologyEngine {
       pLb = (k.pArtMean * k.rLowerBody + pIvc * k.rArtLowerBody) / (k.rArtLowerBody + k.rLowerBody);
       const qLb = (pLb - pIvc) / k.rLowerBody;
       const pJ = rap + k.rJunction * (qPv + qHa + qLb);
-      pHep = pJ + k.rHepaticVein * (qPv + qHa);
+      // salida hepática en cascada con la PIA alta: sin este suelo el esplácnico tardaba ~60 s en llegar a su régimen
+      pHep = Math.max(pJ + k.rHepaticVein * (qPv + qHa), pAbd0 + HV_COLLAPSE_TRANSMURAL_MMHG);
       pIvc = pJ + k.rIvcToRa * qLb;
     }
     this.network = new VenousNetwork(k, {
@@ -182,7 +200,7 @@ export class PhysiologyEngine {
   private mesentericFastingPulse(t: number): number {
     let v = 0.07;
     for (const b of this.rhythm.beatsAround(t)) {
-      const s = Math.sqrt(b.rr / 0.8);
+      const s = b.systoleScale;
       const tau = t - b.tR;
       v += 0.93 * gauss(tau - 0.12 * s, 0.05 * s) - 0.32 * gauss(tau - 0.28 * s, 0.035 * s);
     }
@@ -214,7 +232,8 @@ export class PhysiologyEngine {
     const plExp = this.respiratory.pleuralAtEndExpiration();
     const pRa = this.rightAtrium.pressure(t, resp.pleuralMmHg, plExp);
     const arterial = arterialCaliberAt({ t, beats: this.rhythm.beatsAround(t), mechanics: AORTA_MECHANICS });
-    const out = this.network.step(this.clock.dt, arterial.pulse, pRa, resp.abdominalMmHg, loop.arterialMeanMmHg);
+    this.pulseMean += (arterial.pulse - this.pulseMean) * (1 - Math.exp(-this.clock.dt / PULSE_MEAN_TAU_S));
+    const out = this.network.step(this.clock.dt, arterial.pulse, pRa, resp.abdominalMmHg, loop.arterialMeanMmHg, this.pulseMean);
     this.ivcWallAreaMm2 += (out.ivcAreaMm2 - this.ivcWallAreaMm2) * (1 - Math.exp(-this.clock.dt / IVC_WALL_TAU_S));
     const supraArea = supraIvcAreaMm2(out.pJunction - resp.pleuralMmHg);
     this.ivcSupraWallAreaMm2 += (supraArea - this.ivcSupraWallAreaMm2) * (1 - Math.exp(-this.clock.dt / IVC_WALL_TAU_S));
@@ -263,11 +282,13 @@ export class PhysiologyEngine {
     const qHv = out.qHepaticVein;
     const qPv = out.qPortal;
     const { pulse, radiusScale: aortaRadiusScale } = arterial;
+    const pulseMean = this.pulseMean;
     // Caudal descendente ilustrativo (no forma parte de VExUS): sistólica ≈ 100 cm/s (Baumgartner 1999: 102 ± 18,5), media por debajo del
     // gasto y por encima de sus ramas, y en diástole el caudal de las ramas que siguen llenándose (decisión 297).
     const qAorta = 80 + 190 * pulse;
-    // La red calcula su lecho renal con el pulso 0,8, calibrado con la vena; el Doppler arterial muestra el pulso 1: IR 0,60 (decisión 297).
-    const qRenalShown = (out.qRenalArtery * (1 + pulse)) / (1 + 0.8 * pulse);
+    // La red calcula su lecho renal con el pulso 0,8, calibrado con la vena; el Doppler arterial muestra el pulso 1, con la
+    // misma media: IR 0,60 (decisión 297).
+    const qRenalShown = (out.qRenalArtery * pulseGain(1, pulse, pulseMean)) / pulseGain(0.8, pulse, pulseMean);
     for (const id of VESSEL_IDS) {
       let q: number;
       let areaScale = 1;
@@ -312,16 +333,16 @@ export class PhysiologyEngine {
         // común, que alimenta a la propia y a la gastroduodenal, con el pulso de baja resistencia de la hepática; AMS en ayunas ≈ 0,25 L/min con
         // el suyo, trifásico de alta resistencia
         case 'celiacTrunk':
-          q = 1.23 * out.qHepaticArtery + 6.8 * (1 + 1.1 * pulse);
+          q = 1.23 * out.qHepaticArtery + 6.8 * pulseGain(1.1, pulse, pulseMean);
           break;
         case 'splenicArtery':
-          q = 5 * (1 + 1.1 * pulse);
+          q = 5 * pulseGain(1.1, pulse, pulseMean);
           break;
         case 'commonHepaticArtery':
           q = 1.23 * out.qHepaticArtery;
           break;
         case 'leftGastricArtery':
-          q = 1.8 * (1 + 1.1 * pulse);
+          q = 1.8 * pulseGain(1.1, pulse, pulseMean);
           break;
         case 'ima':
           q = 5 * this.mesentericFastingPulse(t);
@@ -385,7 +406,12 @@ export class PhysiologyEngine {
       t,
       ecgMv: this.rhythm.ecg(t),
       cardiacPhase: this.rhythm.cardiacPhase(t),
-      ventricles: ventricularEmptying(t - beat.tR, beat.rr, this.patient),
+      ventricles: ventricularEmptying(
+        t - beat.tR,
+        beat,
+        this.patient.rvFunction,
+        this.rhythm.beatsAround(t).find((b) => b.index === beat.index - 1),
+      ),
       beatIndex: beat.index,
       lastR: beat.tR,
       rr: beat.rr,

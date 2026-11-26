@@ -156,14 +156,18 @@ congelada o con `n` que no sea un entero ≥ 1.
 - `startPoint: '<vista>'`: coloca antes la sonda en ese punto de partida, para comparar medidas en la
   misma pose (el barrido del banco la deja basculada o inclinada).
 - `repeatPass: '<pasada>'` (con `repeatCount`, 1 por defecto): repite el dibujo de esa pasada de
-  `FRAME_PASSES` dentro de cada cuadro sin cambiar la imagen. Su coste es (con − sin) / `repeatCount`:
-  así se atribuye ΔB (`'rawField'`) o ΔA (`'transmission'` y las etapas A0–A2) en Metal, que no separa
-  el tiempo de las pasadas (decisión 47). Una pasada de cadencia de color exige `forceColor`. Cada
+  `FRAME_PASSES` dentro de cada cuadro sin cambiar la imagen. Su coste es (T(X, k) − T(X, 0)) / k, con la
+  misma pasada y `repeatCount: 0` como referencia: un cuadro con repetición recalcula A0/A1 (decisión 256),
+  y la medida sin `repeatPass`, con el reloj quieto, los reutiliza. Así se atribuye ΔB (`'rawField'`) o ΔA
+  (`'transmission'` y las etapas A0–A2) en Metal, que no separa el tiempo de las pasadas (decisión 47). B y
+  A0 por etapas (s0028 en cualquier GPU, cualquier atlas en SwiftShader, A0 de `current` en Metal) no se
+  repiten: `'rawField'` o `'transmissionHits'` lanzan, porque solo se repetiría su último dibujo. Una
+  pasada de cadencia de color exige `forceColor`. Cada
   repetición dibuja en un destino de prueba propio (dos alternados, con el tamaño y los formatos de la
   salida de la pasada), así que es su propio pase de render: sobre el mismo destino, una GPU de teselas
   (Apple M) podría sombrear solo el último de los triángulos opacos que se tapan. Cada repetición paga,
   como la pasada real, la carga y la escritura de sus teselas.
-- **Comprobación de linealidad** antes de fiarse de un Δ: medir con `repeatCount` 1 y 4 (varias veces,
+- **Comprobación de linealidad** antes de fiarse de un Δ: medir con `repeatCount` 0, 1 y 4 (varias veces,
   alternando) y exigir Δ(4) ≈ 4·Δ(1), con Δ(1) muy por encima de la dispersión entre corridas. Un Δ que
   no crece con las repeticiones es que el driver las descarta o que la pasada no es la que limita.
 - Las opciones que no medirían nada lanzan (`frameMeasureOptions`). La aplicación nunca las pasa;
@@ -171,7 +175,8 @@ congelada o con `n` que no sea un entero ≥ 1.
   falso que cada repetición va a otro FBO que el dibujo anterior, con las texturas de la pasada.
 
 El banco (`npm run fidelity`) guarda por escena `msPerFrame` (color apagado) y `msPerFrameColor`
-(color encendido, `forceColor`), las dos en la pose de partida de la vista.
+(color encendido, `forceColor`), las dos en la pose de partida de la vista. Con el reloj quieto no dibujan
+A0/A1 (se reutilizan): no cuentan su coste, y la cifra que acepta es `fps` (`docs/REGLAS.md`).
 
 ## Composición espacial en los ganchos (decisión 58)
 

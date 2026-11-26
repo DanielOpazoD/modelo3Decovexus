@@ -58,7 +58,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
           for (let t = beat.tR; t < beat.tR + beat.rr; t += dt) {
             let pulse = -0.3;
             for (const b of e.rhythm.beatsAround(t)) {
-              const stretch = Math.sqrt(b.rr / 0.8);
+              const stretch = b.systoleScale;
               const gauss = (center: number, sigma: number) => Math.exp(-0.5 * ((t - b.tR - center * stretch) / (sigma * stretch)) ** 2);
               pulse += gauss(0.12, 0.06) + 0.4 * gauss(0.3, 0.09);
             }
@@ -200,7 +200,7 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
           while (s.sample.t < 12) s.physiology.step();
           s.setPose({ ...s.pose, phi: pose.phi, z: pose.z, yaw: pose.yaw, rock: pose.rock ?? 0, tilt: pose.tilt ?? 0, lift: 0 });
           const b = s.physiology.rhythm.beatsBetween(s.sample.t + 0.3, s.sample.t + 3)[0];
-          const at = systole ? b.tR + 0.1247 * Math.sqrt(b.rr / 0.8) : b.tR - 0.25;
+          const at = systole ? b.tR + 0.1247 * b.systoleScale : b.tR - 0.25;
           while (s.sample.t < at) s.physiology.step();
           s.frozen = false;
           s.render();

@@ -5,14 +5,14 @@ export const CAPTURE_BEATS = 4;
 const RENAL_IDENTITY_REASON = 'domina la arteria y no se identifica la vena con seguridad (ajuste la puerta)';
 
 /** Texto para el alumno: qué pasó y cómo corregirlo. */
-export function qualityText(q: Pick<MeasurementQuality, 'issue' | 'wrongVessel' | 'renalArterialDominance'>): string {
+export function qualityText(q: Pick<MeasurementQuality, 'issue' | 'wrongVessel' | 'renalArterialDominance' | 'wallFilterLow'>): string {
   if (!q.renalArterialDominance || q.issue === 'renal-identity') return primaryQualityText(q);
   // An empty inferred venous side does not mean this arterial gate has no flow.
   if (q.issue === null || q.issue === 'no-signal') return primaryQualityText({ issue: 'renal-identity' });
   return `${primaryQualityText(q)}; además, ${RENAL_IDENTITY_REASON}`;
 }
 
-function primaryQualityText(q: Pick<MeasurementQuality, 'issue' | 'wrongVessel'>): string {
+function primaryQualityText(q: Pick<MeasurementQuality, 'issue' | 'wrongVessel' | 'wallFilterLow'>): string {
   switch (q.issue) {
     case null:
       return 'medible';
@@ -29,8 +29,11 @@ function primaryQualityText(q: Pick<MeasurementQuality, 'issue' | 'wrongVessel'>
     case 'aliasing':
       return 'no medible: aliasing (suba la escala y vuelva a capturar)';
     case 'wall-filter':
-      return 'no medible: el valle cae en el filtro de pared (baje el filtro de pared)';
+      // con el filtro bajo el suelo lo fijan el margen y la rejilla de la FFT (`flowBandMinHz`): bajarlo no lo mueve
+      return q.wallFilterLow
+        ? 'no medible: el valle llega a la línea de base y la PF no se cuantifica (el filtro ya está bajo: pida apnea y repita la captura)'
+        : 'no medible: el valle cae en el filtro de pared (baje el filtro de pared)';
     case 'few-beats':
-      return 'no medible: pocos latidos (espere 4 latidos completos con la puerta quieta)';
+      return 'no medible: pocos latidos (espere 4 latidos completos con la puerta quieta; si está congelada, reanude el PW)';
   }
 }

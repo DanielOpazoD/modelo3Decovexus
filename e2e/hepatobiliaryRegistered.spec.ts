@@ -19,7 +19,7 @@ test('adquisición renal reportada y unión hepatobiliar registrada conservan pa
       depthMm: 160,
       focusMm: 90,
       gainDb: -2,
-      tgcDb: [0, 0, 0, 0, 0, 0],
+      tgcDb: [0, 0, 0, 0, 0, 0, 0, 0],
       dynamicRangeDb: 65,
       persistence: 0.35,
       compound: true,

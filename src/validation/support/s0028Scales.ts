@@ -7,7 +7,7 @@ import type { PatientState, RespiratoryPattern } from '../../physiology/patientS
 import type { VesselId } from '../../physiology/vessels';
 import { classifyPortal } from '../../vexus/classification';
 import { measurePhysiologyTruth } from '../../vexus/measurements';
-import { acquire, openSession, placeGate, probeAt, TR } from './studentChain';
+import { acquire, lowerBoundHolds, openSession, placeGate, probeAt, TR } from './studentChain';
 
 /**
  * Escalas del equipo en s0028 (`s0028Scales*.test.ts`). Las escalas del equipo (decisión 94) por la cadena del alumno en s0028, desde las ventanas del menú: la porta desde la
@@ -65,8 +65,12 @@ function rows(base: PatientState): Row[] {
           ? measurePhysiologyTruth(engine, { fromT: beats[0].tR - 1e-6, toT: beats.at(-1)!.tR + beats.at(-1)!.rr + 1e-6 }).portalPF
           : measurePhysiologyTruth(engine, { fromT: tNow - 7, toT: tNow }).portalPF;
         const pf = (m as { pulsatilityFraction?: number } | null)?.pulsatilityFraction ?? Number.NaN;
-        const ok = issue !== null || (Math.abs(pf - truth) <= 15 && !(truth < 30 && classifyPortal(pf) === 'severe'));
-        out.push({ kind, resp, value: pf.toFixed(0), truth: truth.toFixed(0), issue, ok });
+        // la cota inferior (el valle en el filtro de pared) tiene su propia aserción, como en `examChainScale`
+        const lowerBound = (m as { pulsatilityLowerBound?: true } | null)?.pulsatilityLowerBound === true;
+        const ok =
+          issue !== null ||
+          (lowerBound ? lowerBoundHolds(pf, truth) : Math.abs(pf - truth) <= 15 && !(truth < 30 && classifyPortal(pf) === 'severe'));
+        out.push({ kind, resp, value: `${lowerBound ? '≥' : ''}${pf.toFixed(0)}`, truth: truth.toFixed(0), issue, ok });
       } else {
         const t = measurePhysiologyTruth(engine, { fromT: tNow - 7, toT: tNow });
         const truth = kind === 'hepatic' ? t.hepaticPattern : t.renalPattern;

@@ -51,6 +51,8 @@ export interface MeasurementQuality {
   wrongVessel?: { kind: ProtocolVessel; found: VesselSystem };
   /** La composición de al menos un latido medido es de predominio arterial renal, aunque coexista otro rechazo. */
   renalArterialDominance?: true;
+  /** Con 'wall-filter': bajar el filtro al mínimo del mando no baja el suelo de la traza ni un bin (`qualityText`). */
+  wallFilterLow?: true;
 }
 
 export interface QualityOptions {
@@ -67,7 +69,8 @@ export interface QualityOptions {
    * Con ella, un latido también vale si la sangre cubre ≥ PHASE_COVERAGE de esa ventana y su fracción
    * de columnas con sangre se repite (a ≤ PHASE_REPRODUCIBILITY de la mediana de la captura): una
    * vena monofásica solo lleva flujo en diástole, menos del 60 % del ciclo, y no por eso entra y sale
-   * de la puerta (hallazgo C10 de la revisión externa).
+   * de la puerta (hallazgo C10 de la revisión externa). En la cobertura no falta un tramo sin sangre más
+   * breve que la ventana de análisis del espectro (`phaseCoverage`, decisión 446).
    */
   phaseWindow?: (b: Beat) => readonly [number, number];
   /**
@@ -89,6 +92,76 @@ export interface QualityOptions {
 const PHASE_COVERAGE = 0.8;
 /** Diferencia máxima de la fracción de sangre de un latido frente a la mediana de la captura. */
 const PHASE_REPRODUCIBILITY = 0.15;
+/**
+ * Cobertura bruta de la ventana de fase desde la que se excusan tramos sin sangre breves (`phaseCoverage`, decisión 446).
+ * Por debajo, la vena falta más de lo que está: no se desvanece a ratos. Cuenta a escala baja: a ±15 cm/s la ventana de
+ * análisis (131 ms) es casi la mitad de la diastólica, y sin este tope valía un latido sin sangre en 11 de sus 16 columnas
+ * en el que la vena llegó a salir de la puerta con la respiración (peso 0).
+ */
+const PHASE_CLOSING_MIN = 0.5;
+
+/**
+ * Cobertura de la ventana de fase (decisión 446). Cada columna del espectro mezcla una ventana de análisis entera de señal
+ * (`resolutionS` = fftSize / PRF: 39 ms a ±50 cm/s, 8 columnas): un tramo sin sangre más breve es una sola estimación que se
+ * desvanece (el moteado Doppler de pocos dispersores) o el borde de la onda D, que la ventana no sitúa mejor. Medido en la
+ * interlobar del grave en apnea con la puerta quieta (la vena pesa ≥ 0,44 en ella en todos los latidos, 100 semillas): faltan
+ * 0–14 columnas al principio, mientras D sube desde la banda del filtro de pared, y huecos internos de 1–6 (uno de 10).
+ * Esa resolución excusa como mucho una ventana de análisis por latido, y solo con la vena en al menos la mitad de su ventana
+ * (`PHASE_CLOSING_MIN`). Sin el primer tope, con el ruido del receptor ×3, un latido suelto con la vena en 0,62–0,63 de la
+ * ventana a trozos se cerraba a 1 y la captura pasaba de «no hay señal» a «intermitente». La vena que sale de la puerta con
+ * la respiración falta cientos de ms. [EXTRAPOLACIÓN PROPIA]
+ */
+function phaseCoverage(times: readonly number[], present: readonly boolean[], resolutionS: number): number {
+  const n = times.length;
+  if (n === 0) return 0;
+  const raw = present.filter(Boolean).length / n;
+  if (raw < PHASE_CLOSING_MIN) return raw;
+  const hop = n > 1 ? (times[n - 1] - times[0]) / (n - 1) : resolutionS;
+  let missing = 0;
+  let brief = 0;
+  for (let i = 0; i < n;) {
+    if (present[i]) {
+      i++;
+      continue;
+    }
+    let j = i;
+    while (j + 1 < n && !present[j + 1]) j++;
+    // medio salto de tolerancia: los centros de columna bailan unos µs y un tramo de una ventana justa no lo decide eso
+    if (times[j] - times[i] + hop >= resolutionS - hop / 2) missing += j - i + 1;
+    else brief += j - i + 1;
+    i = j + 1;
+  }
+  return 1 - (missing + Math.max(0, brief - Math.round(resolutionS / hop))) / n;
+}
+
+/**
+ * ¿La onda del lado medido se pliega entera en su ventana de fase? Una banda venosa estrecha que rebasa el Nyquist no deja
+ * sangre en los dos bordes de una misma columna (`wrapped`): llega al borde exterior de su lado, desaparece de él y reaparece
+ * en el borde exterior del opuesto, o vuelve por el mismo borde. Es plegado un tramo sin la onda junto a una columna con ella en
+ * su borde y, dentro, ≥ WRAP_RUN_COLUMNS columnas en el borde opuesto, o con ella en su borde a los dos lados y ≥
+ * WRAP_RUN_COLUMNS columnas de largo. Medido en la interlobar del grave en apnea (D axial 23 cm/s), 20 semillas: a ±20 cm/s lo
+ * cumplen las 20 capturas (antes 3 «aliasing», 5 «intermitente», 2 medibles con D recortada en el Nyquist: el hueco del
+ * plegado se excusaba como un desvanecimiento, decisión 446); a ±25 (D en el 92 % del Nyquist), ±30, ±40, ±50 y ±80, ninguna.
+ * La arteria de enfrente cerca de su borde con la vena ausente no basta: la propia onda debe tocar su borde. [EXTRAPOLACIÓN
+ * PROPIA]
+ */
+function wrapsAcrossNyquist(present: readonly boolean[], edges: readonly { own: boolean; opposite: boolean }[]): boolean {
+  for (let i = 0; i < present.length;) {
+    if (present[i]) {
+      i++;
+      continue;
+    }
+    let j = i;
+    let opposite = 0;
+    while (j < present.length && !present[j]) if (edges[j++].opposite) opposite++;
+    const before = i > 0 && edges[i - 1].own;
+    const after = j < present.length && edges[j].own;
+    if ((before || after) && opposite >= WRAP_RUN_COLUMNS) return true;
+    if (before && after && j - i >= WRAP_RUN_COLUMNS) return true;
+    i = j;
+  }
+  return false;
+}
 
 /** Latidos de una captura: los últimos completos de sus 7 s de espectro (4 caben a 45 lpm). */
 export { CAPTURE_BEATS, qualityText } from './qualityMessages';
@@ -119,6 +192,8 @@ const MAX_EDGE_ENERGY = 0.25;
 const WRAP_BAND = 0.1;
 /** Columnas de un latido con sangre en los dos bordes a partir de las cuales se ha plegado. */
 const WRAP_COLUMNS = 3;
+/** Columnas de un tramo plegado entero en la ventana de fase (`wrapsAcrossNyquist`). */
+const WRAP_RUN_COLUMNS = 2;
 /** Hueco contiguo bajo el umbral (fracción de los bins) que distingue un plegado de un espectro ancho. */
 const WRAP_GAP = 0.15;
 /** Por debajo de esta fracción de D, una onda es casi nula y su signo no cuenta. */
@@ -176,7 +251,7 @@ export function bloodInColumn(
   opts: QualityOptions,
   /** Suelo de la columna (por defecto su mediana; en una captura, `captureNoiseFloorsDb`). */
   floor = noiseFloorDb(col),
-): { present: boolean; energy: number; edgeEnergy: number; wrapped: boolean } {
+): { present: boolean; energy: number; edgeEnergy: number; wrapped: boolean; edgePos: boolean; edgeNeg: boolean } {
   const N = col.powerDb.length;
   const thr = floor + (opts.marginDb ?? 12);
   // fuera del filtro de pared y de los 2 bins centrales (clutter residual), sin excluir venas lentas
@@ -217,7 +292,7 @@ export function bloodInColumn(
     energy += p;
     if (Math.abs(f) > (0.5 - EDGE_BAND / 2) * col.prfHz) edgeEnergy += p;
   }
-  return { present, energy, edgeEnergy, wrapped: edgePos && edgeNeg && maxGap >= WRAP_GAP * N };
+  return { present, energy, edgeEnergy, wrapped: edgePos && edgeNeg && maxGap >= WRAP_GAP * N, edgePos, edgeNeg };
 }
 
 export function assessQuality(
@@ -245,23 +320,27 @@ export function assessQuality(
     coveredBeats++;
     let withBlood = 0;
     let wrappedColumns = 0;
-    let inPhase = 0;
-    let phaseBlood = 0;
+    const phaseT: number[] = [];
+    const phasePresent: boolean[] = [];
+    const phaseEdges: { own: boolean; opposite: boolean }[] = [];
     const w = opts.phaseWindow?.(b);
     for (const c of inBeat) {
       const r = bloodInColumn(c, opts, floorOf.get(c));
       const present = opts.present ? opts.present(c) : r.present;
       if (present) withBlood++;
       if (w && c.t >= w[0] && c.t <= w[1]) {
-        inPhase++;
-        if (present) phaseBlood++;
+        phaseT.push(c.t);
+        phasePresent.push(present);
+        phaseEdges.push({ own: opts.side === 'neg' ? r.edgeNeg : r.edgePos, opposite: opts.side === 'neg' ? r.edgePos : r.edgeNeg });
       }
       if (r.wrapped) wrappedColumns++;
       energy += r.energy;
       edgeEnergy += r.edgeEnergy;
     }
-    perBeat.push({ fraction: withBlood / inBeat.length, phaseCover: inPhase ? phaseBlood / inPhase : 0 });
-    if (wrappedColumns >= WRAP_COLUMNS) wrappedBeats++;
+    const analysisS = inBeat[0].powerDb.length / inBeat[0].prfHz;
+    perBeat.push({ fraction: withBlood / inBeat.length, phaseCover: phaseCoverage(phaseT, phasePresent, analysisS) });
+    if (wrappedColumns >= WRAP_COLUMNS || (opts.side !== undefined && opts.side !== 'both' && wrapsAcrossNyquist(phasePresent, phaseEdges)))
+      wrappedBeats++;
     columnsSeen += inBeat.length;
     columnsWithBlood += withBlood;
   }

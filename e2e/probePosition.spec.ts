@@ -60,6 +60,10 @@ test('portapapeles denegado o ausente ofrece texto seleccionado sin afirmar que 
     await expect(text).toBeFocused();
     const value = await text.inputValue();
     expect((JSON.parse(value) as ProbePositionInput).pose).toEqual(await page.evaluate(() => window.__vexusTest!.sim().pose));
+    // La persona por defecto no se confunde con `?abdomen=atlas` (decisión 340).
+    const { source } = JSON.parse(value) as ProbePositionInput;
+    expect(source.anatomy).toBe('s0028');
+    expect(source.revision).toBe(await page.evaluate(() => window.__vexusTest!.sim().scene.identity.revision));
     expect(await text.evaluate((el: HTMLTextAreaElement) => el.selectionEnd - el.selectionStart)).toBe(value.length);
     await expect(page.getByRole('status').filter({ hasText: 'Copia el texto seleccionado' })).toBeVisible();
   }

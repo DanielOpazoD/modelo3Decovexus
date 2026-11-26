@@ -3,8 +3,11 @@ import {
   AcousticWindowUnavailableError,
   VENOUS_FORWARD_SIGN,
   VENOUS_GATE_LENGTHS_MM,
+  VENOUS_HISTORY_S,
   VENOUS_SPECTRAL_SCALES,
   VenousSpectralAcquisition,
+  venousCatchUpBatch,
+  venousMeasurementBeats,
   type HepaticSpectralWindow,
   type RenalSpectralWindow,
 } from '../../app/venousSpectral';
@@ -24,9 +27,11 @@ import { spectralTimeAxis } from '../spectralTimeAxis';
 import { drawVenousSpectrum } from '../venousSpectralPlot';
 import type { PanelContext } from './context';
 import { VenousExperimentControls } from './venousExperimentControls';
-import { gradeValueText } from './vexusText';
+import { gradeValueText, ivcDiameterText, portalPulsatilityText } from './vexusText';
 
 const NS = 'http://www.w3.org/2000/svg';
+/** Atraso de la IQ por encima del cual la fila se está reconstruyendo (estado «Reconstruyendo señal IQ…»). */
+const REALTIME_LAG_S = 0.2;
 // Fixed axes make changes of pressure/amplitude visible across experiments. These
 // are display ranges, not normality thresholds or calibration of an invasive monitor.
 const REFERENCE_SIGNALS = [
@@ -84,6 +89,8 @@ export class VenousViewer {
   readonly #unavailable: (AcousticWindowUnavailableError | null)[] = [null, null, null];
   readonly #retryAt = [-Infinity, -Infinity, -Infinity];
   #rawSamples: readonly PhysiologySample[] = [];
+  /** Reloj de la actualización anterior: lo llegado después se procesa entero (∞ al abrir: nada llegado). */
+  #updateT = Infinity;
   #beats: Beat[] = [];
   #spectralScales: number[] = [...VENOUS_SPECTRAL_SCALES];
   #gateLengthsMm = [...VENOUS_GATE_LENGTHS_MM];
@@ -437,6 +444,7 @@ export class VenousViewer {
     this.#points = [];
     this.#paintKeys = ['', '', ''];
     this.#rawSamples = [];
+    this.#updateT = Infinity;
     this.#beats = [];
     this.#spectral.fill(null);
     this.#processedT.fill(-Infinity);
@@ -518,15 +526,15 @@ export class VenousViewer {
         { raisedIntraAbdominalPressure: this.#experiment.patient.intraAbdominalPressureMmHg >= 12 },
       );
       this.#experimentGrade = gradeValueText(grade);
-      this.#experimentControls.status.textContent = `VExUS de referencia calculado: ${gradeValueText(grade)} · VCI ${m.ivcMaxMm.toFixed(1)} mm · PF portal ${m.portalPF.toFixed(0)} %${this.#experiment.patient.intraAbdominalPressureMmHg >= 12 ? ' · PIA alta: interpretación limitada' : ''}`;
+      this.#experimentControls.status.textContent = `VExUS de referencia calculado: ${gradeValueText(grade)} · VCI ${ivcDiameterText(m.ivcMaxMm)} mm · PF portal ${portalPulsatilityText(m.portalPF)}${this.#experiment.patient.intraAbdominalPressureMmHg >= 12 ? ' · PIA alta: interpretación limitada' : ''}`;
       this.#gradeT = e.clock.t;
     }
     this.#case.textContent = this.#experiment
       ? `${this.#experiment.patient.label} · VExUS ref. ${this.#experimentGrade}`
       : sim.patient.label;
     if (!this.#paused) {
-      this.#beats = e.rhythm.beatsBetween(Math.max(0, e.clock.t - 7), e.clock.t);
-      this.#rawSamples = e.samples.filter((s) => s.t >= e.clock.t - 6);
+      this.#beats = venousMeasurementBeats(e.rhythm, e.clock.t);
+      this.#rawSamples = e.samples.filter((s) => s.t >= e.clock.t - VENOUS_HISTORY_S);
       this.#points = venousComparisonTrace(this.#rawSamples).points;
       this.#syncCursorRange();
     }
@@ -559,11 +567,18 @@ export class VenousViewer {
         const acquisition = this.#spectral[i];
         if (!acquisition) continue;
         // Each territory catches up independently; a missing window cannot erase another signal.
-        const next = this.#rawSamples.filter((s) => s.t > this.#processedT[i]).slice(0, 32);
+        // En pausa se procesa la instantánea congelada; en vivo, los 12 s del motor (holgura frente al hueco).
+        const next = venousCatchUpBatch(
+          this.#paused ? this.#rawSamples : e.samples,
+          this.#rawSamples[0].t,
+          this.#processedT[i],
+          this.#updateT,
+        );
         acquisition.push(next, sim.physiology.clock.dt);
         if (next.length) this.#processedT[i] = next.at(-1)!.t;
       }
     }
+    this.#updateT = e.clock.t;
     if (this.#experiment && this.#spectral.every((a, i) => !a || this.#processedT[i] >= (this.#rawSamples.at(-1)?.t ?? e.clock.t) - 0.15))
       this.#experimentPrimed = true;
     this.#draw();
@@ -583,7 +598,13 @@ export class VenousViewer {
         this.#limits[i].textContent = `Sin medición PW · ventana no disponible (${this.#unavailable[i]?.window ?? 'pendiente'})`;
         continue;
       }
-      if (this.#processedT[i] - this.#marksT[i] >= 0.5) {
+      // Se mide al día: durante la reconstrucción cada captura (~50 ms) mediría una ventana vieja que la siguiente sustituye.
+      if (end - this.#processedT[i] > REALTIME_LAG_S) {
+        this.#measurementIssues[i] = 'Esperando la reconstrucción IQ';
+        this.#velocitySummaries[i] = '';
+        this.#marks[i] = [];
+        this.#marksT[i] = -Infinity;
+      } else if (this.#processedT[i] - this.#marksT[i] >= 0.5) {
         const m = captureProtocolVessel(
           VENOUS_COMPARISON_CHANNELS[i].id,
           acquisition.chains[0].readCapture(),
@@ -716,7 +737,7 @@ export class VenousViewer {
       this.#limits[i].textContent = signal?.limits ?? `+${this.#scale} / 0 / −${this.#scale} cm/s`;
     }
     this.#status.textContent = `${this.#paused ? 'Vista pausada (solo esta ventana)' : this.#experiment ? 'Experimento en vivo' : this.#ctx.sim().frozen ? 'Paciente congelado' : 'En vivo'} · ${Math.max(a.t, axis.start).toFixed(2)}–${b.t.toFixed(2)} s · ${b.respiratoryCycling ? 'Respiración activa' : 'Respiración sin ciclo'}${clipped ? ' · Hay valores fuera de escala: consulta la lectura del cursor' : ''}`;
-    if (this.#spectralMode && this.#spectral.some((a, i) => a && b.t - this.#processedT[i] > 0.2))
+    if (this.#spectralMode && this.#spectral.some((a, i) => a && b.t - this.#processedT[i] > REALTIME_LAG_S))
       this.#status.textContent += ' · Reconstruyendo señal IQ…';
     if (this.#spectralMode && this.#unavailable.some(Boolean))
       this.#status.textContent += ` · Ventana PW no disponible (${this.#unavailable

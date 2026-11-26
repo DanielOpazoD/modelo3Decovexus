@@ -19,6 +19,8 @@ for (const id of CASES)
     await expect(page.locator('#status')).toContainText(/\d+ fps/, { timeout: BOOT_MS });
     await page.selectOption('#case-select', id);
     await expect.poll(() => page.evaluate(() => typeof window.__vexusTest?.equivalenceSweep), { timeout: 30_000 }).toBe('function');
+    // El caso pedido es el vivo: si no carga, bootstrap conserva el anterior y el gate mediría otro paciente.
+    await expect.poll(() => page.evaluate(() => window.__vexusTest!.sim().patient.id), { message: 'caso cargado' }).toBe(id);
     const report = await page.evaluate(() => window.__vexusTest!.equivalenceSweep());
     expect(report.map((r) => r.id)).toEqual([
       'subxiphoid',
@@ -91,4 +93,6 @@ for (const id of CASES)
       expect(shell.byInterface[face] ?? 0, stag).toBeGreaterThan(50);
     expect(shell.agreement, stag).toBeGreaterThanOrEqual(0.999);
     expect(shell.distanceMaxErr, stag).toBeLessThan(0.02);
+    // Ningún catch ha informado a errorLog (invariante 6): un caso que falla en silencio no es un acuerdo.
+    expect(await page.evaluate(() => window.__vexusTest!.loggedErrors()), id).toEqual([]);
   });

@@ -39,6 +39,9 @@ export const s0028Pages = (pages: string): number[][] =>
     const c = parseInt(pages.slice(3 * i, 3 * i + 3), 36);
     return [(c % 6) * 32, (Math.floor(c / 6) % 8) * 32, Math.floor(c / 48)];
   });
+/** Subidas de una tabla de páginas: la página i son las palabras 2048·i a 2048·(i + 1) de `words`, en su colocación. */
+export const s0028PageUploads = (pages: readonly number[][], words: Uint16Array) =>
+  pages.map((offset, i) => ({ offset, size: [32, 32, 1], data: words.subarray(2048 * i, 2048 * (i + 1)) }));
 /** Páginas de la grasa P3 en el atlas abdominal. */
 export const s0028FatPages = (): number[][] => s0028Pages(B.solids.pages);
 /** Páginas del interior renal en el atlas abdominal (`R.pageCount`, tres cifras cada una), con el mismo código que la grasa. */

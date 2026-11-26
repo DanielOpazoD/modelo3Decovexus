@@ -1,16 +1,15 @@
 /**
  * WebGL2 falso que registra lo que el renderizador real pide a la GPU: qué FBO está puesto, con qué
  * programa (y su nombre de shader) y qué textura hay en cada unidad en cada dibujo, los uniforms de
- * cada programa en ese momento, los adjuntos (formato y tamaño) de cada FBO y los FBO y programas
- * liberados. Un uniform subido con la ubicación de un programa que no es el puesto (WebGL lo rechaza con
- * INVALID_OPERATION y no lo sube) queda en `misuse`. Todo lo demás (parámetros de textura, lecturas) no
- * hace nada; los shaders «compilan», salvo el de `fail` (compilación o enlace fallidos, con su registro).
+ * cada programa en ese momento, los adjuntos (formato y tamaño) de cada FBO, los FBO y programas
+ * liberados y el destino de cada `clear` (`clears`). Un uniform subido con la ubicación de un programa que
+ * no es el puesto (WebGL lo rechaza con INVALID_OPERATION y no lo sube) queda en `misuse`. Todo lo demás
+ * (parámetros de textura, lecturas) no hace nada; los shaders «compilan», salvo el de `fail` (compilación o
+ * enlace fallidos, con su registro).
  * `calls` guarda en orden las extensiones pedidas, las compilaciones, los enlaces y las consultas de estado
  * (lo que bloquea en un navegador) y `programs`, los programas creados. Como WebGL, un dibujo con un
  * adjunto activo (`drawBuffers`) sin salida en el shader de fragmentos se rechaza: queda en `misuse` y no se
- * registra en `draws` (el destino conserva lo anterior). Lo usan `frameCost.test.ts`
- * (repeticiones de medida) y `compoundRenderer.test.ts` (anillo de miradas, programas por mirada y su
- * enlace en lote al arrancar, decisión 58).
+ * registra en `draws` (el destino conserva lo anterior).
  */
 import { fragmentOutputCount } from '../../ultrasound/gl';
 
@@ -68,6 +67,8 @@ export function recordingGl(
     uniformsOf.set(loc.program, m);
   };
   const binds: (Obj | null)[] = [];
+  /** Destino de cada `clear` (null = la pantalla). */
+  const clears: (Obj | null)[] = [];
   /** Adjuntos activos de cada FBO (`drawBuffers`); sin llamada, todos los que tenga (como `createTarget`). */
   const drawBuffersOf = new Map<Obj, number[]>();
   const fboTextures = new Map<Obj, Obj[]>();
@@ -146,6 +147,7 @@ export function recordingGl(
     deleteFramebuffer: (fbo: Obj) => void deleted.add(fbo),
     deleteProgram: (p: Obj) => void deleted.add(p),
     viewport: (...v: number[]) => void (state.viewport = v),
+    clear: () => void clears.push(state.fbo),
     drawBuffers: (bufs: number[]) => void (state.fbo && drawBuffersOf.set(state.fbo, [...bufs])),
     drawArrays: () => {
       const p0 = state.program;
@@ -187,5 +189,5 @@ export function recordingGl(
   );
   const canvas = { ...canvasSize, getContext: () => gl } as unknown as HTMLCanvasElement;
   /** Textura de cada FBO por adjunto (para saber qué destino lee cada unidad). */
-  return { canvas, draws, binds, attachments, deleted, fboTextures, misuse, calls, programs };
+  return { canvas, draws, binds, clears, attachments, deleted, fboTextures, misuse, calls, programs };
 }

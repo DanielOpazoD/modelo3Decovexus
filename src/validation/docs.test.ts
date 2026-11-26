@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
 import { parseDecisions, renderIndex } from '../../tools/docs/decisions-index';
+import type { EquipmentCommand } from '../app/equipment';
+import { portalPreset } from '../app/portalPreset';
+import { renalPreset } from '../app/renalPreset';
+import { nyquistVelocityCms } from '../core/units';
+import { CONVEX_C35 } from '../probe/probe';
 
 const ROOT = resolve(__dirname, '../..');
 const read = (p: string) => readFileSync(resolve(ROOT, p), 'utf8');
@@ -56,5 +61,48 @@ describe('Documentación', () => {
     const { KNOWN_LIMITATIONS } = await import('./limitations');
     const md = read('docs/LIMITATIONS.md');
     for (const id of KNOWN_LIMITATIONS) expect(md.includes(`\`${id}\``), `LIMITATIONS.md no cita \`${id}\``).toBe(true);
+  });
+
+  it('cada `it.fails` que cita LIMITATIONS.md existe en su archivo de prueba', () => {
+    const tests = (readdirSync(resolve(ROOT, 'src'), { recursive: true }) as string[]).filter((f) => f.endsWith('.test.ts'));
+    for (const [, name] of read('docs/LIMITATIONS.md').matchAll(/`([\w.]+\.test\.ts)`,\s*`it\.fails`/g)) {
+      const file = tests.find((f) => basename(f) === name);
+      expect(file && read(`src/${file}`), `${name} no tiene ningún it.fails`).toContain('it.fails(');
+    }
+  });
+
+  it('README dice que el build publicado solo ofrece la casilla «Docente» con `?docente`', () => {
+    expect(read('README.md')).toContain('`?docente`');
+  });
+
+  it('imagen.md y ARCHITECTURE.md acotan la B directa a la otra persona: s0028 va por etapas en cualquier GPU (406)', () => {
+    for (const doc of ['docs/estado/imagen.md', 'docs/ARCHITECTURE.md'])
+      for (const p of read(doc)
+        .split(/\n\s*\n/)
+        .filter((p) => /B directa|A0 original/.test(p))) {
+        expect(p, doc).toContain('s0028');
+        expect(p, doc).toMatch(/\b406\b/);
+      }
+  });
+
+  it('APPROXIMATIONS da la escala, el filtro y la caja de los preajustes renal y portal', () => {
+    const f0 = CONVEX_C35.f0Doppler;
+    const color = (cs: readonly EquipmentCommand[]) => cs.flatMap((c) => (c.type === 'color' ? [c.patch] : []))[0];
+    const pw = (cs: readonly EquipmentCommand[]) => cs.flatMap((c) => (c.type === 'pw' ? [c.patch] : []))[0];
+    const line = (start: string) =>
+      read('docs/APPROXIMATIONS.md')
+        .split('\n')
+        .find((l) => l.startsWith(start)) ?? '';
+    const n = (x = NaN) => String(x).replace('.', ',');
+    const renal = renalPreset(f0, true);
+    for (const [label, p] of [
+      ['Color', color(renal)],
+      ['PW', pw(renal)],
+    ] as const)
+      expect(line('Renal (')).toContain(
+        `${label} ±${Math.round(nyquistVelocityCms(p.prfHz ?? NaN, f0))} cm/s (filtro ${p.wallFilterHz} Hz)`,
+      );
+    const box = color(portalPreset(false, f0, true));
+    expect(line('Porta intrahepática:')).toContain(`caja ${n(box.r0)}–${n(box.r1)} mm y ±${n(box.theta1)} rad en atlas`);
   });
 });

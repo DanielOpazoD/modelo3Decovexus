@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { AcquisitionEquipment } from '../app/acquisitionEquipment';
-import { dopplerScaleCommand } from '../app/dopplerScale';
+import { dopplerScaleBounds, dopplerScaleCommand } from '../app/dopplerScale';
 import { EquipmentController, reduceEquipment, type EquipmentCommand } from '../app/equipment';
 import { Simulator, defaultEquipment, type EquipmentSettings } from '../app/simulator';
+import { windowPreset } from '../app/windowPreset';
 import type { DopplerAudio } from '../audio/dopplerAudio';
 import { NORMAL_ADULT } from '../cases';
 import { C_RECONSTRUCTION_MM_S, nyquistVelocityCms } from '../core/units';
 import { clonePatient } from '../physiology/patientState';
+import { hudImage } from '../ui/controllers/hud';
 import type { FrameInputs, UltrasoundRenderer } from '../ultrasound/renderer';
 import { CONVEX_C35_PROFILE } from '../ultrasound/transducerProfile';
 import { fixtureInstalled } from './support/legacyPerson/state';
@@ -22,11 +24,11 @@ function rig() {
   const audio = { reset: vi.fn(), pushIQ: vi.fn() };
   const frames: FrameInputs[] = [];
   const renderer = {
-    displayedFrame: null as Pick<FrameInputs, 'bmode' | 'color'> | null,
+    displayedFrame: null as Pick<FrameInputs, 'bmode' | 'color' | 'frameHz'> | null,
     setScene() {},
     render(inputs: FrameInputs) {
       frames.push(inputs);
-      this.displayedFrame = { bmode: inputs.bmode, color: inputs.color };
+      this.displayedFrame = { bmode: inputs.bmode, color: inputs.color, frameHz: inputs.frameHz };
     },
   };
   const sim = new Simulator(
@@ -42,7 +44,7 @@ function rig() {
   equipment.subscribe((next) => {
     sim.equipment = next;
   });
-  return { sim, equipment, frames, audio, dispatch: (cmd: EquipmentCommand) => equipment.dispatch(cmd) };
+  return { sim, equipment, renderer, frames, audio, dispatch: (cmd: EquipmentCommand) => equipment.dispatch(cmd) };
 }
 
 describe('estado solicitado y relojes efectivos', () => {
@@ -80,6 +82,28 @@ describe('estado solicitado y relojes efectivos', () => {
     expect(read(cache, e).color.prfHz).toBe(atCeiling);
   });
 
+  it('en el techo, «Escala +» no deja pedido el tope del mando: relajar el límite no sube la escala sola', () => {
+    const f0 = profile.geometry.f0Doppler,
+      cache = new AcquisitionEquipment();
+    const apply = (s: EquipmentSettings, ...cmds: readonly EquipmentCommand[]) => cmds.reduce((x, c) => reduceEquipment(x, c, ctx), s);
+    const scale = (s: EquipmentSettings, mode: 'color' | 'pw') => Math.round(nyquistVelocityCms(read(cache, s)[mode].prfHz, f0));
+    const plus = (s: EquipmentSettings, mode: 'color' | 'pw') => apply(s, dopplerScaleCommand(s, profile, mode, scale(s, mode) + 1));
+    const preset = apply(defaultEquipment(), ...windowPreset('subcostal', f0, false, false));
+    // PW con la puerta a 130 mm en una imagen de 18 cm: la petición de 40 cm/s solo alcanza 38.
+    const pw = apply(preset, { type: 'mode', mode: 'pw' }, { type: 'placeGate', theta: 0, r: 130 });
+    const relax = (s: EquipmentSettings) => apply(s, { type: 'bmode', patch: { depthMm: 100 } }, { type: 'placeGate', theta: 0, r: 50 });
+    expect(scale(pw, 'pw')).toBe(38);
+    expect(plus(pw, 'pw').pw.prfHz).toBe(pw.pw.prfHz);
+    expect(scale(relax(plus(pw, 'pw')), 'pw')).toBe(scale(relax(pw), 'pw'));
+    // Tríplex: el color sube hasta la PRF PW; un + más no cambia lo pedido y sin PW sigue igual.
+    let t = apply(preset, { type: 'mode', mode: 'triplex' });
+    while (scale(plus(t, 'color'), 'color') > scale(t, 'color')) t = plus(t, 'color');
+    expect(scale(t, 'color')).toBe(40);
+    expect(plus(t, 'color').color.prfHz).toBe(t.color.prfHz);
+    const colorOnly = (s: EquipmentSettings) => apply(s, { type: 'mode', mode: 'color' });
+    expect(scale(colorOnly(plus(t, 'color')), 'color')).toBe(scale(colorOnly(t), 'color'));
+  });
+
   it.each([
     ['color', 31, 2013],
     ['pw', 40, 2597],
@@ -94,6 +118,35 @@ describe('estado solicitado y relojes efectivos', () => {
     expect(next[mode === 'pw' ? 'color' : 'pw']).toEqual(e[mode === 'pw' ? 'color' : 'pw']);
     expect(e).toEqual(original);
     expect(read(cache, next)[mode].prfHz).toBeLessThanOrEqual(prf);
+  });
+
+  it('con corrección angular, «Escala» PW lee y pide la Nyquist rotulada del pie y la regla sobre el mismo intervalo de PRF', () => {
+    const angle = Math.PI / 3,
+      f0 = profile.geometry.f0Doppler,
+      cache = new AcquisitionEquipment();
+    // Imagen de 12 cm: una puerta a 5 cm admite más PRF de la que cabe en ±120 cm/s rotulados a 60°.
+    const base = reduceEquipment(
+      reduceEquipment(defaultEquipment(), { type: 'mode', mode: 'pw' }, ctx),
+      { type: 'bmode', patch: { depthMm: 120 } },
+      ctx,
+    );
+    const pw = (patch: Partial<EquipmentSettings['pw']>) => reduceEquipment(base, { type: 'pw', patch }, ctx);
+    const shown = (s: EquipmentSettings) => Math.round(nyquistVelocityCms(read(cache, s).pw.prfHz, f0, s.pw.angleCorrection));
+    const e = pw({ angleCorrection: angle });
+    expect(shown(e)).toBe(80);
+    expect(reduceEquipment(e, dopplerScaleCommand(e, profile, 'pw', 80), ctx).pw.prfHz).toBe(2597);
+    const up = reduceEquipment(e, dopplerScaleCommand(e, profile, 'pw', 81), ctx);
+    expect(shown(up)).toBe(81);
+    // Los topes del mando escalan con 1/cos θ: a 60° se sigue alcanzando la PRF máxima de esa puerta.
+    expect(dopplerScaleBounds('pw')).toEqual([5, 120]);
+    expect(dopplerScaleBounds('pw', angle)).toEqual([10, 240]);
+    const top = (angleCorrection: number) => {
+      const s = pw({ angleCorrection, depthMm: 50 });
+      return read(cache, reduceEquipment(s, dopplerScaleCommand(s, profile, 'pw', dopplerScaleBounds('pw', angleCorrection)[1]), ctx)).pw
+        .prfHz;
+    };
+    expect(nyquistVelocityCms(top(0), f0, angle)).toBeGreaterThan(120);
+    expect(top(angle)).toBe(top(0));
   });
 
   it('invalida por cada parámetro físico y conserva una traslación angular de igual anchura', () => {
@@ -233,6 +286,78 @@ describe('estado solicitado y relojes efectivos', () => {
     expect(sim.displayed.color).toBe(sim.color);
     expect(acquired.color.prfHz).not.toBe(sim.displayed.color.prfHz);
     expect(acquired.color.r1).not.toBe(sim.displayed.color.r1);
+  });
+
+  it('el HUD rotula el cuadro en pantalla, como la regla y la barra: congelada, los mandos no lo reescriben', () => {
+    const { sim, dispatch } = rig();
+    dispatch({ type: 'mode', mode: 'color' });
+    sim.render();
+    const { bmode, color } = sim.displayed;
+    const shown = (frameHz: number) => ({
+      depthMm: bmode.depthMm,
+      gainDb: bmode.gainDb,
+      dynamicRangeDb: bmode.dynamicRangeDb,
+      compound: false,
+      speckleReduction: 0,
+      harmonic: bmode.harmonic,
+      color: { enabled: true, prfHz: color.prfHz, wallFilterHz: color.wallFilterHz, frameHz },
+    });
+    const liveHz = sim.colorTiming.frameHz;
+    expect(hudImage(sim)).toEqual(shown(liveHz));
+    sim.frozen = true;
+    dispatch({ type: 'color', patch: { prfHz: color.prfHz / 2, wallFilterHz: color.wallFilterHz + 40 } });
+    // congelada, la cadencia es la del cuadro, no la que pide la Escala nueva
+    expect(sim.colorTiming.frameHz).not.toBe(liveHz);
+    expect(hudImage(sim).color.frameHz).toBe(liveHz);
+    dispatch({ type: 'stepDepth', deltaMm: 10 });
+    for (let i = 0; i < 3; i++) dispatch({ type: 'stepGain', deltaDb: 2 });
+    dispatch({ type: 'bmode', patch: { dynamicRangeDb: bmode.dynamicRangeDb - 10 } });
+    dispatch({ type: 'harmonic', enabled: !bmode.harmonic });
+    dispatch({ type: 'mode', mode: 'B' });
+    expect(sim.color.prfHz).not.toBe(color.prfHz);
+    expect(sim.bmode.depthMm).toBe(bmode.depthMm + 10);
+    // en B el equipo ya no tiene color: su cadencia es la de B sola, a la que ese cuadro de color nunca se adquirió
+    expect(sim.colorTiming.frameHz).toBeGreaterThan(liveHz);
+    expect(hudImage(sim)).toEqual(shown(liveHz));
+    // descongelada en B, hasta el cuadro nuevo sigue el de color con su cadencia; el nuevo trae lo pedido
+    sim.frozen = false;
+    expect(hudImage(sim)).toEqual(shown(liveHz));
+    sim.render();
+    expect(hudImage(sim)).toMatchObject({
+      depthMm: bmode.depthMm + 10,
+      gainDb: bmode.gainDb + 6,
+      dynamicRangeDb: bmode.dynamicRangeDb - 10,
+      compound: bmode.compound,
+      harmonic: !bmode.harmonic,
+      color: { enabled: false },
+    });
+    // en vivo con color, el cuadro siguiente trae la cadencia de la Escala pedida congelada
+    dispatch({ type: 'mode', mode: 'color' });
+    expect(sim.colorTiming.frameHz).not.toBe(liveHz);
+    for (let remaining = 1 / sim.colorTiming.frameHz + 0.02; remaining > 0; remaining -= 0.25) sim.advance(Math.min(0.25, remaining));
+    sim.render();
+    expect(hudImage(sim).color).toMatchObject({ enabled: true, frameHz: sim.colorTiming.frameHz });
+  });
+
+  it('la cadencia del HUD es la del cuadro en pantalla: entre adquisiciones y al recorrer el cine', () => {
+    const { sim, renderer, dispatch } = rig();
+    dispatch({ type: 'mode', mode: 'color' });
+    sim.render();
+    const first = renderer.displayedFrame!;
+    const hz = sim.colorTiming.frameHz;
+    // la caja el doble de ancha: más líneas por cuadro y menos cuadros por segundo, desde la adquisición siguiente
+    dispatch({ type: 'color', patch: { theta0: sim.color.theta0 * 2, theta1: sim.color.theta1 * 2 } });
+    const wideHz = sim.colorTiming.frameHz;
+    expect(wideHz).toBeLessThan(hz);
+    expect(hudImage(sim).color.frameHz).toBe(hz);
+    for (let remaining = 1 / wideHz + 0.02; remaining > 0; remaining -= 0.25) sim.advance(Math.min(0.25, remaining));
+    sim.render();
+    expect(renderer.displayedFrame).not.toBe(first);
+    expect(hudImage(sim).color.frameHz).toBe(wideHz);
+    // congelada, el cine vuelve al primer cuadro: su PRF, su filtro y su cadencia
+    sim.frozen = true;
+    renderer.displayedFrame = first;
+    expect(hudImage(sim).color).toEqual({ enabled: true, prfHz: first.color.prfHz, wallFilterHz: first.color.wallFilterHz, frameHz: hz });
   });
 
   it('adquiere el primer cuadro aunque el periodo Color sea mayor que un segundo', () => {

@@ -1,3 +1,5 @@
+import { cssScale, labelFont } from './canvasText';
+
 /** Screen velocities share the sign convention of the displayed capture. */
 export function velocityRuler(nyquistCms: number, baselineShift: number, invert: boolean, height: number) {
   const offset = 2 * nyquistCms * baselineShift * (invert ? -1 : 1);
@@ -28,7 +30,7 @@ export function velocityRuler(nyquistCms: number, baselineShift: number, invert:
 export function drawVelocityRuler(canvas: HTMLCanvasElement, nyquistCms: number, baselineShift: number, invert: boolean): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  const ratio = canvas.width / (canvas.clientWidth || canvas.width);
+  const ratio = cssScale(canvas);
   const width = canvas.width / ratio,
     height = canvas.height / ratio;
   const axis = velocityRuler(nyquistCms, baselineShift, invert, height);
@@ -36,7 +38,7 @@ export function drawVelocityRuler(canvas: HTMLCanvasElement, nyquistCms: number,
   ctx.scale(ratio, ratio);
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, width, height);
-  ctx.font = '11px sans-serif';
+  ctx.font = labelFont();
   ctx.textBaseline = 'middle';
   ctx.lineWidth = 1;
   for (const tick of axis.ticks) {

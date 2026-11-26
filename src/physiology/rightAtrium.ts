@@ -70,29 +70,33 @@ export function raWaveParams(p: PatientState, load: AtrialLoad = caseAtrialLoad(
   };
 }
 
-/** Contribución (sin centrar) de un latido a la presión de AD en t. */
-function beatWave(t: number, b: Beat, w: RaWaveParams): number {
+/** Rampa C1 de 0 (x ≤ 0) a 1 (x ≥ 1). */
+const smoothRamp = (x: number): number => {
+  const u = Math.max(0, Math.min(1, x));
+  return u * u * (3 - 2 * u);
+};
+
+/**
+ * Contribución (sin centrar) de un latido a la presión de AD en t. La R siguiente (`cut`) cierra la tricúspide: el
+ * descenso y de este latido se apaga en 30 ms tras ella y no sigue en la sístole siguiente; antes de ella no cambia nada.
+ */
+function beatWave(t: number, b: Beat, w: RaWaveParams, cut = b.tR + b.rr): number {
   let v = 0;
   if (Number.isFinite(b.tP)) v += w.aAmp * b.atrialAmplitude * gauss(t - b.tAtrialContraction, w.aSigma);
   v += w.cAmp * gauss(t - (b.tR + 0.04), w.cSigma);
   v -= w.xAmp * gauss(t - b.tX, w.xSigma);
   v += w.vAmp * gauss(t - b.tV, w.vSigma);
   v += w.trAmp * gauss(t - (b.tX + 0.04), w.trSigma);
-  v -= w.yAmp * gauss(t - b.tY, w.ySigma);
+  v -= w.yAmp * gauss(t - b.tY, w.ySigma) * (1 - smoothRamp((t - cut) / 0.03));
   return v;
 }
 
 /**
- * Peso del centrado RR: rectángulo convolucionado con un núcleo simétrico compacto.
- * Conserva exactamente su área (RR) y la partición de unidad entre latidos adyacentes.
- * Transición C1 de 40 ms; regularización numérica del centrado, no tiempo valvular.
+ * Peso del centrado RR: rectángulo de área RR con transiciones C1 de 40 ms que empiezan en cada R, sin adelantarse a la
+ * siguiente. Conserva la partición de unidad entre latidos adyacentes; regularización numérica, no tiempo valvular.
  */
 export function atrialBaselineWeight(t: number, start: number, rr: number): number {
-  const step = (x: number): number => {
-    const u = Math.max(0, Math.min(1, (x + 0.02) / 0.04));
-    return u * u * (3 - 2 * u);
-  };
-  return step(t - start) - step(t - (start + rr));
+  return smoothRamp((t - start) / 0.04) - smoothRamp((t - (start + rr)) / 0.04);
 }
 
 export class RightAtriumModel {
@@ -120,9 +124,9 @@ export class RightAtriumModel {
   }
 
   /**
-   * Media de la onda de un latido sobre su propio RR: integral sobre todo su
-   * soporte temporal dividida por rr. Así la suma de latidos consecutivos
-   * conserva la media declarada aunque las gaussianas se solapen.
+   * Media de la onda de un latido: integral sobre todo su soporte temporal (sin el recorte de la R siguiente) dividida
+   * por el RR nominal, no por el suyo, que durante el latido aún no se conoce. Con RR regular la suma de latidos
+   * conserva exactamente la media declarada aunque las gaussianas se solapen; en FA, en promedio.
    */
   private beatMean(b: Beat, e: { params: RaWaveParams; mean: number | null }): number {
     if (e.mean !== null) return e.mean;
@@ -131,8 +135,8 @@ export class RightAtriumModel {
     const n = 420;
     const h = (t1 - t0) / n;
     let acc = 0;
-    for (let i = 0; i < n; i++) acc += beatWave(t0 + (i + 0.5) * h, b, e.params);
-    e.mean = (acc * h) / b.rr;
+    for (let i = 0; i < n; i++) acc += beatWave(t0 + (i + 0.5) * h, b, e.params, Infinity);
+    e.mean = (acc * h) / this.rhythm.nominalRR();
     return e.mean;
   }
 

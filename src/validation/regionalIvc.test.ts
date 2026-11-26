@@ -37,7 +37,7 @@ describe('regional cava area before velocity and rendering', () => {
       expect(nonFiniteFields({ ...s, ivcSupra: { ...s.ivcSupra!, dLatMm: Infinity } })).toEqual(['ivcSupra.dLatMm']);
     }
   });
-  it('reproduces the 19 m/s counterfactual and resolves it using regional Q/A without clipping', () => {
+  it('reproduces the collapsed-section counterfactual and resolves it using regional Q/A without clipping', () => {
     const p = venousExperimentPatient({
       rhythm: 'sinus',
       heartRateBpm: 50,
@@ -61,8 +61,12 @@ describe('regional cava area before velocity and rendering', () => {
       regionalPeak = Math.max(regionalPeak, Math.abs(s.velocities.ivcSupra));
       expect(s.velocities.ivcSupra).toBeCloseTo(q / regionalArea, 9);
     }
-    expect(legacyPeak).toBeGreaterThan(19000);
-    expect(regionalPeak).toBeGreaterThan(1000);
+    // dividir por la sección abdominal colapsada multiplica la velocidad ×13 (5,9 m/s frente a 0,45). Antes de la cascada
+    // de la salida hepática, abierta a −21 mmHg de transmural, las suprahepáticas llevaban ±200 mL/s de ondas
+    // auriculares y el contrafactual llegaba a 19 m/s
+    expect(legacyPeak).toBeGreaterThan(5000);
+    expect(legacyPeak).toBeGreaterThan(10 * regionalPeak);
+    expect(regionalPeak).toBeGreaterThan(300);
     expect(regionalPeak).toBeLessThan(2000);
   });
 });

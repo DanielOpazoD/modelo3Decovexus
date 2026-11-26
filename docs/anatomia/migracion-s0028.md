@@ -126,7 +126,7 @@ conocida, grasa compatible D sólo donde ninguna máscara reclama el punto; hues
 Dos o más dueños: conflicto, U, todos en `Classification.solids`. Un dueño: su material, salvo riñón (borde D,
 interior U, sin vasos procedurales dentro), quiste izquierdo (líquido E) y grasa D. Sin dueño: U o la cúpula E P7.
 Se retiran en s0028 la arquitectura renal, el estiramiento W 0,8, la grasa perirrenal/Gerota y el ligamento venoso
-analíticos de la otra persona. El corte rotula «Riñón · interior U» y «Conflicto sin resolver».
+analíticos de la otra persona. El corte rotula «Riñón · interior U», «Riñón izquierdo · quiste», «Conflicto sin resolver» y el tubo digestivo con los rótulos de su TAC (estómago, duodeno, intestino delgado, colon; decisión 427).
 
 Medidas (runtime TS, evidencia externa): el solape hígado/pared de r1 es real, 4 vóxeles hepáticos y 2 esplénicos
 dentro de la banda de la regla directa (≈11,3/5,8 mm³ a 0,25 mm, ≤2,2–2,6 mm); censo global a 1,5 mm: 693 puntos

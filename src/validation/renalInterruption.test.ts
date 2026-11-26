@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NORMAL_ADULT } from '../cases';
-import { C_RECONSTRUCTION_MM_S } from '../core/units';
+import { C_RECONSTRUCTION_MM_S, prfFromNyquistCms } from '../core/units';
 import { SpectralProcessor } from '../doppler/spectral';
 import { measureObservedRenal, renalFloorCms } from '../doppler/spectralMeasure';
 import { WallFilter } from '../doppler/wallFilter';
@@ -72,9 +72,10 @@ function rng(seed: number): () => number {
  * Espectro de la vena `v(t)` (cm/s, hacia la sonda) adquirido a `prf`: dispersores que cruzan el haz
  * con la velocidad de la vena (decorrelación por tránsito), clutter de tejido 40 dB por encima con
  * un bamboleo lento y ruido del receptor `snrDb` bajo la sangre; filtro de pared y espectro reales.
+ * `seed`: la de los dispersores y el ruido.
  */
-function acquire(v: (t: number) => number, prf: number, snrDb = 20, wallHz = 25) {
-  const rnd = rng(12345);
+function acquire(v: (t: number) => number, prf: number, snrDb = 20, wallHz = 25, seed = 12345) {
+  const rnd = rng(seed);
   const gauss = () => Math.sqrt(-2 * Math.log(Math.max(1e-12, rnd()))) * Math.cos(2 * Math.PI * rnd());
   const hzPerCms = (2 * F0 * 10) / C_RECONSTRUCTION_MM_S;
   const K = 160;
@@ -186,6 +187,88 @@ describe('interrupción del flujo renal medida sobre el espectro', () => {
     const floor60 = renalFloorCms(a.columns, { f0Hz: F0, angleCorrectionRad: Math.PI / 3, invert: false, fftSize: 128, wallFilterHz: 25 });
     expect(floor60 / floor0).toBeCloseTo(2, 6);
     expect(floor0).toBeCloseTo(1.925, 2); // (25 + 37,5) Hz a 2,5 MHz
+  });
+});
+
+/**
+ * Decisión 447. Con el filtro a 20 Hz, a ±40 y ±50 cm/s la envolvente mira desde el bin 3 (`firstFlowBin` de 57,5 Hz) y una onda
+ * bajo ese suelo en el filtro de pared, en él o hasta ½ bin más arriba se traza en el bin 4 (ventana de Hann y suavizado 3 × 3).
+ * Con una D leída de 8–10 cm/s, esa S de 4 bins pasa del 30 % de D, y la vena monofásica (S/D 0,21–0,22) salía «bifásica».
+ */
+describe('una S en el suelo de la banda no es una onda (decisión 447)', () => {
+  const binCms = (prf: number) => ((prf / 128) * C_RECONSTRUCTION_MM_S) / (2 * F0) / 10;
+  const at = (scale: number, s: number, d: number, seed?: number) => {
+    const prf = prfFromNyquistCms(scale, F0);
+    const m = measure(
+      acquire((t) => vein(t, s, d, null), prf, 20, 20, seed),
+      0,
+      20,
+    );
+    return {
+      m,
+      bins: m.sPeak / binCms(prf),
+      tag: `±${scale}, S ${s}, D ${d}${seed === undefined ? '' : `, semilla ${seed}`}: ${JSON.stringify({ s: m.sPeak, d: m.dPeak, p: m.pattern })}`,
+    };
+  };
+
+  it('a ±50 y ±40 la vena monofásica con la S leída en el suelo sale monofásica', () => {
+    // a ±50 la D se lee en 9,77 cm/s: 0,3·D = 2,93 queda sobre el suelo + ½ bin (2,73), lo más alto que puede ser la S
+    for (const [scale, s, d] of [
+      [50, 2.4, 11.2],
+      [40, 2, 9],
+    ] as const) {
+      const { m, bins, tag } = at(scale, s, d);
+      expect(m.quality.issue, tag).toBeNull();
+      // la S es la lectura del suelo, 4 bins, y por sí sola pasa del 30 % de D
+      expect(bins, tag).toBeCloseTo(4, 6);
+      expect(m.sPeak / m.dPeak, tag).toBeGreaterThanOrEqual(0.3);
+      expect(m.pattern, tag).toBe('monophasic');
+    }
+  });
+
+  it('una S a un bin del suelo no decide «bifásico»; una S clara sobre él, sí', () => {
+    // S/D 0,23 y 0,33, leídas a 4,5 y 5 bins: la onda puede estar en el suelo o en el 30 % de D
+    for (const [s, d] of [
+      [2.2, 9.6],
+      [3, 9],
+    ] as const) {
+      const { m, bins, tag } = at(40, s, d);
+      expect(m.quality.issue, tag).toBeNull();
+      expect(bins, tag).toBeGreaterThan(4);
+      expect(bins, tag).toBeLessThanOrEqual(5);
+      expect(m.pattern, tag).toBe('indeterminate');
+    }
+    // S/D 0,39 a ±40 y 0,5 y 0,56 a ±50: a más de un bin sobre la lectura del suelo
+    for (const [scale, s, d] of [
+      [40, 3.5, 9],
+      [50, 4.5, 9],
+      [50, 5, 9],
+    ] as const) {
+      const { m, bins, tag } = at(scale, s, d);
+      expect(m.quality.issue, tag).toBeNull();
+      expect(bins, tag).toBeGreaterThan(5);
+      expect(m.pattern, tag).toBe('biphasic');
+    }
+  });
+
+  it('una bifásica límite con la S leída en el suelo no sale monofásica', () => {
+    // S de 3,5 y 3,6 bins (2,73 y 2,81 cm/s) con D 8,6: S/D 0,32–0,33. La S se lee en el suelo + 1 bin (4 bins) y la D en
+    // 8,2–8,6 cm/s: 0,3·D (2,46–2,58) cae bajo el suelo + ½ bin. Con el tope en el suelo, 3 de 5 aceptadas salían monofásicas
+    const bin = binCms(prfFromNyquistCms(50, F0));
+    const rows = [1, 2, 3, 4, 5, 6, 7, 8].flatMap((seed) => [3.5, 3.6].map((sBins) => ({ sBins, ...at(50, sBins * bin, 8.6, seed) })));
+    const accepted = rows.filter((r) => r.m.quality.issue === null);
+    const tag = accepted.map((r) => r.tag).join('; ');
+    expect(accepted.every((r) => (r.sBins * bin) / 8.6 >= 0.3)).toBe(true);
+    expect(accepted.length, tag).toBeGreaterThanOrEqual(4);
+    expect(accepted.filter((r) => Math.abs(r.bins - 4) < 1e-6).length, tag).toBeGreaterThanOrEqual(3);
+    expect(
+      accepted.filter((r) => r.m.pattern === 'monophasic').map((r) => r.tag),
+      tag,
+    ).toEqual([]);
+    expect(
+      accepted.every((r) => ['biphasic', 'indeterminate'].includes(r.m.pattern)),
+      tag,
+    ).toBe(true);
   });
 });
 

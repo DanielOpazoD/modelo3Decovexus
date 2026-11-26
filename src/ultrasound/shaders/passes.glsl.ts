@@ -41,6 +41,7 @@ import { RECEIVER_GLSL, RECEIVER_NOISE_GLSL, glslFloat } from '../receiver';
 import { HARMONIC_GLSL } from '../harmonic';
 import { STEERING_GLSL } from '../steering';
 import { M_SAMPLES } from '../mmode';
+import { TGC_BANDS } from '../tgcBands';
 
 // Every program retains the same version and default float precision.
 const SHADER_HEADER_GLSL = /* glsl */ `#version 300 es
@@ -1643,9 +1644,9 @@ uniform float uNominalTgcDbPerCm; // compensación nominal del equipo (tejido de
 uniform float uTgcCapDb;          // techo de compensación nominal + TGC
 uniform float uDynRange;
 uniform float uGreyCurve;
-uniform float uTgc[8];
+uniform float uTgc[${TGC_BANDS}];
 float tgcAt(float r) {
-  float x = clamp(r / uDepth, 0.0, 0.9999) * 7.0;
+  float x = clamp(r / uDepth, 0.0, 0.9999) * ${TGC_BANDS - 1}.0;
   int i = int(floor(x));
   float f = x - float(i);
   return mix(uTgc[i], uTgc[i + 1], f);

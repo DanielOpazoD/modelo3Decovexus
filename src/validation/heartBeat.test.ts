@@ -5,6 +5,7 @@ import { Tissue } from '../anatomy/tissues';
 import { NORMAL_ADULT } from '../cases';
 import type { Vec3 } from '../core/vec3';
 import { PhysiologyEngine } from '../physiology/engine';
+import { clonePatient } from '../physiology/patientState';
 import { emptyingAt, ventricularEmptying } from '../physiology/ventricles';
 import { BASELINE_CALIBER } from './support/legacyPerson/scene';
 
@@ -32,10 +33,49 @@ it('el vaciado ventricular sigue el ciclo: lleno en la R, vacío al final de la 
   expect(emptyingAt(0.857 - 0.08, 0.857, 1)).toBeGreaterThan(0.05);
   expect(emptyingAt(0.857 - 0.08, 0.857, 0)).toBeLessThan(0.02);
   // El VD se vacía según su función sistólica: con la de un VD que falla (0,3), un tercio del sano.
-  const healthy = ventricularEmptying(0.3, 0.857, { rvFunction: 0.85, atrialFunction: 1 }),
-    failing = ventricularEmptying(0.3, 0.857, { rvFunction: 0.3, atrialFunction: 1 });
+  const beat = { rr: 0.857, systoleScale: Math.sqrt(0.857 / 0.8), atrialAmplitude: 1 };
+  const healthy = ventricularEmptying(0.3, beat, 0.85),
+    failing = ventricularEmptying(0.3, beat, 0.3);
   expect(failing.lv).toBe(healthy.lv);
   expect(failing.rv / healthy.rv).toBeCloseTo(0.3 / 0.85, 5);
+  // La eyección y el llenado siguen al RR previo, como la sístole del ritmo; la R siguiente solo corta la diástole. Latido de
+  // FA con RR previo 0,816 s y siguiente 0,439 s: eyecta hasta 0,295 s (con el siguiente terminaba en 0,182). Antes llegaba
+  // lleno a la R porque el llenado se ajustaba a ella; ahora la R lo encuentra a medio llenar, igual que si llegara a 0,9 s,
+  // y el latido siguiente parte de ahí: expulsa solo lo que entró.
+  expect(emptyingAt(0.28, 0.439, 0, 0.816)).toBeLessThan(1);
+  expect(emptyingAt(0.3, 0.439, 0, 0.816)).toBe(1);
+  const residual = emptyingAt(0.439, 0.439, 0, 0.816);
+  expect(residual).toBeGreaterThan(0.3);
+  expect(emptyingAt(0.439, 0.9, 0, 0.816)).toBe(residual);
+  expect(emptyingAt(0, 0.6, 0, 0.439, residual)).toBe(residual);
+  expect(emptyingAt(0.1, 0.6, 0, 0.439, residual)).toBeGreaterThan(residual);
+  expect(emptyingAt(0.2, 0.6, 0, 0.439, residual)).toBe(1);
+  // con patada auricular (la anuncia la P) el ciclo corto sí termina lleno
+  expect(emptyingAt(0.439, 0.439, 1, 0.816)).toBeLessThan(0.01);
+});
+
+it('en FA no hay patada auricular aunque el paciente conserve atrialFunction: el vaciado usa la aurícula del latido', () => {
+  // el laboratorio crea la FA desde el sano (atrialFunction 0,8); el ritmo ya anula la onda a y la P
+  const lastFilling = (rhythm: 'sinus' | 'atrial-fibrillation') => {
+    const patient = { ...clonePatient(NORMAL_ADULT), rhythm, rrVariability: rhythm === 'sinus' ? NORMAL_ADULT.rrVariability : 0.22 };
+    const engine = new PhysiologyEngine(patient, person.scene.vesselAreas());
+    const lv: number[] = [];
+    let last = engine.sample.ventricles!.lv;
+    for (let i = 0; i < 4000; i++) {
+      const s = engine.step();
+      // sin saltos en la R: el latido parte de lo que el anterior llenó (a 4 ms por paso la eyección avanza ≤ 0,05)
+      expect(Math.abs(s.ventricles!.lv - last), `${rhythm} t ${s.t.toFixed(3)}`).toBeLessThan(0.1);
+      last = s.ventricles!.lv;
+      // los últimos 60 ms antes de la R siguiente de un ciclo con diástole larga y no más corto que el previo (el llenado
+      // sigue al ciclo previo: tras uno más largo, la R puede llegar con la diástasis a medias)
+      const rrPrev = 0.8 * engine.rhythm.currentBeat(s.t).systoleScale ** 2;
+      if (s.rr >= 0.6 && s.rr >= rrPrev && s.lastR + s.rr - s.t < 0.06) lv.push(s.ventricles!.lv);
+    }
+    expect(lv.length).toBeGreaterThan(50);
+    return lv;
+  };
+  expect(Math.max(...lastFilling('atrial-fibrillation'))).toBeLessThan(0.02);
+  expect(Math.max(...lastFilling('sinus'))).toBeGreaterThan(0.05);
 });
 
 it('la muestra fisiológica lleva el vaciado y el calibre de la anatomía, su latido (decisión 410)', () => {

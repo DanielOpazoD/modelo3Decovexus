@@ -40,6 +40,8 @@ export function tabAfterMode(mode: ImagingMode, tab: PanelTab): PanelTab {
  */
 export class ControlPanel implements PanelContext {
   onCapture?: () => void;
+  measureImage?: HTMLElement;
+  cancelCaliper?: () => void;
   #syncables: Syncable[] = [];
   #tabs = new Map<PanelTab, HTMLButtonElement>();
   #panels = new Map<PanelTab, HTMLElement>();
@@ -185,8 +187,8 @@ export class ControlPanel implements PanelContext {
     return had;
   }
 
-  setIvcCaliper(mm: number | null): void {
-    this.#measure.setIvcCaliper(mm);
+  setIvcCaliper(mm: number | null, frameChanged = false): void {
+    this.#measure.setIvcCaliper(mm, frameChanged);
   }
 
   /** Lo medido en la última captura PW, para el espectro (decisión 94). */

@@ -1,3 +1,4 @@
+import type { AnatomyIdentity } from '../anatomy/anatomyBundle';
 import type { AppliedIntervention, LoopState } from '../physiology/circulation';
 import type { EquipmentSettings } from './simulator';
 import type { ErrorEntry } from './errorLog';
@@ -15,6 +16,8 @@ export interface DiagnosticsInput {
   gpu: { vendor: string; renderer: string } | null;
   viewport: { width: number; height: number; devicePixelRatio: number };
   caseId: string;
+  /** Persona instalada: s0028 y `?abdomen=atlas` son cuerpos distintos aunque los dos tengan atlas (decisión 340). */
+  anatomy: AnatomyIdentity;
   simTimeS: number;
   fps: number;
   /** Tiempo de GPU del cuadro y por pasada si el navegador los separa (ms); null sin temporizadores. */

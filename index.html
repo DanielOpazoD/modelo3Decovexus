@@ -27,7 +27,12 @@
       <main class="center">
         <div class="display-wrap" id="sector-wrap">
           <canvas id="gl"></canvas>
-          <canvas id="overlay"></canvas>
+          <canvas
+            id="overlay"
+            tabindex="0"
+            role="application"
+            aria-label="Imagen. Con el calibrador, las flechas mueven la cruz e Intro fija cada punto; en vivo, las flechas mueven la puerta PW o la caja de color, e izquierda y derecha, la línea M. Mayúsculas afina; Esc cancela."
+          ></canvas>
           <div class="img-hud">
             <div class="hud-tl" id="hud-tl"></div>
             <div class="hud-tr" id="hud-tr"></div>
@@ -147,6 +152,11 @@
               <dd>bascular/inclinar</dd>
               <dt>Rueda · <kbd>⇧</kbd> + rueda</dt>
               <dd>rotar · presión</dd>
+              <dt><kbd>Tab</kbd> hasta la imagen</dt>
+              <dd>
+                flechas: puerta, caja, línea M (<kbd>←</kbd><kbd>→</kbd>) o cruz del calibrador (<kbd>⇧</kbd> fino) · <kbd>Intro</kbd> fija
+                el punto
+              </dd>
             </dl>
             <h3>Teclado</h3>
             <ul class="keys">

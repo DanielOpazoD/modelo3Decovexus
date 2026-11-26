@@ -118,13 +118,15 @@ import type { TransducerProfile } from './transducerProfile';
 import { bmodeBeam, bmodeTxApertureMm } from './transducerProfile';
 import { MIRROR_BISECTION_STEPS, type SegmentGrid } from './transmission';
 import { TransmissionReuse } from './transmissionReuse';
+import { tubeInSlab, tubeSlabDiaphragmMm } from './tubeSlab';
+import { TGC_BANDS } from './tgcBands';
 
 /** Ajustes del ecógrafo que afectan a la formación de imagen (guía §16). */
 export interface BModeSettings {
   depthMm: number;
   focusMm: number;
   gainDb: number;
-  tgcDb: readonly number[]; // 8 bandas
+  tgcDb: readonly number[]; // TGC_BANDS bandas, de la cara al fondo
   dynamicRangeDb: number;
   persistence: number; // 0–0.8
   /** Reducción de moteado del equipo (decisión 313): 0 apagada, 1 media, 2 alta. Solo en la presentación del modo B; se suspende con Color. */
@@ -168,7 +170,7 @@ export const DEFAULT_BMODE: BModeSettings = {
 
   focusMm: 90,
   gainDb: 0,
-  tgcDb: [0, 0, 0, 0, 0, 0, 0, 0],
+  tgcDb: Array<number>(TGC_BANDS).fill(0),
   // preajuste abdominal (decisión 53): 70 dB, como el equipo moderno de referencia
   dynamicRangeDb: 70,
   persistence: 0.35,
@@ -268,6 +270,8 @@ export interface FrameInputs {
   color: ColorSettings;
   /** Actualizar el cuadro de color en este fotograma (cadencia propia del equipo). */
   updateColor: boolean;
+  /** Cadencia con que se adquiere el cuadro (Hz, `Simulator.colorTiming`), que guarda su `CineFrame`; solo la da `Simulator.render`. */
+  frameHz?: number;
   seed: number;
   /** Modo M (decisión 80): ángulo de la línea M, que el cuadro copia a la franja; sin él, nada. */
   mline?: number;
@@ -287,6 +291,8 @@ export interface CineFrame {
   persistenceEpoch: number;
   bmode: BModeSettings;
   color: ColorSettings;
+  /** Cadencia de su adquisición: el HUD la rotula con el cuadro, también congelado o en cine. */
+  frameHz?: number;
   colorFrame: { box: [number, number, number, number]; prf: number } | null;
 }
 
@@ -296,8 +302,9 @@ export interface CineFrame {
  * los uniforms y las texturas que dejó puestos, en destinos de prueba con el tamaño y los formatos de su
  * salida, alternando dos: cada repetición es su propio pase de render, que una GPU de teselas no puede
  * descartar (ver `drawRepeats`). La salida real no se toca, así que el cuadro no cambia; el coste de la
- * pasada sale por diferencia del tiempo de pared, también en Metal, donde el temporizador no separa las
- * pasadas (decisión 47).
+ * pasada sale por diferencia del tiempo de pared con `times: 0` de la misma pasada (un cuadro con `repeat`
+ * recalcula A0/A1), también en Metal, donde el temporizador no separa las pasadas (decisión 47). B y A0 por
+ * etapas no se repiten: solo se repetiría su último dibujo.
  */
 export interface PassRepeat {
   pass: PassId;
@@ -434,7 +441,7 @@ export class UltrasoundRenderer {
   private mapPixels = new Uint8Array(0);
   private mapPbo: WebGLBuffer | null = null;
   private mapPending: { sync: WebGLSync; pbo: WebGLBuffer } | null = null;
-  private mapLast: { width: number; height: number; tissue: Uint8Array; vessel: Int8Array } | null = null;
+  private mapLast: { width: number; height: number; tissue: Uint8Array; vessel: Int16Array } | null = null;
   /** Pasada A en cuatro etapas (decisión 54): impactos por línea, segmentos, suma y apertura. */
   private tHits: RenderTarget;
   private tSeg: RenderTarget;
@@ -456,6 +463,9 @@ export class UltrasoundRenderer {
   private persistIndex = 0;
   /** Nivel efectivo en la historia (0 con Color): un mando suspendido no cambia la persistencia. */
   private persistSpeckle = 0;
+  /** Profundidad con que se escribió la historia y si es válida (false: recién creada o limpiada, negra). */
+  private persistDepth = Number.NaN;
+  private persistValid = false;
   private persistenceEpoch = 0;
   /**
    * Destinos de prueba de `PassRepeat`, dos por pasada. Solo existen si se ha pedido medir con
@@ -701,8 +711,8 @@ export class UltrasoundRenderer {
    * Cambia de paciente conservando programas y destinos: los shaders no dependen de la escena
    * (solo sus uniforms y la textura de datos), así que el cambio de caso deja de recompilar
    * sus 18 programas (con diez eran ≈ 200 ms con GPU y muchos segundos con SwiftShader). Se descarta todo lo
-   * que pertenecía al paciente anterior: uniforms en caché, persistencia, color, mapa de tejidos, cine y
-   * columnas del modo M en vuelo.
+   * que pertenecía al paciente anterior: uniforms en caché, persistencia, color, mapa de tejidos, cine,
+   * columnas del modo M en vuelo y la imagen en pantalla (congelada no se redibujaría).
    */
   setScene(scene: AnatomyScene): void {
     if (scene.person?.assetKey !== this.currentScene.person?.assetKey) throw new Error('Renderer de otra identidad; recargue');
@@ -729,13 +739,14 @@ export class UltrasoundRenderer {
     this.liveValid = false;
     this.cineShown = null;
     this.mStrip.clear();
-    if (this.tPersist)
-      for (const t of this.tPersist) {
-        bindTarget(gl, t);
-        gl.clearColor(0, 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-      }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    // la persistencia y, al final, la pantalla
+    gl.clearColor(0, 0, 0, 1);
+    for (const t of [...(this.tPersist ?? []), null]) {
+      bindTarget(gl, t, this.canvas.width, this.canvas.height);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+    this.persistValid = false;
+    this.presented = this.tPersist?.[this.persistIndex] ?? null;
   }
 
   /**
@@ -979,9 +990,9 @@ export class UltrasoundRenderer {
 
   /**
    * Cabeceras de tubo del cuadro: calibre y u_ref del instante, y SOLO los tubos cuya
-   * esfera envolvente corta la losa del plano de imagen (elevación ± 12 mm). Con
-   * ~90 tubos (árbol hepático procedural) el bucle por muestra era el coste dominante;
-   * por cuadro sobreviven 20–40. La lista compacta lleva el índice original en H2.w.
+   * esfera envolvente corta la losa del plano de imagen (elevación ± 12 mm, deshecha la respiración con D a pasos de 10 mm:
+   * `tubeInSlab`, `tubeSlabDiaphragmMm`). Con ~90 tubos (árbol hepático procedural) el bucle por muestra era el coste dominante;
+   * en s0028 sobreviven 50–110 de 152 por cuadro en reposo. La lista compacta lleva el índice original en H2.w.
    */
   private updateSceneDynamic(inputs: FrameInputs, allTubes = false): void {
     const s = this.currentScene;
@@ -989,13 +1000,9 @@ export class UltrasoundRenderer {
     const total = this.tubeCountTotal;
     let kept = 0;
     const keptIds: number[] = [];
+    const slabD = tubeSlabDiaphragmMm(inputs.sample.resp.diaphragmCaudalMm);
     for (let i = 0; i < total; i++) {
-      const b = s.tubeBounds[i];
-      const d =
-        (b.center[0] - fr.face[0]) * fr.elevation[0] +
-        (b.center[1] - fr.face[1]) * fr.elevation[1] +
-        (b.center[2] - fr.face[2]) * fr.elevation[2];
-      if (!allTubes && Math.abs(d) > b.r + 12) continue;
+      if (!allTubes && !tubeInSlab(s.tubeBounds[i], fr, slabD)) continue;
       const size = TUBE_HEADER_TEXELS * 4;
       const src = i * size;
       const dst = kept * size;
@@ -1101,6 +1108,7 @@ export class UltrasoundRenderer {
     this.tPersist = [createTarget(gl, w, h, [f]), createTarget(gl, w, h, [f])];
     // la historia de la persistencia (el cuadro congelado) se perdió con el tamaño anterior
     this.liveValid = false;
+    this.persistValid = false;
   }
 
   /**
@@ -1120,6 +1128,9 @@ export class UltrasoundRenderer {
   render(inputs: FrameInputs, repeat?: PassRepeat): void {
     if (repeat?.pass === 'speckleReduction' && (!inputs.bmode.speckleReduction || inputs.color.enabled))
       throw new Error('speckleReduction inactiva: medir exige nivel > 0 y Color apagado');
+    // por etapas, la repetición emitiría solo el último dibujo de la pasada
+    if ((repeat?.pass === 'rawField' && this.rawStages) || (repeat?.pass === 'transmissionHits' && this.atlasHitStages))
+      throw new Error(`${repeat.pass} por etapas: la repetición mediría solo su último dibujo`);
     // Crear y comprobar los FBO antes de encolar las pasadas costosas. Al hacerlo
     // dentro de G, checkFramebufferStatus espera también al trabajo de A–F.
     this.ensureDisplayTargets();
@@ -1209,6 +1220,7 @@ export class UltrasoundRenderer {
       persistenceEpoch: this.persistenceEpoch,
       bmode: inputs.bmode,
       color: c,
+      frameHz: inputs.frameHz,
       colorFrame: c.enabled ? this.lastColorFrame : null,
     };
     this.lastFrame = frame;
@@ -1346,7 +1358,11 @@ export class UltrasoundRenderer {
         gl.disable(gl.BLEND);
       }
       this.present(this.tScan!);
-      if (!this.liveValid) this.blit(this.tScan!.fbo, this.tPersist![this.persistIndex].fbo, W, H);
+      if (!this.liveValid) {
+        this.blit(this.tScan!.fbo, this.tPersist![this.persistIndex].fbo, W, H);
+        this.persistValid = true;
+        this.persistDepth = this.cine.at(i).bmode.depthMm;
+      }
     }
     this.cineShown = { index: i, w: W, h: H };
   }
@@ -1956,11 +1972,14 @@ export class UltrasoundRenderer {
     this.pPersist.use();
     this.pPersist.tex('uCur', 0, this.tScan!.textures[0]);
     this.pPersist.tex('uPrev', 1, prev.textures[0]);
+    // la historia se pesa solo si es de esta geometría (profundidad y lienzo) y de este nivel efectivo
     const level = inputs.color.enabled ? 0 : inputs.bmode.speckleReduction;
-    const sameLevel = level === this.persistSpeckle;
-    if (!sameLevel) this.persistenceEpoch++;
+    const keep = this.persistValid && level === this.persistSpeckle && inputs.bmode.depthMm === this.persistDepth;
+    if (!keep) this.persistenceEpoch++;
     this.persistSpeckle = level;
-    this.pPersist.f('uPersist', sameLevel ? inputs.bmode.persistence : 0);
+    this.persistDepth = inputs.bmode.depthMm;
+    this.persistValid = true;
+    this.pPersist.f('uPersist', keep ? inputs.bmode.persistence : 0);
     drawFullscreen(gl);
     this.persistIndex = 1 - this.persistIndex;
   }
@@ -1997,7 +2016,7 @@ export class UltrasoundRenderer {
    * llamada devuelve el último mapa completado (o null) sin bloquear la CPU
    * (un readPixels síncrono esperaba a toda la cola de la GPU, 80–90 ms).
    */
-  tissueMap(inputs: FrameInputs): { width: number; height: number; tissue: Uint8Array; vessel: Int8Array } | null {
+  tissueMap(inputs: FrameInputs): { width: number; height: number; tissue: Uint8Array; vessel: Int16Array } | null {
     const gl = this.gl;
     const n = MAP_W * MAP_H;
     if (this.mapPending) {
@@ -2010,7 +2029,7 @@ export class UltrasoundRenderer {
       gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
       this.mapPending = null;
       const tissue = new Uint8Array(n);
-      const vessel = new Int8Array(n);
+      const vessel = new Int16Array(n);
       for (let i = 0; i < n; i++) {
         tissue[i] = this.mapPixels[i * 4];
         vessel[i] = this.mapPixels[i * 4 + 1] - 1;

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { SAMPLER_GUARD, SLOT_GUARD, WEBGL2_MIN_FRAGMENT_VECTORS } from '../../tools/ci/shaderBudgets';
 import { ANATOMY_GLSL, MAX_NODES, MAX_TUBE_SEGMENTS, MAX_TUBES } from '../anatomy/gpu/anatomy.glsl';
@@ -23,6 +24,7 @@ import {
 import { SPECKLE_LOOK_GLSL } from '../ultrasound/speckleField';
 import { STEERING_GLSL } from '../ultrasound/steering';
 import { STEERED_PREFIX_GLSL } from '../ultrasound/transmission';
+import { TGC_BANDS } from '../ultrasound/tgcBands';
 import { S0028_BUNDLE } from './support/legacyPerson/anatomyBundle';
 import { AnatomyScene } from './support/legacyPerson/scene';
 
@@ -336,8 +338,19 @@ vec4 s28WallAt(vec3 p,out bool valid){`,
     expect(FRAG_TRANSMISSION).toContain(`uTissueFlag4[${TISSUE_VEC4}]`);
     expect(ANATOMY_GLSL).toContain(`#define MAX_TUBE_SEGMENTS ${MAX_TUBE_SEGMENTS}`);
     expect(ANATOMY_GLSL).not.toMatch(/i & 255/);
+    // el mapa GPU del corte guarda índice de tubo + 1 en un canal unorm8
+    expect(MAX_TUBES + 1).toBeLessThanOrEqual(255);
     // cada tejido tiene su #define en GLSL
     expect((ANATOMY_GLSL.match(/#define T_[A-Z_]+ \d+/g) ?? []).length).toBe(TISSUE_COUNT);
+    // la TGC de la presentación (imagen G y línea M): tantas bandas como el estado del equipo, la última en el fondo,
+    // interpoladas desde TGC_BANDS en el fuente (no literales)
+    for (const src of [PASSES.FRAG_SCANCONVERT, PASSES.FRAG_MLINE]) {
+      expect(src).toContain(`uniform float uTgc[${TGC_BANDS}];`);
+      expect(src).toContain(`clamp(r / uDepth, 0.0, 0.9999) * ${TGC_BANDS - 1}.0;`);
+    }
+    const passesSource = readFileSync('src/ultrasound/shaders/passes.glsl.ts', 'utf8');
+    expect(passesSource).toContain('uniform float uTgc[${TGC_BANDS}];');
+    expect(passesSource).toContain('* ${TGC_BANDS - 1}.0;');
   });
 
   // Las constantes de TS entran en el GLSL interpoladas (`${...}`); un identificador suelto como

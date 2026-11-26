@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Store } from '../app/store';
 import { CutMapView } from '../ui/cutMapView';
 import type { Simulator } from '../app/simulator';
 import { CONVEX_C35 } from '../probe/probe';
@@ -47,7 +48,15 @@ function fixture() {
   const event = { clientX: pixel.x, clientY: pixel.y };
   const refresh = () => view.drawHighlight(canvas as unknown as HTMLCanvasElement, sim);
   refresh();
-  return { canvas, view, anatomy, refresh, hover: () => handlers.get('pointermove')!(event), click: () => handlers.get('click')!(event) };
+  return {
+    canvas,
+    view,
+    anatomy,
+    refresh,
+    hover: () => handlers.get('pointermove')!(event),
+    click: () => handlers.get('click')!(event),
+    key: (e: unknown) => handlers.get('keydown')!(e),
+  };
 }
 
 describe('selección del corte durante la espera del Worker', () => {
@@ -74,5 +83,47 @@ describe('selección del corte durante la espera del Worker', () => {
     f.refresh();
     f.click();
     expect(f.canvas.dataset.selectedKey).toBeUndefined();
+  });
+});
+
+describe('Esc con el corte enfocado', () => {
+  it('quita la selección fijada y no sigue hasta los atajos; sin nada que quitar, cancela la herramienta armada', async () => {
+    const onWindow: Array<(e: unknown) => void> = [];
+    vi.stubGlobal('window', { addEventListener: (_: string, fn: (e: unknown) => void) => onWindow.push(fn), removeEventListener() {} });
+    const { bindKeyboardShortcuts } = await import('../ui/keyboardShortcuts');
+    const store = new Store({
+      mode: 'B',
+      tab: 'medir',
+      frozen: true,
+      debug: false,
+      audio: false,
+      caseId: 'normal-adult',
+      torso: true,
+      tool: 'caliper',
+    });
+    bindKeyboardShortcuts(store, () => undefined);
+    const f = fixture();
+    // el evento sube del lienzo a `window` salvo que el corte lo pare
+    const escape = () => {
+      let stopped = false;
+      const e = {
+        key: 'Escape',
+        target: f.canvas,
+        metaKey: false,
+        ctrlKey: false,
+        getModifierState: () => false,
+        preventDefault() {},
+        stopPropagation: () => (stopped = true),
+      };
+      f.key(e);
+      if (!stopped) for (const fn of onWindow) fn(e);
+    };
+    f.click();
+    expect(f.canvas.dataset.selectedKey).toBe(`t:${Tissue.Liver}`);
+    escape();
+    expect(f.canvas.dataset.selectedKey).toBeUndefined();
+    expect(store.get().tool).toBe('caliper');
+    escape();
+    expect(store.get().tool).toBe('none');
   });
 });

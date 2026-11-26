@@ -13,6 +13,7 @@ import { type START_POINTS } from '../app/startPoints';
 import { prfFromNyquistCms } from '../core/units';
 import type { CaptureResult } from '../doppler/capture';
 import type { PatientState, RespiratoryPattern } from '../physiology/patientState';
+import type { Beat } from '../physiology/rhythm';
 import type { VesselId } from '../physiology/vessels';
 import { CONVEX_C35 } from '../probe/probe';
 import { classifyPortal, classifyVexusC } from '../vexus/classification';
@@ -83,7 +84,8 @@ function examine(base: PatientState, respiratoryPattern: RespiratoryPattern = 'a
 
 /**
  * Capturas sucesivas de la VSH derecha desde la ventana intercostal, cada 2 s, como las hace la pestaña Medir, con la
- * puerta quieta. `window`: la puerta busca además ventana acústica (como los ganchos de la e2e), no solo anatomía.
+ * puerta quieta. `window`: la puerta busca además ventana acústica (como los ganchos de la e2e), no solo anatomía. Cada
+ * captura lleva el patrón de la verdad sobre sus propios latidos (`truth`): en FA la S/D cambia de un latido a otro.
  */
 function hepaticCaptures(base: PatientState, respiratoryPattern: RespiratoryPattern, seconds: number, window: boolean, prfHz?: number) {
   const session = openSession(base, respiratoryPattern, 0, seconds + 4);
@@ -99,8 +101,15 @@ function hepaticCaptures(base: PatientState, respiratoryPattern: RespiratoryPatt
     gateMm: Math.min(4, 2 * best.bd),
   });
   const truth = measurePhysiologyTruth(session.engine, { fromT: t0 + 4, toT: session.engine.clock.t });
+  const truthOver = (beats: readonly Beat[]) =>
+    beats.length
+      ? measurePhysiologyTruth(session.engine, { fromT: beats[0].tR - 1e-6, toT: beats.at(-1)!.tR + beats.at(-1)!.rr + 1e-6 })
+          .hepaticPattern
+      : null;
   return {
-    captures: captures.flatMap(({ t, m }) => (m ? [{ t: +t.toFixed(1), pattern: m.pattern, issue: m.quality.issue }] : [])),
+    captures: captures.flatMap(({ t, m }) =>
+      m ? [{ t: +t.toFixed(1), pattern: m.pattern, issue: m.quality.issue, truth: truthOver(m.measuredBeats) }] : [],
+    ),
     truth,
   };
 }
@@ -262,7 +271,10 @@ describe('Cadena completa del alumno: puerta → espectro → medición → grad
   // (S invertida en un latido del sano, D invertida en otro). Ninguna captura con el visto bueno de
   // la calidad puede dar un patrón falso. Sin exigir D anterógrada, el sano con ventana daba
   // «grave» con el visto bueno a los 10 s. En apnea, además, la técnica debe servir: la calidad no
-  // puede rechazarlo todo (con respiración tranquila puede, y entonces el alumno pide apnea).
+  // puede rechazarlo todo (con respiración tranquila puede, y entonces el alumno pide apnea). Cada captura debe coincidir
+  // con la verdad de los 22 s y con la de sus propios latidos. En FA, tras una pausa, la R siguiente recorta la D: cierra
+  // la tricúspide y corta el descenso y, que ya no pasa a la S del latido corto; con él, cuatro latidos daban S > D en un
+  // caso de S < D y solo la verdad de los mismos latidos, que tenía el mismo artefacto, lo aceptaba.
   for (const [base, respiration, window] of [
     [NORMAL_ADULT, 'quiet', true],
     [NORMAL_ADULT, 'quiet', false],
@@ -277,7 +289,7 @@ describe('Cadena completa del alumno: puerta → espectro → medición → grad
       const tag = JSON.stringify(captures);
       expect(captures.length, tag).toBeGreaterThan(8);
       expect(
-        captures.filter((c) => c.issue === null && c.pattern !== truth.hepaticPattern),
+        captures.filter((c) => c.issue === null && (c.pattern !== truth.hepaticPattern || c.pattern !== c.truth)),
         tag,
       ).toEqual([]);
       // En apnea la técnica debe servir. La FA se rechaza de más a propósito (umbral del signo de S

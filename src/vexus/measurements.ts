@@ -97,8 +97,17 @@ export function systolicPeak<T extends { t: number }>(samples: readonly T[], w: 
 }
 
 /** Ventanas mecánicas de un latido a partir de sus eventos (s absolutos). */
-export function beatWindows(b: { tR: number; rr: number; tX: number; tV: number; tY: number; tAtrialContraction: number }): BeatWindows {
-  const s = Math.sqrt(b.rr / 0.8);
+export function beatWindows(b: {
+  tR: number;
+  rr: number;
+  tX: number;
+  tV: number;
+  tY: number;
+  tAtrialContraction: number;
+  systoleScale: number;
+}): BeatWindows {
+  // S, V y D escalan con la sístole (RR previo); la R siguiente recorta la D
+  const s = b.systoleScale;
   return {
     sWindow: [b.tX - 0.06 * s, b.tV - 0.02 * s],
     vWindow: [b.tV - 0.04 * s, b.tV + 0.04 * s],

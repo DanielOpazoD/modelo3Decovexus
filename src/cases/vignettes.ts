@@ -15,7 +15,7 @@ export const CASE_VIGNETTES: Readonly<Record<CaseId, string>> = {
   'af-moderate-congestion':
     'Varón de 68 años con palpitaciones y disnea de una semana. ECG: fibrilación auricular a unos 95 lpm. Respira espontáneamente.',
   'refractory-right-heart-failure':
-    'Varón de 66 años con insuficiencia tricuspídea masiva por un cable de marcapasos y el ventrículo derecho muy dilatado; tercer ingreso del año. Disnea de reposo, ascitis, edemas hasta los muslos e ictericia leve; la creatinina se duplicó en una semana pese a furosemida en perfusión. Respira espontáneamente; ECG sinusal.',
+    'Varón de 66 años con insuficiencia tricuspídea masiva por un cable de marcapasos y el ventrículo derecho muy dilatado; tercer ingreso del año. Disnea de reposo, edemas hasta los muslos e ictericia leve; la creatinina se duplicó en una semana pese a furosemida en perfusión. Respira espontáneamente; ECG sinusal.',
   'abdominal-hypertension':
     'Varón de 64 años en el segundo día tras una laparotomía urgente por obstrucción intestinal: abdomen distendido y tenso, oliguria. Presión vesical 16 mmHg. Tiene hipertensión pulmonar con disfunción del ventrículo derecho e insuficiencia tricuspídea. Respira espontáneamente; ECG en ritmo sinusal.',
   'tricuspid-regurgitation':

@@ -1,5 +1,6 @@
 import { beforeAll, expect, it } from 'vitest';
 import { loadS0028 } from '../../tools/anatomy/s0028Windows';
+import { S0028_IVC_MEASUREMENT_Z } from '../anatomy/people/s0028/vessels';
 import { AnatomyQuery } from '../anatomy/query';
 import { Tissue } from '../anatomy/tissues';
 import { CASES } from '../cases';
@@ -14,9 +15,10 @@ import { AnatomyScene } from './support/legacyPerson/scene';
  * de 2 cm del VExUS. Se mide como el calibre del alumno: perpendicular al eje, en el plano sagital, solo la luz de la VCI (sin la
  * de las suprahepáticas que desembocan), en el máximo y el mínimo del ciclo con respiración tranquila.
  *
- * Sitios: 1–2 cm bajo la desembocadura de la suprahepática derecha (z −47 y −37; la guía) y 2 cm de la aurícula (z −5). Entre
- * las confluencias la luz se reparte con las suprahepáticas: ahí no se mide. Medido el 15-11-2026: ≤ 3 % en la guía; a 2 cm de la
- * aurícula, el sano 18,5 frente a 18,7, y en la congestión −9 a −10,5 % (la boca del tronco común, dilatada, comparte la luz).
+ * Sitios: 1–2 cm bajo la desembocadura de la suprahepática derecha (z −47 y −37; la guía) y de 2 a 1,25 cm de la aurícula (z −5,
+ * 0 y 2,5). Entre las confluencias la luz se reparte con las suprahepáticas: ahí no se mide; en z 5 entra la luz de `ivcSupra`.
+ * Medido el 15-11-2026: ≤ 3 % en la guía; a 2 cm de la aurícula, el sano 18,5 frente a 18,7, y en la congestión −9 a −10,5 % (la
+ * boca del tronco común, dilatada, comparte la luz). Con la regularización antes del alisado del eje, el sano medía 20,5 en z 2,5.
  */
 beforeAll(() => {
   loadS0028();
@@ -60,8 +62,10 @@ it('s0028: en el sitio de medida, la VCI de la imagen es la de la fisiología y 
       for (const [z, tolerance] of [
         [-47, 0.05],
         [-37, 0.05],
-        // a 2 cm de la aurícula, en la congestión, la boca del tronco común suprahepático comparte la luz (medido: hasta −10,5 %)
+        // de 2 a 1,25 cm de la aurícula, en la congestión, la boca del tronco común suprahepático comparte la luz (medido: hasta −10,5 %)
         [-5, 0.12],
+        [0, 0.12],
+        [2.5, 0.12],
       ] as const) {
         const d = diameter(scene, query, smp, z);
         const tag = `${base.id} z ${z}: imagen ${d.toFixed(1)}, fisiología ${smp.ivc.dApMm.toFixed(1)}`;
@@ -70,4 +74,14 @@ it('s0028: en el sitio de medida, la VCI de la imagen es la de la fisiología y 
         expect(d > 20, tag).toBe(smp.ivc.dApMm > 20);
       }
   }
+});
+
+it('s0028: la VCI lleva el radio de referencia en todo el tramo de medida, hasta su nodo de z 5 (decisión 396)', () => {
+  const scene = new AnatomyScene(CASES[0]);
+  const [lo, hi] = S0028_IVC_MEASUREMENT_Z;
+  const reference = scene.vesselById.get('ivcSupra')!.refRadius;
+  const nodes = scene.vesselById.get('ivcInfra')!.tube.nodes;
+  // el alisado del eje (`smoothS0028Vessels`) solo conserva los extremos: con la regularización antes, borraba el nodo de z 5
+  expect(nodes.some((n) => Math.abs(n.p[2] - hi) < 1e-6)).toBe(true);
+  for (const n of nodes.filter((n) => n.p[2] >= lo && n.p[2] <= hi)) expect(n.r, `z ${n.p[2].toFixed(1)}`).toBe(reference);
 });

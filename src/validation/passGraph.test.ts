@@ -104,15 +104,22 @@ function fakeGl(opts: { ext: boolean }) {
       results.set(q.id, { available: false, ns: 0 });
     },
     endQuery: () => void (state.open = 0),
-    getParameter: (p: number) => (p === EXT.GPU_DISJOINT_EXT ? state.disjoint : 0),
+    // como el driver: leer el indicador «disjoint» lo borra
+    getParameter: (p: number) => {
+      if (p !== EXT.GPU_DISJOINT_EXT) return 0;
+      const d = state.disjoint;
+      state.disjoint = false;
+      return d;
+    },
     getQueryParameter: (q: { id: number }, p: number) => {
       const r = results.get(q.id)!;
       return p === 0x8867 ? r.available : r.ns;
     },
   };
-  const finish = (ns: number) => {
+  /** Termina las consultas en vuelo (o solo las `count` primeras) con `ns` nanosegundos. */
+  const finish = (ns: number, count = Number.POSITIVE_INFINITY) => {
     for (const r of results.values())
-      if (!r.available) {
+      if (!r.available && count-- > 0) {
         r.available = true;
         r.ns = ns;
       }
@@ -166,6 +173,49 @@ describe('GpuPassTimer', () => {
     expect(state.created).toBe(1);
     t.dispose();
     expect(state.deleted).toBe(1);
+  });
+
+  it('un «disjoint» invalida también las consultas aún en vuelo, aunque terminen después', () => {
+    const { gl, state, finish } = fakeGl({ ext: true });
+    const t = new GpuPassTimer<'a'>(gl);
+    t.begin('a');
+    t.end();
+    finish(1e6);
+    t.poll();
+    expect(t.timings()).toEqual({ a: 1 });
+    for (let i = 0; i < 2; i++) {
+      t.begin('a');
+      t.end();
+    }
+    finish(1e6, 1);
+    state.disjoint = true;
+    t.poll();
+    finish(500e6);
+    t.poll();
+    expect(t.timings()).toEqual({ a: 1 });
+  });
+
+  it('una pasada que deja de emitirse (Color apagado) sale de timings y de la suma', () => {
+    const { gl, finish } = fakeGl({ ext: true });
+    const t = new GpuPassTimer<'rawField' | 'present' | 'color'>(gl, 0.5);
+    const ms = { rawField: 6, color: 0.75, present: 0.25 };
+    const frame = (...ids: (keyof typeof ms)[]) => {
+      t.poll();
+      for (const id of ids) {
+        t.begin(id);
+        t.end();
+        finish(ms[id] * 1e6);
+      }
+    };
+    frame('rawField', 'color', 'present');
+    frame('rawField', 'color', 'present');
+    expect(summarizeGpuTimings(t.timings(), 'rawField', 'present')).toEqual({ frameMs: 7, perPass: ms });
+    frame('rawField', 'present');
+    expect(t.timings()).toEqual({ rawField: 6, present: 0.25 });
+    expect(summarizeGpuTimings(t.timings(), 'rawField', 'present')!.frameMs).toBe(6.25);
+    // vuelve a aparecer con Color
+    frame('rawField', 'color', 'present');
+    expect(t.timings()!.color).toBe(0.75);
   });
 
   it('deja de abrir consultas si el driver nunca devuelve resultados', () => {

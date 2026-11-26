@@ -55,6 +55,7 @@ describe('una onda en el último 15 % de la banda se excluye por prudencia; una 
     tV: i + 0.45,
     tY: i + 0.62,
     tTend: i + 0.5,
+    systoleScale: Math.sqrt(1 / 0.8),
     atrialAmplitude: 0.8,
   }));
   // Espectro estrecho y sin plegar: S en `fraction` de Nyquist hacia el lado retrógrado y D en +0,3

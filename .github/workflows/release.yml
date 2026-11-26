@@ -1,21 +1,37 @@
-# Release por tag (Fase 3): `git tag -a vX.Y.Z && git push origin vX.Y.Z` construye, comprueba
-# el presupuesto, empaqueta dist/ y crea la release de GitHub con la sección del CHANGELOG.
+# Release por tag (Fase 3): `git tag -a vX.Y.Z && git push origin vX.Y.Z` sobre un commit de main con su CI en verde
+# construye, comprueba el presupuesto, empaqueta dist/ y crea la release de GitHub con la sección del CHANGELOG.
 name: Release
 
 on:
   push:
     tags: ['v*.*.*']
 
+# Solo lectura; escribe únicamente `publish`, que no ejecuta código del repositorio ni de npm.
 permissions:
-  contents: write
+  contents: read
+  actions: read
 
 jobs:
-  release:
-    name: build y release
+  build:
+    name: build y empaquetado
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # Primer padre: con merge commit, la punta de la rama es ancestro de main sin las PR fusionadas después.
+      # Un run de pull_request prueba el merge sintético, no este árbol.
+      - name: El tag apunta a la historia principal de main con su CI completa en verde
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sha="$(git rev-parse HEAD)"
+          grep -qx "$sha" <(git rev-list --first-parent origin/main) || { echo "::error::$GITHUB_REF_NAME no está en la historia principal de main"; exit 1; }
+          runs="$(gh run list --workflow ci.yml --commit "$sha" --status success --json event --jq '[.[] | select(.event != "pull_request")] | length')"
+          test "$runs" -gt 0 || { echo "::error::ci.yml no está en verde en $sha: espera a que termine o lanza gh workflow run ci.yml --ref $GITHUB_REF_NAME, y re-ejecuta Release"; exit 1; }
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -28,7 +44,28 @@ jobs:
         run: npx tsx tools/ci/release-notes.ts "${GITHUB_REF_NAME#v}" > release-notes.md
       - name: Empaquetar dist
         run: cd dist && zip -qr "../vexus-sim-${GITHUB_REF_NAME}.zip" .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release
+          path: |
+            vexus-sim-${{ github.ref_name }}.zip
+            release-notes.md
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    name: release
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: release
       - name: Crear la release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" "vexus-sim-${GITHUB_REF_NAME}.zip" --title "${GITHUB_REF_NAME}" --notes-file release-notes.md
+          GH_REPO: ${{ github.repository }}
+        run: gh release create "${GITHUB_REF_NAME}" "vexus-sim-${GITHUB_REF_NAME}.zip" --verify-tag --title "${GITHUB_REF_NAME}" --notes-file release-notes.md

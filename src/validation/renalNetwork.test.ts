@@ -11,6 +11,8 @@ import { NORMAL_ADULT } from '../cases';
 import { Tissue } from '../anatomy/tissues';
 import type { Vec3 } from '../core/vec3';
 import { UltrasoundRenderer } from '../ultrasound/renderer';
+import { Simulator } from '../app/simulator';
+import { clonePatient } from '../physiology/patientState';
 import { CONVEX_C35_PROFILE } from '../ultrasound/transducerProfile';
 import { recordingGl } from './support/recordingGl';
 const load = (name: string) => {
@@ -93,28 +95,65 @@ describe('red renal continua dentro del parénquima (339)', () => {
 });
 
 // Fixtures de identidad para seleccionar programas: no son una instalación anatómica s0028.
+const withIdentity = (identity: 'current' | 's0028') => ({
+  ...person,
+  identity: { ...person.identity, person: identity },
+  cpu: { ...person.cpu, kidneyFrame: identity === 'current' ? person.cpu.kidneyFrame : undefined },
+});
+/** WebGL falso que dice ser `backend` (WEBGL_debug_renderer_info): el renderer elige los programas de ese equipo. */
+function backendGl(backend: string) {
+  const rec = recordingGl({ width: 320, height: 240 });
+  const gl = rec.canvas.getContext('webgl2')!;
+  const extension = gl.getExtension.bind(gl),
+    parameter = gl.getParameter.bind(gl);
+  gl.getExtension = ((name: string) =>
+    name === 'WEBGL_debug_renderer_info' ? { UNMASKED_RENDERER_WEBGL: 999999 } : (extension(name) as unknown)) as typeof gl.getExtension;
+  gl.getParameter = (key: number) => (key === 999999 ? backend : (parameter(key) as unknown));
+  return rec;
+}
 it('limita A0 nativo con precálculo y el seno nuevo a current; s0028 va por etapas también en la GPU nativa (decisión 406)', () => {
   for (const identity of ['current', 's0028'] as const)
     for (const backend of ['Metal', 'SwiftShader']) {
-      const scoped = new AnatomyScene(NORMAL_ADULT, undefined, {
-        ...person,
-        identity: { ...person.identity, person: identity },
-        cpu: { ...person.cpu, kidneyFrame: identity === 'current' ? person.cpu.kidneyFrame : undefined },
-      });
+      const scoped = new AnatomyScene(NORMAL_ADULT, undefined, withIdentity(identity));
       expect(scoped.kidneyRight.sinusRadii).toEqual(identity === 'current' ? [30, 9, 6.5] : [30, 12, 6.5]);
-      const rec = recordingGl({ width: 320, height: 240 });
-      const gl = rec.canvas.getContext('webgl2')!;
-      const extension = gl.getExtension.bind(gl),
-        parameter = gl.getParameter.bind(gl);
-      gl.getExtension = ((name: string) =>
-        name === 'WEBGL_debug_renderer_info'
-          ? { UNMASKED_RENDERER_WEBGL: 999999 }
-          : (extension(name) as unknown)) as typeof gl.getExtension;
-      gl.getParameter = (key: number) => (key === 999999 ? backend : (parameter(key) as unknown));
+      const rec = backendGl(backend);
       const renderer = new UltrasoundRenderer(rec.canvas, scoped, CONVEX_C35_PROFILE);
       expect(renderer.transmissionHitsPipeline).toBe('staged-atlas');
       expect(!!Reflect.get(renderer, 'rawStages')).toBe(backend === 'SwiftShader' || identity === 's0028');
       renderer.dispose();
       expect(rec.misuse).toEqual([]);
     }
+});
+
+// Una repetición de medida (`frameCostMs`) emite solo el último dibujo de la pasada: con B o A0 por etapas mediría una
+// fracción de su coste sin decirlo, así que lanza antes de dibujar nada.
+it('repetir B o A0 por etapas lanza antes de dibujar; sin etapas, se repite', () => {
+  for (const [identity, backend] of [
+    ['s0028', 'Metal'],
+    ['s0028', 'SwiftShader'],
+    ['current', 'Metal'],
+  ] as const) {
+    const rec = backendGl(backend);
+    const installed = {
+      ...withIdentity(identity),
+      gpu: { specializeFragment: (s: string) => s, uploads: [] },
+      loadSurfaces: () => Promise.resolve({}),
+    };
+    const sim = new Simulator(clonePatient(NORMAL_ADULT), rec.canvas, undefined, undefined, installed);
+    const rawStaged = !!Reflect.get(sim.renderer, 'rawStages');
+    expect(rawStaged).toBe(identity === 's0028');
+    for (const pass of ['transmissionHits', 'rawField'] as const) {
+      rec.draws.length = 0;
+      const run = () => sim.render({ repeat: { pass, times: 3 } });
+      if (pass === 'transmissionHits' || rawStaged) {
+        expect(run, `${identity}/${backend} ${pass}`).toThrow(/por etapas/);
+        expect(rec.draws).toHaveLength(0);
+      } else {
+        run();
+        expect(rec.draws.length).toBeGreaterThan(3);
+      }
+    }
+    sim.dispose();
+    expect(rec.misuse).toEqual([]);
+  }
 });

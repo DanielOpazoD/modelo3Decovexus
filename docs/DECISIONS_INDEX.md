@@ -422,3 +422,33 @@ Generado por `npm run docs:index` — no editar a mano.
 | [416](DECISIONS.md#L12422) | La consulta del dominio en las uniones, sin crear nada | vigente |
 | [417](DECISIONS.md#L12435) | La CPU de s0028 también usa el mapa de ocupación | vigente |
 | [418](DECISIONS.md#L12447) | La pasada B cuenta el vaso vecino antes de saltarse los planos laterales | vigente |
+| [419](DECISIONS.md#L12460) | La presentación no cruza umbrales y la PF con el valle en el filtro de pared es una cota | vigente |
+| [420](DECISIONS.md#L12472) | La sístole sigue al RR previo y el pulso entra centrado en la red | vigente |
+| [421](DECISIONS.md#L12484) | La losa de tubos del cuadro deshace la respiración | vigente |
+| [422](DECISIONS.md#L12497) | El cambio de caso abre una serie de adquisición nueva y el navegador 3D recupera su contexto | vigente |
+| [423](DECISIONS.md#L12510) | Texto y marcas de los lienzos en píxeles CSS | vigente |
+| [424](DECISIONS.md#L12523) | La escala PW se rotula y se pide con la corrección angular | vigente |
+| [425](DECISIONS.md#L12536) | Teclado: un solo reparto y la imagen enfocable mide | vigente |
+| [426](DECISIONS.md#L12549) | «Copiar posición» respeta el modo ciego y nombra la persona | vigente |
+| [427](DECISIONS.md#L12562) | El corte rotula el tubo digestivo de s0028 con los rótulos de su TAC | vigente |
+| [428](DECISIONS.md#L12575) | La release sale solo de main con su CI y quien escribe no ejecuta código de terceros | vigente |
+| [429](DECISIONS.md#L12588) | El calibrador de la VCI mide en un solo cuadro | vigente |
+| [430](DECISIONS.md#L12601) | Lo que rotula un dato sale del modelo y de su misma convención | vigente |
+| [431](DECISIONS.md#L12613) | El visor PW venoso procesa lo llegado más un trozo y mide solo al día | vigente |
+| [432](DECISIONS.md#L12626) | Con la imagen congelada, la animación hacia una ventana se pausa | vigente |
+| [433](DECISIONS.md#L12637) | Un hueco con los bordes junto al suelo también es el valle en el filtro de pared | vigente |
+| [434](DECISIONS.md#L12650) | La salida hepática hace cascada cuando la PIA supera la presión hepática | vigente |
+| [435](DECISIONS.md#L12663) | Cancelar el calibrador conserva la VCI y el HUD rotula el cuadro mostrado | vigente |
+| [436](DECISIONS.md#L12676) | Sin escala alcanzable, «Escala» no cambia la petición | vigente |
+| [437](DECISIONS.md#L12687) | La puerta virtual del visor venoso no depende de la profundidad B | vigente |
+| [438](DECISIONS.md#L12696) | La persistencia solo mezcla una historia de la misma geometría | vigente |
+| [439](DECISIONS.md#L12708) | Medir una pasada compara con la misma pasada sin repetir y el tiempo de GPU solo suma las vigentes | vigente |
+| [440](DECISIONS.md#L12719) | Cuatro pruebas comprueban su título | vigente |
+| [441](DECISIONS.md#L12730) | La clausura JS de s0028 recupera 8,6 KiB compactando sus datos generados | vigente |
+| [442](DECISIONS.md#L12743) | Nada del latido depende de la pausa que viene | vigente |
+| [443](DECISIONS.md#L12756) | Un valle que sale de golpe del suelo también es cota y el suelo + 1 bin no lo decide el redondeo | vigente |
+| [444](DECISIONS.md#L12769) | El HUD rotula la cadencia del cuadro y la cruz del calibrador va en píxeles CSS | vigente |
+| [445](DECISIONS.md#L12782) | La losa de tubos recorta con D a pasos de 10 mm | vigente |
+| [446](DECISIONS.md#L12794) | Un hueco más breve que la ventana de análisis no hace intermitente la vena renal | vigente |
+| [447](DECISIONS.md#L12807) | Una S en el suelo de su banda no decide el patrón renal | vigente |
+| [448](DECISIONS.md#L12820) | Una vena renal plegada entera por el Nyquist es aliasing, no un hueco breve | vigente |

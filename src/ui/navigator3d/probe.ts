@@ -81,52 +81,59 @@ export function buildProbe(tr: Transducer): { probe: THREE.Group; marker: THREE.
   return { probe, marker };
 }
 
+/** Segmentos del arco del abanico: 6 vértices cada uno (dos triángulos) y 2 de borde distal, más los dos radios. */
+const FAN_SEGMENTS = 20;
+const positions = (vertices: number): THREE.BufferGeometry =>
+  new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices * 3), 3));
+
 export function buildFan(): { fan: THREE.Mesh; edges: THREE.LineSegments } {
   const fan = new THREE.Mesh(
-    new THREE.BufferGeometry(),
+    positions(FAN_SEGMENTS * 6),
     new THREE.MeshBasicMaterial({ color: 0x3fb6a8, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false }),
   );
   fan.renderOrder = 4;
   const edges = new THREE.LineSegments(
-    new THREE.BufferGeometry(),
+    positions(FAN_SEGMENTS * 2 + 4),
     new THREE.LineBasicMaterial({ color: 0x5cc8ff, transparent: true, opacity: 0.7 }),
   );
   edges.renderOrder = 5;
   return { fan, edges };
 }
 
+/** Escribe el abanico en sus buffers fijos: sin geometrías, buffers ni VAO nuevos en cada redibujo. */
 export function updateFan(fan: THREE.Mesh, edges: THREE.LineSegments, fr: ProbeFrame, tr: Transducer, depthMm: number): void {
-  const n = 20;
-  const C = new THREE.Vector3(fr.curvatureCenter[0] * CM, fr.curvatureCenter[1] * CM, fr.curvatureCenter[2] * CM);
-  const at = (theta: number, r: number): THREE.Vector3 => {
-    const c = Math.cos(theta);
-    const s = Math.sin(theta);
-    const d = new THREE.Vector3(
-      fr.axial[0] * c + fr.lateral[0] * s,
-      fr.axial[1] * c + fr.lateral[1] * s,
-      fr.axial[2] * c + fr.lateral[2] * s,
-    );
-    return C.clone().add(d.multiplyScalar((tr.curvatureRadius + r) * CM));
+  const n = FAN_SEGMENTS,
+    h = tr.halfSector;
+  const fp = fan.geometry.getAttribute('position') as THREE.BufferAttribute;
+  const ep = edges.geometry.getAttribute('position') as THREE.BufferAttribute;
+  const [cx, cy, cz] = fr.curvatureCenter,
+    a = fr.axial,
+    l = fr.lateral;
+  const put = (attr: THREE.BufferAttribute, vertex: number, theta: number, r: number): void => {
+    const c = Math.cos(theta),
+      s = Math.sin(theta),
+      k = (tr.curvatureRadius + r) * CM;
+    attr.setXYZ(vertex, cx * CM + (a[0] * c + l[0] * s) * k, cy * CM + (a[1] * c + l[1] * s) * k, cz * CM + (a[2] * c + l[2] * s) * k);
   };
-  const verts: number[] = [];
-  const e: number[] = [];
   for (let i = 0; i < n; i++) {
-    const t0 = -tr.halfSector + (2 * tr.halfSector * i) / n;
-    const t1 = -tr.halfSector + (2 * tr.halfSector * (i + 1)) / n;
-    const a0 = at(t0, 0);
-    const a1 = at(t1, 0);
-    const b0 = at(t0, depthMm);
-    const b1 = at(t1, depthMm);
-    verts.push(a0.x, a0.y, a0.z, b0.x, b0.y, b0.z, a1.x, a1.y, a1.z, a1.x, a1.y, a1.z, b0.x, b0.y, b0.z, b1.x, b1.y, b1.z);
-    e.push(b0.x, b0.y, b0.z, b1.x, b1.y, b1.z);
+    const t0 = -h + (2 * h * i) / n,
+      t1 = -h + (2 * h * (i + 1)) / n,
+      v = 6 * i;
+    put(fp, v, t0, 0);
+    put(fp, v + 1, t0, depthMm);
+    put(fp, v + 2, t1, 0);
+    put(fp, v + 3, t1, 0);
+    put(fp, v + 4, t0, depthMm);
+    put(fp, v + 5, t1, depthMm);
+    put(ep, 2 * i, t0, depthMm);
+    put(ep, 2 * i + 1, t1, depthMm);
   }
-  const l0 = at(-tr.halfSector, 0);
-  const l1 = at(-tr.halfSector, depthMm);
-  const r0 = at(tr.halfSector, 0);
-  const r1 = at(tr.halfSector, depthMm);
-  e.push(l0.x, l0.y, l0.z, l1.x, l1.y, l1.z, r0.x, r0.y, r0.z, r1.x, r1.y, r1.z);
-  fan.geometry.dispose();
-  fan.geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-  edges.geometry.dispose();
-  edges.geometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(e, 3));
+  put(ep, 2 * n, -h, 0);
+  put(ep, 2 * n + 1, -h, depthMm);
+  put(ep, 2 * n + 2, h, 0);
+  put(ep, 2 * n + 3, h, depthMm);
+  fp.needsUpdate = ep.needsUpdate = true;
+  // Vértices en coordenadas del mundo: sin recalcular la esfera, el recorte por frustum usaría la de la pose anterior.
+  fan.geometry.computeBoundingSphere();
+  edges.geometry.computeBoundingSphere();
 }

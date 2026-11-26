@@ -12456,3 +12456,376 @@ los tubos «cercanos» (a menos de 4,5 mm); la etapa de clasificación de B aña
 **Consecuencias.** Los flancos de los vasos que siguen fuera del plano rellenan (1,8–4,7 % de la envolvente, hasta −2,8 dB). B
 +0,1 ms en s0028 y +0,6 ms en la otra (cuadro +4 %); la rejilla se rehace en 5,6 ms (antes 9,4). 40 programas; +1,7 kB de JS.
 **Verificación.** `s0028SidePlaneTubes.test.ts`, `tubeSegmentGrid.test.ts`, guardas GLSL y láminas de la envolvente (main ≡ main).
+
+## 419. La presentación no cruza umbrales y la PF con el valle en el filtro de pared es una cota
+
+**Contexto.** Una VCI de 19,97 mm salía «20.0 mm (< 20 mm)» junto a VExUS 0, el resumen de latidos daba «PF 50 %» para 49,7 (leve) y la FA
+mostraba «A NaN». La porta grave tras +150 mL (verdad 100–103 %) salía 6/6 «baje el filtro de pared» con el filtro al mínimo.
+**Opciones.** Aceptar con la mediana ≥ 60 da un grave falso (TR respirando, 71,6 frente a 40); relajar ±10/±15, descartado.
+**Decisión.** Un ayudante por magnitud en `vexusText.ts`: la décima nunca cruza 20 mm, 30 ni 50 % y lo no finito es «—». Con el valle en
+el suelo de la envolvente (`firstFlowBin`), calidad limpia y todo latido ≥ PF_SEVERE + 10, `measureObservedPortal` acepta
+`pulsatilityLowerBound` («PF ≥ X %», grave); el mensaje solo pide bajar el filtro si eso baja el suelo. Extiende la 272 y matiza la 94.
+**Consecuencias.** El grado no cambia; la PF del resumen lleva un decimal. Las cotas se juzgan aparte: verdad grave y PF ≤ verdad + 3.
+**Verificación.** `vexusText`, `contextUi`, `portalBeatSummary`, `portalMeasure` y `examChainScale` (bolo a 10 y 20 Hz) fallan sin el
+cambio.
+
+## 420. La sístole sigue al RR previo y el pulso entra centrado en la red
+
+**Contexto.** En FA x, v, y, el fin de T, la eyección y el pulso se escalaban con el RR siguiente: el latido «adivinaba» la pausa. El
+pulso solo tenía media cero a ≈ 75 lpm (hepática 4,87 → 5,64 mL/s de 50 a 120 lpm) y en FA los ventrículos tenían patada auricular.
+**Opciones.** Renormalizar el pulso por latido (rechazado en la 313) o centrar también la aorta (rompe la 314).
+**Decisión.** `Beat.systoleScale` = √(RR previo/0,8) gobierna eventos, T, pulsos, ventanas y eyección; en FA la R siguiente llega como
+pronto en max(0,3 s; fin de T + 50 ms), con un sorteo por latido. La red recibe p − p̄ y (1+g·p)/(1+g·p̄) en sus arterias; los ventrículos
+toman la aurícula del latido.
+**Consecuencias.** Grado igual en las 96 ventanas de los 8 casos; la red no depende de la FC; los sinusales se mueven ≤ 21 ms.
+**Verificación.** `physiologyUnits`, `heartBeat`, `arterialVelocities` y `portalMeasure` fallan sin el cambio; `examChain` compara cada
+captura con la verdad de sus latidos.
+
+## 421. La losa de tubos del cuadro deshace la respiración
+
+**Contexto.** La lista de tubos del cuadro (34) comparaba la esfera material de cada tubo con el plano del mundo a ±12 mm: con D = 30 mm
+la GPU perdía tramos de pvRightAnterior y pvLeftMedial que la CPU y la puerta PW ven (42 px de 128 × 160 en la porta subcostal).
+**Opciones.** Un margen simétrico 12 + |D·(dir·elev)| sube tubos de más; la excursión máxima del patrón sube más y obliga a pasarlo al
+renderer.
+**Decisión.** `tubeInSlab` (`ultrasound/tubeSlab.ts`) alarga la losa D·(dir·elev) solo hacia −dir, lo que barre `toMaterial` con a ∈ [0,
+1], con la misma D que `uResp`. No cambian `classify` ni el GLSL.
+**Consecuencias.** En reposo la lista no cambia; con D = 30 suben un 10 % los tubos por cuadro en s0028 (hasta +27 % en la hepatorrenal).
+Falta anotar los fps del bucle real en profunda y apnea inspiratoria.
+**Verificación.** `tubeSlab.test.ts`: todo vaso que la CPU ve en el sector de 12 poses con D = 0, 10 y 30 tiene su tubo en la lista; con
+la losa anterior falla.
+
+## 422. El cambio de caso abre una serie de adquisición nueva y el navegador 3D recupera su contexto
+
+**Contexto.** Con la imagen congelada, cambiar de caso o reiniciar dejaba la imagen anterior y el calibre la aceptaba (congestión grave
+con VExUS 0 por 15 mm de otro paciente). El navegador 3D no gestionaba su contexto WebGL y tras restaurarse quedaba negro.
+**Opciones.** Rechazar todo calibre sin cuadro mostrado rompe el arnés y sobra; descongelar al cambiar de caso cambia la experiencia.
+**Decisión.** `SimulationSession.rebuild` llama a `beginAcquisitionEpoch()`, también tras un cambio fallido que llegó a cambiar la escena,
+y `setScene` limpia la pantalla. `Navigator3D` informa la pérdida a `errorLog`, no dibuja sin contexto y al restaurarse reaplica fondo y
+escena estática.
+**Consecuencias.** Congelada y tras cambiar de caso, la pantalla queda en negro y el calibre pide descongelar; la pérdida 3D aparece en
+Docente.
+**Verificación.** `contextUi.test.ts` (sesión real sobre `recordingGl`) y `navigator3dContext.test.ts` fallan sin el cambio; e2e de
+`#nav3d` en `smoke.spec.ts`.
+
+## 423. Texto y marcas de los lienzos en píxeles CSS
+
+**Contexto.** Los lienzos tienen un mapa de bits de clientWidth·DPR y sus rótulos fijos de 10–11 px se veían a 5–5,5 px CSS con DPR 2: pie
+θ/INV y marcas S/D/A del espectro, regla del sector, «ECG · resp», modo M, regla PW y corte. La 214 solo corrigió la leyenda de color.
+**Opciones.** Escalar el contexto entero cambia los grosores con los que `dopplerInteraction.spec` identifica los trazos; un tamaño por
+lienzo duplica la fórmula.
+**Decisión.** Un ayudante, `src/ui/canvasText.ts` (`cssScale`, `labelFont` ≥ 12 px y `wrapParts`), en displays, mModeView, velocityRuler y
+cutMapView: letra, desplazamientos y longitudes se multiplican por k; los grosores no. El pie PW y su aviso se parten sin perder θ ni INV.
+**Consecuencias.** Ningún texto de lienzo baja de 12 px CSS ni se sale de su lienzo; a DPR 1 la geometría no cambia. Imagen, señal y GPU
+no cambian.
+**Verificación.** `canvasTextScale.test.ts` (DPR 1 y 2, pie a 320 y 260 px, regla con `sectorLayout` real) y dos casos de
+`cutMapRaster.test.ts` fallan sin el cambio.
+
+## 424. La escala PW se rotula y se pide con la corrección angular
+
+**Contexto.** Con θ = 60° el HUD y el mando «Escala» decían ±40 cm/s y el pie y la regla ±80 cm/s, aunque la decisión 126 dice que la
+corrección reescala las velocidades rotuladas.
+**Opciones.** Rotular HUD y mando como «axial» deja dos cifras para un mismo Nyquist; un tope fijo de 120 cm/s impide pedir más de 3896 Hz
+a 60°.
+**Decisión.** Una sola cifra, `Simulator.pwNyquistCms()`, en HUD, pie, regla y mando. `prfFromNyquistCms(cms, f0, α)` es la inversa exacta
+(|cos α| ≥ 0,05 en `angleCorrectionFactor`) y `dopplerScaleBounds` escala con 1/|cos θ| los límites del mando PW.
+**Consecuencias.** El alumno ve que la corrección reescala la escala rotulada sobre el mismo intervalo de PRF; con θ = 0 nada cambia, bit
+a bit. El color sigue sin corrección.
+**Verificación.** `dsp.test.ts` (inversa angular), `acquisitionEquipment.test.ts` (80 cm/s → 2597 Hz a 60°) y `controllers.test.ts` (HUD
+«PW ±80») fallan sin el cambio.
+
+## 425. Teclado: un solo reparto y la imagen enfocable mide
+
+**Contexto.** El protocolo no se cerraba con teclado: calibrador, puerta, caja de color y línea M eran de puntero y al armar una fila de
+Medir el foco caía al body. Atajos y sonda ignoraban Ctrl/⌘ (el zoom del navegador cambiaba la ganancia) y los avisos no se anunciaban.
+**Opciones.** Enfocar `#sector-wrap` roba las flechas de la sonda tras un clic; ceder el Espacio en botones rompe congelar.
+**Decisión.** `src/ui/keyRouting.ts` (`appKey`) filtra para sonda, cine y atajos: nada desde un campo de formulario ni con Ctrl/⌘ salvo
+AltGr. `#overlay` es la imagen enfocable: con el calibrador las flechas mueven una cruz (1 mm, ⇧ 0,2) e Intro fija cada punto; en vivo
+llevan la puerta, la caja o la línea M. Los puntos se guardan en (θ, r). El banner lleva `role=alert`.
+**Consecuencias.** La línea M se coloca con teclado; los calibres de la franja M siguen con puntero (`mmode-strip-calipers-pointer`). El
+calibrador no mezcla escalas.
+**Verificación.** `keyboard.test.ts`, `controllers.test.ts` y `contextUi.test.ts` fallan sin el cambio; e2e `keyboardMeasurement.spec.ts`
+y la secuencia de Tab de `responsiveWorkspace.spec.ts`.
+
+## 426. «Copiar posición» respeta el modo ciego y nombra la persona
+
+**Contexto.** Con `?alumno` el JSON copiado llevaba `caseId: "severe-congestion"` y, sin portapapeles, quedaba en un cuadro visible. Desde
+la 340, `source.anatomy` decía `atlas` tanto para s0028 como para `?abdomen=atlas`, dos cuerpos distintos.
+**Opciones.** `shownCaseLabel` sin condición daría el nombre descriptivo fuera del modo ciego; quitar la semilla no hace falta (solo la
+entiende quien lee el código).
+**Decisión.** Con `blindCaseNames(location.search)` y sin docente se copia `caseDisplayLabel(id, false)`; si no, el id. `source.anatomy`
+admite `'s0028'`, se añade `source.revision` (formato `vexus-probe-position/2`) y el diagnóstico lleva `anatomy: { person, frameId,
+revision }`.
+**Consecuencias.** El alumno no ve ni pega el id del caso; el docente vuelve al caso por la letra. Física e imagen no cambian.
+**Verificación.** `probePosition.test.ts` (8 casos con y sin portapapeles; s0028, atlas, legacy y reference) falla sin el cambio;
+`controllers.test.ts` y la e2e `probePosition.spec.ts`.
+
+## 427. El corte rotula el tubo digestivo de s0028 con los rótulos de su TAC
+
+**Contexto.** `structureIdentity` traducía el rótulo digestivo de s0028 con la tabla de nueve segmentos de la otra persona: todo el colon
+salía «Íleon» y todo el delgado «Yeyuno», también el ángulo hepático en la ventana de Morison; el quiste renal izquierdo salía «interior
+U».
+**Decisión.** s0028 usa su tabla: «Estómago», «Duodeno», «Intestino delgado» y «Colon», sin segmentar, y «Riñón izquierdo · quiste». Los
+rótulos nuevos van al final de `STRUCTURE_LABELS`; la otra persona no cambia.
+**Consecuencias.** Ningún punto de s0028 sale Yeyuno, Íleon, Ciego ni Recto. Solo cambian la CPU y el Worker del corte, sin GLSL. Fe de
+erratas de la 396: la regularización de la VCI va ahora tras el alisado del eje, que borraba el nodo de z = 5 (el sano medía 20,5 mm a
+1,25 cm de la aurícula).
+**Verificación.** `s0028SolidsClassify` (tubo digestivo contra la etiqueta de la fuente, y quiste) y `s0028IvcSite` (sitios z 0 y 2,5 y el
+nodo de z = 5) fallan sin el cambio.
+
+## 428. La release sale solo de main con su CI y quien escribe no ejecuta código de terceros
+
+**Contexto.** `release.yml` publicaba cualquier tag `v*.*.*`, aunque fuera la punta de una rama o un commit con la CI en rojo, y dejaba el
+`GITHUB_TOKEN` con `contents: write` en la config de git mientras `npm ci` y el build ejecutaban código de terceros.
+**Opciones.** `merge-base --is-ancestor` acepta la punta de una PR fusionada; `persist-credentials: false` en un solo job no basta.
+**Decisión.** El job `build` es de solo lectura y, antes de `npm ci`, exige el SHA en `rev-list --first-parent origin/main` y un run de
+`ci.yml` en verde sobre ese SHA que no sea de `pull_request`. El job `publish` (`contents: write`) solo descarga el artefacto y ejecuta
+`gh release create --verify-tag`. Todos los checkouts llevan `persist-credentials: false`.
+**Consecuencias.** Se etiqueta tras la CI de main (si se canceló, `gh workflow run ci.yml --ref vX.Y.Z`); ningún ajuste del repositorio
+cambia.
+**Verificación.** `workflowPermissions.test.ts` falla con el flujo anterior y con la guarda por `merge-base`; ejecuta la guarda real con
+un `gh` simulado.
+
+## 429. El calibrador de la VCI mide en un solo cuadro
+
+**Contexto.** El calibrador no anotaba el cuadro de su primer punto: unía dos instantes, en vivo o recorriendo el cine entre los clics, y
+daba un diámetro que la vena no tuvo (20,5 mm «dilatada» con 18 y 17,5 mm reales). Capturar antes del primer latido borraba en silencio la
+captura válida anterior.
+**Opciones.** Rechazar el calibre en vivo añade un paso que el ecógrafo no pide; anular el punto en `cine.go()` no cubre descongelar.
+**Decisión.** El primer punto congela y guarda `displayedFrame`; si el segundo llega con otro cuadro, pasa a ser el primero y la tarjeta
+lo dice. Una captura sin latidos conserva la anterior y pide esperar, y la porta sin traza juzga la identidad en los latidos adquiridos
+(«vaso equivocado»).
+**Consecuencias.** Las medidas sobre un mismo cuadro no cambian (siguen en (θ, r), decisión 425). Medir en vivo deja la imagen congelada.
+**Verificación.** `keyboard.test.ts`, `contextUi.test.ts` y `portalMeasure.test.ts` fallan sin el cambio; e2e
+`deferredMeasurement.spec.ts`.
+
+## 430. Lo que rotula un dato sale del modelo y de su misma convención
+
+**Contexto.** «S 25.0 · D 25.0 → normal (S>D)» con S = 25,04. Congelada, otra escala dejaba el HUD en «Color ±X» y la barra en la PRF del
+cuadro; los deslizadores rotulaban lo pedido hasta 250 ms; con |cos α| < 0,05 la velocidad no seguía a la escala; el Esc del corte
+cancelaba la herramienta.
+**Opciones.** Dos decimales siempre recargan las velocidades; un mando de Escala que siga al cuadro no se movería congelado.
+**Decisión.** `hepaticPeaksText` añade cifras a S y D mientras empaten; `hudColor` toma PRF y filtro de `sim.displayed`, como la barra;
+`slider` llama a `sync()` tras `set`; `velocityFromShiftMmS` usa `angleCorrectionFactor`; el corte detiene el Esc que atiende.
+**Consecuencias.** El grado no cambia y con α = 0 todo es idéntico bit a bit; el mando muestra el ajuste y el HUD, la imagen.
+**Verificación.** `vexusText`, `contextUi`, `sliderControl`, `acquisitionEquipment`, `dsp` y `cutMapSelectionFreshness` fallan sin el
+cambio.
+
+## 431. El visor PW venoso procesa lo llegado más un trozo y mide solo al día
+
+**Contexto.** Con 32 muestras fijas por cuadro el visor exigía ≥ 7,8 fps: a 6 fps la IQ se reiniciaba en cada cuadro y con la CPU 2× más
+lenta iba 4,5 s atrasada y decía «pocos latidos».
+**Opciones.** Un presupuesto de 8 ms no cabe ni un trozo (10–18 ms); medir al cerrar cada latido cambia el suelo de ruido de 7 s.
+**Decisión.** `venousCatchUpBatch` procesa por territorio lo llegado más 32 muestras, de los 12 s del motor; `venousMeasurementBeats`
+cubre toda ventana del historial y, con atraso > 0,2 s, la fila espera («Esperando la reconstrucción IQ»). El HUD solo escribe el DOM si
+su texto cambia y el abanico 3D reutiliza sus buffers.
+**Consecuencias.** El atraso nunca crece: bucle 1× de 22,8 a 42,3 fps, al día en 2,3 s (antes 8,2); espectro 7,3 → 2,7 ms con los mismos
+bytes; HUD congelado de 60 a 0 layouts/s.
+**Verificación.** `venousViewerCatchUp.test.ts` falla sin el cambio; `venousDisplayInversion.test.ts` compara bytes con la referencia por
+píxel.
+
+## 432. Con la imagen congelada, la animación hacia una ventana se pausa
+
+**Contexto.** `ProbeAnimator.tick` no sabía de la congelación: si se congelaba a los 0,3 s de pulsar «Renal», la sonda seguía 41,5° en φ y
+23,7 mm en z sin adquirir y, al descongelar, la imagen saltaba 44° en un cuadro (contra las decisiones 17 y 80). El preajuste de cada
+ventana dejaba además la TGC con 6 bandas de 8.
+**Opciones.** Cancelar al congelar deja la sonda a medio camino y obliga a pulsar otra vez la tarjeta.
+**Decisión.** `ProbeAnimator` recibe `live`, como `ProbeInput` (261): con `live` falso, `tick` no mueve la pose y la animación sigue
+activa. La TGC tiene `TGC_BANDS = 8` (`ultrasound/tgcBands.ts`) y el estado del equipo la normaliza siempre a esa longitud.
+**Consecuencias.** Congelada, la sonda no se mueve y al descongelar sigue desde donde estaba; las bandas 7 y 8 vuelven a responder.
+**Verificación.** `probeAnimation.test.ts`, `windowPreset.test.ts` y `equipment.test.ts` fallan sin el cambio.
+
+## 433. Un hueco con los bordes junto al suelo también es el valle en el filtro de pared
+
+**Contexto.** Desde la 420, el grave tras +150 mL en apnea (verdad 100–104 %) salía exacto a 81–84 % con el filtro a 10 y 20 Hz: la
+envolvente de la banda débil se pierde antes de su primer bin y los dos bordes del hueco del valle quedaban hasta 0,15·Vmáx sobre suelo +
+1 bin.
+**Opciones.** «Un borde basta» deshace la 420; con 0,05·Vmáx quedan capturas exactas a 20 puntos.
+**Decisión.** `measureObservedPortal` cuenta también un hueco con los dos bordes a ≤ suelo + 1 bin + 0,1·Vmáx (`PORTAL_FLOOR_GAP_VMAX`),
+con Vmín > 0 (el paso por cero de una inversión resuelta no es el valle) y calidad limpia; decide como el corte estricto: cota si todo
+latido ≥ PF_SEVERE + 10, si no «filtro de pared». [EXTRAPOLACIÓN PROPIA]
+**Consecuencias.** Las 12 capturas del bolo son «PF ≥ 79–84 %» (grave) y las 192 de la matriz de escalas no cambian; la porta a vaivén
+sigue exacta. Ninguna tolerancia cambia.
+**Verificación.** `portalMeasure.test.ts` (banda débil a 10 y 20 Hz) y `examChainScale` (bolo de 150 mL) fallan sin el cambio.
+
+## 434. La salida hepática hace cascada cuando la PIA supera la presión hepática
+
+**Contexto.** Con PAD 5 y PIA 20 la esplácnica quedaba en 10 mmHg, el caudal portal no cambiaba y los volúmenes del estado bajaban sin
+cota (hígado y esplácnico −320 y −390 mL): la salida hepática solo colapsaba por presión absoluta.
+**Opciones.** Un suelo de volumen inyecta masa; la ley de la VCI tal cual dejaba −100 mL; colapsar desde transmural 0 cambiaba la trampa.
+**Decisión.** `venousNetwork.ts` da a las suprahepáticas un resistor de Starling transmural de área 1 + (P_h − PIA + 3)/1 ≥ 0
+(`HV_COLLAPSE_TRANSMURAL_MMHG`, `HV_COLLAPSE_WIDTH_MMHG`); `engine.ts` arranca con P_h ≥ PIA − 3.
+**Consecuencias.** Con PIA > P_h + 3, P_h ≈ PIA − 3,6 y la esplácnica la sigue; caudal portal −11/−17 % con PIA 20/25; hígado y esplácnico
+≥ −75/−40 mL. Sin intervenciones, los 8 casos no cambian; con el grado igual cambian la trampa en apnea inspiratoria (PF 20,0 → 20,4 %) y
+«Retirar».
+**Verificación.** `venousExperiment.test.ts` e `interventions.test.ts` («PIA alta con diuresis») fallan sin el cambio;
+`regionalIvc.test.ts` se actualiza (19 → 5,9 m/s).
+
+## 435. Cancelar el calibrador conserva la VCI y el HUD rotula el cuadro mostrado
+
+**Contexto.** El primer punto del calibrador borraba la VCI medida (repetir 22,4 mm y cancelar dejaba «—»); tras ⌘/Ctrl+clic ni Esc ni
+armar otra fila soltaban el punto y un clic cerraba 35 mm sobre una VCI de 14. Congelada, el HUD daba «19 cm» con la regla en 18 y «G 6
+dB» sobre un cuadro a 0 dB.
+**Decisión.** Solo el segundo punto llega a Medir; `setIvcCaliper(null)` no borra. `bindImageClick` suelta el punto en todo cambio de
+herramienta, y Esc y «Borrar mediciones» también. `createHudImage` toma de `sim.displayed` profundidad, G, RD, THI, CX, RM y color: el HUD
+sigue al cuadro, como la barra.
+**Consecuencias.** Cancelar nunca destruye una medida ni deja un punto oculto; congelada o en cine el HUD describe la imagen. El grado no
+cambia.
+**Verificación.** `keyboard.test.ts`, `contextUi.test.ts`, `controllers.test.ts` y `acquisitionEquipment.test.ts` fallan sin el cambio;
+e2e `keyboardMeasurement.spec.ts`.
+
+## 436. Sin escala alcanzable, «Escala» no cambia la petición
+
+**Contexto.** En el techo físico (puerta honda o tríplex), «Escala +» guardaba como petición el tope del mando: al relajar el límite, la
+escala subía sola (38 → 78 cm/s en PW y 41 → 60 en Color al apagar el PW).
+**Opciones.** Guardar lo adquirido realimenta la PRF efectiva en la petición, contra la 269, y rompe la e2e `velocityRuler`.
+**Decisión.** `dopplerScaleCommand` devuelve el primer candidato que mueve la escala en el sentido del gesto; si no lo hay, la petición
+queda como estaba. Completa la 269 («avanza por valores alcanzables»).
+**Consecuencias.** Salir de mesetas, el valor explícito y el techo a 60° (424) no cambian; un arrastre que sí mueve la escala sigue
+guardando el valor elegido.
+**Verificación.** `acquisitionEquipment.test.ts` (PW con la puerta a 130 mm y el techo del tríplex) falla sin el cambio.
+
+## 437. La puerta virtual del visor venoso no depende de la profundidad B
+
+**Contexto.** `VenousSpectralAcquisition` buscaba la puerta hasta 175 mm pero medía la ventana acústica solo hasta la profundidad B del
+alumno: con B a 100 mm la porta de s0028 saltaba de 118,5 a 136,5 mm (−3 dB), fuera de la imagen.
+**Opciones.** Acotar la búsqueda a B − 5 mm deja la porta «no disponible» con B a 100 mm o menos.
+**Decisión.** Una constante, `GATE_SEARCH_MM = 175`, fija la búsqueda y la marcha del peso; del equipo solo se copia el foco.
+**Consecuencias.** Con 180 mm todo es idéntico bit a bit; la puerta ya no cambia con la profundidad de la imagen.
+**Verificación.** `venousSpectral.test.ts` falla sin el cambio.
+
+## 438. La persistencia solo mezcla una historia de la misma geometría
+
+**Contexto.** `passPersistence` solo cortaba la historia al cambiar el nivel de moteado: a otra profundidad el primer cuadro mostraba
+0,35·el abanico anterior (diafragma y VCI dobles más de 1 s con Color), y tras redimensionar, arrancar o cambiar de caso el cuadro salía
+al 65 % del brillo.
+**Opciones.** Limpiar la historia al cambiar la profundidad seguiría mezclando negro; reescalarla no es lo que hace un equipo.
+**Decisión.** Con `persistValid` y `persistDepth` la historia solo se pesa si es válida y de la misma profundidad y nivel; si no, el
+cuadro va con `uPersist = 0` y sube `persistenceEpoch`. `showCine` marca válida la historia rehecha con la profundidad del cuadro
+mostrado.
+**Consecuencias.** Sin GLSL ni coste nuevos; la física y los calibres no cambian y el cine no mezcla a través del corte.
+**Verificación.** `persistenceHistory.test.ts` (WebGL falso) falla en sus cinco casos sin el cambio.
+
+## 439. Medir una pasada compara con la misma pasada sin repetir y el tiempo de GPU solo suma las vigentes
+
+**Contexto.** `frameCostMs` sin `repeatPass` reutilizaba A0/A1 (256) y con `repeatPass` los recalculaba: el Δ de cualquier pasada llevaba
+A0 + A1. En B y A0 por etapas (s0028, 406) la repetición emitía solo el último dibujo. El temporizador sumaba F y F1 con el Color apagado
+y aceptaba consultas en vuelo durante un «disjoint».
+**Decisión.** La referencia es la misma pasada con `repeatCount: 0`; repetir B o A0 por etapas lanza en lugar de medir de menos;
+`gpuTimer` da solo las pasadas emitidas en el último cuadro y un «disjoint» invalida también las consultas en vuelo. La TGC usa
+`TGC_BANDS` también en GLSL.
+**Consecuencias.** Las cifras de coste por pasada dejan de incluir A0/A1 y no infravaloran B ni A0 en s0028; la imagen no cambia.
+**Verificación.** `frameCost.test.ts` y `passGraph.test.ts` fallan sin el cambio.
+
+## 440. Cuatro pruebas comprueban su título
+
+**Contexto.** La lámina subvóxel de grasa D recorría 0 puntos tras una guarda `>= 0`; `vesselOverlap` eximía un par arteria–vena con un
+extremo a menos de r + 3 mm del otro; la prueba de reverberación buscaba `(r - rk)`, que no existe desde la 325; las e2e de equivalencia
+no ataban el informe al caso pedido.
+**Decisión.** Grasa D: nodo y 26 vecinos a 0,6 mm dentro de aorta, VCI y porta, con mínimo por vaso. Solo se unen vasos del mismo tipo con
+un extremo dentro de la luz del otro. Reverberación: `z·z` y ningún `pow` de base negativa en 13 programas. Las e2e exigen `patient.id ===
+id` y `errorLog` vacío.
+**Consecuencias.** Cuatro pares del mismo tipo que se rozaban se revisan enteros (hoy, ninguno se solapa). Ningún byte de GLSL cambia.
+**Verificación.** Cada prueba cae con su mutante (sin `!insideVessel`, sin tipo, `q.r + 3`, `pow`); mutante `grasa-amplia-en-vasos`.
+
+## 441. La clausura JS de s0028 recupera 8,6 KiB compactando sus datos generados
+
+**Contexto.** Tras las decisiones 419–440 la clausura JS de s0028 medía 1.148.598 B frente a un techo de 1.144.832 B (3.766 B por encima).
+El techo no se sube.
+**Opciones.** Cargar los ganchos de prueba en diferido no cambia la cifra (ya solo se cargan con `?e2e` y la clausura cuenta todo chunk
+alcanzable); una codificación entrópica ahorraría más a cambio de un lector mucho mayor.
+**Decisión.** El primer dígito en base 62 de cada tramo renal da la etiqueta por su orden tras la anterior (`S0028_RENAL_NEXT`) y la
+longitud (17.701 → 14.197 caracteres). Troncos, ramas y red interlobar pasan a nodos enteros en base 62 (`s0028Nodes`): al dividir cada
+entero por la escala sale el mismo double. Una sola `base62Digit`, `s0028PageUploads`, `radiusAt` y `tubeNode`.
+**Consecuencias.** s0028: 1.139.814 B (margen 5.018 B) antes de la ronda 5; default sin cambios. Ningún resultado cambia.
+**Verificación.** SHA-256 idénticas en la clasificación (rejillas de 6 y 2,5 mm), tubos, subidas a la GPU e interior renal;
+`shader-hashes.json` y el mapa de renombrado GLSL iguales; `s0028Base62.test.ts` falla sin el cambio.
+
+## 442. Nada del latido depende de la pausa que viene
+
+**Contexto.** Tras la 420 cuatro cosas leían aún el RR siguiente: el descenso y tras una pausa caía después de la R y la VSH lo contaba
+como S del latido corto (6 de 185 grupos de 4 latidos con S > D en FA en apnea); la media del pulso hacía que la PSV hepática siguiera al
+RR siguiente (r = 0,86); el centrado de la AD movía la PAD de todo el latido; el ventrículo llegaba lleno justo a la R.
+**Decisión.** La R siguiente apaga el descenso y en 30 ms tras ella (`beatWave`). La AD centra cada latido con su área sobre el RR
+nominal, con transiciones que empiezan en cada R. La red recibe p − p̄ con p̄ la media móvil causal del pulso (`PULSE_MEAN_TAU_S` = 3 s,
+desde `nominalPulseMean`). El llenado ventricular sigue al RR previo; solo la patada auricular termina en la R.
+**Consecuencias.** Grado y patrón iguales en los 8 casos (calibrate, ±0,5 cm/s); en FA ningún grupo de 4 latidos da S > D en apnea y la
+PSV hepática deja de seguir al RR siguiente (r = 0,08). Las colas gaussianas del latido siguiente asoman ≈ 0,1 s antes de su R.
+**Verificación.** `beatCausality` (dos motores con una pausa 0,25 s más larga coinciden hasta el latido siguiente), `physiologyUnits`,
+`arterialVelocities`, `heartBeat`, `atrialContinuity` y `examChain` fallan sin el cambio.
+
+## 443. Un valle que sale de golpe del suelo también es cota y el suelo + 1 bin no lo decide el redondeo
+
+**Contexto.** Desde la 420 el hueco del valle exige sus dos bordes junto al suelo: un valle en la línea de base (PF 100 %) que sale de
+golpe solo deja en la banda su entrada y salía exacto a 79 % a ±40, y a 40–48 % (leve) con la porta lenta a ±12. El sano respirando era
+«intermitente» porque `|Vmín| ≤ suelo + 1 bin` lo pasaba por 7e-15.
+**Opciones.** «Un borde basta» y fundir restos entre huecos pasan el sano respirando a «filtro de pared».
+**Decisión.** Con calidad limpia y Vmín > 0, un hueco con un solo borde a ≤ suelo + 1 bin + 0,1·Vmáx cuenta si aparece en más de la mitad
+de los latidos (la PF es su mediana). Vmín es suelo solo estrictamente por debajo de suelo + 1 bin. La cota se rotula «el valle cae en el
+filtro de pared». [EXTRAPOLACIÓN PROPIA]
+**Consecuencias.** Las 240 capturas de `examChainScale` y las 116 de `examChain`, `s0028Scales` y `portalMeasure` no cambian.
+**Verificación.** `portalMeasure` (valle que sale de golpe a ±40 y ±12; valle en el primer bin con 10 semillas) y `contextUi` fallan sin
+el cambio.
+
+## 444. El HUD rotula la cadencia del cuadro y la cruz del calibrador va en píxeles CSS
+
+**Contexto.** Congelada o en cine, la línea Color del HUD tomaba PRF y filtro del cuadro pero la cadencia de la última adquisición en vivo
+(«· 4 Hz» sobre un cuadro de 9 Hz). La cruz del calibrador (425) medía ±6 px CSS a DPR 2 y el primer punto de ⌘/Ctrl+clic no se dibujaba.
+**Opciones.** Omitir la cadencia congelada pierde un dato docente.
+**Decisión.** `Simulator.render` pasa `FrameInputs.frameHz`, `CineFrame` lo guarda y `Simulator.displayed` lo expone; `hudImage` es una
+función pura que lo lee del cuadro. `drawMarks` escala los brazos por `cssScale` (423) y dibuja la cruz si hay un punto pendiente del
+cuadro en pantalla.
+**Consecuencias.** Los tres valores de la línea Color describen la misma adquisición; a DPR 1 la cruz es idéntica. Imagen, señal y GPU no
+cambian.
+**Verificación.** `acquisitionEquipment.test.ts` (cadencia en cine) y `keyboard.test.ts` (cruz a DPR 2 y punto de ⌘/Ctrl+clic) fallan sin
+el cambio.
+
+## 445. La losa de tubos recorta con D a pasos de 10 mm
+
+**Contexto.** Con la 421 la lista de tubos seguía a la D de cada instante: con la sonda quieta, cada cambio rehacía la rejilla de tubos
+(5,6 ms en el navegador, 418) y resubía su textura RG32F de ~1 MB, hasta 16 veces por respiración tranquila y 31 en la profunda.
+**Opciones.** Unir por pose los tubos vistos converge a la losa de Dmax (+9–10 tubos por cuadro), que la 421 rechazó.
+**Decisión.** `tubeSlabDiaphragmMm` redondea D hacia arriba a múltiplos de 10 mm solo para el recorte: la losa crece con D, así que la
+lista contiene la de la D exacta y nunca pasa de la excursión del patrón. `uResp`, `classify` y el GLSL no cambian.
+**Consecuencias.** La rejilla se rehace 4–6 veces por respiración tranquila y 8–10 en la profunda; suben ≤ 3 tubos por cuadro de media.
+Falta anotar los fps del bucle real en profunda.
+**Verificación.** `tubeSlab.test.ts` (renderer real sobre `recordingGl`): ≤ 2 resubidas por respiración tranquila y ≤ 6 en la profunda, y
+la lista contiene la de la D exacta; con la D exacta falla y con `Math.floor` pierde tubos.
+
+## 446. Un hueco más breve que la ventana de análisis no hace intermitente la vena renal
+
+**Contexto.** `abdominalAcquisition` (grave, renal, ±50 cm/s, apnea) salía «intermitente» con la vena siempre en la puerta: el ascenso de
+D desde el filtro y desvanecimientos del moteado de 25 ms gastaban el 20 % de margen de la ventana diastólica. En 100 semillas, 16
+intermitentes (10 en main): la prueba aprobaba por la realización de la semilla 0.
+**Opciones.** Bajar `PHASE_COVERAGE` mueve un umbral sin causa; cerrar huecos sin tope daba por medible una vena que parpadea.
+**Decisión.** `phaseCoverage` excusa tramos sin sangre más breves que la ventana de análisis (fftSize/PRF: 39 ms a ±50 cm/s), como mucho
+una ventana por latido y solo con la vena en ≥ 50 % de su ventana diastólica. [EXTRAPOLACIÓN PROPIA]
+**Consecuencias.** A ±50 los falsos intermitentes bajan de 16 a 2 de 100; respirando, la vena que sale de la puerta sigue siendo
+intermitente, y con ruido ×3 el resultado es el de antes, semilla a semilla.
+**Verificación.** `measureQuality.test.ts`: huecos de 24 ms y D tardía fallan sin el cambio; 66 ms, parpadeo, latido suelto y escala baja
+no valen.
+
+## 447. Una S en el suelo de su banda no decide el patrón renal
+
+**Contexto.** De ±40 a ±80 la S de la interlobar monofásica del grave (verdad S/D 0,22) se lee en el suelo de la envolvente + 1 bin y con
+D de 9,4–12,5 cm/s salía «bifásica» con la calidad aprobada (28/98 a ±50, 64/64 a ±80): el grado bajaba de 3 a 2.
+**Opciones.** Mover 0,30 o restar el bin a S y D mueve la frontera sobre la lectura; pedir «baje la escala» rechaza bifásicas reales.
+**Decisión.** `envelopeFloorHz` (el suelo de las 419/433/443) y `renalSResolution` dan suelo y bin a `renalPatternFromPeaks`: una S ≤
+suelo + 1 bin cabe en [0, suelo + ½ bin]; hasta un bin más, en [suelo, S]. Con 0,3·D fuera del intervalo se decide; dentro,
+`indeterminate` («fases no resolubles»). [EXTRAPOLACIÓN PROPIA]
+**Consecuencias.** Grave en apnea: ninguna bifásica de ±40 a ±80 (sin resolver 12/37, 10/98, 30/39 y 7/64); a ±30, 2/39 bifásicas (antes
+6). Tras diurético (verdad 0,30–0,47) ninguna monofásica; se pierde medibilidad a escala alta.
+**Verificación.** `renalInterruption`, `classification` y `abdominalAcquisition` (grave a ±50/±40; tras diurético a ±80) fallan sin el
+cambio.
+
+## 448. Una vena renal plegada entera por el Nyquist es aliasing, no un hueco breve
+
+**Contexto.** Con la 446, a ±20 cm/s la interlobar del grave (D axial 23 cm/s) se pliega entera: la banda estrecha llega a su borde,
+desaparece de su lado y reaparece en el opuesto, sin columnas con sangre en los dos bordes, así que `wrapped` no saltaba y el hueco, más
+breve que la ventana de análisis, se excusaba. Salían capturas «medibles» con la D recortada (2 de 10).
+**Decisión.** `bloodInColumn` da también la onda en cada borde; en la medición de un lado con ventana de fase, `wrapsAcrossNyquist` cuenta
+el latido como plegado si un tramo sin la onda está junto a una columna con la onda en su borde y hay ≥ 2 columnas en el borde opuesto, o
+tiene la onda en su borde a los dos lados. Ningún umbral se mueve.
+**Consecuencias.** Grave en apnea a ±20: 20 de 20 aliasing; de ±25 a ±80 ninguna captura cambia; en 210 capturas de 8 casos solo 3 pasan a
+aliasing a ±10–20.
+**Verificación.** `measureQuality.test.ts` (onda entera plegada en su ventana de fase) y la e2e `venousViewer.spec.ts:384` fallan sin el
+cambio.

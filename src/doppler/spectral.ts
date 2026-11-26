@@ -279,6 +279,9 @@ export function columnBandEnvelopes(col: SpectralColumn, fftSize: number, floorD
  */
 export const MIRROR_MARGIN_DB = 6;
 
+/** Primer bin (≥ 1) que mira la envolvente de semiplano: `fMinHz` redondeada hacia arriba en la rejilla de la FFT. */
+export const firstFlowBin = (fMinHz: number, df: number): number => Math.max(1, Math.ceil(fMinHz / df - 1e-9));
+
 /**
  * Envolvente de flujo en un semiplano FIJO (decisión 94), en Hz ≥ 0, o NaN si en ese semiplano no hay
  * flujo. Como la traza un equipo sobre un vaso de dirección conocida:
@@ -309,7 +312,7 @@ export function halfPlaneEnvelopeHz(
   const sigLin = floorLin * Math.pow(10, SIGNIFICANT_DB / 10);
   const detLin = floorLin * Math.pow(10, detectDb / 10);
   const mirrorRatio = Math.pow(10, MIRROR_MARGIN_DB / 10);
-  const j0 = Math.max(1, Math.ceil(fMinHz / df - 1e-9));
+  const j0 = firstFlowBin(fMinHz, df);
   // hueco tolerado en Hz, no en bins: a PRF baja el bin es más estrecho y el moteado espectral parte la banda
   const gapBins = Math.max(BAND_GAP_BINS, Math.ceil(BAND_GAP_HZ / df));
   const nj = half - j0;

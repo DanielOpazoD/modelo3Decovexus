@@ -15,6 +15,7 @@ function canvas() {
     lineTo: vi.fn(),
     stroke: vi.fn(),
     fillText: vi.fn(),
+    measureText: (text: string) => ({ width: 6 * text.length }),
     save: vi.fn(),
     restore: vi.fn(),
     arc: vi.fn(),

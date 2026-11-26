@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { EquipmentController, type EquipmentCommand } from '../app/equipment';
 import { Simulator, defaultEquipment } from '../app/simulator';
-import { createTestHooks, frameMeasureOptions } from '../app/testHooks';
+import { createTestHooks, frameMeasureOptions, type FrameCostOptions } from '../app/testHooks';
 import { NORMAL_ADULT } from '../cases';
 import { C_RECONSTRUCTION_MM_S } from '../core/units';
 import { clonePatient } from '../physiology/patientState';
@@ -188,8 +188,13 @@ describe('frameCostMs: el coste del cuadro con color y por pasada', () => {
 
   it('las opciones que no medirían nada lanzan en vez de ignorarse', () => {
     expect(() => frameMeasureOptions({ repeatPass: 'noExiste' as PassId })).toThrow(/no es una pasada/);
-    expect(() => frameMeasureOptions({ repeatPass: 'rawField', repeatCount: 0 })).toThrow(/entero ≥ 1/);
-    expect(() => frameMeasureOptions({ repeatPass: 'rawField', repeatCount: 1.5 })).toThrow(/entero ≥ 1/);
+    // 0 repeticiones es la referencia de la misma pasada (recalcula A0/A1 como las demás repeticiones)
+    expect(frameMeasureOptions({ repeatPass: 'rawField', repeatCount: 0 })).toEqual({
+      forceColor: false,
+      repeat: { pass: 'rawField', times: 0 },
+    });
+    expect(() => frameMeasureOptions({ repeatPass: 'rawField', repeatCount: -1 })).toThrow(/entero ≥ 0/);
+    expect(() => frameMeasureOptions({ repeatPass: 'rawField', repeatCount: 1.5 })).toThrow(/entero ≥ 0/);
     expect(() => frameMeasureOptions({ repeatCount: 2 })).toThrow(/sin repeatPass/);
     // la pasada de color solo se dibuja en los cuadros de color
     expect(() => frameMeasureOptions({ repeatPass: 'color' })).toThrow(/exige forceColor/);
@@ -368,6 +373,37 @@ describe('repeatPass en el renderizador real (WebGL falso)', () => {
     };
     sim.render();
     expect(draws.some((d) => d.program === own[0].program)).toBe(false);
+  });
+
+  it('la referencia es la misma pasada con repeatCount 0: la diferencia son solo las repeticiones, también en A0/A1', () => {
+    const { sim, draws } = realRig();
+    const hooks = createTestHooks(
+      () => sim,
+      () => {
+        throw new Error('sin equipo');
+      },
+      () => 0,
+    );
+    sim.render();
+    const geometry = draws.slice(0, 2).map((d) => d.program); // A0 y A1
+    const n = 3;
+    const measure = (opts?: FrameCostOptions) => {
+      draws.length = 0;
+      hooks.frameCostMs(n, opts);
+      return { total: draws.length, geometry: draws.filter((d) => geometry.includes(d.program)).length };
+    };
+    // sin repeatPass, con el reloj quieto, A0/A1 se reutilizan (decisión 256): no sirve de referencia
+    expect(measure().geometry).toBe(0);
+    for (const pass of ['transmissionHits', 'transmissionSegments', 'rawField', 'present'] as const) {
+      const ref = measure({ repeatPass: pass, repeatCount: 0 });
+      expect(ref.geometry, pass).toBe(2 * (n + 1));
+      for (const k of [1, 4]) {
+        const arm = measure({ repeatPass: pass, repeatCount: k });
+        expect(arm.total - ref.total, `${pass} ×${k}`).toBe((n + 1) * k);
+        const own = pass === 'transmissionHits' || pass === 'transmissionSegments' ? (n + 1) * k : 0;
+        expect(arm.geometry - own, `${pass} ×${k}`).toBe(ref.geometry);
+      }
+    }
   });
 
   it('dispose libera los destinos de prueba', () => {

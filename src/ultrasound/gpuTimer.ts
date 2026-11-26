@@ -16,9 +16,12 @@ const MAX_PENDING = 64;
 export class GpuPassTimer<Id extends string> {
   private readonly ext: TimerQueryExt | null;
   private free: WebGLQuery[] = [];
-  private pending: Array<{ id: Id; query: WebGLQuery }> = [];
+  private pending: Array<{ id: Id; query: WebGLQuery; invalid?: boolean }> = [];
   private active: { id: Id; query: WebGLQuery } | null = null;
   private readonly ema = new Map<Id, number>();
+  /** Pasadas emitidas desde el último `poll` y en el cuadro anterior: `timings` da solo las vigentes. */
+  private issued = new Set<Id>();
+  private lastIssued = new Set<Id>();
 
   constructor(
     private readonly gl: WebGL2RenderingContext,
@@ -33,7 +36,9 @@ export class GpuPassTimer<Id extends string> {
   }
 
   begin(id: Id): void {
-    if (!this.ext || this.active || this.pending.length >= MAX_PENDING) return;
+    if (!this.ext) return;
+    this.issued.add(id);
+    if (this.active || this.pending.length >= MAX_PENDING) return;
     const query = this.free.pop() ?? this.gl.createQuery();
     this.gl.beginQuery(this.ext.TIME_ELAPSED_EXT, query);
     this.active = { id, query };
@@ -46,16 +51,20 @@ export class GpuPassTimer<Id extends string> {
     this.active = null;
   }
 
-  /** Recoge las consultas terminadas (no bloquea); un intervalo «disjoint» se descarta. */
+  /**
+   * Recoge las consultas terminadas (no bloquea). Un intervalo «disjoint» invalida todas las pendientes, también
+   * las aún en vuelo: leer el indicador lo borra, y el `poll` siguiente ya no lo vería.
+   */
   poll(): void {
     if (!this.ext) return;
+    if (this.issued.size) [this.lastIssued, this.issued] = [this.issued, new Set()];
     const gl = this.gl;
-    const disjoint = Boolean(gl.getParameter(this.ext.GPU_DISJOINT_EXT));
+    if (gl.getParameter(this.ext.GPU_DISJOINT_EXT)) for (const p of this.pending) p.invalid = true;
     while (this.pending.length > 0) {
-      const { id, query } = this.pending[0];
+      const { id, query, invalid } = this.pending[0];
       if (!gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE)) break;
       this.pending.shift();
-      if (!disjoint) {
+      if (!invalid) {
         const ms = Number(gl.getQueryParameter(query, gl.QUERY_RESULT)) / 1e6;
         const prev = this.ema.get(id);
         this.ema.set(id, prev === undefined ? ms : prev + this.alpha * (ms - prev));
@@ -64,10 +73,14 @@ export class GpuPassTimer<Id extends string> {
     }
   }
 
-  /** Media por pasada en ms (solo las medidas al menos una vez), o null sin la extensión. */
+  /**
+   * Media por pasada en ms (solo las medidas al menos una vez y emitidas en el último cuadro: F y F1 salen con
+   * el Color apagado), o null sin la extensión.
+   */
   timings(): Partial<Record<Id, number>> | null {
     if (!this.ext) return null;
-    return Object.fromEntries(this.ema) as Partial<Record<Id, number>>;
+    const live = this.issued.size ? this.issued : this.lastIssued;
+    return Object.fromEntries([...this.ema].filter(([id]) => live.has(id))) as Partial<Record<Id, number>>;
   }
 
   dispose(): void {

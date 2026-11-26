@@ -11,6 +11,8 @@ const arc = (to: number, from: number): number => Math.atan2(Math.sin(to - from)
  * ≈ 0,3 s (el giro por el arco corto) y termina, en el punto exacto, cuando toda la pose queda a menos de
  * 0,003 rad / 0,5 mm / 0,005 rad del objetivo: también la basculación, la inclinación y la separación (decisión 83:
  * antes solo miraba φ, z y el giro, y volver a pulsar una tarjeta con la sonda ya en su punto dejaba el abanico).
+ * Con `live` falso (imagen congelada) se pausa sin cancelarse y sigue desde ahí al descongelar, como `ProbeInput`
+ * (decisiones 80 y 261): la sonda no se mueve congelada y la imagen no salta al descongelar.
  */
 export class ProbeAnimator {
   private target: { phi: number; z: number; yaw: number; rock: number; tilt: number } | null = null;
@@ -18,6 +20,7 @@ export class ProbeAnimator {
   constructor(
     private readonly getPose: () => ProbePose,
     private readonly setPose: (p: ProbePose) => void,
+    private readonly live: () => boolean = () => true,
   ) {}
 
   get active(): boolean {
@@ -34,7 +37,7 @@ export class ProbeAnimator {
 
   tick(dt: number): void {
     const t = this.target;
-    if (!t) return;
+    if (!t || !this.live()) return;
     const p = this.getPose();
     const k = Math.min(1, dt * 3.5);
     const next: ProbePose = {

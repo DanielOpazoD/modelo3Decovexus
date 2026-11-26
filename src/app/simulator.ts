@@ -203,10 +203,10 @@ export class Simulator {
     return this.equipment.mmode;
   }
   /**
-   * Ajustes del cuadro adquirido en pantalla, también entre adquisiciones y en cine.
-   * Antes del primer cuadro se usan los del equipo.
+   * Ajustes y cadencia del cuadro adquirido en pantalla, también entre adquisiciones y en cine.
+   * Antes del primer cuadro se usan los del equipo, sin cadencia.
    */
-  get displayed(): { bmode: Readonly<BModeSettings>; color: Readonly<ColorSettings> } {
+  get displayed(): { bmode: Readonly<BModeSettings>; color: Readonly<ColorSettings>; frameHz?: number } {
     return (
       this.renderer.displayedFrame ?? (this.color === this.equipment.color ? this.equipment : { bmode: this.bmode, color: this.color })
     );
@@ -364,6 +364,7 @@ export class Simulator {
         bmode: this.bmode,
         color: this.color,
         updateColor,
+        frameHz: this.colorTiming.frameHz,
         seed: this.patient.seed,
         mline: this.mmode.enabled ? this.mmode.theta : undefined,
       },

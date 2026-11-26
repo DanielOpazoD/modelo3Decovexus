@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SimulationSession } from '../app/session';
 import { caseTeacherNotes } from '../app/teacherNotes';
 import { defaultEquipment, type Simulator } from '../app/simulator';
 import { defaultPose } from '../probe/probe';
@@ -12,12 +13,15 @@ import { TeacherTab, renderCaseNotes } from '../ui/panel/teacherTab';
 import { CONTEXT_FLAGS, CONTEXT_LABELS, contextResultLines } from '../ui/panel/vexusText';
 import { classifyModifiedVexus, classifyVexusC } from '../vexus/classification';
 import { FakeElement, fakeDocument, findAll } from './support/fakeDom';
+import { fixtureInstalled } from './support/legacyPerson/state';
+import { recordingGl } from './support/recordingGl';
 
 /**
  * Cableado del contexto clínico en la consola (decisión 82), con un DOM falso: la sección «Contexto clínico» de la
  * pestaña Medir (viñeta, una casilla por confusor, lo marcado en el grado y en el resultado, y cuándo se borra) y lo que
  * solo ve el docente en su pestaña. Las pestañas son las de la app; el panel se sustituye por lo mínimo que la pestaña le
- * pide (secciones, sincronización, estado y un simulador con el id del caso).
+ * pide (secciones, sincronización, estado y un simulador con el id del caso). Con el mismo panel, la pestaña Medir sobre una
+ * sesión real comprueba también la serie de adquisición que abre un cambio de caso.
  */
 beforeEach(() => vi.stubGlobal('document', fakeDocument()));
 afterEach(() => vi.unstubAllGlobals());
@@ -53,12 +57,28 @@ function fakePanel(sim: object, debug = false) {
       sections.push(title);
       return body;
     },
-    segmented: () => document.createElement('div'),
+    // como Panel.segmented: un botón por opción que llama a `set` en cada clic, también en el ya pulsado
+    segmented: (parent, options, get, set) => {
+      const seg = document.createElement('div');
+      for (const [v, label] of options) {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.addEventListener('click', () => {
+          set(v);
+          ctx.sync();
+        });
+        seg.appendChild(b);
+        ctx.track({ sync: () => b.setAttribute('aria-pressed', String(get() === v)) });
+      }
+      parent.appendChild(seg);
+      return seg;
+    },
+    cancelCaliper: vi.fn(),
   };
   return { ctx, sections, store };
 }
 
-function mountMeasure(caseId: string) {
+function mountMeasure(caseId: string, debug = false) {
   const sim = {
     patient: { id: caseId, respiratoryPattern: 'quiet' },
     pw: { enabled: false },
@@ -69,7 +89,7 @@ function mountMeasure(caseId: string) {
     equipment: defaultEquipment(),
     renderer: { displayedFrame: null as { n: number } | null },
   };
-  const { ctx, sections } = fakePanel(sim);
+  const { ctx, sections, store } = fakePanel(sim, debug);
   const host = new FakeElement('div');
   const tab = new MeasureTab(ctx, host as unknown as HTMLElement, new FakeElement('span') as unknown as HTMLElement);
   const byClass = (c: string) => findAll(host, (e) => e.classList.contains(c));
@@ -78,6 +98,10 @@ function mountMeasure(caseId: string) {
   return {
     tab,
     sim,
+    store,
+    cancelCaliper: ctx.cancelCaliper,
+    /** El aviso de la tarjeta de captura (role=status). */
+    status: () => findAll(host, (e) => e.getAttribute('role') === 'status')[0],
     history: () => byClass('measurement-history')[0],
     sections,
     boxes,
@@ -97,6 +121,9 @@ function mountMeasure(caseId: string) {
       tab.onSimulatorChanged();
     },
     button: (text: string) => findAll(host, (e) => e.tagName === 'BUTTON' && e.textContent === text)[0],
+    /** La salida de una fila del protocolo («VCI diámetro», «Porta PF»…). */
+    output: (label: string) =>
+      findAll(host, (e) => e.tagName === 'BUTTON' && e.textContent === label)[0].parentElement!.children[1].textContent,
     /**
      * Capturas ya hechas. Las de la pestaña salen del espectro adquirido, que aquí no hay: se ponen en sus campos, y lo
      * que se prueba es lo que la pestaña hace con ellas (grado con el contexto, líneas y avisos).
@@ -182,15 +209,78 @@ describe('Pestaña Medir: contexto clínico (decisión 82)', () => {
 
   it('una PF inmediatamente inferior al umbral no se presenta redondeada en la siguiente categoría', () => {
     const m = mountMeasure('normal-adult');
-    for (const [pf, threshold, label] of [
-      [29.999, 30, 'normal'],
-      [49.999, 50, 'leve'],
+    for (const [pf, threshold, label, below] of [
+      [29.999, 30, 'normal', '29,9'],
+      [49.999, 50, 'leve', '49,9'],
     ] as const) {
-      m.measured({ hepatic: NORMAL_HV, portal: { ...NORMAL_PV, pulsatilityFraction: pf }, renal: CONTINUOUS_RV });
+      // con los latidos, también el resumen de su variabilidad en la misma línea
+      const portal = { ...NORMAL_PV, pulsatilityFraction: pf, beats: 4, pulsatilityByBeat: [pf, pf, pf, pf] };
+      m.measured({ hepatic: NORMAL_HV, portal, renal: CONTINUOUS_RV });
       m.tab.setIvcCaliper(25);
       expect(m.result()).toContain(`PF <b>menos de ${threshold} %</b>`);
       expect(m.result()).toContain(`(${label}, próximo al umbral)`);
+      expect(m.result()).toContain(`PF menos de ${threshold} % · rango entre 4 latidos ${below}–${below} %`);
+      expect(m.result()).not.toContain(`PF ${threshold} %`);
     }
+  });
+
+  it('una VCI inmediatamente inferior al corte no se presenta redondeada a 20 mm junto a un grado 0', () => {
+    const m = mountMeasure('normal-adult');
+    m.measured({ hepatic: SEVERE_HV, portal: { ...NORMAL_PV, pulsatilityFraction: 60 }, renal: MONOPHASIC_RV });
+    m.tab.setIvcCaliper(19.97);
+    expect(m.result()).toContain('VExUS 0');
+    expect(m.result()).toContain('VCI: 19.9 mm <span class="small">(< 20 mm)</span>');
+    expect(m.result()).not.toContain('20.0 mm');
+    expect(m.output('VCI diámetro')).toBe('19.9 mm');
+    m.tab.setIvcCaliper(20);
+    expect(m.result()).toContain('VCI: 20.0 mm <span class="small">(≥ 20 mm: dilatada)</span>');
+    expect(m.output('VCI diámetro')).toBe('20.0 mm');
+  });
+
+  it('la onda A ausente de la FA y un mínimo renal sin latido creíble se muestran «—», nunca «NaN»', () => {
+    const m = mountMeasure('af-moderate-congestion');
+    m.measured({ hepatic: { ...NORMAL_HV, aPeak: NaN }, portal: NORMAL_PV, renal: { ...CONTINUOUS_RV, vMin: NaN } });
+    m.tab.setIvcCaliper(25);
+    expect(m.result()).not.toContain('NaN');
+    expect(m.result()).toContain('VSH: S 25.0 · D 15.0 · A — cm/s');
+    expect(m.result()).toContain('mín — cm/s');
+  });
+
+  it('una S invertida que redondea a cero conserva el signo junto a «grave (S invertida)» (decisión 272)', () => {
+    const m = mountMeasure('severe-congestion');
+    m.measured({ hepatic: { ...SEVERE_HV, sPeak: -0.04 }, portal: NORMAL_PV, renal: MONOPHASIC_RV });
+    m.tab.setIvcCaliper(25);
+    expect(m.result()).toContain('VSH: S -0.0 · D 27.0');
+    expect(m.result()).toContain('grave (S invertida)');
+  });
+
+  it('una S apenas mayor que D no se presenta igual que D junto a «normal (S>D)»', () => {
+    const m = mountMeasure('normal-adult');
+    m.measured({ hepatic: { ...NORMAL_HV, sPeak: 25.04, dPeak: 25 }, portal: NORMAL_PV, renal: CONTINUOUS_RV });
+    m.tab.setIvcCaliper(15);
+    expect(m.result()).toContain('VSH: S 25.04 · D 25.00 · A -4.0 cm/s → <b>normal (S>D)</b>');
+  });
+
+  it('una PF medida con el valle en el filtro de pared se presenta como cota inferior y cuenta como grave', () => {
+    const m = mountMeasure('severe-congestion');
+    const portal = { ...OK, vMax: 20, vMin: 2.4, pulsatilityFraction: 88, pulsatilityLowerBound: true };
+    m.measured({ hepatic: SEVERE_HV, portal, renal: MONOPHASIC_RV });
+    m.tab.setIvcCaliper(25);
+    expect(m.result()).toContain('PF <b>≥ 88,0 %</b>');
+    expect(m.result()).toContain('(grave; el valle cae en el filtro de pared: la PF real es mayor)');
+    expect(m.output('Porta PF')).toBe('≥ 88,0 %');
+    expect(m.result()).toContain('VExUS 3');
+  });
+
+  it('la cota inferior con el filtro de pared alto no afirma que el valle llegue a la línea de base', () => {
+    // a 200 Hz el suelo de la traza está a ~10 cm/s: un Vmín de 6,9 es el borde del filtro, no la línea de base
+    const m = mountMeasure('severe-congestion');
+    const portal = { ...OK, vMax: 24, vMin: 6.9, pulsatilityFraction: 71, pulsatilityLowerBound: true };
+    m.measured({ hepatic: SEVERE_HV, portal, renal: MONOPHASIC_RV });
+    m.tab.setIvcCaliper(25);
+    expect(m.result()).toContain('PF <b>≥ 71,0 %</b>');
+    expect(m.result()).toContain('el valle cae en el filtro de pared: la PF real es mayor');
+    expect(m.result()).not.toContain('línea de base');
   });
 
   it('«Contexto clínico» va antes del protocolo, con la viñeta del caso y una casilla sin marcar por confusor', () => {
@@ -329,6 +419,209 @@ describe('Pestaña Medir: contexto clínico (decisión 82)', () => {
       expect(m.result()).toBe(spontaneous);
     }
   });
+
+  it('la verdad del modo M sigue al modo docente al encenderlo y al apagarlo, también en las series archivadas', () => {
+    const m = mountMeasure('normal-adult', true);
+    // como ControlPanel: cada cambio del estado llega a la pestaña
+    m.store.subscribe((st) => m.tab.applyStore(st));
+    const truth = '(verdad 40,0/32,0 mm → 20 %)';
+    m.measureM();
+    expect(m.result()).toContain(truth);
+    m.store.set({ debug: false });
+    expect(m.result()).not.toContain('verdad');
+    m.store.set({ debug: true });
+    expect(m.result()).toContain(truth);
+    expect(m.tab.archiveMeasurements('intervention')).toBe(true);
+    expect(m.history().textContent).toContain(truth);
+    m.store.set({ debug: false });
+    expect(m.history().textContent).not.toContain('verdad');
+    expect(m.history().textContent).toContain('máx 24,0 · mín 18,0 mm');
+    m.store.set({ debug: true });
+    expect(m.history().textContent).toContain(truth);
+    // medida sin el modo docente: la verdad aparece al encenderlo
+    m.store.set({ debug: false });
+    m.measureM();
+    expect(m.result()).not.toContain('verdad');
+    m.store.set({ debug: true });
+    expect(m.result()).toContain(truth);
+  });
+});
+
+describe('Pestaña Medir sobre la sesión: serie de adquisición al cambiar de caso', () => {
+  /** Sesión y simulador reales sobre un WebGL falso, con la pestaña avisada como en bootstrap; un cuadro adquirido y congelado. */
+  function frozenSession() {
+    const rec = recordingGl({ width: 320, height: 240 });
+    const session = new SimulationSession(rec.canvas, 'normal-adult', fixtureInstalled());
+    const { ctx } = fakePanel(session.sim);
+    ctx.sim = () => session.sim;
+    const host = new FakeElement('div');
+    const tab = new MeasureTab(ctx, host as unknown as HTMLElement, new FakeElement('span') as unknown as HTMLElement);
+    session.onSimulatorChanged(() => tab.onSimulatorChanged());
+    session.sim.render();
+    session.sim.frozen = true;
+    return { rec, session, tab, result: () => findAll(host, (e) => e.classList.contains('result'))[0].innerHTML };
+  }
+
+  it('con la imagen congelada, otro caso o «Reiniciar paciente» no dejan calibrar la imagen del paciente anterior', () => {
+    const { rec, session, tab, result } = frozenSession();
+    for (const change of [() => session.loadCase('severe-congestion'), () => session.reloadCase()]) {
+      expect(change()).toBeNull();
+      expect(session.sim.frozen).toBe(true);
+      // la pantalla tampoco conserva la imagen anterior: lo último que se limpia es el lienzo
+      expect(rec.clears.at(-1)).toBeNull();
+      tab.setIvcCaliper(15);
+      expect(result()).toContain('Imagen de la serie anterior');
+      expect(result()).toContain('VCI: —');
+    }
+    // el primer cuadro del paciente nuevo sí se mide
+    session.sim.frozen = false;
+    session.sim.render();
+    tab.setIvcCaliper(15);
+    expect(result()).toContain('15.0 mm');
+    expect(result()).not.toContain('Imagen de la serie anterior');
+  });
+
+  it('el cuadro mostrado es el mismo al congelar y al volver al último del cine: el calibrador lo compara entre sus puntos', () => {
+    const rec = recordingGl({ width: 320, height: 240 });
+    const { sim } = new SimulationSession(rec.canvas, 'normal-adult', fixtureInstalled());
+    const renderer = sim.renderer;
+    for (let i = 0; i < 3; i++) {
+      sim.advance(0.05);
+      sim.render();
+    }
+    const live = renderer.displayedFrame;
+    sim.frozen = true;
+    renderer.cineSeal();
+    renderer.showCine(renderer.cineCount - 1);
+    expect(renderer.displayedFrame).toBe(live);
+    renderer.showCine(renderer.cineCount - 2);
+    expect(renderer.displayedFrame).not.toBe(live);
+  });
+
+  it('un cambio de caso que falla tras cambiar la escena deja el caso anterior sin calibres sobre el lienzo ya limpio', () => {
+    const { rec, session, tab, result } = frozenSession();
+    const prev = session.sim;
+    const setScene = prev.renderer.setScene.bind(prev.renderer);
+    vi.spyOn(prev.renderer, 'setScene').mockImplementationOnce((scene) => {
+      setScene(scene);
+      throw new Error('fallo provocado tras cambiar la escena');
+    });
+    expect(session.loadCase('severe-congestion')).toBeInstanceOf(Error);
+    // sigue el caso anterior, con su escena, pero su imagen congelada ya no está en pantalla
+    expect(session.sim).toBe(prev);
+    expect(prev.renderer.scene).toBe(prev.scene);
+    expect(rec.clears.at(-1)).toBeNull();
+    tab.setIvcCaliper(15);
+    expect(result()).toContain('Imagen de la serie anterior');
+    expect(result()).toContain('VCI: —');
+  });
+});
+
+describe('Pestaña Medir: captura sin un latido completo (decisión 292)', () => {
+  it.each([
+    ['Suprahepática', 'hepatic', NORMAL_HV],
+    ['Renal', 'renal', CONTINUOUS_RV],
+  ] as const)('«Capturar» en %s antes del primer latido conserva la medición guardada y lo dice', async (row, tool, saved) => {
+    const m = mountMeasure('normal-adult');
+    // espectro recién reiniciado: la lectura está lista, pero aún no cubre ningún latido
+    Object.assign(m.sim, {
+      pw: { enabled: true, angleCorrection: 0, invert: false },
+      pwChain: {
+        revision: 1,
+        readCapture: () => ({
+          kind: 'ready',
+          revision: 1,
+          columns: [],
+          acquiredEquipment: { prfHz: 4000, f0Hz: 2.5e6, gainDb: 0, wallFilterHz: 25, fftSize: 128 },
+        }),
+      },
+      gateTrack: [],
+    });
+    Object.assign(m.sim.physiology, { rhythm: { beatsBetween: () => [] } });
+    m.measured({ [tool]: saved });
+    m.tab.renderResult();
+    const before = m.result();
+    m.button(row).click();
+    await vi.waitFor(() => expect(m.button('Capturar')).toBeDefined());
+    m.button('Capturar').click();
+    expect(m.store.get().tool).toBe(tool);
+    expect(m.status().textContent).toMatch(/^Adquiere señal nueva: aún no hay un latido completo/);
+    expect(m.status().textContent).toContain('si está congelada, reanuda el PW');
+    m.tab.renderResult();
+    expect(m.result()).toBe(before);
+  });
+
+  it('el calibrador que vuelve a empezar porque cambió el cuadro lo dice donde se mira: la tarjeta o el resultado', () => {
+    const m = mountMeasure('normal-adult');
+    const restarted = /La imagen cambió entre los dos puntos: este pasa a ser el primero/;
+    m.button('VCI diámetro').click();
+    m.tab.setIvcCaliper(null, true);
+    expect(m.status().textContent).toMatch(restarted);
+    // ⌘/Ctrl+clic sin la fila armada: la tarjeta está oculta
+    m.store.set({ tool: 'none' });
+    m.tab.setIvcCaliper(null, true);
+    expect(m.result()).toMatch(restarted);
+    // Esc, armar una fila o «Borrar» sueltan ese punto: el aviso, que lo daba por primero, se retira
+    m.tab.setIvcCaliper(null);
+    expect(m.result()).not.toMatch(restarted);
+    m.tab.setIvcCaliper(null, true);
+    m.tab.setIvcCaliper(18);
+    expect(m.result()).not.toMatch(restarted);
+  });
+
+  it('«Borrar mediciones» suelta también el punto de ⌘/Ctrl+clic, que no arma herramienta', () => {
+    const m = mountMeasure('normal-adult');
+    m.button('Borrar mediciones').click();
+    expect(m.cancelCaliper).toHaveBeenCalledTimes(1);
+  });
+
+  it('repetir la VCI y cancelar conserva la medida anterior: el calibre que vuelve a empezar no la borra', () => {
+    const m = mountMeasure('normal-adult');
+    m.tab.setIvcCaliper(22.4);
+    m.button('VCI diámetro').click();
+    m.tab.setIvcCaliper(null, true);
+    m.button('Cancelar (Esc)').click();
+    m.tab.renderResult();
+    expect(m.output('VCI diámetro')).toBe('22.4 mm');
+    expect(m.result()).toContain('VCI: 22.4 mm <span class="small">(≥ 20 mm: dilatada)</span>');
+  });
+});
+
+describe('Pestaña Medir con el teclado', () => {
+  it('armar una fila con el teclado lleva el foco adonde se mide (la imagen o la tarjeta) y desarmarla lo devuelve a la fila', () => {
+    const sim = { patient: { id: 'normal-adult' }, pw: { enabled: false } };
+    const { ctx, store } = fakePanel(sim);
+    const image = new FakeElement('canvas');
+    const host = new FakeElement('div');
+    const tab = new MeasureTab(
+      { ...ctx, measureImage: image as unknown as HTMLElement },
+      host as unknown as HTMLElement,
+      new FakeElement('span') as unknown as HTMLElement,
+    );
+    store.subscribe((st) => tab.applyStore(st));
+    const row = (text: string) => findAll(host, (e) => e.tagName === 'BUTTON' && e.textContent === text)[0];
+    const focused = () => (document as unknown as { activeElement: unknown }).activeElement;
+    // el botón de la fila se oculta con el protocolo: sin esto el foco caía al body
+    row('VCI diámetro').click();
+    expect(focused()).toBe(image);
+    store.set({ tool: 'none' }); // Esc, o el segundo punto del calibrador
+    expect(focused()).toBe(row('VCI diámetro'));
+    row('VCI modo M').click();
+    expect(focused()).toBe(row('Cancelar (Esc)'));
+    row('Cancelar (Esc)').click();
+    expect(focused()).toBe(row('VCI modo M'));
+    // el foco que el alumno llevó a otro sitio no se mueve
+    row('VCI diámetro').click();
+    const other = new FakeElement('button');
+    other.focus();
+    store.set({ tool: 'none' });
+    expect(focused()).toBe(other);
+    // con el ratón (el clic trae su número de pulsaciones) el foco no salta a la imagen: ← → siguen siendo del cine
+    row('VCI diámetro').focus();
+    row('VCI diámetro').dispatch('click', { detail: 1 });
+    expect(store.get().tool).toBe('caliper');
+    expect(focused()).toBe(row('VCI diámetro'));
+  });
 });
 
 describe('Resultado con el contexto: textos (decisión 82)', () => {
@@ -391,6 +684,43 @@ describe('Pestaña Docente: lo que solo ve el docente (decisión 82)', () => {
     renderCaseNotes(el as unknown as HTMLElement, caseTeacherNotes('abdominal-hypertension', false));
     expect(el.childNodes).toHaveLength(0);
     expect(el.textContent).toBe('');
+  });
+
+  it('pulsar la PEEP ya pedida no es una intervención: ni la registra ni archiva las mediciones', () => {
+    vi.useFakeTimers();
+    try {
+      const sim = fakeTeacherSim('normal-adult');
+      const intervene = vi.fn(() => ({ kind: 'peep', cmH2O: 10, t0: 0 }));
+      Object.assign(sim.physiology, { intervene });
+      const { ctx } = fakePanel(sim, true);
+      const host = new FakeElement('div');
+      const tab = new TeacherTab(ctx, host as unknown as HTMLElement);
+      const onIntervention = vi.fn(() => true);
+      tab.onIntervention = onIntervention;
+      ctx.sync();
+      const peep = (v: string) => findAll(host, (e) => e.tagName === 'BUTTON' && e.textContent === v)[0];
+      const status = () => findAll(host, (e) => e.getAttribute('role') === 'status')[0].textContent;
+      expect(peep('0').getAttribute('aria-pressed')).toBe('true');
+      peep('0').click();
+      vi.advanceTimersByTime(60);
+      expect(intervene).not.toHaveBeenCalled();
+      expect(onIntervention).not.toHaveBeenCalled();
+      expect(status()).toBe('Sin cambios: la PEEP pedida ya es de 0 cmH₂O.');
+      peep('10').click();
+      vi.advanceTimersByTime(60);
+      expect(intervene).toHaveBeenCalledWith({ kind: 'peep', cmH2O: 10 });
+      expect(onIntervention).toHaveBeenCalledTimes(1);
+      expect(status()).toContain('Mediciones archivadas');
+      // en la transición hacia 10, repetir «10» tampoco reinicia nada
+      sim.physiology.circulation.state.peepTargetCmH2O = 10;
+      ctx.sync();
+      expect(peep('10').getAttribute('aria-pressed')).toBe('true');
+      peep('10').click();
+      expect(intervene).toHaveBeenCalledTimes(1);
+      expect(onIntervention).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('al apagar el modo docente se vacían las notas y el estado del lazo, también en el DOM oculto', () => {

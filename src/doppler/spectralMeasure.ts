@@ -1,15 +1,18 @@
 import { median, robustExtremeInWindow, type TimeWindow } from '../core/series';
 export { CAPTURE_BEATS, qualityText } from './qualityMessages';
+import { PW_WALL_FILTER_MIN_HZ } from '../core/highPass';
 import { velocityFromShiftMmS } from '../core/units';
 import type { Beat } from '../physiology/rhythm';
 import { RENAL_GAP_MIN_S, S_REVERSAL_FLOOR_CMS, beatWindows, systolicPeak } from '../vexus/measurements';
 import {
+  PF_SEVERE,
   RENAL_INTERRUPTION_FRACTION,
   hepaticPatternFromPeaks,
   portalPulsatilityFraction,
   renalPatternFromPeaks,
   type HepaticPattern,
   type RenalPattern,
+  type RenalSResolution,
 } from '../vexus/classification';
 import { assessQuality, flowBandMinHz, type MeasurementQuality } from './measureQuality';
 import { receiverNoiseDb } from './sampleVolume';
@@ -18,6 +21,7 @@ import {
   contiguousSpectralColumns,
   columnEnvelope,
   columnPercentileEnvelope,
+  firstFlowBin,
   halfPlaneEnvelopeHz,
   MIRROR_MARGIN_DB,
   type SpectralColumn,
@@ -103,6 +107,8 @@ export interface ObservedPortal {
   vMax: number;
   vMin: number;
   pulsatilityFraction: number;
+  /** Captura aceptada con la PF como cota inferior: el valle cae en el filtro de pared y la real es mayor (`PORTAL_WALL_SEVERE_MARGIN`). */
+  pulsatilityLowerBound?: true;
   /** Observed PF of each measured beat, in measuredBeats order; not a confidence interval. */
   pulsatilityByBeat: number[];
   beats: number;
@@ -285,7 +291,7 @@ const extreme = (trace: readonly { t: number; vScreen: number }[], w: TimeWindow
   );
 
 /** Latidos con adquisición suficiente, aun si su señal es solo ruido. */
-function acquiredBeats(columns: readonly SpectralColumn[], beats: Beat[]): Beat[] {
+export function acquiredBeats(columns: readonly SpectralColumn[], beats: Beat[]): Beat[] {
   return beats.filter((b) => {
     const inBeat = columns.filter((c) => c.t >= b.tR && c.t < b.tR + b.rr);
     return inBeat.length > 0 && inBeat[inBeat.length - 1].t - inBeat[0].t >= BEAT_COVERAGE * b.rr;
@@ -383,6 +389,39 @@ const PORTAL_WRAP_NYQUIST = 0.5;
 const WALL_GAP_S = 0.04;
 /** Múltiplo del corte del filtro de pared hasta el que la traza no es fiable (banda de transición). */
 const WALL_TRANSITION = 1.5;
+
+/**
+ * Suelo de la envolvente de semiplano (Hz): la velocidad más baja que la traza mide. Por debajo no es fiable: la banda de
+ * transición del filtro de pared (4.º orden: −1 dB a ~1,3 veces el corte) se come la parte lenta del perfil. En la rejilla de la
+ * envolvente, que no mira por debajo de su primer bin (`firstFlowBin`): con el corte continuo y el filtro bajo el suelo quedaba
+ * bajo la traza más baja, y el mismo valle salía exacto a 10 Hz y cota a 20 Hz (decisiones 419, 433 y 443). Una onda bajo él en
+ * el filtro, en él o hasta ½ bin más arriba se lee en el suelo + 1 bin: la ventana de Hann y el suavizado 3 × 3 la ensanchan (la S
+ * renal, decisión 447).
+ */
+export function envelopeFloorHz(wallHz: number, prfHz: number, fftSize: number): number {
+  const binHz = prfHz / fftSize;
+  return Math.max(firstFlowBin(flowBandMinHz(wallHz, prfHz, fftSize), binHz) * binHz, WALL_TRANSITION * wallHz);
+}
+
+/**
+ * Con el valle en la banda del filtro de pared la traza no baja del suelo, Vmín se sobreestima y la PF medida es una cota
+ * inferior de la real. Si en TODOS los latidos medidos pasa de PF_SEVERE más este margen (puntos: la tolerancia de la
+ * decisión 94), la clase grave es segura y la captura se acepta como cota inferior. Con el filtro bajo el suelo lo fijan el
+ * margen y la rejilla de la FFT (~2,5 cm/s a ±40), que el mando no baja: sin esto, un valle en la línea de base (PF ≈ 100 %)
+ * era «no medible» con una orden imposible. Un hueco por la vena que sale de la puerta no es un valle: esa captura ya es «intermitente».
+ */
+const PORTAL_WALL_SEVERE_MARGIN = 10;
+/**
+ * Fracción de Vmáx que el borde de un valle en el suelo puede pasar del suelo más un bin: la traza suavizada (60 ms) sube por la
+ * pendiente de la onda y la envolvente de una banda débil la pierde antes de su primer bin (grave tras +150 mL: bordes hasta
+ * 0,15 Vmáx más arriba). Basta un latido por captura (con 0,1 cumplen unos 16 de 24); con 0,05 aún salían capturas exactas a 20
+ * puntos. Solo con Vmín > 0 (el hueco del paso por cero de una inversión resuelta también tiene los bordes junto a cero) y con
+ * la calidad limpia (con la señal irregular, la IT respirando, un hueco de bordes bajos no demuestra el valle). El hueco oculta
+ * el valle: si algún latido no llega a grave, rechaza como el corte estricto (decisión 433). Un valle que sale de golpe por encima
+ * deja en esa banda solo su borde de entrada: basta si pasa en más de la mitad de los latidos, porque la PF es su mediana (un
+ * borde suelto en un latido de la FA respirando, con su valle a la mitad de Vmáx, no lo es; decisión 443).
+ */
+const PORTAL_FLOOR_GAP_VMAX = 0.1;
 
 /** Cuantil q (0–1) de valores finitos (NaN si no hay). */
 function quantile(values: readonly number[], q: number): number {
@@ -491,9 +530,9 @@ export function measureObservedPortal(columns: readonly SpectralColumn[], beats:
   const nyquistCms = cmsOf(prf / 2);
   const wallHz = opts.wallFilterHz ?? 25;
   const binHz = prf / latest.powerDb.length;
-  // por debajo, la traza no es fiable: la banda de transición del filtro de pared (4.º orden: −1 dB a ~1,3 veces el corte)
-  // se come la parte lenta del perfil, y Vmín se leería en su borde
-  const floorCms = cmsOf(Math.max(flowBandMinHz(wallHz, prf, latest.powerDb.length), WALL_TRANSITION * wallHz) + binHz);
+  const floorHzOf = (w: number) => envelopeFloorHz(w, prf, latest.powerDb.length);
+  const floorCms = cmsOf(floorHzOf(wallHz) + binHz);
+  const edgeCms = floorCms + cmsOf(binHz);
   const maxs: number[] = [];
   const mins: number[] = [];
   const pfs: number[] = [];
@@ -501,6 +540,8 @@ export function measureObservedPortal(columns: readonly SpectralColumn[], beats:
   const marks: CaptureMark[] = [];
   let clipped = false;
   let wallCut = false;
+  let floorGap = false;
+  let floorEdges = 0;
   let drifting = 0;
   const starts: number[] = [];
   const flatPfs: number[] = [];
@@ -524,8 +565,15 @@ export function measureObservedPortal(columns: readonly SpectralColumn[], beats:
     flatPfs.push(portalPulsatilityFraction(quantile(flat, PORTAL_Q_HI), quantile(flat, PORTAL_Q_LO)));
     // el pico toca el Nyquist: se recorta (la PF baja) o se pliega al otro lado (se leería como inversión)
     if (vmax >= PORTAL_CLIP_NYQUIST * nyquistCms) clipped = true;
-    // Una inversión resuelta lejos de cero no es pérdida por filtro: conserva PF >100%.
-    if (Math.abs(vmin) <= floorCms || portalGapIntoWallFilter(inBeat, oriented, floorCms + cmsOf(binHz))) wallCut = true;
+    // Una inversión resuelta lejos de cero no es pérdida por filtro: conserva PF >100%. Suelo más un bin es el valle más bajo que
+    // resuelve la envolvente (dos bins seguidos desde `firstFlowBin`): la traza sostenida en él lo mide y solo por debajo la banda
+    // sigue bajo el filtro. Con `<=` lo decidía el redondeo de la media (el sano respirando); 1e-9 bins, como `firstFlowBin`
+    if (Math.abs(vmin) < floorCms - 1e-9 * cmsOf(binHz) || portalGapIntoWallFilter(inBeat, oriented, edgeCms)) wallCut = true;
+    else if (vmin > 0) {
+      const floorBand = edgeCms + PORTAL_FLOOR_GAP_VMAX * vmax;
+      if (portalGapIntoWallFilter(inBeat, oriented, floorBand)) floorGap = true;
+      else if (portalGapIntoWallFilter(inBeat, oriented, floorBand, true)) floorEdges++;
+    }
     maxs.push(vmax);
     mins.push(vmin);
     pfs.push(portalPulsatilityFraction(vmax, vmin));
@@ -542,11 +590,19 @@ export function measureObservedPortal(columns: readonly SpectralColumn[], beats:
   // la calidad juzga lo mismo que se trazó: una columna vale si tiene traza (el clutter simétrico no es flujo). Sin ningún
   // latido trazable la captura se devuelve igual, con su motivo (con aliasing fuerte, «suba la escala»), no en blanco
   const quality = qualityOf(columns.filter(inEffective), effective, opts, 'both', undefined, undefined, (c) => present.has(c.t));
+  const pf = median(pfs);
+  let lowerBound = false;
+  if ((floorGap || 2 * floorEdges > maxs.length) && quality.issue === null) wallCut = true;
   if (clipped || wrapped) quality.issue = 'aliasing';
-  else if (wallCut && (quality.issue === null || quality.issue === 'intermittent')) quality.issue = 'wall-filter';
+  else if (wallCut && quality.issue === null && Math.min(...pfs) >= PF_SEVERE + PORTAL_WALL_SEVERE_MARGIN) lowerBound = true;
+  else if (wallCut && (quality.issue === null || quality.issue === 'intermittent')) {
+    quality.issue = 'wall-filter';
+    // bajar el filtro hasta el mínimo del mando no mueve el suelo: el mensaje no lo ordena
+    if (floorHzOf(wallHz) <= floorHzOf(PW_WALL_FILTER_MIN_HZ)) quality.wallFilterLow = true;
+  }
   if (
     quality.issue === null &&
-    ((drifting >= 3 && drifting > maxs.length / 2) || Math.abs(median(pfs) - median(flatPfs)) > PORTAL_DRIFT_PF_POINTS) &&
+    ((drifting >= 3 && drifting > maxs.length / 2) || Math.abs(pf - median(flatPfs)) > PORTAL_DRIFT_PF_POINTS) &&
     Math.max(...starts) - Math.min(...starts) > median(maxs.map((v, i) => v - mins[i]))
   )
     quality.issue = 'inconsistent';
@@ -556,7 +612,9 @@ export function measureObservedPortal(columns: readonly SpectralColumn[], beats:
     quality,
     vMax: median(maxs),
     vMin: median(mins),
-    pulsatilityFraction: median(pfs),
+    pulsatilityFraction: pf,
+    // solo si la captura queda aceptada: un rechazo posterior («la onda cambia», pocos latidos) no la lleva
+    ...(lowerBound && quality.issue === null && { pulsatilityLowerBound: true }),
     pulsatilityByBeat: pfs,
     beats: maxs.length,
     measuredBeats: measured,
@@ -567,12 +625,17 @@ export function measureObservedPortal(columns: readonly SpectralColumn[], beats:
 }
 
 /**
- * ¿La traza del latido se hunde en la banda del filtro de pared? Un hueco de ≥ WALL_GAP_S junto a un valor a menos de
- * `edgeCms`: el valle de la onda está por debajo del corte y el hueco no es una caída de señal. Con el filtro a 300 Hz el
+ * ¿La traza del latido se hunde en la banda del filtro de pared? Un hueco de ≥ WALL_GAP_S con sus bordes del latido a menos
+ * de `edgeCms`: el valle entra y sale por la banda del corte y el hueco no es una caída de señal (un resto suelto junto a
+ * una caída, con la porta saliendo de la puerta al respirar, no es un valle). Con el filtro a 300 Hz el
  * valle del grave desaparecía y Vmín se tomaba en el borde del hueco: PF 30–49 % con una verdad de 76 % (revisión
- * adversarial de la decisión 94). Con Vmín en la banda de transición (`floorCms`), lo mismo sin hueco.
+ * adversarial de la decisión 94). Con Vmín en la banda de transición (`floorCms`), lo mismo sin hueco. Con `either`, basta un
+ * borde que exista.
  */
-function portalGapIntoWallFilter(inBeat: readonly { t: number }[], oriented: readonly number[], edgeCms: number): boolean {
+function portalGapIntoWallFilter(inBeat: readonly { t: number }[], oriented: readonly number[], edgeCms: number, either = false): boolean {
+  const near = (v: number) => Math.abs(v) <= edgeCms;
+  // un borde que no existe (el hueco toca el inicio o el final del latido) no lo desmiente
+  const inBand = (v: number) => Number.isNaN(v) || near(v);
   let i = 0;
   while (i < oriented.length) {
     if (Number.isFinite(oriented[i])) {
@@ -585,7 +648,7 @@ function portalGapIntoWallFilter(inBeat: readonly { t: number }[], oriented: rea
     const t1 = j < inBeat.length ? inBeat[j].t : inBeat[inBeat.length - 1].t;
     const before = i > 0 ? oriented[i - 1] : Number.NaN;
     const after = j < oriented.length ? oriented[j] : Number.NaN;
-    if (t1 - t0 >= WALL_GAP_S && (Math.abs(before) <= edgeCms || Math.abs(after) <= edgeCms)) return true;
+    if (t1 - t0 >= WALL_GAP_S && (either ? near(before) || near(after) : inBand(before) && inBand(after))) return true;
     i = j;
   }
   return false;
@@ -661,6 +724,22 @@ export function renalFloorCms(columns: readonly SpectralColumn[], opts: MeasureO
   const hz = flowBandMinHz(opts.wallFilterHz ?? 25, prf, opts.fftSize);
   const v = velocityFromShiftMmS(hz, opts.f0Hz, opts.angleCorrectionRad) / 10;
   return Number.isFinite(v) ? v : 0;
+}
+
+/**
+ * Resolución de la S medida (decisión 447): el suelo de la envolvente (`envelopeFloorHz`) y un bin, en velocidad rotulada. Una S
+ * bajo ese suelo en el filtro de pared, en él o hasta ½ bin más arriba se traza en el suelo + 1 bin: a ±50 cm/s con el filtro a
+ * 20 Hz, 4 bins (3,1 cm/s); con la D del grave (10 cm/s) era S/D 0,31 y la vena monofásica salía «bifásica». El suelo lleva 1e-9
+ * bins, como `firstFlowBin`: la lectura del suelo no la decide el redondeo. Sin escala válida, sin resolución (el patrón de
+ * siempre).
+ */
+export function renalSResolution(columns: readonly SpectralColumn[], opts: MeasureOptions): RenalSResolution | undefined {
+  const prf = columns.length ? columns[columns.length - 1].prfHz : 0;
+  const binHz = prf / opts.fftSize;
+  const cms = (hz: number) => velocityFromShiftMmS(hz, opts.f0Hz, opts.angleCorrectionRad) / 10;
+  const floorCms = cms(envelopeFloorHz(opts.wallFilterHz ?? 25, prf, opts.fftSize) + 1e-9 * binHz);
+  const stepCms = cms(binHz);
+  return floorCms >= 0 && stepCms > 0 && Number.isFinite(floorCms + stepCms) ? { floorCms, stepCms } : undefined;
 }
 
 export function measureObservedRenal(columns: readonly SpectralColumn[], beats: Beat[], opts: MeasureOptions): ObservedRenal | null {
@@ -745,7 +824,8 @@ export function measureObservedRenal(columns: readonly SpectralColumn[], beats: 
     );
   }
   const vMin = minList.length ? median(minList) : Number.NaN;
-  const pattern = renalPatternFromPeaks(sPeak, dPeak, vMin, floorCms);
+  // la S junto al suelo de su banda no decide el patrón por debajo de lo que resuelve el espectro (decisión 447)
+  const pattern = renalPatternFromPeaks(sPeak, dPeak, vMin, floorCms, renalSResolution(columns, opts));
   return {
     kind: 'renal',
     // la arteria vecina siempre da señal: la calidad se juzga en el lado de la vena
