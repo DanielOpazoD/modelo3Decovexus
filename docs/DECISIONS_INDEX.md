@@ -457,3 +457,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [451](DECISIONS.md#L12853) | El calibre suprahepático responde a su presión transmural | vigente |
 | [452](DECISIONS.md#L12863) | El monitor de FC mide intervalos de un solo paciente | vigente |
 | [453](DECISIONS.md#L12872) | El bundle de pruebas carga los ganchos que usa el banco | vigente |
+| [454](DECISIONS.md#L12880) | La prueba del filtro Color adquiere fases respiratorias comparables | vigente |

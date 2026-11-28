@@ -12876,3 +12876,11 @@ pose tenían un límite de cuadros para una animación temporal. Cuatro discrepa
 **Decisión.** Se retiran los dos ganchos y sus utilidades exclusivas. La medida de estabilidad K7 queda en el registro histórico.
 **Consecuencias.** El chunk de pruebas pasa de 69,90 a 68,16 kB antes de gzip.
 **Verificación.** Inventario de llamadas, build y presupuesto.
+
+## 454. La prueba del filtro Color adquiere fases respiratorias comparables
+
+**Contexto.** En Metal las tres muestras de porta cayeron fuera del movimiento rápido y ninguna superó la potencia de prueba.
+**Opciones.** Aumentar cuadros o esperar tiempo real conserva la fase de partida variable.
+**Decisión.** Adquirir a mitad y fin de inspiración y a mitad de espiración en el reloj fisiológico.
+**Consecuencias.** Los cortes se comparan en la misma fase y con la misma semilla, con los umbrales originales.
+**Verificación.** `lowFilterAcquisition`, sano y grave, con Metal y SwiftShader.
