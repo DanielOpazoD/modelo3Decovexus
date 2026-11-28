@@ -52,7 +52,7 @@ const without = (p: PatientState, patch: Partial<PatientState>): PatientState =>
 describe('Casos trampa: la discordancia que enseña cada uno (decisión 82)', () => {
   for (const pattern of PATTERNS) {
     it(`presión intraabdominal alta, ${pattern}: VCI pequeña y grado 0 con la PAD alta; con el contexto, intervalo`, () => {
-      // medido (tranquila/apnea): VCI 14,4/15,5 mm con la PAD media 13,0/14,0; S −7,5/−7,3 cm/s; PF 27/26 %; renal continuo
+      // Medido (tranquila/apnea): VCI 14,3/15,4 mm con PAD media 13/14; S −10/−12 cm/s y PF 24/26 % (decisión 451).
       const r = observe(ABDOMINAL_HYPERTENSION, pattern);
       expect(r.rap, r.tag).toBeGreaterThan(12);
       // < 20 mm con margen: fuera también de la zona de ±2 mm del corte
@@ -77,7 +77,7 @@ describe('Casos trampa: la discordancia que enseña cada uno (decisión 82)', ()
       );
       expect(c.m.ivcMaxMm, c.tag).toBeGreaterThanOrEqual(22);
       expect(c.grade().grade, c.tag).toBeGreaterThanOrEqual(2);
-      // la suprahepática no cambia con la PIA: en el modelo su salida va directa a la aurícula (nota del docente)
+      // La S sigue invertida. La PIA cambia el calibre y la velocidad, y la onda auricular llega por el ostium cavoauricular.
       expect(c.m.hepaticPattern, c.tag).toBe('severe');
       // la S invertida es de la IT funcional con la PAD alta: sin la IT la suprahepática queda en S < D, y con el
       // contexto el intervalo es 0–1

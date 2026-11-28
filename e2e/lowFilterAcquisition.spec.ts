@@ -19,10 +19,18 @@ for (const caseId of ['normal-adult', 'severe-congestion'])
         s.frozen = false;
         s.patient.respiratoryPattern = 'quiet';
         s.equipment = { ...s.equipment, bmode: { ...s.bmode, persistence: 0 }, color: { ...s.color, enabled: true } };
+        const period = 60 / s.patient.respiratoryRateMin;
+        const cycleStart = (Math.floor(s.sample.t / period) + 1) * period;
         const rows = [];
-        for (let phase = 0; phase < 3; phase++) {
-          s.advance(0.6);
+        // Mitad de inspiración, fin de inspiración y mitad de espiración, cualquiera que sea el instante de arranque.
+        for (const [phase, fraction] of [0.2, 0.4, 0.65].entries()) {
+          const target = cycleStart + fraction * period;
+          const advanceBy = target - s.sample.t;
+          const chunks = Math.ceil(advanceBy / 0.25);
+          for (let chunk = 0; chunk < chunks; chunk++) s.advance(advanceBy / chunks);
           const t = s.sample.t;
+          if (Math.abs(t - target) > s.physiology.clock.dt + 1e-9)
+            throw new Error(`fase respiratoria ${fraction}: t=${t}, esperado ${target}`);
           // Control experimental: mismo campo aleatorio para aislar el filtro.
           // Sólo en el ensayo; no cambia reloj, flujo ni ganancia del producto.
           const counter = s.renderer as unknown as { frameCount: number };

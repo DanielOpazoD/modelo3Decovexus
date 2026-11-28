@@ -147,10 +147,9 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
   corto, pero las amplitudes de la AD y del pulso arterial son las mismas tras una pausa que tras un ciclo corto (sin
   Frank-Starling latido a latido). En apnea ningún grupo de cuatro latidos da S > D; la medición se compara con la verdad de
   sus propios latidos.
-- **El calibre de las suprahepáticas sigue a la presión hepática absoluta** (`hv-caliber-absolute-pressure`, decisión 434):
-  con la PIA alta la vena se dibuja dilatada aunque su transmural sea negativa (laboratorio con PAD 5 y PIA 20: radio ×1,46 y
-  S ≈ 3 cm/s). Una ley transmural cambia la trampa de PIA alta (su D pasaría de 13 a 42 cm/s, con aliasing a ±40) y exige
-  recalibrarla: queda pendiente de una decisión del responsable.
+- **Presión perivascular hepática uniforme** (`hepatic-perivascular-pressure-proxy`, decisión 451): la PIA aproxima la presión
+  exterior de todas las suprahepáticas. El área residual y la distensibilidad son extrapolaciones. Queda por medir la presión
+  local y la forma de la sección bajo compresión en distintos tramos.
 - **El pulso de la aorta y de las mesentéricas no está centrado** (`aortic-pulse-mean-rate-dependent`, decisiones 314 y 420):
   la red venosa recibe el pulso arterial centrado, pero el caudal aórtico ilustrativo (80 + 190·pulso), su calibre y la
   AMS/AMI en ayunas usan el pulso crudo, cuya media cambia con la FC (aorta ≈ 95 mL/s a 120 lpm, por encima del gasto;
@@ -163,7 +162,8 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
   resolubles» y el grado queda incompleto. Con la congestión grave en apnea (filtro 20 Hz) ninguna captura aceptada sale
   bifásica de ±40 a ±80, pero quedan sin resolver 12 de 37 a ±40, 10 de 98 a ±50, 30 de 39 a ±60 y 7 de 64 a ±80; tras un
   diurético (bifásica de verdad) ninguna sale monofásica y a ±80 quedan sin resolver 45 de 48. A ±30 aún salen 2 de 39
-  bifásicas falsas (antes 6). No se mueve la frontera: bajar la escala es la técnica correcta.
+  bifásicas falsas (antes 6). En la cirrosis de s0028 a ±92 cm/s, la D cae en dos bins adyacentes y el cociente medido
+  (0,303) cruza el umbral, pese al 0,23 de la verdad. A ±40, la misma cadena mide 0,237 y recupera el patrón monofásico.
 - **La ventana renal pide apnea para la puerta** (`renal-window-apnea-gate`, decisiones 303 y 309): respirando, la búsqueda automática de puerta no encuentra la vena interlobar en el plano en una parte de las sesiones, y ninguna captura se acepta. Hay que afinar con el movimiento o pedir apnea.
 - **Exclusión junto al borde de la banda** (`hepatic-edge-exclusion`, decisión 299): una onda suprahepática en el último 15 % de la banda se rechaza como `aliasing` aunque no se haya plegado; el alumno sube la escala y la mide. No es una detección exhaustiva: en un testigo sintético de banda estrecha, una S anterógrada a +1,2–1,7 de Nyquist reaparece más adentro y pasa, también antes de este cambio. En la cadena del producto, sin capturas falsas aceptadas (paneles de la decisión).
 

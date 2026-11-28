@@ -3,7 +3,8 @@
 Mide, con números reproducibles, cuánto se parece la imagen del simulador a la física y a una
 ecografía real (decisión 52). Nació de la evaluación ciega de la tanda 1.5: un juez de contexto
 limpio distinguió las 21 imágenes simuladas de las reales, casi siempre en menos de un segundo
-(nota global 2/7). A partir de ahí, cada cambio de imagen se acepta con estas métricas y no a ojo.
+(nota global 2/7). La lámina de la ventana guía la aceptación visual. Las métricas ayudan a identificar
+la causa y detectar retrocesos.
 
 ## Cómo se corre
 
@@ -20,6 +21,11 @@ ecos de interfaz (decisión 57) solo vigilan los que se llenan en alguna vista (
 escena lista en `escasos` los que en ella no llegan a 10 registros o no tienen rosario. Necesita GPU:
 con SwiftShader los cuadros por segundo no significan nada, así que no corre en CI. En este Mac,
 espera a que no esté corriendo el runner de EchoTwin (`pgrep -f /Users/daniel/builds/`).
+
+`npm run fidelity -- --abdomen s0028 --loop-fps --out <archivo>` mide la cadencia del HUD con la
+sonda quieta en apnea espiratoria, respiración profunda y apnea inspiratoria. Tras asentar cada
+maniobra, recoge lecturas cada 500 ms durante al menos un ciclo respiratorio y publica las muestras,
+la mediana, el mínimo y el máximo de cada estado. El JSON registra el renderer y la versión de Chromium.
 
 La composición espacial (decisión 58) está encendida por defecto, como en la aplicación:
 `npm run fidelity -- --compound false` mide la imagen de una mirada (la de las líneas base de abajo), y el
@@ -364,12 +370,14 @@ Deben seguir pasando:
 | K4  | Pendiente en profundidad 0 ± 0,3 dB/cm.                                                                                                                                                                                                                                                                                                                                                                                                         |
 | K5  | Por mirada (`compound.bands[].perLook`): SNR 1,45–1,9 (decisión 89; antes 1,75–2,1) y media a ± 3 % de la mirada 0 (la e2e admite ± 5 %).                                                                                                                                                                                                                                                                                                       |
 | K6  | Núcleo de la sombra costal ≥ 20 dB bajo el hígado con el compuesto (hoy 22,6–23,4).                                                                                                                                                                                                                                                                                                                                                             |
-| K7  | Escena quieta (`temporalStability`): correlación entre cuadros mostrados consecutivos ≥ 0,97 y modulación de periodo 3 ≤ 0,2 dB.                                                                                                                                                                                                                                                                                                                |
 | K8  | Rayo único de la mirada 0 ≤ 0,01 dB frente a la CPU; \|color − PW\| < 1 dB en la puerta renal.                                                                                                                                                                                                                                                                                                                                                  |
 | K9  | Color en la vista de la decisión 53: sangre ≥ 85 % e hígado ≤ 0,3 % (hoy 91 % y 0,07 %).                                                                                                                                                                                                                                                                                                                                                        |
 | K10 | Guardas de una mirada con `compound: false` (SNR 1,5–2,1 y 1,45–1,9, oscuros 0,05–0,11 y grietas < 0,25 desde la decisión 89; antes 1,6–2,25, 1,75–2,1, 0,05–0,09 y < 0,12; `speckleCrossfade` ± 15 %, `speckleMotion` ≥ 0,8 / ≥ 0,7 / < 0,3 / ≥ 0,9); la mirada 0 sigue el código de hoy (θ = 0) y K la pasa bit a bit.                                                                                                                        |
 | K11 | `msPerFrame` ≤ 13,5 ms en las 8 escenas, con el color apagado y encendido, 3 corridas con el runner inactivo; ≥ 30 cps a densidad 2.                                                                                                                                                                                                                                                                                                            |
 | K12 | Gemelos de las decisiones 55 y 56 sin cambios.                                                                                                                                                                                                                                                                                                                                                                                                  |
+
+El criterio histórico K7 de la decisión 58 pedía correlación ≥ 0,97 entre cuadros consecutivos y modulación de
+periodo 3 ≤ 0,2 dB en escena quieta. Su gancho se retiró del banco en la decisión 453.
 
 Notas de K11 (coste): se mide también por pasada, con `frameCostMs(30, { repeatPass, repeatCount: 2 })`
 intercalando `main` y la rama bajo la misma carga, con el compuesto apagado y encendido. La primera versión

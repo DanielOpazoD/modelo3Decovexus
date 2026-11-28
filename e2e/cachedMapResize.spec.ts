@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { bootWithoutErrors, budget, withinFrames } from './support';
+import { bootWithoutErrors, budget } from './support';
 import type { CutMapView } from '../src/ui/cutMapView';
 declare global {
   interface Window {
@@ -22,21 +22,36 @@ test('el mapa adquirido se repinta al redimensionar con una petición real aún 
       if (typeof x !== 'function') return false;
       const prototype = (x as { prototype?: object }).prototype;
       return !!prototype && 'draw' in prototype && 'lastMap' in prototype;
-    }) as new (canvas: HTMLCanvasElement) => CutMapView;
+    }) as new (canvas: HTMLCanvasElement, onMapReady: () => void, onUnavailable: (unavailable: boolean) => void) => CutMapView;
     const canvas = document.createElement('canvas');
     canvas.width = 300;
     canvas.height = 180;
     canvas.style.cssText = 'position:fixed;left:0;top:0;width:300px;height:180px;z-index:10000';
     document.body.append(canvas);
-    window.__resizeMap = { view: new Constructor(canvas), canvas };
+    const sim = window.__vexusTest!.sim();
+    // La imagen está congelada. La respuesta del Worker puede llegar entre cuadros de cualquier cadencia.
+    await new Promise<void>((resolve, reject) => {
+      let raf = 0;
+      const view = new Constructor(
+        canvas,
+        () => {
+          cancelAnimationFrame(raf);
+          resolve();
+        },
+        (unavailable) => {
+          if (!unavailable) return;
+          cancelAnimationFrame(raf);
+          reject(new Error('el Worker del corte dejó de estar disponible'));
+        },
+      );
+      window.__resizeMap = { view, canvas };
+      const draw = (now: number) => {
+        raf = requestAnimationFrame(draw);
+        view.draw(sim, now);
+      };
+      raf = requestAnimationFrame(draw);
+    });
   });
-  await withinFrames(page, 30, 'mapa común adquirido para el control de tamaño', async () =>
-    page.evaluate(() => {
-      const x = window.__resizeMap!;
-      x.view.draw(window.__vexusTest!.sim(), performance.now());
-      return !!x.view.lastMap || 'worker pendiente';
-    }),
-  );
   const result = await page.evaluate(() => {
     const { view, canvas } = window.__resizeMap!,
       s = window.__vexusTest!.sim();
@@ -49,7 +64,7 @@ test('el mapa adquirido se repinta al redimensionar con una petición real aún 
     const now = performance.now();
     view.draw(s, now);
     const before = pixels(),
-      map = view.lastMap!.map;
+      { map, frameNumber } = view.lastMap!;
     // Acquire a genuinely new frame: frozen frames are now classified only once.
     s.frozen = false;
     s.advance(0.05);
@@ -69,12 +84,14 @@ test('el mapa adquirido se repinta al redimensionar con una petición real aún 
       beforeNonzero: before.some((x) => x !== 0),
       afterNonzero: after.some((x) => x !== 0),
       sameMap,
+      newFrame: s.renderer.displayedFrame!.n !== frameNumber,
       beforeLiver: liverPixels(before),
       afterLiver: liverPixels(after),
     };
   });
   await info.attach('resize-proof', { body: JSON.stringify(result), contentType: 'application/json' });
   expect(result.beforeNonzero).toBe(true);
+  expect(result.newFrame).toBe(true);
   expect(result.sameMap).toBe(true);
   expect(result.afterNonzero).toBe(true);
   // Presencia de parénquima en la copia, no solo un fondo opaco recién pintado.

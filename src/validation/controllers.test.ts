@@ -109,6 +109,14 @@ describe('HUD', () => {
     expect(other).toBeGreaterThan(60);
     expect(hr.update(1.2, 1, 0.016)).toBeLessThan(other); // y sigue al primer RR vivido del caso nuevo
   });
+  it('usa dos R del mismo paciente aunque las primeras R de ambos relojes coincidan casi exactamente', () => {
+    const hr = new HeartRateDisplay();
+    expect(hr.update(0.2, 1, 0.016)).toBe(60);
+    hr.resetRrHistory();
+    const newR = 0.2 + Number.EPSILON;
+    expect(hr.update(newR, 0.5, 0.016)).toBe(60);
+    expect(hr.update(newR + 0.5, 0.5, 0.016)).toBeCloseTo(61.44, 8);
+  });
 });
 
 describe('HUD en el DOM: renderLines se llama en cada cuadro', () => {

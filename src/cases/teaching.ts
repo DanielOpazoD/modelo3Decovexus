@@ -26,11 +26,11 @@ export const CASE_TEACHING: Readonly<Record<CaseId, CaseTeaching>> = {
       'colapsable) con la PAD media en 13–14 mmHg. La suprahepática no encaja con esa VCI: desemboca en la cava justo bajo ' +
       'el diafragma, por encima del tramo comprimido, y en el simulador las ondas de la aurícula le llegan sin pasar por él, ' +
       'así que conserva la S invertida de la IT funcional con la PAD alta (sin la IT sería ' +
-      'S < D). Una S invertida sola no prueba la congestión (la IT la da también sin ella): lo que impide concluir grado 0 ' +
+      'S < D). La PIA estrecha también la luz suprahepática y acelera la D. Suba la escala PW si se pliega. ' +
+      'Una S invertida sola no prueba la congestión (la IT la da también sin ella): lo que impide concluir grado 0 ' +
       'es esa discordancia con la viñeta (presión vesical 16, oliguria, VD disfuncionante). Con «Presión ' +
       'intraabdominal alta» marcada, una VCI < 20 mm ya no cierra el grado en 0: el resultado da el intervalo (0–2 con ' +
-      'las tres venas medidas). La porta sale normal o en el límite (≈ 25–31 %) y el riñón continuo en apnea (respirando, ' +
-      'en el límite con el bifásico): en el simulador la ' +
+      'las tres venas medidas). La porta muestra una PF de ≈ 24–26 % y el riñón conserva el flujo continuo en apnea espiratoria. En el simulador la ' +
       'PIA amortigua las ondas que les llegan de la aurícula; en la clínica, además, comprime la vena renal y el riñón, y ' +
       'eso el simulador no lo hace.',
   },

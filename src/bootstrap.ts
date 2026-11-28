@@ -317,7 +317,9 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       dispatch,
       () => loopFrames,
     );
+    const heartRate = new HeartRateDisplay();
     session.onSimulatorChanged((next) => {
+      heartRate.resetRrHistory();
       cutMap?.onSimulatorChanged(next);
       nav?.setAnatomy(next.scene);
       spectrogram.reset();
@@ -506,7 +508,6 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
     const gpuFramePacer = new GpuFramePacer();
     const errorBudget = new ErrorBudget();
     let loopDegraded = false;
-    const heartRate = new HeartRateDisplay();
     let eqPrevCpu: CutMapView['lastMap'] = null;
     let presentationDirty = true;
     let presentedCpuState: unknown[] = [];

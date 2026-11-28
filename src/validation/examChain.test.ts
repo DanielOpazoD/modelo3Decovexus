@@ -38,6 +38,7 @@ const TERRITORIES: Territory[] = [
   { kind: 'portal', window: 'portalTrunk', vessels: ['pvTrunk'] },
   { kind: 'renal', window: 'renal', vessels: ['interlobarVein1', 'interlobarVein2', 'interlobarVein3'] },
 ];
+const HEPATIC_IAH_SCALE_CMS = 80;
 
 /**
  * Examen de los territorios con la técnica del operador (puerta dentro de la luz con el mejor ángulo, sin mirar la ventana
@@ -47,7 +48,12 @@ const TERRITORIES: Territory[] = [
  * decisión 93 esta prueba usaba una copia de la puerta con la transmisión fija en 0,3 (−10 dB; la real es −29 a −32 dB
  * en la porta): la PF que dependía de la escala no se veía.
  */
-function examine(base: PatientState, respiratoryPattern: RespiratoryPattern = 'apnea-expiratory', territories: Territory[] = TERRITORIES) {
+function examine(
+  base: PatientState,
+  respiratoryPattern: RespiratoryPattern = 'apnea-expiratory',
+  territories: Territory[] = TERRITORIES,
+  hepaticScaleCms = 40,
+) {
   const session = openSession(base, respiratoryPattern);
   const observed: Record<Territory['kind'], unknown> = { hepatic: null, portal: null, renal: null };
   let portalTruthPF: number | undefined;
@@ -55,9 +61,10 @@ function examine(base: PatientState, respiratoryPattern: RespiratoryPattern = 'a
     const contact = probeAt(session, ter.window);
     const best = placeGate(session, contact, ter.vessels, { acoustic: false, maxDepthMm: 170 });
     expect(best, `${base.id}: ${ter.kind} sin vaso en la ventana ${ter.window}`).not.toBeNull();
-    // A portal scale of ±40 cm/s resolves slow flow; the depth ceiling is not a useful portal preset.
+    // La porta conserva ±40 cm/s para resolver el flujo lento. En la suprahepática se sube la escala
+    // cuando el estrechamiento por PIA acelera la D (decisión 451).
     const prfHz = Math.min(
-      ter.kind === 'renal' ? 6000 : prfFromNyquistCms(40, CONVEX_C35.f0Doppler),
+      ter.kind === 'renal' ? 6000 : prfFromNyquistCms(ter.kind === 'hepatic' ? hepaticScaleCms : 40, CONVEX_C35.f0Doppler),
       Math.floor((0.9 * 1_540_000) / (2 * best!.r)),
     );
     const { captures } = acquire(session, contact, best!, ter.kind, { prfHz, seconds: 8.5, gateMm: Math.min(4, 2 * best!.bd) });
@@ -91,7 +98,7 @@ function hepaticCaptures(base: PatientState, respiratoryPattern: RespiratoryPatt
   const session = openSession(base, respiratoryPattern, 0, seconds + 4);
   const contact = probeAt(session, 'intercostal');
   const best = placeGate(session, contact, ['hvRight'], { acoustic: window, maxDepthMm: 170 })!;
-  const prf = prfHz ?? Math.min(prfFromNyquistCms(40, CONVEX_C35.f0Doppler), Math.floor((0.9 * 1_540_000) / (2 * best.r)));
+  const prf = Math.min(prfHz ?? prfFromNyquistCms(40, CONVEX_C35.f0Doppler), Math.floor((0.9 * 1_540_000) / (2 * best.r)));
   const t0 = session.engine.clock.t;
   const { captures } = acquire(session, contact, best, 'hepatic', {
     prfHz: prf,
@@ -328,8 +335,9 @@ describe('Casos trampa por la cadena del alumno (decisión 82)', () => {
     [MECHANICAL_VENTILATION, 1],
     [CIRRHOSIS_PULMONARY_HYPERTENSION, 3],
   ] as const) {
+    const hepaticScale = base === ABDOMINAL_HYPERTENSION ? HEPATIC_IAH_SCALE_CMS : 40;
     it(`${base.label}: en apnea lo medido coincide con la verdad y da grado ${expectedGrade}`, () => {
-      const { truth, hepatic, portal, renal } = examine(base);
+      const { truth, hepatic, portal, renal } = examine(base, 'apnea-expiratory', TERRITORIES, hepaticScale);
       for (const [name, m] of [
         ['hepática', hepatic],
         ['portal', portal],
@@ -354,7 +362,13 @@ describe('Casos trampa por la cadena del alumno (decisión 82)', () => {
     });
 
     it(`${base.label}: en apnea cada captura de la VSH es no medible o verdadera, y casi todas medibles`, () => {
-      const { captures, truth } = hepaticCaptures(base, 'apnea-expiratory', 26, true);
+      const { captures, truth } = hepaticCaptures(
+        base,
+        'apnea-expiratory',
+        26,
+        true,
+        prfFromNyquistCms(hepaticScale, CONVEX_C35.f0Doppler),
+      );
       const tag = JSON.stringify(captures);
       expect(captures.length, tag).toBeGreaterThan(8);
       expect(

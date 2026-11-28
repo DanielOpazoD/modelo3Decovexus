@@ -121,12 +121,19 @@ describe('escenarios estables derivados de la red', () => {
         expect(s.pSplanchnic - s.pAbd, `PIA ${pia}`).toBeGreaterThan(-2);
       }
       const mean = (get: (s: PhysiologySample) => number) => w.reduce((a, s) => a + get(s), 0) / w.length;
-      return { pSplanchnic: mean((s) => s.pSplanchnic), qPortal: mean((s) => s.qPortal) };
+      return {
+        pSplanchnic: mean((s) => s.pSplanchnic),
+        qPortal: mean((s) => s.qPortal),
+        hepaticTransmural: mean((s) => s.pHepatic - s.pAbd),
+        hepaticRadius: mean((s) => s.hvRadiusScale),
+      };
     };
     const base = run(5);
     for (const pia of [20, 25]) {
       const r = run(pia);
       expect(r.pSplanchnic, `PIA ${pia}`).toBeGreaterThan(pia - 2);
+      expect(r.hepaticTransmural, `PIA ${pia}`).toBeLessThan(0);
+      expect(r.hepaticRadius, `PIA ${pia}`).toBeLessThan(base.hepaticRadius);
       // la presión esplácnica alta frena la entrada arterial: el caudal portal baja por sí solo
       expect(r.qPortal, `PIA ${pia}`).toBeLessThan(0.95 * base.qPortal);
     }
