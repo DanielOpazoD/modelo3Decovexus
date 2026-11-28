@@ -3,6 +3,7 @@ import type { PersonDescriptors } from '../anatomyBundle';
 import { gastricGlsl, GASTRIC_WALL } from '../organs/abdomen';
 import { HEART_SHAPE, heartShapeGlsl } from '../organs/heart';
 import { GASTRIC_312, S0028_HEART } from '../people/s0028/cpu';
+import { S0028_DEPTH_TEXTURE_WIDTH } from '../people/s0028/depthTexture';
 import { S0028_READER_GLSL } from './s0028Solids.glsl';
 import { s0028WallShader } from './s0028Wall.glsl';
 
@@ -71,19 +72,56 @@ vec2 thoracicValue(vec3 p){
     changed,
     'float',
     'torsoDepth',
-    `float torsoDepth(vec3 p){
+    /* glsl */ `// En s0028 la unidad del perfil corporal contiene los cuatro nodos XY de la EDT, en el orden 00,10,01,11.
+  vec4 s28DepthQuad(ivec3 i){
+    int k=(i.z*${depth.dimensions[1]}+i.y)*${depth.dimensions[0]}+i.x;
+    return texelFetch(uBodyCoefficients,ivec2(k%${S0028_DEPTH_TEXTURE_WIDTH},k/${S0028_DEPTH_TEXTURE_WIDTH}),0);
+  }
+  float torsoDepth(vec3 p){
+    const ivec3 last=ivec3(${depth.dimensions.map((n) => n - 1).join(',')});
     vec3 q=(p-${vec(depth.originMm)})/3.0;
-    vec3 at=clamp(q,vec3(0.0),${vec(depth.dimensions.map((n) => n - 1))});
-    return textureLod(uAbdominalAtlas,(${vec(depth.offset)}+at+0.5)/vec3(textureSize(uAbdominalAtlas,0)),0.0).r+length(q-at)*3.0;
+    vec3 at=clamp(q,vec3(0.0),vec3(last));
+    ivec3 cell=min(ivec3(at),last-1);
+    vec3 f=at-vec3(cell);
+    vec4 lo=s28DepthQuad(cell),hi=s28DepthQuad(cell+ivec3(0,0,1));
+    vec2 l=mix(lo.xz,lo.yw,f.x),h=mix(hi.xz,hi.yw,f.x);
+    return mix(mix(l.x,l.y,f.y),mix(h.x,h.y,f.y),f.z)+3.0*length(q-at);
   }`,
   );
   changed = replaceFunction(
     changed,
     'vec3',
     'torsoNormal',
-    `vec3 s28DepthGradient(vec3 p){vec2 e=vec2(1.5,0.0);
-    return vec3(torsoDepth(p+e.xyy)-torsoDepth(p-e.xyy),torsoDepth(p+e.yxy)-torsoDepth(p-e.yxy),torsoDepth(p+e.yyx)-torsoDepth(p-e.yyx))/3.0;
+    /* glsl */ `// La trilineal de la EDT y su diferencia central a medio vóxel comparten la celda (gemela de s0028DepthGradient).
+  // Dos lecturas de la celda, dos por la cara vecina X e Y y una por Z.
+  float s28DepthAndGradient(vec3 p,out vec3 g){
+    const ivec3 last=ivec3(${depth.dimensions.map((n) => n - 1).join(',')});
+    vec3 q=(p-${vec(depth.originMm)})/3.0;
+    vec3 at=clamp(q,vec3(0.0),vec3(last));
+    ivec3 cell=min(ivec3(at),last-1);
+    vec3 f=at-vec3(cell),side=step(vec3(0.5),f);
+    ivec3 e=clamp(cell+ivec3(3.0*side-1.0),ivec3(0),last)-cell;
+    vec4 lo=s28DepthQuad(cell),hi=s28DepthQuad(cell+ivec3(0,0,1));
+    vec4 xy=mix(lo,hi,f.z);
+    vec2 x=mix(xy.xy,xy.zw,f.y),y=mix(xy.xz,xy.yw,f.x);
+    vec2 z=mix(mix(vec2(lo.x,hi.x),vec2(lo.y,hi.y),f.x),mix(vec2(lo.z,hi.z),vec2(lo.w,hi.w),f.x),f.y);
+    vec2 yz=mix(s28DepthQuad(cell+ivec3(e.x,0,0)).xz,s28DepthQuad(cell+ivec3(e.x,0,1)).xz,f.z);
+    vec2 xz=mix(s28DepthQuad(cell+ivec3(0,e.y,0)).xy,s28DepthQuad(cell+ivec3(0,e.y,1)).xy,f.z);
+    vec4 crossZ=s28DepthQuad(cell+ivec3(0,0,e.z));
+    vec3 outer=vec3(mix(yz.x,yz.y,f.y),mix(xz.x,xz.y,f.x),mix(mix(crossZ.x,crossZ.y,f.x),mix(crossZ.z,crossZ.w,f.x),f.y));
+    vec3 a=clamp(q-0.5,vec3(0.0),vec3(last)),b=clamp(q+0.5,vec3(0.0),vec3(last));
+    vec3 l=a-vec3(cell),r=b-vec3(cell);
+    vec3 innerSpan=clamp(r,0.0,1.0)-clamp(l,0.0,1.0),outerSpan=max(-l,r-1.0);
+    vec3 low=vec3(x.x,y.x,z.x),high=vec3(x.y,y.y,z.y);
+    g=(innerSpan*(high-low)+outerSpan*(outer-mix(low,high,side))*(2.0*side-1.0))/3.0;
+    // La extensión euclídea de la CPU fuera de la caja, a los dos extremos de cada eje.
+    vec3 d=q-at;
+    float dd=dot(d,d);
+    vec3 rest=max(vec3(0.0),dd-d*d),da=q-0.5-a,db=q+0.5-b;
+    g+=sqrt(rest+db*db)-sqrt(rest+da*da);
+    return mix(z.x,z.y,f.z)+3.0*sqrt(dd);
   }
+  vec3 s28DepthGradient(vec3 p){vec3 g;s28DepthAndGradient(p,g);return g;}
   vec3 torsoNormal(vec3 p){return normalize(s28DepthGradient(p));}`,
   );
   changed = replaceFunction(changed, 'vec3', 'torsoDepthGrad', 'vec3 torsoDepthGrad(vec3 p){return s28DepthGradient(p);}');

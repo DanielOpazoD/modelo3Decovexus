@@ -3,6 +3,7 @@ import { gunzipSync } from 'node:zlib';
 import { beforeAll, expect, it } from 'vitest';
 import { createSourceQueries } from '../anatomy/people/s0028/atlas';
 import { installS0028Assets } from '../anatomy/people/s0028/assets';
+import { packS0028DepthQuads } from '../anatomy/people/s0028/depthTexture';
 import { S0028_BUNDLE as B } from '../anatomy/people/s0028/descriptor';
 import { sourceDistance, sourceDistanceReader, sourceLabel } from '../anatomy/sourceVolume';
 import type { Vec3 } from '../core/vec3';
@@ -66,6 +67,33 @@ it('la EDT común de s0028 da bit a bit la proyección a la caja seguida de sour
     (p) => !Object.is(source.s0028DepthXyz(p[0], p[1], p[2]), reference(p)),
   );
   expect(differ.slice(0, 5)).toEqual([]);
+});
+
+it('la textura de profundidad conserva los cuatro nodos XY y satura en el borde', () => {
+  const { data, width, height } = packS0028DepthQuads(abdominal);
+  const [nx, ny, nz] = B.depth.dimensions;
+  const [ox, oy, oz] = B.depth.offset;
+  const [w, h] = B.abdominal.textureDimensions;
+  const word = (x: number, y: number, z: number) => abdominal[2 * (((oz + z) * h + oy + y) * w + ox + x)];
+  expect(data).toHaveLength(width * height * 4);
+  for (const [x, y, z] of [
+    [0, 0, 0],
+    [8, 25, 1],
+    [nx - 1, 10, 8],
+    [5, ny - 1, nz - 1],
+    [nx - 1, ny - 1, nz - 1],
+  ]) {
+    const offset = 4 * ((z * ny + y) * nx + x);
+    const nextX = Math.min(x + 1, nx - 1),
+      nextY = Math.min(y + 1, ny - 1);
+    expect(Array.from(data.subarray(offset, offset + 4))).toEqual([
+      word(x, y, z),
+      word(nextX, y, z),
+      word(x, nextY, z),
+      word(nextX, nextY, z),
+    ]);
+  }
+  expect(() => packS0028DepthQuads(undefined)).toThrow('EDT s0028 sin atlas abdominal completo');
 });
 
 it('sourceDistanceReader da bit a bit sourceDistance en cada campo fuente de s0028, dentro y fuera de su caja', () => {

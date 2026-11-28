@@ -3,6 +3,7 @@ import type { InstalledCpuPerson, PersonGpuPlan } from '../../person';
 import { Interface } from '../../interfaces';
 import { Tissue } from '../../tissues';
 import { S0028_MUSCLE_BACKSCATTER } from '../../gpu/s0028Wall.glsl';
+import { packS0028DepthQuads } from './depthTexture';
 import { S0028_BUNDLE } from './descriptor';
 import { s0028FieldMaskUploads } from './fieldMask';
 import { S0028_TUBE_SEGMENTS } from './vessels';
@@ -43,6 +44,7 @@ export const S0028_TISSUE_LOOK = Object.freeze({
 export function gpuPlan(person: InstalledCpuPerson): PersonGpuPlan {
   return Object.freeze({
     specializeFragment: (source: string) => personShader(source, { person: 's0028', bundle: S0028_BUNDLE }),
+    bodyDepthTexture: () => packS0028DepthQuads(person.assets.buffers.abdominal),
     uploads: [
       ...person.cpu.regional!.s0028WallUploads(),
       ...person.cpu.regional!.s0028SolidsUploads(),

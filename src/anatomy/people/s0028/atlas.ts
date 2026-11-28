@@ -29,6 +29,7 @@ export function createSourceQueries(assets: PersonAssets) {
   function s0028Depth(p: Vec3): number | undefined {
     return s0028DepthXyz(p[0], p[1], p[2]);
   }
+  /** Diferencia central a medio vóxel de la EDT, gemela de `s28DepthAndGradient`. @twin s0028-lector */
   function s0028DepthGradient(p: Vec3): Vec3 | undefined {
     if (!abdominalAtlas) return undefined;
     const [x, y, z] = p;

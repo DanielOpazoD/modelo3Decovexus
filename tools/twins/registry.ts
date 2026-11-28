@@ -965,7 +965,11 @@ export const TWINS: readonly TwinPair[] = [
       { file: 'src/anatomy/people/s0028/atlas.ts', symbols: ['s0028Depth', 's0028DepthGradient'] },
     ],
     gpu: [
-      { file: 'src/anatomy/gpu/personShader.ts', symbols: ['s28Gas', 's28DepthGradient'], templates: ['personShader'] },
+      {
+        file: 'src/anatomy/gpu/personShader.ts',
+        symbols: ['s28Gas', 's28DepthGradient', 's28DepthAndGradient', 's28DepthQuad'],
+        templates: ['personShader'],
+      },
       {
         file: 'src/anatomy/gpu/s0028Solids.glsl.ts',
         symbols: ['s28P', 's28PA', 's28PT', 's28PLA', 's28PLT'],

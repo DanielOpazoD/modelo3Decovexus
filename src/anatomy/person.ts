@@ -77,6 +77,8 @@ export interface AtlasUpload {
 export interface PersonGpuPlan {
   readonly specializeFragment: (source: string) => string;
   readonly uploads: readonly AtlasUpload[];
+  /** EDT en RGBA16F para las personas que usan la unidad de coeficientes corporales como lector de profundidad. */
+  readonly bodyDepthTexture?: () => { readonly width: number; readonly height: number; readonly data: Uint16Array };
   /** Tramos por tubo que recorre el shader de esta persona; sin él, `MAX_TUBE_SEGMENTS`. */
   readonly tubeSegments?: number;
   /**
