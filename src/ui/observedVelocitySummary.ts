@@ -1,5 +1,6 @@
 import type { ObservedHepatic, ObservedPortal, ObservedRenal } from '../doppler/spectralMeasure';
 import type { MeasurementQuality } from '../doppler/measureQuality';
+import { velocityText } from './panel/vexusText';
 import { portalBeatSummary } from './portalBeatSummary';
 
 type SummaryObservation = {
@@ -8,7 +9,7 @@ type SummaryObservation = {
   anterogradeSign: number;
 } & (
   | Pick<ObservedHepatic, 'kind' | 'sPeak' | 'dPeak' | 'aPeak'>
-  | Pick<ObservedPortal, 'kind' | 'vMax' | 'vMin' | 'pulsatilityFraction' | 'pulsatilityByBeat'>
+  | Pick<ObservedPortal, 'kind' | 'vMax' | 'vMin' | 'pulsatilityFraction' | 'pulsatilityByBeat' | 'pulsatilityLowerBound'>
   | Pick<ObservedRenal, 'kind' | 'sPeak' | 'dPeak' | 'vMin'>
 );
 
@@ -17,11 +18,7 @@ type SummaryObservation = {
  */
 export function observedVelocitySummary(m: SummaryObservation | null, invert = false): string {
   if (!m || m.quality.issue !== null || m.beats < 1 || Math.abs(m.anterogradeSign) !== 1) return '';
-  const value = (v: number): string => {
-    if (!Number.isFinite(v)) return '—';
-    const rounded = Number((v * m.anterogradeSign * (invert ? -1 : 1)).toFixed(1));
-    return `${rounded > 0 ? '+' : ''}${rounded.toFixed(1)}`;
-  };
+  const value = (v: number): string => velocityText(v * m.anterogradeSign * (invert ? -1 : 1), true);
   const waves =
     m.kind === 'hepatic'
       ? `S ${value(m.sPeak)} · D ${value(m.dPeak)} · A ${value(m.aPeak)}`

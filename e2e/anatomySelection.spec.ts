@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { startPointsFor } from '../src/app/startPoints';
-import { bootWithoutErrors, budget, withinFrames, checkAfterEach } from './support';
+import { bootWithoutErrors, budget, withinFrames, withinSimSeconds, checkAfterEach } from './support';
 
 checkAfterEach();
 async function liverPoint(page: Page) {
@@ -35,7 +35,9 @@ for (const model of ['legacy', 'reference', 'atlas'] as const)
     const torso = await page.evaluate(() => window.__vexusTest!.sim().scene.torso);
     const sp = startPointsFor(torso, { person: 'current' }).find((x) => x.id === 'portal')!;
     await page.locator('[data-window="portal"]').click();
-    await withinFrames(page, 100, 'preset completo', async () =>
+    // La animación converge en tiempo de simulación (constante ≈ 0,3 s, `ProbeAnimator`), como espera `windowAcquired`: con
+    // GPU real (60 fps, 1/60 s por cuadro) 100 cuadros eran 1,7 s y no siempre bastaban, con SwiftShader (≤ 0,25 s) eran 25 s.
+    await withinSimSeconds(page, 3, 'preset completo', async () =>
       page.evaluate((sp) => {
         const p = window.__vexusTest!.sim().pose;
         return (

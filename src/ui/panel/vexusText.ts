@@ -31,9 +31,10 @@ export function renalText(p: RenalPattern): string {
           : 'no evaluado';
 }
 
+/** S = D exacto es leve (`hepaticPatternFromPeaks`): el rótulo lo dice. */
 export function patternText(p: HepaticPattern): string {
   if (p === 'indeterminate') return 'indeterminado: fase no identificable';
-  return p === 'normal' ? 'normal (S>D)' : p === 'mild' ? 'leve (S<D)' : p === 'severe' ? 'grave (S invertida)' : 'no evaluado';
+  return p === 'normal' ? 'normal (S>D)' : p === 'mild' ? 'leve (S≤D)' : p === 'severe' ? 'grave (S invertida)' : 'no evaluado';
 }
 
 export function portalText(c: PortalClass): string {
@@ -49,12 +50,58 @@ export function portalText(c: PortalClass): string {
           : 'no evaluada';
 }
 
-/** El redondeo de presentación nunca debe cruzar un umbral de categoría. */
-export function portalPulsatilityText(pf: number): string {
+/*
+ * Un ayudante por magnitud del grado. El redondeo de presentación nunca debe cruzar un umbral de categoría (decisión 272):
+ * lo que queda justo debajo de un corte no se escribe como el corte.
+ */
+export const PF_THRESHOLDS = [PF_MILD, PF_SEVERE] as const;
+
+/** El umbral que el redondeo a la décima de `v` alcanzaría desde abajo, o undefined. */
+const crossedThreshold = (v: number, thresholds: readonly number[]): number | undefined =>
+  thresholds.find((t) => v < t && Number(v.toFixed(1)) >= t);
+
+/** `v` a la décima; si el redondeo cruzara un umbral, la décima inferior (19,97 con el corte de 20 → 19,9); «—» si no es finito. */
+function tenthsBelowThreshold(v: number, thresholds: readonly number[], decimal: '.' | ','): string {
+  if (!Number.isFinite(v)) return '—';
+  const t = crossedThreshold(v, thresholds);
+  const s = (t === undefined ? v : t - 0.1).toFixed(1);
+  return decimal === ',' ? s.replace('.', ',') : s;
+}
+
+/** Diámetro de la VCI (mm, sin unidad): el redondeo nunca cruza el corte de 20 mm que decide el grado 0. */
+export const ivcDiameterText = (mm: number, decimal: '.' | ',' = '.'): string => tenthsBelowThreshold(mm, [IVC_THRESHOLD_MM], decimal);
+
+/** PF sin unidad (la de un latido, los extremos de un rango): coma decimal y sin cruzar 30 ni 50 %. */
+export const pulsatilityValueText = (pf: number): string => tenthsBelowThreshold(pf, PF_THRESHOLDS, ',');
+
+/** PF del grado; `lowerBound`: la medida es una cota inferior (el valle cae en el filtro de pared, la real es mayor). */
+export function portalPulsatilityText(pf: number, lowerBound = false): string {
   if (!Number.isFinite(pf) || pf < 0) return 'n/a';
-  const rounded = Number(pf.toFixed(1));
-  for (const threshold of [PF_MILD, PF_SEVERE]) if (pf < threshold && rounded >= threshold) return `menos de ${threshold} %`;
-  return `${pf.toFixed(1).replace('.', ',')} %`;
+  const t = crossedThreshold(pf, PF_THRESHOLDS);
+  return t !== undefined ? `menos de ${t} %` : `${lowerBound ? '≥ ' : ''}${pulsatilityValueText(pf)} %`;
+}
+
+/**
+ * Velocidad (cm/s, sin unidad) a la décima (o con `digits` decimales); «—» si no es finita (la onda A en la FA, un mínimo
+ * sin latido). Sin `signed`, el signo físico es un umbral (S < 0: invertida; decisión 272) y un negativo que redondea a cero
+ * lo conserva («-0.0»). Con `signed` (signo de pantalla), «+» delante de lo positivo y sin cero negativo.
+ */
+export function velocityText(v: number, signed = false, digits = 1): string {
+  if (!Number.isFinite(v)) return '—';
+  if (!signed) return v.toFixed(digits);
+  const r = Number(v.toFixed(digits));
+  return `${r > 0 ? '+' : ''}${r.toFixed(digits)}`;
+}
+
+/**
+ * Picos S y D de la VSH (cm/s, sin unidad). Con los dos positivos el patrón compara S con D (normal si S > D), así que,
+ * si la décima los iguala, llevan las cifras que hagan falta para que se vea el orden (25,04 y 25 → «25.04» y «25.00»).
+ */
+export function hepaticPeaksText(s: number, d: number): [string, string] {
+  let digits = 1;
+  // toFixed admite hasta 100 decimales; dos picos distintos difieren mucho antes
+  if (s > 0 && d > 0 && s !== d) while (digits < 100 && s.toFixed(digits) === d.toFixed(digits)) digits++;
+  return [velocityText(s, false, digits), velocityText(d, false, digits)];
 }
 
 /**

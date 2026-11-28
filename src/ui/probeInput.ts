@@ -1,4 +1,5 @@
 import type { ProbePose } from '../probe/probe';
+import { appKey } from './keyRouting';
 
 /**
  * Teclas que mueven la sonda (⇧ solo las afina). Las demás no entran en el conjunto de teclas mantenidas: Intro sobre
@@ -39,12 +40,18 @@ export class ProbeInput {
     el.addEventListener('wheel', this.onWheel, { passive: false });
     el.addEventListener('contextmenu', (e) => e.preventDefault());
     window.addEventListener('keydown', (e) => {
-      if ((e.target as HTMLElement | null)?.tagName === 'INPUT' || (e.target as HTMLElement | null)?.tagName === 'SELECT') return;
+      if (!appKey(e)) return;
       const key = e.key.toLowerCase();
       if (key === 'shift' || MOVE_KEYS.has(key)) this.keys.add(key);
       if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(key)) e.preventDefault();
     });
-    window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+    // En macOS no llega el keyup de una tecla soltada con ⌘ pulsado: al soltar ⌘ se sueltan todas (la repetición
+    // automática devuelve la que siga pulsada) salvo ⇧, que no se repite.
+    window.addEventListener('keyup', (e) => {
+      if (e.key !== 'Meta') return void this.keys.delete(e.key.toLowerCase());
+      this.keys.clear();
+      if (e.shiftKey) this.keys.add('shift');
+    });
     window.addEventListener('blur', () => this.keys.clear());
   }
 

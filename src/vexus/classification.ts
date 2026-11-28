@@ -246,6 +246,24 @@ export const RENAL_INTERRUPTION_FLOOR_CMS = 2;
 /** Fracción del máximo por debajo de la cual el valle se lee como línea de base en la escala del espectro. */
 export const RENAL_INTERRUPTION_FRACTION = 0.1;
 
+/** Fracción de D que debe alcanzar la S para que la vena interrumpida sea bifásica y no monofásica. */
+const RENAL_BIPHASIC_S_FRACTION = 0.3;
+/**
+ * Bins sobre el suelo hasta los que una onda se lee en el suelo + 1 bin (decisión 447): a ±50 cm/s con el filtro a 20 Hz, una banda
+ * con su máximo entre 2,25 y 3,5–3,6 bins se lee en 4, con el suelo en el bin 3.
+ */
+const RENAL_S_FLOOR_READ_BINS = 0.5;
+
+/**
+ * Resolución de una S leída sobre el espectro (decisión 447). `floorCms`: el suelo de la envolvente, la velocidad más baja que
+ * mira (`envelopeFloorHz`); `stepCms`: un bin. Una onda bajo el suelo en el filtro de pared, en él o hasta ½ bin más arriba se
+ * lee en el suelo + 1 bin.
+ */
+export interface RenalSResolution {
+  floorCms: number;
+  stepCms: number;
+}
+
 /**
  * Patrón venoso intrarrenal a partir de los picos S y D (anterógrados, cm/s) y del mínimo
  * RESOLUBLE del ciclo: el valle sostenido lo bastante para verse en el espectro (una pausa más
@@ -254,16 +272,37 @@ export const RENAL_INTERRUPTION_FRACTION = 0.1;
  * bifásico: se interrumpe pero hay pico sistólico y diastólico (S ≥ 30 % de D); monofásico: solo
  * pico diastólico. Un mínimo retrógrado con S y D presentes se informa «fuera del esquema».
  * Umbrales [EXTRAPOLACIÓN PROPIA] de la descripción cualitativa de la base (D.9, A.1).
+ *
+ * Con `sResolution` (la S medida en un espectro, decisión 447), una S leída a ≤ suelo + 1 bin no sube del suelo más de ½ bin: su
+ * onda cabe entre 0 y el suelo + ½ bin. Leída hasta un bin más arriba, entre el suelo y lo leído. El patrón se decide si la
+ * frontera de 0,3·D queda fuera de ese intervalo; si cae dentro, sus fases no se resuelven a esa escala. La verdad no lo pasa: su
+ * S es exacta.
  */
-export function renalPatternFromPeaks(sPeak: number, dPeak: number, vMin: number, floorCms = RENAL_INTERRUPTION_FLOOR_CMS): RenalPattern {
+export function renalPatternFromPeaks(
+  sPeak: number,
+  dPeak: number,
+  vMin: number,
+  floorCms = RENAL_INTERRUPTION_FLOOR_CMS,
+  sResolution?: RenalSResolution,
+): RenalPattern {
   if (![sPeak, dPeak, vMin, floorCms].every(Number.isFinite) || floorCms < 0) return 'not-assessed';
+  if (sResolution && !(sResolution.floorCms >= 0 && sResolution.stepCms > 0 && Number.isFinite(sResolution.floorCms + sResolution.stepCms)))
+    return 'not-assessed';
   const vMax = Math.max(sPeak, dPeak);
   if (!(vMax > 0)) return 'not-assessed';
   // El suelo pertenece a la observabilidad del instrumento, no a un nuevo criterio clínico.
   if (vMax <= floorCms) return 'indeterminate';
   if (dPeak <= floorCms) return 'systolic-only';
   if (vMin > Math.max(floorCms, RENAL_INTERRUPTION_FRACTION * vMax)) return 'continuous';
-  if (sPeak >= 0.3 * dPeak) return vMin < -0.2 * vMax ? 'reversal-out-of-scheme' : 'biphasic';
+  const frontier = RENAL_BIPHASIC_S_FRACTION * dPeak;
+  if (sResolution && sPeak <= sResolution.floorCms + 2 * sResolution.stepCms) {
+    const atFloor = sPeak <= sResolution.floorCms + sResolution.stepCms;
+    const lo = atFloor ? 0 : sResolution.floorCms;
+    const hi = atFloor ? sResolution.floorCms + RENAL_S_FLOOR_READ_BINS * sResolution.stepCms : sPeak;
+    if (hi < frontier) return 'monophasic';
+    if (lo < frontier) return 'indeterminate';
+  }
+  if (sPeak >= frontier) return vMin < -0.2 * vMax ? 'reversal-out-of-scheme' : 'biphasic';
   return 'monophasic';
 }
 

@@ -22,7 +22,7 @@ import { translateProbe } from './probe/translation';
 import { Banner } from './ui/controllers/banner';
 import { bindCine } from './ui/controllers/cine';
 import { bindGpuLifecycle } from './ui/controllers/gpuLifecycle';
-import { HeartRateDisplay, hudText, renderLines } from './ui/controllers/hud';
+import { HeartRateDisplay, hudImage, hudText, renderLines } from './ui/controllers/hud';
 import { bindImageClick } from './ui/controllers/imageClick';
 import { buildLayerMenu } from './ui/controllers/layerMenu';
 import { setPressed } from './ui/controls';
@@ -37,7 +37,6 @@ import { ProbeInput } from './ui/probeInput';
 import { StartPointCards } from './ui/startPointCards';
 import { traceRight } from './ui/sweep';
 import { drawVelocityRuler } from './ui/velocityRuler';
-import { compoundActive } from './ultrasound/compound';
 
 export async function start(person: InstalledPerson, signal: AbortSignal): Promise<void> {
   markStartup('bootstrap:begin');
@@ -199,9 +198,11 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
     // una vez por cuadro y después de enviar la ecografía (`settleContact` en `frame`). Resolverlo cuesta varios
     // milisegundos de CPU y, hecho antes, retrasaba el envío hasta que la GPU ya no terminaba antes del siguiente refresco;
     // varios eventos del ratón en un mismo cuadro dejan además de resolver un contacto cada uno (decisión 342).
+    // congelada, la animación hacia una ventana se pausa y sigue al descongelar (decisión 80)
     const probeAnimator = new ProbeAnimator(
       () => sim().pose,
       (p) => sim().requestPose(p),
+      () => !store.get().frozen,
     );
     function setPoseManual(p: Parameters<Simulator['setPose']>[0]): void {
       probeAnimator.cancel(); // cualquier gesto manual cancela la animación
@@ -227,6 +228,7 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
     let lastFps = 0;
     panel.onExportDiagnostics = () => {
       const s = sim();
+      const id = s.scene.identity;
       const d = buildDiagnostics({
         version: __APP_VERSION__,
         commit: __GIT_COMMIT__,
@@ -235,6 +237,8 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
         gpu: gpuInfo(s.renderer.gl),
         viewport: { width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio },
         caseId: s.patient.id,
+        // Selección explícita: la identidad instalada lleva además campos que el tipo no declara.
+        anatomy: { person: id.person, frameId: id.frameId, revision: id.revision },
         simTimeS: s.physiology.clock.t,
         fps: lastFps,
         gpuMs: s.renderer.gpuTimings(),
@@ -399,15 +403,19 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
     }
     applyTeacherMode(false);
 
+    // la capa de rótulos es la imagen enfocable: no recibe el puntero, así que un clic en la imagen no le da el foco
+    panel.measureImage = overlay;
     const imageClick = bindImageClick({
       host: sectorWrap,
       canvas: glCanvas,
+      keys: overlay,
       getSim: sim,
       store,
-      setIvcCaliper: (mm) => panel.setIvcCaliper(mm),
+      setIvcCaliper: (mm, frameChanged) => panel.setIvcCaliper(mm, frameChanged),
       dispatch,
     });
-    bindKeyboardShortcuts(store, dispatch);
+    panel.cancelCaliper = imageClick.cancelCaliper;
+    bindKeyboardShortcuts(store, dispatch, imageClick.cancelCaliper);
     // el cine y la franja M eran del renderizador viejo (decisión 80)
     const gpu = bindGpuLifecycle(glCanvas, sim, banner, () => {
       cine.sync();
@@ -446,13 +454,13 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       if (st.caseId !== prev.caseId) {
         const error = session.loadCase(st.caseId);
         if (error) {
-          // transaccional: sigue el caso anterior; el selector y el estado vuelven atrás
-          banner.show(`No se pudo cargar el caso: ${errorMessage(error)}`, 6000);
+          // transaccional: sigue el caso anterior; el selector y el estado vuelven atrás, y el aviso dice cuál sigue
+          const label = (id: string) => shownCaseLabel(id, st.debug, location.search);
+          banner.show(`No se pudo cargar «${label(st.caseId)}»; sigue «${label(prev.caseId)}». Motivo: ${errorMessage(error)}`, 6000);
           caseSelect.value = prev.caseId;
           store.set({ caseId: prev.caseId });
         }
       }
-      if (st.tool !== prev.tool && st.tool !== 'caliper') imageClick.cancelCaliper();
       if (st.debug !== prev.debug) applyTeacherMode(st.debug);
     });
 
@@ -542,6 +550,7 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
         panel.captureOverlay,
         panel.mMarks,
         panel.mMarks.length,
+        imageClick.marks,
         overlay.width,
         overlay.height,
         ecgCanvas.width,
@@ -560,6 +569,7 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       // Un mapa nuevo solo invalida el contorno anatómico, no ECG/espectro/M.
       if (tracesChanged) drawTraces(s, allowGpu);
       drawOverlay(overlay, s);
+      imageClick.drawMarks(overlay);
       cutMap?.drawHighlight(overlay, s, store.get().torso && !gpu.lost);
     }
 
@@ -602,31 +612,26 @@ export async function start(person: InstalledPerson, signal: AbortSignal): Promi
       const h = hudText({
         patientLabel: shownCaseLabel(s.patient.id, store.get().debug, location.search),
         frozen: s.frozen,
-        heartRateBpm: heartRate.update(s.sample.rr, dt),
+        heartRateBpm: heartRate.update(s.sample.lastR, s.sample.rr, dt),
         atrialFibrillation: s.patient.rhythm === 'atrial-fibrillation',
         transducerMHz: s.transducer.f0B / 1e6,
         f0DopplerHz: s.transducer.f0Doppler,
-        depthMm: s.bmode.depthMm,
-        gainDb: s.bmode.gainDb,
-        dynamicRangeDb: s.bmode.dynamicRangeDb,
-        compound: compoundActive(s.bmode, s.color),
-        speckleReduction: s.displayed.color.enabled ? 0 : s.displayed.bmode.speckleReduction,
-        harmonic: s.bmode.harmonic,
+        ...hudImage(s),
         mode: store.get().mode,
-        color: { prfHz: s.color.prfHz, wallFilterHz: s.color.wallFilterHz, frameHz: s.colorTiming.frameHz },
-        pw: { prfHz: s.pw.prfHz, gateMm: s.pw.gateMm, depthMm: s.pw.depthMm, sweepMmS: s.pw.sweepMmS },
+        pw: { nyquistCms: s.pwNyquistCms(), gateMm: s.pw.gateMm, depthMm: s.pw.depthMm, sweepMmS: s.pw.sweepMmS },
         respVolume: s.sample.resp.volume,
       });
       renderLines(hud.tl, h.topLeft);
       renderLines(hud.tr, h.topRight);
       renderLines(hud.br, h.bottomRight);
-      ctxChip.textContent = h.chip;
+      if (ctxChip.textContent !== h.chip) ctxChip.textContent = h.chip;
       frames++;
       frameTime += dt;
       if (now - lastStatus > 250) {
         lastStatus = now;
         lastFps = frames / Math.max(1e-3, frameTime);
-        status.textContent = `${lastFps.toFixed(0)} fps · t ${t.toFixed(1)} s`;
+        const statusText = `${lastFps.toFixed(0)} fps · t ${t.toFixed(1)} s`;
+        if (status.textContent !== statusText) status.textContent = statusText;
         frames = 0;
         frameTime = 0;
         // Comprobación TS ↔ GLSL en vivo (solo docente): mapa GPU vs mapa del Worker, misma rejilla.

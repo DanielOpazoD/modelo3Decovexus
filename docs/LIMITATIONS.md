@@ -27,9 +27,10 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
   onda sistólica por insuficiencia tricuspídea, gaussianas centradas por latido sobre la media. La media sale del lazo
   cerrado (decisión 79) y la rigidez auricular y la IT siguen al llenado, pero las ondas no salen de una cámara con
   volumen y válvulas; las amplitudes (3,4 / 5,2·VD / 1,8 / 2,4 / 9·IT² mmHg) son de calibración, no medidas. Hallado por
-  fast-check: con la aurícula muy rígida (compliancia 0,3) y PAD media ≈ 0 el contorno oscila hasta −11 mmHg y la VCI
-  suprahepática supera 2 m/s (`properties.test.ts`, `it.fails`; el primer contraejemplo, de hipovolemia, ya no la supera
-  con la pared viscoelástica de la decisión 73).
+  fast-check: con la aurícula muy rígida (compliancia 0,3) y PAD media ≈ 0 el contorno baja hasta ≈ −10 mmHg (por eso el
+  dominio de `properties.test.ts` empieza en 0,6). La VCI suprahepática superaba entonces 2 m/s; con la sección regional de
+  la VCI superior (decisión 172) se queda en 1,7 m/s, y `properties.test.ts` conserva esa cota como regresión normal, igual
+  que para el primer contraejemplo, de hipovolemia, desde la pared viscoelástica de la decisión 73.
 - **El lazo cerrado es solo de la media** (`mean-closed-loop`, decisión 79): la PAD media es el cruce de dos curvas en
   cada paso (casi estático), linealizadas en el punto del caso; no hay cámaras ni válvulas y las ondas no realimentan la
   media. La curva de Starling se aplana pero no desciende (sin interdependencia ventricular). La IT funcional dependiente
@@ -141,18 +142,39 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
   es multiplicativo y el mismo en todos los casos, así que el IR renal (0,60 en el Doppler, 0,53 en la red; decisión 297) y el hepático
   (0,63) no cambian entre casos; además el pulso sube 130–170 ms antes de la R: la última muestra antes de la R no es el mínimo del ciclo y da un IR menor. Medir el IR hoy no
   enseñaría nada.
+- **En FA la amplitud de las ondas no depende del ciclo previo** (`af-waves-ignore-preceding-cycle`, decisiones 420 y 442): la
+  sístole sigue al RR previo, la R siguiente recorta la D y apaga el descenso y, y el ventrículo expulsa menos tras un ciclo
+  corto, pero las amplitudes de la AD y del pulso arterial son las mismas tras una pausa que tras un ciclo corto (sin
+  Frank-Starling latido a latido). En apnea ningún grupo de cuatro latidos da S > D; la medición se compara con la verdad de
+  sus propios latidos.
+- **El calibre de las suprahepáticas sigue a la presión hepática absoluta** (`hv-caliber-absolute-pressure`, decisión 434):
+  con la PIA alta la vena se dibuja dilatada aunque su transmural sea negativa (laboratorio con PAD 5 y PIA 20: radio ×1,46 y
+  S ≈ 3 cm/s). Una ley transmural cambia la trampa de PIA alta (su D pasaría de 13 a 42 cm/s, con aliasing a ±40) y exige
+  recalibrarla: queda pendiente de una decisión del responsable.
+- **El pulso de la aorta y de las mesentéricas no está centrado** (`aortic-pulse-mean-rate-dependent`, decisiones 314 y 420):
+  la red venosa recibe el pulso arterial centrado, pero el caudal aórtico ilustrativo (80 + 190·pulso), su calibre y la
+  AMS/AMI en ayunas usan el pulso crudo, cuya media cambia con la FC (aorta ≈ 95 mL/s a 120 lpm, por encima del gasto;
+  AMS +19 % de 70 a 120 lpm). No entran en el VExUS ni en la red.
 - **Las suprahepáticas no agotan el caudal hepático** (`hepatic-doppler-flow-not-conserved`, decisión 299): con todo el caudal de la red en estas luces, la S del sano sería 43–51 cm/s, y los dos estudios abiertos comparables dan 21–23. Para leer lo publicado, las colectoras llevan el 51,7 % de ese caudal: S 24,0 cm/s en la derecha y 22,6 en la media (23,1 ± 6,0, Sudhamshu 2006; 21 ± 1,9 en otra fase, Teichgräber 1997). El resto no pasa por ningún tubo; el caudal completo sigue en la red y en la cava. No se encontraron cifras abiertas de ecocardiografía, más cerca de la cava, para contrastarlas. La verdad, que mide la vena derecha, no depende de esta escala (`S_REVERSAL_FLOOR_CMS`). La A en apnea (−3,2) queda por debajo de la de inspiración intermedia publicada (−8 ± 1,1); respirando, −6,2. Falta una calibración conjunta de caudal, área y presión auricular.
 - **El suelo de la S invertida está referido a la vena derecha** (`hepatic-reversal-floor-right-vein`, decisión 299): 1,124 cm/s es el mismo caudal retrógrado que los 2 cm/s de antes en la derecha, la de la verdad. En la media y el tronco común equivale a 2,55 y 2,34 cm/s de antes, y la captura no sabe qué vena mide: cerca del umbral, una S levemente retrógrada de esas venas puede leerse positiva (grave tras diuresis de 350 mL, −2,48 → +1,93 cm/s en la media). En 24 adquisiciones completas de derecha y media tras diuresis, ninguna aceptada contradijo a la verdad.
-- **A ±80 cm/s, una vena interlobar monofásica puede salir bifásica** (`renal-high-scale-monophasic`, decisión 309): 3 de 70 en apnea, frente a 0 en `main`. A esa escala, muy por encima de los 25 cm/s de la vena, el S/D medido sube a 0,281 ± 0,016 (verdad 0,23) y toca la frontera de 0,30, porque la puerta está más honda y llega menos señal. Si esa captura cuenta, el grado VExUS puede bajar de 3 a 2. A ±40 cm/s, la escala del preajuste, 70 de 70 con el patrón de la verdad. No se mueve la frontera para taparlo.
+- **A escala alta, la S renal junto al suelo de la banda no siempre resuelve el patrón** (`renal-high-scale-monophasic`,
+  decisiones 309 y 447): la envolvente lee en el suelo + 1 bin una S que está bajo el suelo, en él o hasta ½ bin más arriba;
+  el patrón solo se decide si la frontera 0,3·D queda fuera de lo que esa lectura admite, y si no sale «fases no
+  resolubles» y el grado queda incompleto. Con la congestión grave en apnea (filtro 20 Hz) ninguna captura aceptada sale
+  bifásica de ±40 a ±80, pero quedan sin resolver 12 de 37 a ±40, 10 de 98 a ±50, 30 de 39 a ±60 y 7 de 64 a ±80; tras un
+  diurético (bifásica de verdad) ninguna sale monofásica y a ±80 quedan sin resolver 45 de 48. A ±30 aún salen 2 de 39
+  bifásicas falsas (antes 6). No se mueve la frontera: bajar la escala es la técnica correcta.
 - **La ventana renal pide apnea para la puerta** (`renal-window-apnea-gate`, decisiones 303 y 309): respirando, la búsqueda automática de puerta no encuentra la vena interlobar en el plano en una parte de las sesiones, y ninguna captura se acepta. Hay que afinar con el movimiento o pedir apnea.
 - **Exclusión junto al borde de la banda** (`hepatic-edge-exclusion`, decisión 299): una onda suprahepática en el último 15 % de la banda se rechaza como `aliasing` aunque no se haya plegado; el alumno sube la escala y la mide. No es una detección exhaustiva: en un testigo sintético de banda estrecha, una S anterógrada a +1,2–1,7 de Nyquist reaparece más adentro y pasa, también antes de este cambio. En la cadena del producto, sin capturas falsas aceptadas (paneles de la decisión).
 
 ### Confusores de los casos trampa (decisión 82)
 
-- **La presión intraabdominal no comprime la vena renal ni el riñón** (`iah-no-renal-compression`): la PIA sube la
-  presión de los compartimentos del abdomen y colapsa la VCI, pero ni la resistencia de la vena renal ni el parénquima
-  cambian. En el caso de la PIA el Doppler intrarrenal sale continuo y la porta al 25–27 %, sin calibrar frente al
-  patrón real de la hipertensión intraabdominal.
+- **La presión intraabdominal no comprime la vena renal ni el riñón** (`iah-no-renal-compression`): la PIA colapsa
+  la VCI y, cuando la transmural hepática (P_h − PIA) baja de −3 mmHg, también la salida de las suprahepáticas, que hace
+  cascada: la presión hepática sigue a la PIA (≈ PIA − 3,6), la esplácnica con ella y el caudal portal baja (−11 % con PIA 20
+  y PAD 5; decisión 434). Ni la resistencia de la vena renal ni el parénquima cambian. En el caso de la PIA sin
+  intervenciones la cascada no actúa (transmural mínima −2,3 mmHg): el Doppler intrarrenal sale continuo y la porta al
+  25–27 %, sin calibrar frente al patrón real de la hipertensión intraabdominal.
   La decisión 172 retira `iah-collapsed-ivc-velocity`: el pico debido a dividir el flujo combinado por el área abdominal se reproduce como contrafactual, pero la velocidad superior usa su propia sección. No resuelve la cascada torácica ni todas las situaciones de PIA, y no se usa este cambio para validar los confusores clínicos restantes.
 
 - **Captura suprahepática con PPV: protección parcial y baja utilidad con puerta fija**
@@ -547,6 +569,10 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
   medidos: 99–100 % de las aceptadas; de la de 7 s: 94,6–98,3 %), no contra el trazado automático de un equipo real ni
   contra clips. Con respiración tranquila la porta del sano sale a
   menudo «intermitente» a ±40–±60: su banda, a −32 dB, pierde la traza en algún latido.
+- **Una porta grave muy lenta puede medirse exacta a ±8 cm/s** (`slow-portal-weak-band-exact`, decisiones 433 y 443): con
+  Vmáx de 4–6 cm/s, el valle en 0 y la escala a ±8 cm/s, la envolvente de la banda débil no llega al suelo ni deja hueco, y la
+  PF puede aceptarse exacta a 42–54 % con verdad 100 % (igual que antes de la 419). No ocurre en los 8 casos: sus portas
+  graves van a 11–28 cm/s y a ±12–15 cm/s se pliegan.
 - **Cuatro latidos no bastan en la FA** (`af-capture-beat-sampling`, decisiones 49 y 94): la captura mide los 4 últimos
   latidos completos, y en la FA la PF portal cambia de un latido a otro (12–47 % en una misma captura de la cadena del
   alumno, con respiración). La mediana de esos 4 puede quedar a más de 10 puntos de la de los ~11 latidos de 7 s (26 frente
@@ -599,18 +625,23 @@ El abdomen de referencia de la decisión 178 incorpora órganos y soporte poster
 ## Enseñanza
 
 - **La identidad del vaso la da el modelo, no la imagen** (`vessel-identity-from-model`, decisión 94): una captura cuya
-  puerta estaba sobre otro sistema vascular que el de su fila se rechaza como «vaso equivocado» con el vaso que había; el
+  puerta estaba sobre otro sistema vascular que el de su fila se rechaza como «vaso equivocado» con el vaso que había (sin latidos medidos, se juzga en los adquiridos; decisión 429); el
   simulador lo sabe por la sangre del volumen de muestra, como lo sabría un supervisor, no un ecógrafo. La atribución
   general usa la composición adquirida. Desde la decisión 127, la captura renal añade una guarda conservadora sobre
   los latidos realmente medidos: si domina una arteria interlobar, rechaza la medición venosa automática. El espectro
   pareado sigue visible para inspección; no se asegura que el estimador separe ambas componentes con fiabilidad.
 
 - **El modo ciego es de pantalla, no de código** (`blind-mode-screen-only`, decisión 82): el alumno no ve el nombre del
-  caso, sus confusores reales ni la trampa en la pantalla ni en el DOM, y las explicaciones de las trampas con los
+  caso, sus confusores reales ni la trampa en la pantalla ni en el DOM («Copiar posición» copia el rótulo ciego, no el id; decisión 426), y las explicaciones de las trampas con los
   confusores reales solo viajan en el chunk de la pestaña Docente, que su navegador no descarga. Pero el JS principal
   lleva el registro de casos con la verdad latente (el `PatientState`: la PAD, la PIA, la IT…) y sus nombres para el
   modo docente, y los valores de las opciones del selector de los casos de referencia (`severe-congestion`,
   `af-moderate-congestion`) nombran el diagnóstico: quien lea el código o el DOM puede saber el caso.
+
+- **Los calibres de la franja del modo M solo van con puntero** (`mmode-strip-calipers-pointer`, decisión 425): con el
+  teclado, el diámetro de la VCI se mide con la cruz del calibrador sobre la imagen (Tab hasta la imagen, flechas e Intro)
+  y la línea M se coloca con ← →, pero los calibres sobre la franja M («VCI modo M», `#mmode`, `role="img"`) necesitan el
+  puntero: la colapsabilidad en modo M no se mide solo con teclado.
 
 ## Adulto de referencia en revisión (`?reference=1`)
 

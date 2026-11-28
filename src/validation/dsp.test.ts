@@ -47,7 +47,9 @@ describe('Unidades Doppler', () => {
     }
     // la corrección angular solo rotula: divide por cos α
     expect(velocityFromShiftMmS(500, 3e6, Math.PI / 3) / velocityFromShiftMmS(500, 3e6, 0)).toBeCloseTo(2, 9);
-    expect(Number.isNaN(velocityFromShiftMmS(500, 3e6, Math.PI / 2))).toBe(true);
+    // la misma convención que la escala rotulada (decisión 424): |cos α| acotado a 0,05, también junto a 90°
+    for (const a of [0, Math.PI / 3, -Math.PI / 3, 1.55, Math.PI / 2, -Math.PI / 2])
+      expect(velocityFromShiftMmS(1000, 3e6, a) / 10, String(a)).toBeCloseTo(nyquistVelocityCms(2000, 3e6, a), 9);
     // plegado: intervalo [−PRF/2, PRF/2), borde superior cae en el inferior
     expect(wrapToNyquist(600, 1000)).toBeCloseTo(-400, 9);
     expect(wrapToNyquist(-600, 1000)).toBeCloseTo(400, 9);
@@ -68,6 +70,9 @@ describe('Unidades Doppler', () => {
     expect(nyquistVelocityCms(2500, f0)).toBeCloseTo((1250 * 1_540_000) / (2 * f0) / 10, 9);
     expect(prfFromNyquistCms(nyquistVelocityCms(2600, f0), f0)).toBeCloseTo(2600, 9);
     expect(nyquistVelocityCms(2500, f0, Math.PI / 3)).toBeCloseTo(2 * nyquistVelocityCms(2500, f0), 9);
+    // Inversa exacta también con corrección angular: el mando de escala pide la cifra rotulada.
+    for (const a of [0, Math.PI / 6, -Math.PI / 3, (80 * Math.PI) / 180])
+      expect(prfFromNyquistCms(nyquistVelocityCms(2600, f0, a), f0, a)).toBeCloseTo(2600, 9);
   });
 });
 

@@ -344,8 +344,10 @@ export interface FrameCostOptions {
   forceColor?: boolean;
   /**
    * Repite esa pasada `repeatCount` veces más (1 por defecto) dentro de cada cuadro, sin cambiar la
-   * imagen: su coste es la diferencia con la medida sin repetir dividida por `repeatCount`. Metal no
-   * separa el tiempo de las pasadas (decisión 47). Una pasada de cadencia de color exige `forceColor`.
+   * imagen: su coste es la diferencia con la misma pasada con `repeatCount` 0, dividida por `repeatCount`
+   * (un cuadro con repetición recalcula A0/A1; sin `repeatPass`, con el reloj quieto, se reutilizan y la
+   * medida no sirve de referencia). Metal no separa el tiempo de las pasadas (decisión 47). Una pasada de
+   * cadencia de color exige `forceColor`.
    */
   repeatPass?: PassId;
   repeatCount?: number;
@@ -366,7 +368,7 @@ export function frameMeasureOptions(opts: FrameCostOptions = {}): RenderMeasureO
   const spec = FRAME_PASSES.find((p) => p.id === repeatPass);
   if (!spec) throw new RangeError(`frameCostMs: «${String(repeatPass)}» no es una pasada de FRAME_PASSES`);
   const times = repeatCount ?? 1;
-  if (!Number.isInteger(times) || times < 1) throw new RangeError(`frameCostMs: repeatCount ${times} (entero ≥ 1)`);
+  if (!Number.isInteger(times) || times < 0) throw new RangeError(`frameCostMs: repeatCount ${times} (entero ≥ 0)`);
   // sin forzar el color, la pasada de color no se dibuja en casi ningún cuadro: no habría qué repetir
   if (spec.cadence === 'color' && !forceColor) throw new RangeError(`frameCostMs: repetir «${repeatPass}» exige forceColor`);
   return { forceColor, repeat: { pass: repeatPass, times } };

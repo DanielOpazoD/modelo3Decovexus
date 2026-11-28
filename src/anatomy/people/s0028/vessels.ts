@@ -36,6 +36,16 @@ function closest(nodes: readonly TubeNode[], q: Vec3): Hit {
   return best;
 }
 
+/** Tramo (entre los nodos i e i + 1) del punto a la longitud de arco `at` y el radio del eje ahí, lineal entre esos nodos. */
+function radiusAt(nodes: readonly TubeNode[], at: number): { i: number; r: number } {
+  const s = arcs(nodes),
+    i = Math.min(nodes.length - 2, Math.max(0, s.findIndex((x) => x > at) - 1)),
+    t = s[i + 1] > s[i] ? Math.min(1, Math.max(0, (at - s[i]) / (s[i + 1] - s[i]))) : 0;
+  return { i, r: nodes[i].r + (nodes[i + 1].r - nodes[i].r) * t };
+}
+/** Nodo de tubo de una fila [x, y, z, r] de las tablas. */
+const tubeNode = ([x, y, z, r]: readonly number[]): TubeNode => ({ p: [x, y, z], r });
+
 /**
  * Troncos de s0028 desde sus propias máscaras (decisión 345): aorta, tronco portal, ramas portales derecha e izquierda y vena
  * esplénica dejan los hitos de la otra persona. Los vasos que nacían o morían en un tronco lo siguen: su extremo va al mismo
@@ -51,7 +61,7 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
     if (!trunk) continue;
     const old = before.get(v)!,
       length = arcs(old).at(-1)!,
-      nodes: TubeNode[] = trunk[1].map(([x, y, z, r]) => ({ p: [x, y, z], r }));
+      nodes = trunk[1].map(tubeNode);
     v.tube = { ...v.tube, nodes };
     // Las suprahepáticas conservan el área de flujo de referencia (decisión 392): la de su TAC (3,4 mm de radio la derecha,
     // frente a 5,6) es la segmentación de una vena fina y hacía la VSH 2,7 veces más rápida, plegada a la escala de partida.
@@ -92,7 +102,6 @@ export function placeS0028Vessels(vessels: VesselDef[]): void {
   fitJunctions(vessels);
   continuePortalBranches(vessels);
   startRenalVeinsAtHilum(vessels);
-  regularIvcWhereMeasured(vessels);
 }
 
 /** Tramo de la VCI de s0028 donde se mide en VExUS (z, mm): de 2 cm bajo la suprahepática derecha a 1 cm de la aurícula. */
@@ -102,7 +111,9 @@ export const S0028_IVC_MEASUREMENT_Z: readonly [number, number] = [-55, 5];
  * 12,5 a 2 cm de la aurícula, y la fisiología la escala entera con el radio de referencia (`ivcSupra.refRadius`, 10 mm: el
  * diámetro de la verdad): la imagen daba la verdad × radio local / 10, y el sano (18,7 mm) medía 23,5 a 2 cm de la aurícula,
  * por encima del corte de 2 cm del VExUS. En el tramo de medida lleva el radio de referencia; la apertura del TAC queda en la
- * entrada a la aurícula. Modelo idealizado (decisión 361). Solo construcción.
+ * entrada a la aurícula. Modelo idealizado (decisión 361). Solo construcción. Va tras el alisado (`smoothS0028Vessels`):
+ * `smoothAxis` solo conserva los extremos y borraba el nodo de z = 5. Una sola vez: el nodo insertado puede quedar en z = 5 + ε,
+ * y otra llamada insertaría uno duplicado.
  */
 function regularIvcWhereMeasured(vessels: VesselDef[]): void {
   const reference = vessels.find((v) => v.id === 'ivcSupra' && v.flowFactor === undefined)?.refRadius;
@@ -154,14 +165,8 @@ function continuePortalBranches(vessels: VesselDef[]): void {
         beyond = add(end, start.p, -1);
       // Continuación con exceso: el origen de la rama queda cerca del extremo y por detrás de él a lo largo de la madre.
       if (Math.hypot(...beyond) > CONTINUATION_MM || beyond[0] * u[0] + beyond[1] * u[1] + beyond[2] * u[2] < 0.5) continue;
-      const hit = closest(nodes, start.p),
-        s = arcs(nodes),
-        i = Math.min(nodes.length - 2, Math.max(0, s.findIndex((x) => x > hit.s) - 1)),
-        t = s[i + 1] > s[i] ? Math.min(1, Math.max(0, (hit.s - s[i]) / (s[i + 1] - s[i]))) : 0;
-      mother.tube = {
-        ...mother.tube,
-        nodes: [...nodes.slice(0, i + 1), { p: start.p, r: nodes[i].r + (nodes[i + 1].r - nodes[i].r) * t }],
-      };
+      const { i, r } = radiusAt(nodes, closest(nodes, start.p).s);
+      mother.tube = { ...mother.tube, nodes: [...nodes.slice(0, i + 1), { p: start.p, r }] };
       // Del origen al tercer nodo, una curva de Hermite que sale en la dirección de la madre y llega con la de la rama; sustituye al
       // segundo nodo medido, que es el que hacía la esquina.
       const old = child.tube.nodes,
@@ -266,9 +271,7 @@ function fitJunctions(vessels: VesselDef[]): void {
         // Solo si llega al interior del otro eje: dos extremos que se tocan son hermanos o continuación, no madre e hija.
         if (hit.d > 2.5 || hit.s < 2 || hit.s > s[s.length - 1] - 2) continue;
         // Radio de la otra luz en ese punto, lineal entre sus nodos.
-        const i = Math.min(axis.length - 2, Math.max(0, s.findIndex((x) => x > hit.s) - 1)),
-          t = s[i + 1] > s[i] ? Math.min(1, Math.max(0, (hit.s - s[i]) / (s[i + 1] - s[i]))) : 0;
-        limit = Math.min(limit, axis[i].r + (axis[i + 1].r - axis[i].r) * t);
+        limit = Math.min(limit, radiusAt(axis, hit.s).r);
       }
       if (limit < nodes[end].r) nodes[end].r = limit;
     }
@@ -352,7 +355,7 @@ function reroute(vessels: VesselDef[]): void {
     const route = ROUTES[v.id];
     if (!route || v.flowFactor !== undefined) continue;
     const old = v.tube.nodes,
-      inner: TubeNode[] = route.nodes.map(([x, y, z, r]) => ({ p: [x, y, z], r }));
+      inner = route.nodes.map(tubeNode);
     v.tube = {
       ...v.tube,
       nodes: [
@@ -463,13 +466,17 @@ export function smoothAxis(nodes: readonly TubeNode[], maxSegments = S0028_TUBE_
   return out;
 }
 
-/** Los troncos de las máscaras y los vasos que los acompañan, con el eje como curva. Las ramas procedurales ya están colocadas. */
+/**
+ * Los troncos de las máscaras y los vasos que los acompañan, con el eje como curva; después, la VCI con calibre regular donde se
+ * mide (decisión 396). Las ramas procedurales ya están colocadas.
+ */
 export function smoothS0028Vessels(vessels: VesselDef[]): void {
   for (const v of vessels)
     // Los troncos medidos, con todos los tramos; los vasos que los acompañan, con la mitad: los nodos de la escena tienen techo
     // (`MAX_NODES`) y las ramas portales propias, cortas y ya ajustadas a cinco nodos, se quedan como están.
     if (v.flowFactor === undefined && (v.id in S0028_TRUNKS || SMOOTHED.includes(v.id)))
       v.tube = { ...v.tube, nodes: smoothAxis(v.tube.nodes, v.id in S0028_TRUNKS ? S0028_TUBE_SEGMENTS : S0028_TUBE_SEGMENTS / 2) };
+  regularIvcWhereMeasured(vessels);
 }
 
 /** Centro del cuerpo de la vesícula en ayunas de s0028 (decisión 413), en mm LAS: hacia él se busca el cístico. */
@@ -522,14 +529,13 @@ const S0028_CBD_FLOOR_Z = -100;
  */
 export function placeS0028Ducts(ducts: DuctDef[], sourceValue: (p: Vec3, name: string) => { d: number }): DuctDef[] {
   const lerp = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-  const span = (a: Vec3, b: Vec3) => Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
   const inside = (p: Vec3, name: string) => sourceValue(p, name).d < 0;
-  const own = (id: DuctDef['id']) => S0028_BILE_DUCTS[id]?.map(([x, y, z, r]) => ({ p: [x, y, z] as Vec3, r }));
+  const own = (id: DuctDef['id']) => S0028_BILE_DUCTS[id]?.map(tubeNode);
   let cbd = ducts.find((d) => d.id === 'cbd')!.tube.nodes;
   if (inside(cbd[0].p, 'digestiveTract'))
     // Del extremo distal hacia el hilio, a pasos de 0,5 mm: el primer punto fuera del tubo digestivo es el nuevo extremo.
     outer: for (let i = 0; i + 1 < cbd.length; i++) {
-      const length = span(cbd[i].p, cbd[i + 1].p);
+      const length = distance(cbd[i].p, cbd[i + 1].p);
       for (let s = 0; s < length; s += 0.5) {
         const p = lerp(cbd[i].p, cbd[i + 1].p, s / length);
         if (inside(p, 'digestiveTract')) continue;
@@ -542,10 +548,10 @@ export function placeS0028Ducts(ducts: DuctDef[], sourceValue: (p: Vec3, name: s
   // llega sin cruzar tubo digestivo, hígado ni páncreas y, entre esos, el de camino más corto.
   let cystic: { join: Vec3; neck: Vec3; cost: number } | null = null;
   for (let i = 0; i + 1 < cbd.length; i++) {
-    const length = span(cbd[i].p, cbd[i + 1].p);
+    const length = distance(cbd[i].p, cbd[i + 1].p);
     for (let s = 0; s < length; s += 2) {
       const join = lerp(cbd[i].p, cbd[i + 1].p, s / length),
-        reach = span(join, S0028_GALLBLADDER_CENTER);
+        reach = distance(join, S0028_GALLBLADDER_CENTER);
       let crossed = 0;
       for (let t = 0; t < reach; t += 0.5) {
         const p = lerp(join, S0028_GALLBLADDER_CENTER, t / reach);

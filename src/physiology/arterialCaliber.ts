@@ -18,6 +18,17 @@ export const AORTA_MECHANICS: Readonly<ArterialMechanics> = {
   compliancePerMmHg: 0.08 / (18 * 1.0569487134195235),
 };
 
+/** Área de las dos gaussianas de un latido con escala sistólica 1 (s). */
+const PULSE_AREA_S = Math.sqrt(2 * Math.PI) * (0.06 + 0.4 * 0.09);
+
+/**
+ * Media del pulso crudo con RR regular `rr0` (área del latido, ∝ su escala sistólica, sobre el RR): solo es cero a
+ * ≈ 75 lpm. Arranca la media móvil causal con la que el motor centra lo que entra en la red.
+ */
+export function nominalPulseMean(rr0: number): number {
+  return -0.3 + (PULSE_AREA_S * Math.sqrt(rr0 / 0.8)) / rr0;
+}
+
 /** Mismo contorno arterial de la red; el retraso mecánico ya está en los centros de las gaussianas. */
 export function arterialCaliberAt({ t, beats, mechanics }: { t: number; beats: readonly Beat[]; mechanics: ArterialMechanics }): {
   pulse: number;
@@ -27,7 +38,7 @@ export function arterialCaliberAt({ t, beats, mechanics }: { t: number; beats: r
   let pulse = -0.3;
   let rate = 0;
   for (const b of beats) {
-    const s = Math.sqrt(b.rr / 0.8);
+    const s = b.systoleScale;
     const tau = t - b.tR;
     const a = gauss(tau - 0.12 * s, 0.06 * s);
     const c = 0.4 * gauss(tau - 0.3 * s, 0.09 * s);

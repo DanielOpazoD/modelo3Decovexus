@@ -22,11 +22,9 @@ export function dopplerShiftHz(vAlongBeamMmS: number, f0Hz: number, cMmS = C_REC
   return (2 * f0Hz * vAlongBeamMmS) / cMmS;
 }
 
-/** Velocidad rotulada a partir de una frecuencia Doppler con corrección angular del usuario. */
+/** Velocidad rotulada a partir de una frecuencia Doppler con corrección angular del usuario (la de la escala). */
 export function velocityFromShiftMmS(fdHz: number, f0Hz: number, angleCorrectionRad: number, cMmS = C_RECONSTRUCTION_MM_S): number {
-  const cosA = Math.cos(angleCorrectionRad);
-  if (Math.abs(cosA) < 1e-6) return Number.NaN;
-  return (fdHz * cMmS) / (2 * f0Hz * cosA);
+  return ((fdHz * cMmS) / (2 * f0Hz)) * angleCorrectionFactor(angleCorrectionRad);
 }
 
 /** Frecuencia plegada al intervalo centrado de Nyquist: ((f + PRF/2) mod PRF) − PRF/2. */
@@ -37,16 +35,20 @@ export function wrapToNyquist(fHz: number, prfHz: number): number {
   return x - half;
 }
 
+/** Factor 1/|cos α| con que la corrección angular multiplica la velocidad rotulada (|cos α| acotado a 0,05). */
+export function angleCorrectionFactor(angleCorrectionRad: number): number {
+  return 1 / Math.max(0.05, Math.abs(Math.cos(angleCorrectionRad)));
+}
+
 /**
  * Velocidad de Nyquist rotulada (cm/s) para una PRF: v = (PRF/2)·c / (2·f0·cos α).
  * Con `angleCorrectionRad` 0 es la escala sin corrección que muestra la barra.
  */
 export function nyquistVelocityCms(prfHz: number, f0Hz: number, angleCorrectionRad = 0, cMmS = C_RECONSTRUCTION_MM_S): number {
-  const cosA = Math.max(0.05, Math.abs(Math.cos(angleCorrectionRad)));
-  return mmsToCms(((prfHz / 2) * cMmS) / (2 * f0Hz * cosA));
+  return mmsToCms(((prfHz / 2) * cMmS * angleCorrectionFactor(angleCorrectionRad)) / (2 * f0Hz));
 }
 
-/** PRF (Hz) que da una velocidad de Nyquist rotulada `cms` (inversa de `nyquistVelocityCms` con α = 0). */
-export function prfFromNyquistCms(cms: number, f0Hz: number, cMmS = C_RECONSTRUCTION_MM_S): number {
-  return (cmsToMms(cms) * 2 * 2 * f0Hz) / cMmS;
+/** PRF (Hz) que da una velocidad de Nyquist rotulada `cms`: inversa exacta de `nyquistVelocityCms`. */
+export function prfFromNyquistCms(cms: number, f0Hz: number, angleCorrectionRad = 0, cMmS = C_RECONSTRUCTION_MM_S): number {
+  return (cmsToMms(cms) * 2 * 2 * f0Hz) / (cMmS * angleCorrectionFactor(angleCorrectionRad));
 }

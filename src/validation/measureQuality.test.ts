@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assessQuality, bloodInColumn, outerBandExcessDb, wavesInconsistent } from '../doppler/measureQuality';
+import { assessQuality, bloodInColumn, outerBandExcessDb, qualityText, wavesInconsistent } from '../doppler/measureQuality';
 import type { SpectralColumn } from '../doppler/spectral';
 import type { Beat } from '../physiology/rhythm';
 
@@ -202,6 +202,8 @@ describe('Calidad de la captura PW', () => {
         { wallFilterHz: 25 },
       ).issue,
     ).toBe('few-beats');
+    // con el PW congelado no llegan más latidos: el texto dice cómo salir
+    expect(qualityText({ issue: 'few-beats' })).toContain('si está congelada, reanude el PW');
   });
 
   // Picos por latido (cm/s, orientados) medidos en capturas reales de la cadena del alumno
@@ -253,13 +255,14 @@ describe('Calidad de la captura PW', () => {
           tV: tR + 0.45 * rr,
           tY: tR + 0.625 * rr,
           tTend: tR + 0.45 * rr,
+          systoleScale: Math.sqrt(rr / 0.8),
           atrialAmplitude: 1,
         };
       });
     const phase = (rr: number) => (t: number) => (((t - 0.5) % rr) + rr) % rr;
     // la ventana diastólica que usa la medición (`beatWindows`), con las fases de estos latidos
     const diastole = (b: Beat): [number, number] => {
-      const s = Math.sqrt(b.rr / 0.8);
+      const s = b.systoleScale;
       return [b.tY - 0.07 * s, Math.min(b.tY + 0.22 * s, b.tR + b.rr - 0.02)];
     };
     for (const bpm of [75, 110]) {
@@ -289,7 +292,7 @@ describe('Calidad de la captura PW', () => {
       const beats4 = fullBeats(rr, 4);
       // vena bifásica: S en su ventana sistólica y D en la diastólica; S desaparece en los latidos 0 y 2
       const sWin = (b: Beat): [number, number] => {
-        const s = Math.sqrt(b.rr / 0.8);
+        const s = b.systoleScale;
         return [b.tX - 0.06 * s, b.tV - 0.02 * s];
       };
       const lostS = new Set([0, 2]);
@@ -335,6 +338,131 @@ describe('Calidad de la captura PW', () => {
       // flujo en la segunda mitad de cada ciclo; en el latido 1, además, en todo el ciclo (otro vaso entra)
       const odd = columns(4.7, (t) => (t >= beatsN[1].tR && t < beatsN[1].tR + rr ? venous : phase(rr)(t) >= 0.5 * rr ? venous : null));
       expect(assessQuality(odd, beatsN, { wallFilterHz: 25, side: 'pos', phaseWindow: diastole }).issue).toBe('intermittent');
+    });
+
+    // Decisión 446. Con la puerta quieta sobre la interlobar del grave en apnea, la presencia de la vena falta en su ventana
+    // diastólica al principio (la onda D sube desde la banda del filtro de pared) y en desvanecimientos de 1–6 columnas
+    // (moteado del espectro). La vena ocupa la puerta en todos los latidos, pero sumaban más del 20 % de la ventana en un
+    // latido de cada 25–40 y la captura salía «intermitente» en el 10–16 % de las semillas. A 4000 Hz y 128 muestras, la
+    // ventana de análisis dura 32 ms: un tramo más breve es una sola estimación del espectro que se desvanece, o el borde de
+    // la onda que esa ventana no resuelve.
+    it('un tramo sin sangre más breve que la ventana de análisis del espectro no hace intermitente la vena monofásica', () => {
+      const rr = 0.8;
+      const beatsN = fullBeats(rr, 5);
+      const ph = phase(rr);
+      // D desde 30 ms después del inicio de la ventana (0,43 s) en todos; en el latido 2, dos huecos de 24 ms en plena D
+      const inBeat2 = (t: number) => t >= beatsN[2].tR && t < beatsN[2].tR + rr;
+      const fade = (t: number) => inBeat2(t) && ((ph(t) >= 0.53 && ph(t) < 0.554) || (ph(t) >= 0.62 && ph(t) < 0.644));
+      const cols = columns(0.5 + 5 * rr + 0.1, (t) => (ph(t) >= 0.46 && !fade(t) ? venous : null));
+      const q = assessQuality(cols, beatsN, { wallFilterHz: 25, side: 'pos', phaseWindow: diastole });
+      expect(q.issue).toBeNull();
+      expect(q.validBeats).toBe(5);
+    });
+
+    it('un tramo sin sangre que dura más que la ventana de análisis en la diástole de un latido sigue siendo intermitente', () => {
+      const rr = 0.8;
+      const beatsN = fullBeats(rr, 5);
+      const ph = phase(rr);
+      // 66 ms (dos ventanas de análisis) sin la vena en plena D del latido 2: su fracción de sangre aún se repite
+      const lost = (t: number) => t >= beatsN[2].tR && t < beatsN[2].tR + rr && ph(t) >= 0.55 && ph(t) < 0.616;
+      const cols = columns(0.5 + 5 * rr + 0.1, (t) => (ph(t) >= 0.43 && !lost(t) ? venous : null));
+      const q = assessQuality(cols, beatsN, { wallFilterHz: 25, side: 'pos', phaseWindow: diastole });
+      expect(q.validBeats).toBe(4);
+      expect(q.issue).toBe('intermittent');
+    });
+
+    // Decisión 446, tope del cierre: perdonar tramos breves vale para una vena que la estimación detecta casi siempre y se
+    // desvanece a ratos. Una vena que solo aparece en 1 columna de cada 5 de su ventana diastólica (el 20 % de la ventana,
+    // el 7,5 % del latido) no se desvanece a ratos: está en el umbral de detección, y cada hueco de 4 columnas (24 ms) es
+    // más breve que la ventana de análisis (32 ms). Sin el tope se cerraban todos y la captura era medible con 5 latidos.
+    it('una vena que parpadea en una columna de cada cinco de su diástole no es medible', () => {
+      const rr = 0.8;
+      const beatsN = fullBeats(rr, 5);
+      const ph = phase(rr);
+      const cols = columns(0.5 + 5 * rr + 0.1, (t) => (ph(t) >= 0.43 && ph(t) <= 0.72 && Math.round(t / DT) % 5 === 0 ? venous : null));
+      const q = assessQuality(cols, beatsN, { wallFilterHz: 25, side: 'pos', phaseWindow: diastole });
+      expect(q.bloodColumns).toBeLessThan(0.1);
+      expect(q.validBeats).toBe(0);
+      expect(q.issue).toBe('no-signal');
+    });
+
+    // …y la resolución excusa como mucho una ventana de análisis por latido. Como la interlobar del grave con el ruido del
+    // receptor ×3 (la vena siempre en la puerta): en un latido la vena está en 3 columnas de cada 5 de su diástole y en los
+    // demás en 2 de cada 5. Cerrar todos los huecos de 2 columnas de ese latido lo hacía válido y la captura pasaba de «no hay
+    // señal» a «intermitente», el mensaje que manda a buscar una puerta que no se ha movido.
+    it('un latido suelto que parpadea en más de la mitad de su diástole no convierte «sin señal» en intermitente', () => {
+      const rr = 0.8;
+      const beatsN = fullBeats(rr, 5);
+      const ph = phase(rr);
+      const inBeat2 = (t: number) => t >= beatsN[2].tR && t < beatsN[2].tR + rr;
+      const cols = columns(0.5 + 5 * rr + 0.1, (t) =>
+        ph(t) >= 0.43 && ph(t) <= 0.72 && Math.round(t / DT) % 5 < (inBeat2(t) ? 3 : 2) ? venous : null,
+      );
+      const q = assessQuality(cols, beatsN, { wallFilterHz: 25, side: 'pos', phaseWindow: diastole });
+      expect(q.bloodColumns).toBeLessThan(0.2);
+      expect(q.validBeats).toBe(0);
+      expect(q.issue).toBe('no-signal');
+    });
+
+    // Una banda venosa estrecha que rebasa el Nyquist no deja sangre en los dos bordes de una misma columna: llega al borde de su
+    // lado, desaparece de él y reaparece entera en el borde opuesto. Como la interlobar del grave a ±20 cm/s (D axial 23 cm/s):
+    // el hueco del pico de D dura menos que la ventana de análisis (decisión 446) y la captura salía medible, con D recortada.
+    describe('la onda entera plegada en su ventana de fase', () => {
+      const rr = 0.8;
+      const beatsN = fullBeats(rr, 5);
+      const ph = phase(rr);
+      const ownEdge: [number, number] = [N - 8, N]; // ≥ 0,44·PRF, hacia la sonda
+      const oppositeEdge: [number, number] = [0, 8]; // el mismo lado exterior, al otro lado del Nyquist
+      // `band(fase)`: los bins con sangre, 'none' sin ella o null para la vena de siempre (desde 0,43 del ciclo)
+      const capture = (band: (p: number) => [number, number] | 'none' | null) =>
+        columns(0.5 + 5 * rr + 0.1, (t) => {
+          const b = band(ph(t));
+          return b === 'none' ? null : (b ?? (ph(t) >= 0.43 ? venous : null));
+        });
+      const quality = (cols: SpectralColumn[]) => assessQuality(cols, beatsN, { wallFilterHz: 25, side: 'pos', phaseWindow: diastole });
+
+      it('llega a su borde, desaparece de su lado y reaparece en el borde opuesto: aliasing, no medible', () => {
+        const cols = capture((p) =>
+          p >= 0.54 && p < 0.56 ? ownEdge : p >= 0.56 && p < 0.584 ? oppositeEdge : p >= 0.584 && p < 0.6 ? ownEdge : null,
+        );
+        expect(cols.some((c) => bloodInColumn(c, { wallFilterHz: 25 }).wrapped)).toBe(false);
+        const q = quality(cols);
+        expect(q.wrappedBeats).toBe(5);
+        expect(q.issue).toBe('aliasing');
+      });
+
+      it('llega a su borde y vuelve por él sin sangre de su lado en medio: aliasing', () => {
+        const cols = capture((p) =>
+          p >= 0.54 && p < 0.56 ? ownEdge : p >= 0.56 && p < 0.584 ? 'none' : p >= 0.584 && p < 0.6 ? ownEdge : null,
+        );
+        expect(quality(cols).issue).toBe('aliasing');
+      });
+
+      it('en su borde con un desvanecimiento de una columna, o con la arteria de enfrente en su borde y la vena lejos del suyo: medible', () => {
+        const fade = capture((p) =>
+          p >= 0.54 && p < 0.56 ? ownEdge : p >= 0.56 && p < 0.566 ? 'none' : p >= 0.566 && p < 0.58 ? ownEdge : null,
+        );
+        expect(quality(fade).issue).toBeNull();
+        const artery = capture((p) => (p >= 0.56 && p < 0.584 ? oppositeEdge : null));
+        const q = quality(artery);
+        expect(q.wrappedBeats).toBe(0);
+        expect(q.issue).toBeNull();
+      });
+    });
+
+    // A ±15 cm/s (PRF ≈ 974 Hz) la ventana de análisis dura 131 ms y la diástole apenas abarca dos: una ventana excusada es
+    // casi la mitad de la de fase. Sin exigir la vena en al menos la mitad de su ventana, una vena que está en 2 columnas de
+    // cada 5 llegaba al 80 % y la captura era medible (en la cadena, un latido con la vena fuera de la puerta, peso 0, valía).
+    it('a escala baja, una vena que está en menos de la mitad de su diástole no es medible', () => {
+      const rr = 0.8;
+      const beatsN = fullBeats(rr, 5);
+      const ph = phase(rr);
+      const cols = columns(0.5 + 5 * rr + 0.1, (t) => (ph(t) >= 0.43 && ph(t) <= 0.72 && Math.round(t / DT) % 5 < 2 ? venous : null)).map(
+        (c) => ({ ...c, prfHz: 974 }),
+      );
+      const q = assessQuality(cols, beatsN, { wallFilterHz: 25, side: 'pos', phaseWindow: diastole });
+      expect(q.validBeats).toBe(0);
+      expect(q.issue).toBe('no-signal');
     });
   });
 });

@@ -209,6 +209,7 @@ export const START_POINTS: readonly StartPoint[] = [
   },
 ];
 
+type PoseFields = Pick<StartPoint, 'phi' | 'z' | 'yaw' | 'rock' | 'tilt'>;
 /** Offline landmark/ray calibration of the shared BodyParts3D-derived torso; see REFERENCE_TORSO.md. */
 const REFERENCE_POSES = {
   hepatorenal: { phi: 3.2, z: -80, yaw: 0, tilt: -0.4, rock: -0.2 },
@@ -274,7 +275,7 @@ const REFERENCE_POSES = {
   splenorenal: { phi: -0.2, z: -70, yaw: 0.123, rock: -0.219, tilt: 0.275 },
   // [EXTRAPOLACIÓN PROPIA] la de s0028 (decisión 411): sin búsqueda en este torso
   aortaSagittal: { phi: 1.7, z: -125, yaw: -0.016, rock: 0.098, tilt: 0.084 },
-} satisfies Record<StartPoint['id'], Pick<StartPoint, 'phi' | 'z' | 'yaw' | 'rock' | 'tilt'>>;
+} satisfies Record<StartPoint['id'], PoseFields>;
 const REFERENCE_POINTS: readonly StartPoint[] = START_POINTS.map((sp) => ({
   ...sp,
   ...REFERENCE_POSES[sp.id],
@@ -338,7 +339,7 @@ const ABDOMINAL_POINTS: readonly StartPoint[] = START_POINTS.map((sp) => ({
 // La ventana hepatorrenal entra entre costillas: conserva el eje largo y el seno renal,
 // y deja visible el parénquima hepático que antes quedaba detrás de la sombra costal.
 // Decisión 336: encuadres de VCI transversal y suprahepáticas revisados sobre la misma anatomía.
-const DEFAULT_POSES: Partial<Record<StartPoint['id'], Pick<StartPoint, 'phi' | 'z' | 'yaw' | 'rock' | 'tilt'>>> = {
+const DEFAULT_POSES: Partial<Record<StartPoint['id'], PoseFields>> = {
   renal: { phi: 2.804, z: -120.3, yaw: 0.113, rock: -0.154, tilt: -0.368 },
   hepatorenal: { phi: 2.8, z: -115, yaw: -0.12, rock: -0.163, tilt: -0.431 },
   subxiphoid: { ...ABDOMINAL_POSES.subxiphoid, z: -45, tilt: -0.13 },
@@ -380,7 +381,24 @@ const S0028_POSES: typeof DEFAULT_POSES = {
   // la cruzaba a 57°) y el riñón se ve 107 mm.
   renal: { phi: 3.25, z: -130, yaw: -0.378, rock: 0.199, tilt: 0.011 },
 };
-const S0028_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({ ...sp, ...S0028_POSES[sp.id] }));
+// Indicaciones propias de s0028 donde la heredada describía la pose de la otra persona.
+const S0028_HINTS: Partial<Record<StartPoint['id'], string>> = {
+  portalSubcostal:
+    'Oblicua subcostal: porta principal y rama derecha en eje largo sobre la cava. PW en el tronco, lejos de la bifurcación. 15 cm; foco 10 cm.',
+  intercostal:
+    'Intercostal derecha, coronal con el marcador craneal. Afina entre costillas hasta la unión de la suprahepática derecha con la cava.',
+  // Decisión 349, medido: plano oblicuo (normal ≈ (−0,60; 0,05; 0,80)) con la media y la derecha hasta la cava; la media, a 19° del
+  // haz a 1–2 cm de la unión.
+  subcostal:
+    'Oblicua subcostal derecha: la media y la derecha confluyen en la cava. Marcador hacia la izquierda del paciente, al xifoides; puerta en la media a 1–2 cm de la unión.',
+  renal:
+    'Riñón derecho en eje largo, coronal desde la línea axilar media. Distingue vena y arteria interlobares. Color ±15 cm/s; PW ±40 cm/s. Ajusta a la señal.',
+};
+const S0028_POINTS: readonly StartPoint[] = ABDOMINAL_POINTS.map((sp) => ({
+  ...sp,
+  ...S0028_POSES[sp.id],
+  hint: S0028_HINTS[sp.id] ?? sp.hint,
+}));
 /** Scene-specific presets; legacy tests/torso retain their own poses. */
 export function startPointsFor(
   torso: Pick<Torso, 'a' | 'b' | 'profile'>,

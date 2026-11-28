@@ -93,9 +93,10 @@ Una creación o consulta fallida conserva el contexto pendiente para recercarlo;
 solo una señal válida o su pérdida permiten liberarlo. Una valla de un contexto
 no acredita la finalización de otro ni del compositor.
 
-Con SwiftShader o renderer no identificable, la pasada B del atlas separa
-clasificación, elevación, gradiente y eco; Metal conserva B directa. El oráculo
-compila el cuerpo por etapas también en Metal, sin cambiar su adquisición ordinaria.
+Con SwiftShader o renderer no identificable, y con s0028 en cualquier GPU (decisión 406),
+la pasada B del atlas separa clasificación, elevación, gradiente y eco; la otra persona
+conserva en Metal B directa. El oráculo compila el cuerpo por etapas también en Metal,
+sin cambiar la adquisición ordinaria de esa persona.
 El gradiente conserva tres draws del mismo programa por mirada (240):
 la cortical vertebral, cápsula hepática y diafragma producen una diferencia por
 eje, marcada con `w=-1`; el eco ensambla sus tres tiles antes de normalizar.
@@ -175,6 +176,7 @@ con `AnatomyQuery`, decisión 25), `src/ui/displays.ts` (overlay, ECG, espectrog
 modo docente, así que el alumno no descarga su código), `src/ui/startPointCards.ts` (ventanas VExUS del carril izquierdo),
 `src/ui/disclosure.ts` (plegables y ventanas emergentes), `src/ui/navigator3d/*` (constructores de geometría puros: cuerpo, órganos, tubos,
 rótulos, sonda), `src/ui/probeInput.ts` (gestos y teclado sobre la imagen),
+`src/ui/keyRouting.ts` (qué tecla atiende quién: la imagen enfocada, la sonda, el cine o los atajos),
 `src/app/store.ts` (estado de UI). Toda vista lee del `Simulator`; ninguna escribe en él salvo la
 pose de la sonda y los ajustes del equipo.
 
@@ -241,9 +243,13 @@ par CPU→GPU sistemático es una divergencia real.
 - **Workers**: el corte ecográfico ya corre en uno (`src/ui/cutMapWorker.ts`); `Simulator.advance`
   no toca el DOM, así que la cadena PW y la fisiología pueden migrar igual manteniendo la interfaz
   `PhysiologySample`.
-- **Pérdida de contexto GPU**: `main.ts` reconstruye `UltrasoundRenderer` y conserva el paciente.
+- **Pérdida de contexto GPU**: `bindGpuLifecycle` (`src/ui/controllers/gpuLifecycle.ts`) reconstruye
+  `UltrasoundRenderer` y conserva el paciente. El navegador 3D, con su propio contexto, informa a `errorLog`, no
+  dibuja mientras falta y al restaurarse redibuja su escena estática.
 - **Cambio de caso**: el renderizador pasa al simulador nuevo con `setScene` (los shaders no
-  dependen de la escena, solo sus uniforms y la textura de datos): no se recompila nada.
+  dependen de la escena, solo sus uniforms y la textura de datos): no se recompila nada. `setScene`
+  limpia también la pantalla y la sesión abre una serie nueva (`beginAcquisitionEpoch`): con la imagen
+  congelada, ningún calibre se apoya en la imagen del paciente anterior.
 - **Entradas de sonda**: cualquier dispositivo produce `ProbePose` (`src/probe/probe.ts`); el
   navegador 3D (`src/ui/navigator3d.ts`) y la imagen (`src/ui/probeInput.ts`) son dos ejemplos.
 

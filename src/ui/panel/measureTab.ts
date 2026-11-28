@@ -24,11 +24,14 @@ import {
   contextResultLines,
   excludedTerritories,
   gradeValueText,
+  hepaticPeaksText,
+  ivcDiameterText,
   patternText,
   portalText,
   portalPulsatilityText,
   renalText,
   resultStatusText,
+  velocityText,
   type ContextFlag,
 } from './vexusText';
 
@@ -42,6 +45,9 @@ interface AcquisitionContext {
 type AcquisitionStamp = AcquisitionContext &
   ({ kind: 'image' } | { kind: 'pw'; revision: number; acquiredEquipment: PwAcquiredEquipment; presentation: PwPresentation });
 type Stamps = Partial<Record<'ivc' | 'mmode' | 'hepatic' | 'portal' | 'renal', AcquisitionStamp>>;
+
+/** Aviso del calibrador que volvió a empezar: da por primero el punto pendiente, así que se retira cuando se suelta. */
+const CALIPER_RESTARTED = 'La imagen cambió entre los dos puntos: este pasa a ser el primero. Marca las dos paredes en el mismo cuadro.';
 
 function acquisitionStamp(sim: Simulator, image = false): AcquisitionStamp {
   const frame = image ? sim.renderer.displayedFrame : null;
@@ -102,6 +108,15 @@ export class MeasureTab {
     context: VexusContext;
   }> = [];
   #seriesNote = '';
+  /**
+   * La verdad del motor (decisión 80) solo con el modo docente, también en el DOM (decisión 82): el HTML del resultado y de
+   * cada serie se guarda con ella y se pinta sin ella fuera de ese modo; `#shownDebug`, el modo con que se pintó.
+   */
+  #shownDebug = false;
+  #painted: readonly [html: string, truth: string] = ['', ''];
+  #historyViews: Array<[HTMLElement, readonly [string, string]]> = [];
+  /** Fila que armó la medición y el control al que pasó el foco (la fila se oculta con el protocolo). */
+  #focusBack: [HTMLElement, HTMLElement | null] | null = null;
 
   readonly #ctx: PanelContext;
   readonly #badge: HTMLElement;
@@ -116,8 +131,20 @@ export class MeasureTab {
   applyStore(st: AppState): void {
     this.#captureCard.hidden = st.tool === 'none';
     this.#measureBody.hidden = st.tool !== 'none';
+    // desarmada: el foco que sigue donde se medía, o que se perdió al ocultarse la tarjeta, vuelve a su fila
+    const back = this.#focusBack;
+    if (st.tool === 'none' && back) {
+      this.#focusBack = null;
+      const a = document.activeElement;
+      if (!a || a === document.body || a === back[1] || this.#captureCard.contains(a)) back[0].focus();
+    }
     // calibres del modo M a medio poner: se descartan al cancelar la herramienta
     if (st.tool !== 'mmode' && this.#mPoints.length < 4) this.#mPoints = [];
+    // el modo docente pone o quita la verdad del motor en el resultado y en las series archivadas
+    if (st.debug !== this.#shownDebug) {
+      this.renderResult();
+      for (const [body, painted] of this.#historyViews) this.#paint(body, painted);
+    }
   }
 
   /**
@@ -148,7 +175,7 @@ export class MeasureTab {
 
   /** Historial de sesión: instantánea independiente, excluida del grado actual. */
   archiveMeasurements(reason: 'respiration' | 'intervention'): boolean {
-    const result = this.#resultEl.innerHTML;
+    const result = this.#painted;
     const record = structuredClone({
       stamps: this.#stamps,
       hepatic: this.lastHepatic,
@@ -166,7 +193,8 @@ export class MeasureTab {
       const title = document.createElement('summary');
       title.textContent = `Serie ${this.#history.length} · anterior a ${reason === 'respiration' ? 'cambio respiratorio' : 'intervención'} · excluida del resultado actual`;
       const body = document.createElement('div');
-      body.innerHTML = result;
+      this.#paint(body, result);
+      this.#historyViews.push([body, result]);
       const provenance = document.createElement('p');
       provenance.className = 'small';
       provenance.textContent = Object.entries(record.stamps)
@@ -186,6 +214,7 @@ export class MeasureTab {
    */
   onSimulatorChanged(): void {
     this.#history = [];
+    this.#historyViews = [];
     this.#historyEl.innerHTML = '';
     this.#seriesNote = '';
     const id = this.#ctx.sim().patient.id;
@@ -197,18 +226,28 @@ export class MeasureTab {
     this.clearMeasurements(); // sincroniza las casillas y vuelve a pintar el resultado
   }
 
-  setIvcCaliper(mm: number | null): void {
+  /**
+   * El calibre de la VCI medido. null no borra la medida anterior, que sigue hasta que otra la sustituye (repetir y
+   * cancelar la conserva); con `frameChanged`, el calibrador volvió a empezar porque el cuadro cambió entre sus dos
+   * puntos (se dice donde se mira); sin él, el punto pendiente se soltó.
+   */
+  setIvcCaliper(mm: number | null, frameChanged = false): void {
     const sim = this.#ctx.sim();
     if (mm !== null && sim.acquisitionFrameAfter !== null && (sim.renderer.displayedFrame?.n ?? 0) <= sim.acquisitionFrameAfter) {
       this.#seriesNote = 'Imagen de la serie anterior: descongela y adquiere una imagen nueva antes de medir.';
       this.renderResult();
       return;
     }
-    this.#ivcCaliperMm = mm;
     if (mm !== null) {
+      this.#ivcCaliperMm = mm;
       this.#stamps.ivc = acquisitionStamp(sim, true);
       this.#seriesNote = '';
     }
+    if (frameChanged) {
+      // con la fila armada se ve su tarjeta; con ⌘/Ctrl+clic, el resultado
+      if (this.#ctx.store.get().tool === 'none') this.#seriesNote = CALIPER_RESTARTED;
+      else this.#captureWait.textContent = CALIPER_RESTARTED;
+    } else if (mm === null && this.#seriesNote === CALIPER_RESTARTED) this.#seriesNote = '';
     this.renderResult();
   }
 
@@ -292,13 +331,22 @@ export class MeasureTab {
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = label;
-      b.addEventListener('click', () => this.#armTool(tool));
+      b.addEventListener('click', (e) => {
+        this.#armTool(tool);
+        // Con el teclado o un lector de pantalla (el clic no trae pulsaciones), el foco pasa adonde se mide: la imagen con el
+        // calibrador (se mide con sus flechas) o la tarjeta. Con el ratón no se mueve: congelada, ← → siguen en el cine.
+        const to = e.detail
+          ? null
+          : (tool === 'caliper' && this.#ctx.measureImage) || this.#captureCard.querySelector<HTMLElement>('button:enabled');
+        to?.focus();
+        this.#focusBack = [b, to];
+      });
       const v = document.createElement('output');
       r.append(b, v);
       proto.appendChild(r);
       this.#ctx.track({ sync: () => (v.textContent = value()) });
     };
-    protoRow('VCI diámetro', 'caliper', () => (this.#ivcCaliperMm !== null ? `${this.#ivcCaliperMm.toFixed(1)} mm` : '—'));
+    protoRow('VCI diámetro', 'caliper', () => (this.#ivcCaliperMm !== null ? `${ivcDiameterText(this.#ivcCaliperMm)} mm` : '—'));
     protoRow('VCI modo M', 'mmode', () =>
       this.#ivcM ? (this.#ivcM.respiratoryCycle ? `${this.#ivcM.ciPct.toFixed(0)} %` : 'sin ciclo respiratorio') : '—',
     );
@@ -312,7 +360,7 @@ export class MeasureTab {
       const p = this.lastPortal;
       if (!p) return '—';
       if (p.quality.issue) return NOT_MEASURABLE;
-      return portalPulsatilityText(p.pulsatilityFraction);
+      return portalPulsatilityText(p.pulsatilityFraction, p.pulsatilityLowerBound);
     });
     protoRow('Renal', 'renal', () => {
       const k = this.lastRenal;
@@ -326,6 +374,7 @@ export class MeasureTab {
     // el calibrador libre era la misma herramienta que «VCI diámetro»: queda solo borrar
     button(row(res), 'Borrar mediciones', () => {
       this.#ctx.store.set({ tool: 'none' });
+      this.#ctx.cancelCaliper?.(); // también el punto de ⌘/Ctrl+clic, que no arma herramienta
       this.clearMeasurements();
     });
     this.#historyEl = document.createElement('div');
@@ -414,7 +463,7 @@ export class MeasureTab {
     note(
       this.#captureCard,
       tool === 'caliper'
-        ? 'VCI: marca ambas paredes perpendicular al eje. Esc cancela.'
+        ? 'VCI: marca ambas paredes en el mismo cuadro, perpendicular al eje (o flechas e Intro en la imagen); el primer punto congela. Esc cancela.'
         : tool === 'mmode'
           ? `Espacio congela. VCI M: paredes máx./mín. Calibre ${(this.#mPoints.length >> 1) + 1}/2, punto ${(this.#mPoints.length % 2) + 1}/2.`
           : 'Puerta en el vaso: espera 4 latidos estables y pulsa «Capturar». Se mide el espectro adquirido.',
@@ -475,26 +524,32 @@ export class MeasureTab {
     const display = { angleCorrectionRad: sim.pw.angleCorrection, invert: sim.pw.invert };
     const opts = { ...source.acquiredEquipment, ...display };
     const cap = <K extends ProtocolVessel>(k: K) => captureProtocolVessel(k, source, sim.physiology.rhythm, tNow, display, sim.gateTrack);
-    const m =
-      kind === 'hepatic'
-        ? (this.lastHepatic = cap('hepatic'))
-        : kind === 'portal'
-          ? (this.lastPortal = cap('portal'))
-          : (this.lastRenal = cap('renal'));
-    if (m) {
-      this.#stamps[kind] = structuredClone({
-        ...acquisitionStamp(sim),
-        kind: 'pw',
-        revision: source.revision,
-        acquiredEquipment: source.acquiredEquipment,
-        presentation: display,
-      });
-      this.#seriesNote = '';
+    const m = kind === 'hepatic' ? cap('hepatic') : kind === 'portal' ? cap('portal') : cap('renal');
+    // sin un latido completo de señal nueva no hay captura: como la espera, conserva la medición guardada (decisión 292)
+    if (!m) {
+      this.#captureWait.textContent =
+        'Adquiere señal nueva: aún no hay un latido completo. Espera 4 latidos con la puerta quieta; si está congelada, reanuda el PW.';
+      return;
     }
-    this.#lastOverlay = m ? captureOverlay(m, opts, source.acquiredEquipment.prfHz, source.revision) : null;
+    if (m.kind === 'hepatic') this.lastHepatic = m;
+    else if (m.kind === 'portal') this.lastPortal = m;
+    else this.lastRenal = m;
+    this.#stamps[kind] = structuredClone({
+      ...acquisitionStamp(sim),
+      kind: 'pw',
+      revision: source.revision,
+      acquiredEquipment: source.acquiredEquipment,
+      presentation: display,
+    });
+    this.#seriesNote = '';
+    this.#lastOverlay = captureOverlay(m, opts, source.acquiredEquipment.prfHz, source.revision);
     this.#ctx.store.set({ tool: 'none' });
     this.renderResult();
     this.#ctx.onCapture?.();
+  }
+
+  #paint(el: HTMLElement, [html, truth]: readonly [string, string]): void {
+    el.innerHTML = this.#shownDebug ? html : html.replace(truth, '');
   }
 
   renderResult(): void {
@@ -526,12 +581,13 @@ export class MeasureTab {
       m && m.quality.issue ? `${name}: <b>${this.#observations!.qualityText(m.quality)}</b>` : null;
     const n = (h ? 1 : 0) + (p ? 1 : 0) + (k ? 1 : 0) + (this.#ivcCaliperMm !== null ? 1 : 0) + (this.#ivcM ? 1 : 0);
     const mM = this.#ivcM;
-    const mm = (v: number) => v.toFixed(1).replace('.', ',');
-    // la verdad del motor, como las demás, solo con el modo docente
-    const mTruth =
-      mM?.truth && this.#ctx.store.get().debug
-        ? ` <span class="small">(verdad ${mm(mM.truth.maxMm)}/${mm(mM.truth.minMm)} mm → ${mM.truth.ciPct.toFixed(0)} %)</span>`
-        : '';
+    const mm = (v: number) => ivcDiameterText(v, ',');
+    const beatSummary = p ? portalBeatSummary(p) : '';
+    const [hvS, hvD] = h ? hepaticPeaksText(h.sPeak, h.dPeak) : [];
+    // la verdad del motor, como las demás, solo con el modo docente (la quita `#paint`)
+    const mTruth = mM?.truth
+      ? ` <span class="small">(verdad ${mm(mM.truth.maxMm)}/${mm(mM.truth.minMm)} mm → ${mM.truth.ciPct.toFixed(0)} %)</span>`
+      : '';
     this.#badge.textContent = String(n);
     this.#badge.hidden = n === 0;
     const lines = [
@@ -539,36 +595,38 @@ export class MeasureTab {
       '<div class="small">Interpretación contextual · adaptación local</div>',
       `<div class="grade">VExUS ${gradeValueText(res)} <span class="small">${resultStatusText(res)}</span></div>`,
       this.#seriesNote ? `<div class="small">${this.#seriesNote}</div>` : '',
-      `<div>VCI: ${ivcMax !== null ? ivcMax.toFixed(1) + ' mm' : '—'} ${res.ivcDilated === null ? '' : res.ivcDilated ? '<span class="small">(≥ 20 mm: dilatada)</span>' : '<span class="small">(< 20 mm)</span>'}</div>`,
+      `<div>VCI: ${ivcMax !== null ? ivcDiameterText(ivcMax) + ' mm' : '—'} ${res.ivcDilated === null ? '' : res.ivcDilated ? '<span class="small">(≥ 20 mm: dilatada)</span>' : '<span class="small">(< 20 mm)</span>'}</div>`,
       mM
         ? !mM.respiratoryCycle
           ? '<div>VCI modo M: sin ciclo respiratorio completo. Activa la respiración y adquiere un ciclo completo; reduce el barrido si no cabe. Repite los calibres.</div>'
-          : `<div>VCI modo M: máx ${mm(mM.maxMm)} · mín ${mm(mM.minMm)} mm → ${this.#context.positivePressureVentilation ? 'variación respiratoria' : 'colapso'} <b>${mM.ciPct.toFixed(0)} %</b>${mTruth}<div class="small">Resolución: ${mM.pixels.map(mm).join('–')} %; excluye pared y error físico.</div></div>`
+          : `<div>VCI modo M: máx ${mm(mM.maxMm)} · mín ${mm(mM.minMm)} mm → ${this.#context.positivePressureVentilation ? 'variación respiratoria' : 'colapso'} <b>${mM.ciPct.toFixed(0)} %</b>${mTruth}<div class="small">Resolución: ${mM.pixels.map((v) => v.toFixed(1).replace('.', ',')).join('–')} %; excluye pared y error físico.</div></div>`
         : '',
       line(
         'hepatic',
         rejected(this.lastHepatic, 'VSH') ??
           (h
-            ? `VSH: S ${h.sPeak.toFixed(1)} · D ${h.dPeak.toFixed(1)} · A ${h.aPeak.toFixed(1)} cm/s → <b>${patternText(h.pattern)}</b> <span class="small">(${h.beats} latidos)</span>`
+            ? `VSH: S ${hvS} · D ${hvD} · A ${velocityText(h.aPeak)} cm/s → <b>${patternText(h.pattern)}</b> <span class="small">(${h.beats} latidos)</span>`
             : 'VSH: —'),
       ),
       line(
         'portal',
         rejected(this.lastPortal, 'Porta') ??
           (p
-            ? `Porta: ${p.vMax.toFixed(1)}/${p.vMin.toFixed(1)} cm/s → PF <b>${portalPulsatilityText(p.pulsatilityFraction)}</b> <span class="small">(${portalText(res.portalClass)}${res.portalNearThreshold ? ', próximo al umbral' : ''}) · ${portalBeatSummary(p)}. Sentido dominante; confirma la dirección anatómica.</span>`
+            ? `Porta: ${velocityText(p.vMax)}/${velocityText(p.vMin)} cm/s → PF <b>${portalPulsatilityText(p.pulsatilityFraction, p.pulsatilityLowerBound)}</b> <span class="small">(${portalText(res.portalClass)}${res.portalNearThreshold ? ', próximo al umbral' : ''}${p.pulsatilityLowerBound ? '; el valle cae en el filtro de pared: la PF real es mayor' : ''})${beatSummary ? ` · ${beatSummary}` : ''}. Sentido dominante; confirma la dirección anatómica.</span>`
             : 'Porta: —'),
       ),
       line(
         'renal',
         rejected(this.lastRenal, 'Renal') ??
           (k
-            ? `Renal: máx. sist. ${k.sPeak.toFixed(1)} · diást. ${k.dPeak.toFixed(1)} · mín ${k.vMin.toFixed(1)} cm/s → <b>${renalText(k.pattern)}</b> <span class="small">(${k.beats} latidos)</span>`
+            ? `Renal: máx. sist. ${velocityText(k.sPeak)} · diást. ${velocityText(k.dPeak)} · mín ${velocityText(k.vMin)} cm/s → <b>${renalText(k.pattern)}</b> <span class="small">(${k.beats} latidos)</span>`
             : '<span class="small">Renal: no evaluado; el clasificador devuelve el intervalo compatible.</span>'),
       ),
       ...contextResultLines(res, modified),
     ];
-    this.#resultEl.innerHTML = lines.join(''); // texto generado por el programa a partir de números
+    this.#shownDebug = this.#ctx.store.get().debug;
+    this.#painted = [lines.join(''), mTruth]; // texto generado por el programa a partir de números
+    this.#paint(this.#resultEl, this.#painted);
     // el lector de pantalla oye el grado nuevo al medir o al marcar un confusor, no cada repintado
     const summary = `VExUS ${gradeValueText(res)}, ${resultStatusText(res)}`;
     if (this.#liveEl.textContent !== summary) this.#liveEl.textContent = summary;

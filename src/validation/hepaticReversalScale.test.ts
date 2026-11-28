@@ -55,14 +55,16 @@ describe('una onda en el último 15 % de la banda se excluye por prudencia; una 
     tV: i + 0.45,
     tY: i + 0.62,
     tTend: i + 0.5,
+    systoleScale: Math.sqrt(1 / 0.8),
     atrialAmplitude: 0.8,
   }));
-  // Espectro estrecho y sin plegar: S en `fraction` de Nyquist hacia el lado retrógrado y D en +0,3
-  const capture = (fraction: number, angle = 0, d = 0.3) => {
+  // Bandas estrechas y sin plegar. Cada par describe S y D como fracciones con signo de Nyquist.
+  const capture = (waves: readonly (readonly [number, number])[], angle = 0) => {
     const columns = Array.from({ length: 800 }, (_, i) => {
       const t = i / 200;
       const phase = t % 1;
-      const f = ((phase >= 0.1 && phase <= 0.49 ? -fraction : d) * prfHz) / 2;
+      const [s, d] = waves[Math.floor(t)] ?? waves[0];
+      const f = ((phase >= 0.1 && phase <= 0.49 ? s : d) * prfHz) / 2;
       const powerDb = Float32Array.from({ length: N }, (_, k) => {
         const binHz = (k / N - 0.5) * prfHz;
         return 10 * Math.log10(1e-8 + 10 ** -1.5 * Math.exp(-0.5 * ((binHz - f) / ((prfHz / N) * 1.2)) ** 2));
@@ -75,7 +77,7 @@ describe('una onda en el último 15 % de la banda se excluye por prudencia; una 
 
   it.each([0.3, 0.6, 0.75])('S retrógrada a %s de Nyquist: se mide y es grave', (fraction) => {
     for (const angle of [0, Math.PI / 3]) {
-      const m = capture(fraction, angle);
+      const m = capture([[-fraction, 0.3]], angle);
       expect(m.quality.issue).toBeNull();
       expect(m.pattern).toBe('severe');
       expect(m.sPeak / nyquist(angle)).toBeCloseTo(-fraction, 1);
@@ -88,6 +90,21 @@ describe('una onda en el último 15 % de la banda se excluye por prudencia; una 
     ['S retrógrada a −0,9 de Nyquist', 0.9, 0.3],
     ['D real a +0,825 de Nyquist', 0.3, 0.825],
   ])('%s: exclusión prudente, sin dar el pico por bueno', (_, s, d) => {
-    expect(capture(s, 0, d).quality.issue).toBe('aliasing');
+    expect(capture([[-s, d]]).quality.issue).toBe('aliasing');
+  });
+
+  it.each(['mild', 'normal'] as const)('conserva el orden S/D del patrón %s al variar la amplitud entre latidos', (pattern) => {
+    // Tres pares tienen D mayor que S; los órdenes independientes dejan la mediana de S por encima de la de D.
+    const pairs = [
+      [0.4, 0.24],
+      [0.36, 0.43],
+      [0.3, 0.34],
+      [0.21, 0.27],
+    ] as const;
+    const m = capture(pattern === 'mild' ? pairs : pairs.map(([s, d]) => [d, s]));
+    expect(m.quality.issue).toBeNull();
+    expect(m.measuredBeats).toHaveLength(4);
+    expect(m.pattern).toBe(pattern);
+    expect(m.sPeak > m.dPeak).toBe(pattern === 'normal');
   });
 });

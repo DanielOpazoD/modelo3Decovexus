@@ -12,13 +12,14 @@ import {
 } from '../../tools/anatomy/s0028Windows';
 import { S0028_KIDNEY_FRAMES } from '../anatomy/people/s0028/cpu';
 import { S0028_BUNDLE } from '../anatomy/people/s0028/descriptor';
+import { torsoSkinPoint } from '../anatomy/primitives';
 import { Tissue } from '../anatomy/tissues';
 import { bestGateOnVessel } from '../app/gatePlacement';
-import { startPointsFor } from '../app/startPoints';
+import { startPointsFor, type StartPoint } from '../app/startPoints';
 import { windowPreset } from '../app/windowPreset';
 import type { Vec3 } from '../core/vec3';
 import { probeContact } from '../probe/contact';
-import { CONVEX_C35, type ProbePose } from '../probe/probe';
+import { CONVEX_C35, probeFrame, type ProbePose } from '../probe/probe';
 import { BASELINE_CALIBER } from './support/legacyPerson/scene';
 
 let person: ReturnType<typeof loadS0028>;
@@ -182,6 +183,33 @@ it('la ventana renal ofrece una vena interlobar a lo largo del haz, y sus interl
   );
   expect(best, 'sin puerta en una interlobar').not.toBeNull();
   expect(best!.cosAngle).toBeGreaterThan(0.85);
+});
+
+it('las indicaciones de las tarjetas de s0028 describen sus propias poses, no las de la otra persona', () => {
+  const torso = person.scene.torso;
+  const sp = (id: StartPoint['id']) => startPointsFor(torso, { person: 's0028' }).find((p) => p.id === id)!;
+  // Coronal: la normal del plano (elevación) apunta de delante atrás; el marcador (lateral), a la cabeza.
+  const frame = (id: StartPoint['id']) => probeFrame(poseOf(id, 's0028'), torso, CONVEX_C35);
+  // Subcostal portal (decisión 386): la ventana del tronco en la cadena del alumno; la intrahepática remite a él para VExUS.
+  expect(sp('portalSubcostal').hint).toMatch(/PW en el tronco/);
+  expect(sp('portal').hint).toMatch(/tronco principal/);
+  // Renal (decisión 395): coronal con la piel en la axilar media, a < 5 mm en x del punto más lateral del contorno a esa altura.
+  const { phi, z } = sp('renal');
+  let lateralMost = Infinity;
+  for (let a = 0; a < 2 * Math.PI; a += 0.01) lateralMost = Math.min(lateralMost, torsoSkinPoint(a, z, torso)[0]);
+  expect(torsoSkinPoint(phi, z, torso)[0] - lateralMost).toBeLessThan(5);
+  expect(Math.abs(frame('renal').elevation[1])).toBeGreaterThan(0.9);
+  expect(frame('renal').lateral[2]).toBeGreaterThan(0.9);
+  expect(sp('renal').hint).toMatch(/coronal desde la línea axilar media/);
+  // Intercostal (decisiones 383 y 388): la coronal clásica, con el marcador craneal y no hacia la axila posterior.
+  expect(Math.abs(frame('intercostal').elevation[1])).toBeGreaterThan(0.9);
+  expect(frame('intercostal').lateral[2]).toBeGreaterThan(0.9);
+  expect(sp('intercostal').hint).toMatch(/marcador craneal/);
+  // Subcostal (decisión 349): oblicua, con la normal del plano hacia la cabeza y el marcador hacia la izquierda del paciente; la
+  // heredada describía la variante sagital de la otra persona, con el marcador craneal.
+  expect(frame('subcostal').elevation[2]).toBeGreaterThan(0.7);
+  expect(frame('subcostal').lateral[0]).toBeGreaterThan(0.5);
+  expect(sp('subcostal').hint).toMatch(/Marcador hacia la izquierda del paciente/);
 });
 
 it('cada tarjeta con Doppler enmarca en su caja de color el sitio de la puerta sobre su vaso', () => {

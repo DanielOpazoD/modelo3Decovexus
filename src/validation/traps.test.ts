@@ -11,6 +11,7 @@ import {
 import { CASE_TEACHING } from '../cases/teaching';
 import { PhysiologyEngine, type PhysiologySample } from '../physiology/engine';
 import { clonePatient, type PatientState, type RespiratoryPattern } from '../physiology/patientState';
+import { HV_COLLAPSE_TRANSMURAL_MMHG } from '../physiology/venousNetwork';
 import { peepPleuralShiftMmHg } from '../physiology/respiratory';
 import { classifyModifiedVexus, classifyVexusC, type VexusContext } from '../vexus/classification';
 import { measurePhysiologyTruth, S_REVERSAL_FLOOR_CMS } from '../vexus/measurements';
@@ -37,6 +38,8 @@ function observe(patient: PatientState, pattern: RespiratoryPattern) {
     rap: mean((s) => s.pRa),
     /** PAD menos la pleural: el llenado del corazón, que la PEEP no cambia. */
     rapTransmural: mean((s) => s.pRa - s.resp.pleuralMmHg),
+    /** Transmural hepática mínima desde t = 0, con el arranque. */
+    hepaticTmMin: e.samples.reduce((a, s) => Math.min(a, s.pHepatic - s.pAbd), Infinity),
     grade: (ctx: VexusContext = {}) => classifyVexusC({ ...veins, renal: m.renalPattern }, ctx),
     modified: (ctx: VexusContext = {}) => classifyModifiedVexus(veins, ctx),
     tag: `${patient.id}/${pattern}: ${JSON.stringify({ ivc: m.ivcMaxMm, S: m.hvS, PF: m.portalPF, renal: m.renalPattern })}`,
@@ -56,6 +59,9 @@ describe('Casos trampa: la discordancia que enseña cada uno (decisión 82)', ()
       expect(r.m.ivcMaxMm, r.tag).toBeLessThan(17);
       expect(r.m.hepaticPattern, r.tag).toBe('severe');
       expect(r.grade().grade, r.tag).toBe(0);
+      // la cascada de la salida hepática no actúa en el caso (medido −2,3/−0,3 mmHg), así que sus cifras no dependen de
+      // ella; sí actúa en apnea inspiratoria y tras retirar volumen
+      expect(r.hepaticTmMin, r.tag).toBeGreaterThan(HV_COLLAPSE_TRANSMURAL_MMHG);
       // con «Presión intraabdominal alta» marcada la VCI pequeña no cierra en 0: 0 hasta lo que dan las venas (la S
       // invertida sola, 2)
       const ctx = CASE_TEACHING['abdominal-hypertension'].context;
@@ -71,6 +77,8 @@ describe('Casos trampa: la discordancia que enseña cada uno (decisión 82)', ()
       );
       expect(c.m.ivcMaxMm, c.tag).toBeGreaterThanOrEqual(22);
       expect(c.grade().grade, c.tag).toBeGreaterThanOrEqual(2);
+      // la suprahepática no cambia con la PIA: en el modelo su salida va directa a la aurícula (nota del docente)
+      expect(c.m.hepaticPattern, c.tag).toBe('severe');
       // la S invertida es de la IT funcional con la PAD alta: sin la IT la suprahepática queda en S < D, y con el
       // contexto el intervalo es 0–1
       const t = observe(without(ABDOMINAL_HYPERTENSION, { tricuspidRegurgitation: NORMAL_ADULT.tricuspidRegurgitation }), pattern);

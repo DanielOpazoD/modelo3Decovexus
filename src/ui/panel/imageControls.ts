@@ -1,5 +1,6 @@
 import { EQUIPMENT_LIMITS } from '../../app/equipment';
 import { COMPOUND } from '../../ultrasound/compound';
+import { TGC_BANDS } from '../../ultrasound/tgcBands';
 import { button, controlId, note, row, slider } from '../controls';
 import type { PanelContext } from './context';
 
@@ -51,8 +52,7 @@ export function buildImageAdvanced(ctx: PanelContext, sec: HTMLElement): void {
   ctx.track(
     slider(sec, {
       label: 'Rango dinámico',
-      min: 40,
-      max: 80,
+      ...EQUIPMENT_LIMITS.dynamicRangeDb,
       step: 2,
       get: () => s().bmode.dynamicRangeDb,
       set: (v) => ctx.dispatch({ type: 'bmode', patch: { dynamicRangeDb: v } }),
@@ -62,8 +62,7 @@ export function buildImageAdvanced(ctx: PanelContext, sec: HTMLElement): void {
   ctx.track(
     slider(sec, {
       label: 'Persistencia',
-      min: 0,
-      max: 0.8,
+      ...EQUIPMENT_LIMITS.persistence,
       step: 0.05,
       get: () => s().bmode.persistence,
       set: (v) => ctx.dispatch({ type: 'bmode', patch: { persistence: v } }),
@@ -105,16 +104,16 @@ export function buildImageAdvanced(ctx: PanelContext, sec: HTMLElement): void {
   const bank = document.createElement('div');
   bank.className = 'tgc';
   // cada banda con su número debajo (`<label for>`); el nombre accesible dice cuál es y a qué profundidad
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < TGC_BANDS; i++) {
     const band = document.createElement('div');
     band.className = 'tgc-band';
     const inp = document.createElement('input');
     inp.type = 'range';
     inp.id = controlId(`tgc-${i + 1}`);
-    inp.min = '-15';
-    inp.max = '15';
+    inp.min = String(EQUIPMENT_LIMITS.tgcDb.min);
+    inp.max = String(EQUIPMENT_LIMITS.tgcDb.max);
     inp.step = '1';
-    inp.title = `TGC banda ${i + 1} (${i < 4 ? 'superficial' : 'profunda'})`;
+    inp.title = `TGC banda ${i + 1} (${i < TGC_BANDS / 2 ? 'superficial' : 'profunda'})`;
     inp.setAttribute('aria-label', inp.title);
     inp.addEventListener('input', () => ctx.dispatch({ type: 'tgc', band: i, db: Number(inp.value) }));
     const l = document.createElement('label');

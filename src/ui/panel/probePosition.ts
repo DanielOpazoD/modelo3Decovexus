@@ -1,3 +1,4 @@
+import { blindCaseNames, caseDisplayLabel } from '../../app/blindMode';
 import { probePositionText } from '../../app/probePosition';
 import { button, note, row } from '../controls';
 import type { PanelContext } from './context';
@@ -22,20 +23,24 @@ export function buildProbePositionCopy(ctx: PanelContext, parent: HTMLElement): 
 
   async function writePosition(): Promise<void> {
     const s = ctx.sim();
+    const { person, revision } = s.scene.identity;
+    // Con ?alumno el id nombra el diagnóstico (decisiones 82 y 393): se copia el rótulo que ve el alumno.
+    const blind = blindCaseNames(globalThis.location?.search ?? '') && !ctx.store.get().debug;
     // Se serializa al pulsar, antes de esperar al portapapeles: el examen vivo puede seguir moviéndose.
     const text = probePositionText({
       source: {
         version: __APP_VERSION__,
         commit: __GIT_COMMIT__,
         buildTime: __BUILD_TIME__,
-        anatomy:
-          'hasAbdominalAtlas' in s.scene && s.scene.hasAbdominalAtlas === true ? 'atlas' : s.scene.torso.profile ? 'reference' : 'legacy',
+        // s0028 y `?abdomen=atlas` traen los dos atlas abdominal, pero son cuerpos distintos (decisión 340).
+        anatomy: person === 's0028' ? 's0028' : s.scene.hasAbdominalAtlas ? 'atlas' : s.scene.torso.profile ? 'reference' : 'legacy',
+        revision,
         transducer: s.profile.id,
       },
       pose: s.pose,
       equipment: s.equipment,
       context: {
-        caseId: s.patient.id,
+        caseId: blind ? caseDisplayLabel(s.patient.id, false) : s.patient.id,
         seed: s.patient.seed,
         respiration: s.patient.respiratoryPattern,
         timeS: s.physiology.clock.t,

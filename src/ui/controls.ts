@@ -5,8 +5,9 @@ export function element<K extends keyof HTMLElementTagNameMap>(tag: K): HTMLElem
 
 export interface SliderSpec {
   label: string;
-  min: number;
-  max: number;
+  /** Fijos o leídos en cada `sync()` (la escala PW los reescala con la corrección angular). */
+  min: number | (() => number);
+  max: number | (() => number);
   step: number;
   get: () => number;
   set: (v: number) => void;
@@ -36,8 +37,6 @@ export function slider(parent: HTMLElement, spec: SliderSpec): Syncable {
   const input = element('input');
   input.type = 'range';
   input.id = controlId(spec.label);
-  input.min = String(spec.min);
-  input.max = String(spec.max);
   input.step = String(spec.step);
   const l = element('label');
   l.htmlFor = input.id;
@@ -45,13 +44,18 @@ export function slider(parent: HTMLElement, spec: SliderSpec): Syncable {
   const out = element('output');
   out.htmlFor.add(input.id);
   const fmt = spec.format ?? ((v: number) => v.toFixed(0));
+  const bound = (b: number | (() => number)) => String(typeof b === 'function' ? b() : b);
   const sync = () => {
+    // Límites antes del valor: el navegador recorta el valor al rango vigente.
+    input.min = bound(spec.min);
+    input.max = bound(spec.max);
     input.value = String(spec.get());
     out.textContent = fmt(spec.get());
   };
   input.addEventListener('input', () => {
     spec.set(Number(input.value));
-    out.textContent = fmt(Number(input.value));
+    // lo alcanzado, no lo pedido: una meseta de PRF o una pose acotada no se rotulan con el valor de la barra
+    sync();
   });
   row.append(l, out, input);
   parent.appendChild(row);

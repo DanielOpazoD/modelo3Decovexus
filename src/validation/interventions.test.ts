@@ -292,10 +292,14 @@ describe('Estabilidad del lazo en los límites de las intervenciones', () => {
           let vIvcSupra = 0;
           let rapMin = Infinity;
           let fillingMax = -Infinity;
+          let hepaticTmMin = Infinity;
+          let splanchnicTmMin = Infinity;
           const bad = new Set<string>();
           while (e.clock.t < tEnd) {
             const s = e.step(); // lanza NonFiniteStateError si algo deja de ser finito
             for (const f of nonFiniteFields(s)) bad.add(f);
+            hepaticTmMin = Math.min(hepaticTmMin, s.pHepatic - s.pAbd);
+            splanchnicTmMin = Math.min(splanchnicTmMin, s.pSplanchnic - s.pAbd);
             dMin = Math.min(dMin, s.ivc.dApMm);
             dMax = Math.max(dMax, s.ivc.dApMm);
             for (const [id, v] of Object.entries(s.velocities))
@@ -308,14 +312,19 @@ describe('Estabilidad del lazo en los límites de las intervenciones', () => {
           expect(dMin).toBeGreaterThan(1);
           expect(dMax).toBeLessThan(45);
           // cordura numérica, la misma cota que properties.test.ts (el límite fisiológico de 2 m/s en la VCI
-          // colapsada es `no-thoracic-waterfall`). Con la presión intraabdominal alta la VCI retrohepática la supera
-          // (`iah-collapsed-ivc-velocity`, el `it.fails` de abajo): ahí solo se exige que no se dispare
+          // colapsada es `no-thoracic-waterfall`). La cava superior usa su propia sección (decisión 172, que retiró
+          // `iah-collapsed-ivc-velocity`) y queda bajo los 2 m/s también con la PIA alta: medido ≤ 1,1 m/s en las 30
+          // secuencias (antes la cota era 8 m/s con PIA ≥ 12)
           expect(vMax).toBeLessThan(3000);
-          expect(vIvcSupra).toBeLessThan(base.intraAbdominalPressureMmHg >= 12 ? 8000 : 3000);
+          expect(vIvcSupra).toBeLessThan(2000);
           // en cada paso los líquidos dejan la PAD en el dominio probado del modelo: ≥ 2 mmHg con cualquier PEEP y el
           // llenado ≤ 30
           expect(rapMin).toBeGreaterThan(2 - 1e-6);
           expect(fillingMax).toBeLessThan(30 + 1e-6);
+          // la cascada de la salida hepática acota los volúmenes abdominales (contraejemplo determinista: «PIA alta con
+          // diuresis», abajo)
+          expect(hepaticTmMin).toBeGreaterThan(-5);
+          expect(splanchnicTmMin).toBeGreaterThan(-2);
         },
       ),
       { seed: 20260926, numRuns: 30 },
@@ -329,13 +338,18 @@ describe('Estabilidad del lazo en los límites de las intervenciones', () => {
     runTo(e, 1);
     expect(e.intervene({ kind: 'diuresis', volumeMl: 1000 })).not.toBeNull();
     let v = 0;
+    let hepaticTmMin = Infinity;
     while (e.clock.t < 61) {
       const s = e.step();
       v = Math.max(v, Math.abs(s.velocities.ivcSupra));
       const area = (Math.PI * s.ivcSupra!.dApMm * s.ivcSupra!.dLatMm) / 4;
       expect((s.velocities.ivcSupra * area) / 1000).toBeCloseTo(s.qIvcToRa + s.qHepaticVein, 8);
+      hepaticTmMin = Math.min(hepaticTmMin, s.pHepatic - s.pAbd);
     }
     expect(v).toBeGreaterThan(100);
     expect(v).toBeLessThan(2000);
+    // con la PAD ya por debajo de la PIA, la salida hepática hace cascada: antes el hígado bajaba sin cota a −7,7 mmHg
+    // de transmural (−123 mL bajo el volumen de P_ref); ahora a −3,6 (−54 mL)
+    expect(hepaticTmMin).toBeGreaterThan(-5);
   });
 });

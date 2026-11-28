@@ -8,10 +8,11 @@ import type { PatientState } from './patientState';
  * Cada latido conserva sus propios tiempos: inicio de P, R, fin de T y los
  * eventos mecánicos derivados (contracción auricular, sístole ventricular,
  * cierre/apertura tricuspídea). Los tiempos mecánicos no se estiran
- * proporcionalmente con el RR: la sístole escala con √RR (relación tipo QT) y
- * la diástasis absorbe el resto (base de conocimiento D.3, [EXTRAPOLACIÓN
- * PROPIA]). La arquitectura admite FA/extrasístoles: basta cambiar cómo se
- * programan los latidos.
+ * proporcionalmente con el RR: la sístole escala con √RR previo (relación tipo QT:
+ * el QT y la eyección siguen al ciclo que precede a la R; el siguiente no puede
+ * conocerse) y la diástasis absorbe el resto, recortada por la R siguiente (base de
+ * conocimiento D.3, [EXTRAPOLACIÓN PROPIA]). La arquitectura admite
+ * FA/extrasístoles: basta cambiar cómo se programan los latidos.
  */
 export interface Beat {
   /** Índice del latido desde el inicio de la simulación. */
@@ -32,6 +33,8 @@ export interface Beat {
   tY: number;
   /** Fin de la onda T (s). */
   tTend: number;
+  /** Escala de la sístole, √(RR previo / 0,8): QT, eyección y pulso arterial de este latido. */
+  systoleScale: number;
   /** Amplitud relativa de la contracción auricular de este latido (0–1). */
   atrialAmplitude: number;
 }
@@ -63,34 +66,36 @@ export class RhythmGenerator {
   scheduleUntil(t: number): void {
     while (this.lastR < t + 2) {
       const tR = this.lastR + this.pendingRR;
-      // `rr` del latido = intervalo hasta la SIGUIENTE R (contrato de `Beat`): se sortea
-      // ahora para que las ventanas [tR, tR + rr] terminen exactamente en la R siguiente.
-      this.pendingRR = this.nextRR();
-      this.beats.push(this.makeBeat(this.nextIndex++, tR, this.pendingRR));
+      // la sístole sigue al RR previo (causal); `rr` del latido = intervalo hasta la SIGUIENTE R (contrato de `Beat`):
+      // se sortea ahora para que las ventanas [tR, tR + rr] terminen exactamente en la R siguiente.
+      const s = Math.sqrt(this.pendingRR / 0.8);
+      this.pendingRR = this.nextRR(s);
+      this.beats.push(this.makeBeat(this.nextIndex++, tR, this.pendingRR, s));
       this.lastR = tR;
     }
     // Olvidar latidos muy antiguos.
     while (this.beats.length > 64 && this.beats[1].tR < t - 6) this.beats.shift();
   }
 
-  private nextRR(): number {
+  /** RR hasta la R siguiente; `s`, la escala sistólica del latido en curso (0 antes del primero: solo el nodo AV). */
+  private nextRR(s = 0): number {
     const rr0 = this.nominalRR();
     if (this.patient.rhythm === 'atrial-fibrillation') {
       // FA: RR «irregularmente irregular» — lognormal alrededor de la FC media con
       // dispersión relativa `rrVariability` y período refractario del nodo AV
-      // (≥ 0,3 s) [EXTRAPOLACIÓN PROPIA de la descripción de la base D.3].
+      // (≥ 0,3 s) y del ventrículo tras su sístole (fin de T + 50 ms: sin R sobre T)
+      // [EXTRAPOLACIÓN PROPIA de la descripción de la base D.3].
       const sigma = Math.max(0.05, this.patient.rrVariability);
       const rr = rr0 * Math.exp(sigma * this.rng.gaussian() - (sigma * sigma) / 2);
-      return Math.max(0.3, Math.min(2.5 * rr0, rr));
+      return Math.max(0.3, 0.4 * s + 0.05, Math.min(2.5 * rr0, rr));
     }
     const jitter = this.rng.gaussian() * this.patient.rrVariability;
     return rr0 * Math.max(0.6, 1 + jitter);
   }
 
-  private makeBeat(index: number, tR: number, rr: number): Beat {
+  private makeBeat(index: number, tR: number, rr: number, s: number): Beat {
     const p = this.patient;
     const pr = p.prIntervalMs / 1000;
-    const s = Math.sqrt(rr / 0.8); // factor de escala sistólica (√RR)
     const af = p.rhythm === 'atrial-fibrillation';
     // Sin activación auricular organizada en FA: tP = NaN y amplitud auricular 0;
     // las ventanas de medida de la onda A quedan indefinidas (no hay A que medir).
@@ -106,6 +111,7 @@ export class RhythmGenerator {
       tV: tR + 0.35 * s,
       tY: tR + 0.46 * s,
       tTend: tR + 0.4 * s,
+      systoleScale: s,
       atrialAmplitude: af ? 0 : p.atrialFunction,
     };
   }
@@ -157,7 +163,7 @@ export class RhythmGenerator {
       v += 0.035 * Math.sin(2 * Math.PI * 6.5 * t + 1.7 * Math.sin(2 * Math.PI * 0.9 * t)) + 0.02 * Math.sin(2 * Math.PI * 8.3 * t + 0.4);
     }
     for (const b of this.beatsAround(t)) {
-      const s = Math.sqrt(b.rr / 0.8);
+      const s = b.systoleScale;
       if (Number.isFinite(b.tP)) v += 0.15 * b.atrialAmplitude * gauss(t - (b.tP + 0.045), 0.022);
       // QRS: q, R, s
       v += -0.1 * gauss(t - (b.tR - 0.02), 0.008);

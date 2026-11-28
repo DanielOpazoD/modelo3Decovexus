@@ -68,13 +68,14 @@ export class SimulationSession {
       next = new Simulator(sessionPatient(id), this.canvas, prev.audio, prev.renderer, this.person);
     } catch (e) {
       errorLog.report('caso', e);
-      // si llegó a cambiarse la escena del renderizador compartido, vuelve a la del caso anterior
+      // si llegó a cambiarse la escena del renderizador compartido, vuelve a la del caso anterior; su imagen ya se borró
       if (prev.renderer.scene !== prev.scene) {
         try {
           prev.renderer.setScene(prev.scene);
         } catch (e2) {
           errorLog.report('caso', e2);
         }
+        prev.beginAcquisitionEpoch();
       }
       return e;
     }
@@ -83,7 +84,8 @@ export class SimulationSession {
     next.frozen = prev.frozen;
     this.current = next;
     prev.dispose({ keepRenderer: true });
-    next.pwChain.reset();
+    // serie nueva: congelada, ningún calibre se apoya en la imagen del paciente anterior hasta el primer cuadro propio
+    next.beginAcquisitionEpoch();
     for (const l of this.listeners) l(next, prev);
     return null;
   }

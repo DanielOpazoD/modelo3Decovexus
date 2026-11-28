@@ -29,7 +29,14 @@ export const STRUCTURE_LABELS = [
   'Conflicto sin resolver · dos dueños',
   'Riñón derecho · interior U',
   'Riñón izquierdo · interior U',
+  // s0028: su TAC no segmenta el intestino delgado ni el colon (subclase U).
+  'Intestino delgado',
+  'Colon',
+  'Riñón izquierdo · quiste',
 ] as const;
+
+/** Rótulos digestivos del TAC de s0028 (su manifiesto: 1 estómago, 2 duodeno, 3 intestino delgado, 4 colon). */
+const S0028_GUT = [0, 8, 9, 20, 21] as const;
 
 export function structureIdentity(p: Vec3, tissue: Tissue, iface: Interface, scene: AnatomyScene, solids?: S0028Ownership): number {
   const { abdominalAtlasSdf, abdominalAtlasValue } = scene.person?.cpu.atlas ?? EMPTY_ATLAS;
@@ -44,6 +51,7 @@ export function structureIdentity(p: Vec3, tissue: Tissue, iface: Interface, sce
     tissue === Tissue.VesselWallThin ||
     tissue === Tissue.ArteryWall;
   if (owner === 'kidney_right') return parenchyma ? 2 : 18;
+  if (owner === 'kidney_cyst_left' && tissue === Tissue.Fluid) return 22;
   if (owner === 'kidney_left' || owner === 'kidney_cyst_left') return parenchyma ? 3 : 19;
   if (tissue === Tissue.Liver || tissue === Tissue.LiverCapsule) return 1;
   if ([Tissue.RenalCortex, Tissue.RenalMedulla, Tissue.RenalSinus, Tissue.RenalCapsule, Tissue.RenalPelvis].includes(tissue)) {
@@ -84,5 +92,7 @@ export function structureIdentity(p: Vec3, tissue: Tissue, iface: Interface, sce
   ])
     if (abdominalAtlasSdf(p, field) < 0) return id;
   const gut = abdominalAtlasValue(p, 1);
-  return gut.d < 0 && gut.label >= 1 && gut.label <= 9 ? 7 + gut.label : 0;
+  if (!(gut.d < 0)) return 0;
+  if (scene.identity.person === 's0028') return S0028_GUT[gut.label] ?? 0;
+  return gut.label >= 1 && gut.label <= 9 ? 7 + gut.label : 0;
 }

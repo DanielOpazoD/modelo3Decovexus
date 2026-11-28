@@ -18,10 +18,10 @@ const patientArb: fc.Arbitrary<PatientState> = fc
   .record({
     heartRateBpm: fc.integer({ min: 50, max: 150 }),
     // PAD ≥ 2 y volumen ≥ 0,8: por debajo, la PAD prescrita cae en picado y sin cascada
-    // torácica (`no-thoracic-waterfall`) la VCI se vacía a caudales irreales (ver it.fails)
+    // torácica (`no-thoracic-waterfall`) la VCI se vacía a caudales irreales
     rapMeanMmHg: fc.double({ min: 2, max: 30, noNaN: true }),
     rvFunction: fc.double({ min: 0.3, max: 1, noNaN: true }),
-    // compliancias < 0,6 con PAD baja disparan el contorno auricular prescrito (ver it.fails abajo)
+    // compliancias < 0,6 con PAD baja disparan el contorno auricular prescrito (ver la regresión rígida abajo)
     raCompliance: fc.double({ min: 0.6, max: 1.5, noNaN: true }),
     tricuspidRegurgitation: fc.double({ min: 0, max: 0.8, noNaN: true }),
     stressedVolume: fc.double({ min: 0.8, max: 1.6, noNaN: true }),
@@ -91,7 +91,7 @@ describe('Propiedades del motor fisiológico (fast-check)', () => {
           expect(s.ivc.dApMm).toBeLessThan(45);
           expect(s.hvRadiusScale).toBeGreaterThanOrEqual(0.5);
           // cordura numérica (< 3 m/s; antes del resistor de Starling salían 288 m/s). El límite
-          // fisiológico de 2 m/s en los extremos es la limitación `no-thoracic-waterfall` (it.fails)
+          // fisiológico de 2 m/s en los extremos es la limitación `no-thoracic-waterfall`
           for (const v of Object.values(s.velocities)) expect(Math.abs(v)).toBeLessThan(3000);
         }
       }),
@@ -114,12 +114,10 @@ describe('Propiedades del motor fisiológico (fast-check)', () => {
   });
 
   // Limitación conocida `prescribed-ra-contour` (hallada por fast-check): con la aurícula muy
-  // rígida y PAD media ≈ 0 el contorno prescrito oscila hasta −11 mmHg y la VCI suprahepática
-  // (un solo compartimento) supera 2 m/s. Este primer contraejemplo ya no la supera desde la pared
-  // viscoelástica de la VCI (decisión 73): la luz no se cierra dentro de un latido. El segundo
-  // (`it.fails`, abajo) sigue documentando la limitación: el lazo cerrado de la decisión 79 solo
-  // cierra la media (sin intervenciones la PAD es la del caso) y la forma de onda sigue prescrita;
-  // cuando el modelo auricular la resuelva, empezará a «pasar» y avisará para retirarla.
+  // rígida y PAD media ≈ 0 el contorno prescrito baja hasta ≈ −10 mmHg. La VCI suprahepática
+  // superaba 2 m/s en dos contraejemplos: este dejó de hacerlo con la pared viscoelástica (decisión
+  // 73; la luz no se cierra dentro de un latido) y el rígido con la sección regional de la VCI
+  // superior (decisión 172). Los dos quedan como regresiones normales; la forma de onda sigue prescrita.
   it('contraejemplo (hipovolemia + PAD ≈ 0, sin cascada torácica): con la pared viscoelástica la VCI no supera 2 m/s', () => {
     const p = {
       ...clonePatient(NORMAL_ADULT),

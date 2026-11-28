@@ -9,6 +9,8 @@ import { dominantGateSystem, wrongGateVessel, type GateVesselSample } from '../d
 import type { Beat } from '../physiology/rhythm';
 import { captureOverlay, spectrumRowOf } from '../ui/captureOverlay';
 import { median } from '../core/series';
+import { prfFromNyquistCms } from '../core/units';
+import { classifyPortal } from '../vexus/classification';
 
 /**
  * Medición de la porta y captura (decisión 94) con espectros sintéticos: ruido del receptor (periodograma exponencial)
@@ -30,6 +32,7 @@ const beats: Beat[] = Array.from(
       tV: 0.75 + i * 0.8,
       tY: 0.86 + i * 0.8,
       tAtrialContraction: 0.29 + i * 0.8,
+      systoleScale: 1,
     }) as Beat,
 );
 
@@ -43,8 +46,8 @@ const noise = (r: () => number, db = NOISE_DB) => db + 10 * Math.log10(-Math.log
 
 interface Synth {
   /**
-   * Bin más alto de la banda en t, hacia la sonda si `sign` = 1. La banda ocupa los 10 bins de debajo: el tronco portal
-   * muestreado en su centro no llega a la línea de base (flujo casi en pistón, 5–20 cm/s).
+   * Bin más alto de la banda en t, hacia la sonda si `sign` = 1 (negativo: en el otro semiplano). La banda ocupa los 10 bins de
+   * debajo: el tronco portal muestreado en su centro no llega a la línea de base (flujo casi en pistón, 5–20 cm/s).
    */
   top: (t: number) => number;
   sign?: 1 | -1;
@@ -53,27 +56,30 @@ interface Synth {
   dropouts?: boolean;
   nearBaselineNoise?: boolean;
   noiseDb?: number;
+  /** PRF del espectro (por defecto, la de ±40 cm/s); las columnas siguen cada 16 muestras. */
+  prfHz?: number;
 }
 
 function portalColumns(o: Synth, seed = 3): SpectralColumn[] {
   const r = rng(seed);
   const out: SpectralColumn[] = [];
   const half = N / 2;
-  for (let t = 0; t < 5.4; t += DT) {
+  const prfHz = o.prfHz ?? PRF;
+  for (let t = 0; t < 5.4; t += 16 / prfHz) {
     const p = new Float32Array(N);
     for (let k = 0; k < N; k++) p[k] = noise(r, o.noiseDb);
     const drop = o.dropouts && r() < 0.12;
     if (!drop) {
       const top = Math.round(o.top(t));
-      for (let j = Math.max(3, top - 10); j <= top; j++) {
-        const k = half + (o.sign ?? 1) * j;
+      for (let j = Math.max(3, Math.abs(top) - 10); j <= Math.abs(top); j++) {
+        const k = half + (o.sign ?? 1) * Math.sign(top) * j;
         p[k] = 10 * Math.log10(Math.pow(10, p[k] / 10) + Math.pow(10, (NOISE_DB + (o.snrDb ?? 15)) / 10) * -Math.log(Math.max(1e-9, r())));
       }
     }
     // clutter simétrico junto a la base (tejido que late, transitorio del filtro de pared) en un 30 % de las columnas
     if (o.clutter && r() < 0.3) for (let j = 2; j <= 5; j++) p[half + j] = p[half - j] = NOISE_DB + 25;
     if (o.nearBaselineNoise) p[half + 3] = NOISE_DB + 14;
-    out.push({ t, prfHz: PRF, powerDb: p });
+    out.push({ t, prfHz, powerDb: p });
   }
   return out;
 }
@@ -256,9 +262,129 @@ describe('La porta que la escala o el filtro de pared no dejan medir (revisión 
   it('con el filtro de pared alto el valle cae en su banda: no medible, no una PF menor', () => {
     // valle a 9 bins (≈ 180 Hz) con el filtro a 150 Hz: la transición del filtro (×1,5) llega a 225 Hz
     const cols = portalColumns({ top: (t) => 14 + 5 * Math.sin((2 * Math.PI * (t - 0.4)) / 0.8), snrDb: 25 });
-    expect(measureObservedPortal(cols, beats, { ...opts, wallFilterHz: 150 })!.quality.issue).toBe('wall-filter');
+    const high = measureObservedPortal(cols, beats, { ...opts, wallFilterHz: 150 })!;
+    expect(high.quality.issue).toBe('wall-filter');
+    expect(high.pulsatilityLowerBound).toBeUndefined();
+    expect(qualityText(high.quality)).toBe('no medible: el valle cae en el filtro de pared (baje el filtro de pared)');
     expect(measureObservedPortal(cols, beats, opts)!.quality.issue).toBeNull();
   });
+
+  it.each([10, 20])('con el filtro a %i Hz y una PF que no llega a grave, «filtro de pared» no ordena bajar el filtro', (wallFilterHz) => {
+    // porta lenta (Vmáx 8 bins, 5 cm/s) con el valle en la línea de base: la PF medida (~50 %) no garantiza la clase, y el
+    // suelo de la traza lo fijan el margen del filtro y la rejilla de la FFT, que el mando ya no baja
+    const cols = portalColumns({ top: (t) => 4 * (1 + Math.cos((2 * Math.PI * (t - 0.4)) / 0.8)), snrDb: 25 });
+    const m = measureObservedPortal(cols, beats, { ...opts, wallFilterHz })!;
+    expect(m.quality.issue).toBe('wall-filter');
+    expect(m.quality.wallFilterLow).toBe(true);
+    expect(qualityText(m.quality)).not.toContain('baje');
+    expect(qualityText(m.quality)).toContain('repita la captura');
+  });
+
+  it.each([10, 20])(
+    'con el valle en la línea de base y el filtro a %i Hz, una PF ya grave no es «no medible»: es una cota inferior',
+    (wallFilterHz) => {
+      // PF verdadera 100 % (Vmáx 32 bins, 20 cm/s; valle a 0): el margen del filtro y la rejilla de la FFT (~2,5 cm/s) se comen
+      // el valle aunque el filtro esté al mínimo del mando; Vmín se sobreestima, así que la PF real es mayor que la medida.
+      // A 10 y a 20 Hz la envolvente empieza en el mismo bin: el veredicto no depende de cuál (antes, a 10 Hz, una salía exacta)
+      const top = (t: number) => 16 * (1 + Math.cos((2 * Math.PI * (t - 0.4)) / 0.8));
+      const ms = [3, 7, 11].map((seed) =>
+        measureObservedPortal(portalColumns({ top, snrDb: 25 }, seed), beats, { ...opts, wallFilterHz })!,
+      );
+      for (const m of ms) {
+        expect(m.quality.issue).toBeNull();
+        expect(classifyPortal(m.pulsatilityFraction)).toBe('severe');
+        expect(m.pulsatilityFraction).toBeLessThanOrEqual(103);
+      }
+      // todas lo dicen: la PF real es mayor que la medida
+      for (const m of ms) {
+        expect(m.pulsatilityLowerBound).toBe(true);
+        expect(m.pulsatilityFraction).toBeGreaterThanOrEqual(60);
+      }
+    },
+  );
+
+  it.each([10, 20])(
+    'con la banda débil de una porta profunda y el filtro a %i Hz, el valle en la línea de base sigue siendo una cota',
+    (wallFilterHz) => {
+      // la misma porta (PF verdadera 100 %) a +12–15 dB, como el tronco portal de la cadena del alumno: la envolvente pierde la
+      // banda que se estrecha antes de su primer bin y la traza suavizada (60 ms) deja los dos bordes del hueco 1–3 cm/s sobre el
+      // suelo. Antes salía exacta a 77–82 % (en la cadena, el grave tras +150 mL: 81–84 % con la verdad en 100–104 %)
+      const top = (t: number) => 16 * (1 + Math.cos((2 * Math.PI * (t - 0.4)) / 0.8));
+      for (const snrDb of [12, 15])
+        for (const seed of [3, 7, 11]) {
+          const m = measureObservedPortal(portalColumns({ top, snrDb }, seed), beats, { ...opts, wallFilterHz })!;
+          expect(m.quality.issue).toBeNull();
+          expect(m.pulsatilityLowerBound).toBe(true);
+          expect(m.pulsatilityFraction).toBeLessThanOrEqual(103);
+        }
+      // con la misma banda débil, un valle lejos del suelo sigue siendo una medida exacta
+      const m = measureObservedPortal(portalColumns({ top: pulsatile, snrDb: 12 }), beats, { ...opts, wallFilterHz })!;
+      expect(m.quality.issue).toBeNull();
+      expect(m.pulsatilityLowerBound).toBeUndefined();
+      // con la señal irregular (un latido sin sangre), esos bordes bajos no cambian el motivo: la IT respirando seguía «intermitente»
+      const cols = portalColumns({ top, snrDb: 12 }, 3);
+      for (const c of cols) if (c.t >= beats[2].tR && c.t < beats[2].tR + beats[2].rr) c.powerDb.fill(NOISE_DB);
+      expect(measureObservedPortal(cols, beats, { ...opts, wallFilterHz })!.quality.issue).toBe('intermittent');
+    },
+  );
+
+  it('con el valle sostenido en el primer bin de la envolvente, la medida es exacta con cualquier semilla, no según el redondeo', () => {
+    // techo de 4 a 16 bins (PF de la envolvente 75 %) con el valle en el primer bin que mira la envolvente (`firstFlowBin`, 25 Hz):
+    // la traza se sostiene en suelo + 1 bin, el valle más bajo que resuelve. Antes la media de la traza quedaba ±1e-14 a un lado
+    // u otro del corte y la misma porta salía exacta (2 de 10 semillas) o «PF ≥ 68 %»
+    const top = (t: number) => 4 + 12 * Math.max(0, Math.cos((2 * Math.PI * (t - 0.4)) / 0.8));
+    for (let seed = 0; seed < 10; seed++) {
+      const m = measureObservedPortal(portalColumns({ top, snrDb: 25 }, seed), beats, opts)!;
+      expect(m.quality.issue).toBeNull();
+      expect(m.pulsatilityLowerBound).toBeUndefined();
+      expect(Math.abs(m.pulsatilityFraction - 75)).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it.each([10, 20])(
+    'un valle en la línea de base que sale de golpe por encima de la banda, con el filtro a %i Hz, no es una PF exacta',
+    (wallFilterHz) => {
+      // PF verdadera 100 %: el techo baja despacio hasta 0 (55 % del ciclo), sigue en 0 hasta el 70 % y vuelve de golpe a una
+      // fracción del pico. Solo el borde de entrada del hueco del valle cae en la banda: con los dos bordes obligatorios salía
+      // exacta a 79 % a ±40 y, con la porta lenta (4 cm/s) a ±12, a 40–48 % (leve)
+      const valley = (peak: number, jump: number) => (t: number) => {
+        const ph = ((((t - 0.4) / 0.8) % 1) + 1) % 1;
+        return ph < 0.55 ? peak * (1 - ph / 0.55) : ph < 0.7 ? 0 : peak * (jump + (1 - jump) * ((ph - 0.7) / 0.3));
+      };
+      for (const [prfHz, top, lowerBound] of [
+        [PRF, valley(24, 0.5), true],
+        [prfFromNyquistCms(12, opts.f0Hz), valley(21, 0.7), false],
+      ] as const)
+        for (const seed of [3, 7, 11]) {
+          const m = measureObservedPortal(portalColumns({ top, snrDb: 25, prfHz }, seed), beats, { ...opts, wallFilterHz })!;
+          // a ±40 todo latido pasa de grave: cota inferior; a ±12 no lo garantiza: no medible
+          expect(m.quality.issue).toBe(lowerBound ? null : 'wall-filter');
+          expect(m.pulsatilityLowerBound).toBe(lowerBound ? true : undefined);
+          expect(m.pulsatilityFraction).toBeLessThanOrEqual(103);
+        }
+    },
+  );
+
+  it.each([10, 20])(
+    'una porta a vaivén con la inversión resuelta y el filtro a %i Hz es una medida exacta, no una cota',
+    (wallFilterHz) => {
+      // el hueco del paso por cero tiene los dos bordes junto a la línea de base, con signo opuesto: no es el valle en el filtro.
+      // Antes salía «PF ≥ 134 %» (verdad 133 %) y la interfaz añadía que la PF real es mayor
+      for (const [mean, swing] of [
+        [8, 16],
+        [12, 18],
+      ] as const)
+        for (const snrDb of [15, 25])
+          for (const seed of [3, 7, 11, 0, 5]) {
+            const top = (t: number) => mean + swing * Math.cos((2 * Math.PI * (t - 0.4)) / 0.8);
+            const m = measureObservedPortal(portalColumns({ top, snrDb }, seed), beats, { ...opts, wallFilterHz })!;
+            expect(m.quality.issue).toBeNull();
+            expect(m.vMin).toBeLessThan(0);
+            expect(m.pulsatilityLowerBound).toBeUndefined();
+            expect(Math.abs(m.pulsatilityFraction - (200 * swing) / (mean + swing))).toBeLessThanOrEqual(10);
+          }
+    },
+  );
 
   it.each([0, 2, 5])('un latido sin traza en posición %i sigue contando para rechazar la captura', (lostIndex) => {
     const cols = portalColumns({ top: pulsatile, snrDb: 40 });
@@ -269,6 +395,23 @@ describe('La porta que la escala o el filtro de pared no dejan medir (revisión 
     expect(m.measuredBeats.length).toBeGreaterThanOrEqual(3);
     expect(m.quality.beats).toBe(beats.length);
     expect(m.quality.validBeats).toBeLessThan(m.quality.beats);
+    expect(m.quality.issue).toBe('intermittent');
+  });
+
+  it('una caída de señal junto a un resto suelto en el borde del filtro es intermitencia, no el filtro de pared', () => {
+    // la porta sale de la puerta al respirar: el latido pierde la banda y entre dos huecos queda un resto débil en el borde
+    // del filtro (sano, respiración tranquila, decisión 94). Un valle que cae en el filtro entra y sale por su banda.
+    const cols = portalColumns({ top: pulsatile, snrDb: 40 });
+    const b = beats[2];
+    for (const c of cols) {
+      const tau = c.t - b.tR;
+      if (tau < 0.1 || tau >= 0.55) continue;
+      c.powerDb.fill(NOISE_DB);
+      if (tau >= 0.3 && tau < 0.34) for (let k = 3; k <= 4; k++) c.powerDb[N / 2 + k] = NOISE_DB + 25;
+    }
+    const m = measureObservedPortal(cols, beats, opts)!;
+    // el latido se traza (se juzga su valle) pero le falta la sangre: antes, «baje el filtro de pared»
+    expect(m.measuredBeats).toContainEqual(b);
     expect(m.quality.issue).toBe('intermittent');
   });
 
@@ -342,6 +485,39 @@ describe('Identidad del vaso de la puerta (decisión 94)', () => {
     expect(wrong.quality.issue).toBe('wrong-vessel');
     expect(qualityText(wrong.quality)).toContain('vaso equivocado, la puerta está en una suprahepática');
     expect(captureProtocolVessel('portal', source(cols), rhythm, tNow, opts, pv)!.quality.issue).toBeNull();
+  });
+
+  it('sin latidos trazables, otro vaso en la puerta sigue siendo «vaso equivocado», no «no hay flujo»', () => {
+    // solo ruido del receptor: la porta no traza ningún latido, aunque los cuatro estén adquiridos
+    const r = rng(5);
+    const cols: SpectralColumn[] = [];
+    for (let t = 0; t < 5.4; t += DT) cols.push({ t, prfHz: PRF, powerDb: Float32Array.from({ length: N }, () => noise(r)) });
+    const rhythm = { beatsBetween: (a: number, b: number) => beats.filter((x) => x.tR >= a && x.tR + x.rr <= b) };
+    const tNow = cols[cols.length - 1].t;
+    const capture = (vessels: GateVesselSample['vessels']) =>
+      captureProtocolVessel('portal', source(cols), rhythm, tNow, opts, track(vessels, 60))!;
+    const aorta = capture({ aorta: 0.9 });
+    expect(aorta.measuredBeats).toHaveLength(0);
+    expect(aorta.quality.issue).toBe('wrong-vessel');
+    expect(qualityText(aorta.quality)).toContain('vaso equivocado, la puerta está en la aorta');
+    // la porta sin traza y la puerta sin sangre siguen siendo «no hay flujo»
+    for (const vessels of [{ pvTrunk: 0.3 }, {}]) expect(capture(vessels).quality.issue).toBe('no-signal');
+  });
+
+  it('una captura rechazada por la identidad no conserva la cota inferior de la PF', () => {
+    // el valle en la línea de base con el filtro bajo (cota inferior aceptada), y la misma captura sobre otro vaso
+    const cols = portalColumns({ top: (t) => 16 * (1 + Math.cos((2 * Math.PI * (t - 0.4)) / 0.8)), snrDb: 25 });
+    const rhythm = { beatsBetween: (a: number, b: number) => beats.filter((x) => x.tR >= a && x.tR + x.rr <= b) };
+    const tNow = cols[cols.length - 1].t;
+    const low = { ...opts, wallFilterHz: 20 };
+    const hv = Array.from({ length: 200 }, (_, i) => ({ t: tNow - 6.9 + i * 0.03, vessels: { hvRight: 0.3 } }));
+    const pv = hv.map((s) => ({ ...s, vessels: { pvTrunk: 0.3 } }));
+    const accepted = captureProtocolVessel('portal', source(cols), rhythm, tNow, low, pv)!;
+    expect(accepted.quality.issue).toBeNull();
+    expect(accepted.pulsatilityLowerBound).toBe(true);
+    const wrong = captureProtocolVessel('portal', source(cols), rhythm, tNow, low, hv)!;
+    expect(wrong.quality.issue).toBe('wrong-vessel');
+    expect(wrong.pulsatilityLowerBound).toBeUndefined();
   });
 });
 

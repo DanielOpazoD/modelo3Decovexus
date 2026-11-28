@@ -1,5 +1,6 @@
 import { effectiveWallFilterCutoff } from '../core/highPass';
 import type { BModeSettings, ColorSettings } from '../ultrasound/renderer';
+import { TGC_BANDS } from '../ultrasound/tgcBands';
 import type { EquipmentSettings, PwSettings } from './simulator';
 
 /**
@@ -101,7 +102,8 @@ export function normalizeEquipment(e: EquipmentSettings, ctx: EquipmentContext):
     dynamicRangeDb: clamp(e.bmode.dynamicRangeDb, L.dynamicRangeDb.min, L.dynamicRangeDb.max),
     persistence: clamp(e.bmode.persistence, L.persistence.min, L.persistence.max),
     speckleReduction: e.bmode.speckleReduction === 2 ? 2 : e.bmode.speckleReduction === 1 ? 1 : 0,
-    tgcDb: e.bmode.tgcDb.map((v) => clamp(v, L.tgcDb.min, L.tgcDb.max)),
+    // siempre TGC_BANDS bandas: un parche corto no deja deslizadores sin estado ni valores viejos en `uTgc`
+    tgcDb: Array.from({ length: TGC_BANDS }, (_, i) => clamp(e.bmode.tgcDb[i] ?? 0, L.tgcDb.min, L.tgcDb.max)),
   };
   // Caja de color: dentro del sector y de la profundidad, con un tamaño mínimo
   const c = e.color;
@@ -191,7 +193,7 @@ export function reduceEquipment(e: EquipmentSettings, cmd: EquipmentCommand, ctx
       break;
     case 'tgc': {
       const tgcDb = [...e.bmode.tgcDb];
-      if (cmd.band >= 0 && cmd.band < tgcDb.length) tgcDb[cmd.band] = cmd.db;
+      if (cmd.band >= 0 && cmd.band < TGC_BANDS) tgcDb[cmd.band] = cmd.db;
       next = { ...e, bmode: { ...e.bmode, tgcDb } };
       break;
     }

@@ -495,9 +495,9 @@ it('el pulmón no toca la cava (decisión 375): entre su luz y la pleura quedan 
   let beside = 0,
     sheet = 0,
     chest = 0;
-  for (let x = -60; x <= 20; x += 1.5)
-    for (let y = -40; y <= 110; y += 1.5)
-      for (let z = -60; z <= 45; z += 1.5) {
+  for (let x = -60; x <= 20; x += 1.25)
+    for (let y = -40; y <= 110; y += 1.25)
+      for (let z = -60; z <= 45; z += 1.25) {
         const p: Vec3 = [x, y, z],
           d = lung(p);
         if (d > DIAPHRAGM_THICKNESS_MM + 1 || d < -8) continue;
@@ -522,7 +522,8 @@ it('el pulmón no toca la cava (decisión 375): entre su luz y la pleura quedan 
           expect(cls.tissue, p.join(',')).not.toBe(Tissue.Diaphragm);
         }
       }
-  // Medido el 13-11-2026: 1.468, 1.632 y 1.119.
+  // Medido el 26-11-2026, rejilla de 1,25 mm: 1.706, 2.827 y 1.709. Con la de 1,5 mm, 993 junto a la cava: con su calibre
+  // regular hasta z 5 (decisión 396) queda más lejos del pulmón.
   expect(beside).toBeGreaterThan(1000);
   expect(sheet).toBeGreaterThan(1000);
   expect(chest).toBeGreaterThan(700);

@@ -17,6 +17,7 @@ const beats = Array.from(
       tV: 0.75 + i * 0.8,
       tY: 0.86 + i * 0.8,
       tAtrialContraction: 0.29 + i * 0.8,
+      systoleScale: 1,
     }) as Beat,
 );
 const rhythm = { beatsBetween: (a: number, b: number) => beats.filter((x) => x.tR >= a && x.tR + x.rr <= b) };

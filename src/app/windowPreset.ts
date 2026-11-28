@@ -1,4 +1,5 @@
 import { prfFromNyquistCms } from '../core/units';
+import { TGC_BANDS } from '../ultrasound/tgcBands';
 import type { EquipmentCommand } from './equipment';
 import { portalPreset } from './portalPreset';
 import { renalPreset } from './renalPreset';
@@ -29,7 +30,15 @@ export function windowPreset(id: StartPoint['id'], f0Hz: number, reference: bool
   const commands: EquipmentCommand[] = [
     {
       type: 'bmode',
-      patch: { depthMm: 180, focusMm: 90, gainDb: 0, dynamicRangeDb: 70, tgcDb: [0, 0, 0, 0, 0, 0], persistence: 0.35, compound: true },
+      patch: {
+        depthMm: 180,
+        focusMm: 90,
+        gainDb: 0,
+        dynamicRangeDb: 70,
+        tgcDb: Array<number>(TGC_BANDS).fill(0),
+        persistence: 0.35,
+        compound: true,
+      },
     },
     {
       type: 'color',

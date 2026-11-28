@@ -12,6 +12,7 @@ import type { VesselId } from '../../physiology/vessels';
 import { probeContact, type ProbeContact } from '../../probe/contact';
 import { DEFAULT_BMODE } from '../../ultrasound/renderer';
 import { CONVEX_C35_PROFILE } from '../../ultrasound/transducerProfile';
+import { classifyPortal } from '../../vexus/classification';
 import { AnatomyScene } from './legacyPerson/scene';
 
 /**
@@ -130,3 +131,9 @@ export function acquire<K extends ProtocolVessel>(
   }
   return { captures, track };
 }
+
+/**
+ * Una PF aceptada como cota inferior (`pulsatilityLowerBound`: el valle cae en el filtro de pared) es una categoría propia, no
+ * una medida a ±10 puntos: la verdad debe ser grave y la PF no superarla en más de 3 puntos (la traza no baja del suelo).
+ */
+export const lowerBoundHolds = (pf: number, truth: number): boolean => classifyPortal(truth) === 'severe' && pf <= truth + 3;

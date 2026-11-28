@@ -1,10 +1,11 @@
 export { qualityText } from './qualityMessages';
 import type { Beat } from '../physiology/rhythm';
-import { CAPTURE_BEATS } from './measureQuality';
+import { CAPTURE_BEATS, type MeasurementQuality } from './measureQuality';
 import { SPECTRAL_CAPTURE_SECONDS, WALL_SETTLE_S, contiguousSpectralColumns, type SpectralColumn } from './spectral';
 export { WALL_SETTLE_S } from './spectral';
 import type { PwCaptureSource, PwPresentation } from './pwChain';
 import {
+  acquiredBeats,
   measureObservedHepatic,
   measureObservedPortal,
   measureObservedRenal,
@@ -36,6 +37,13 @@ export function captureColumns(spectrum: readonly SpectralColumn[], t0: number):
   return spectrum.slice(first).filter((c) => c.t > tStart);
 }
 
+/** Rechazo tras medir: la cota inferior de la PF (`pulsatilityLowerBound`) solo acompaña a una captura aceptada. */
+function rejected<M extends { quality: MeasurementQuality; pulsatilityLowerBound?: true }>(m: M, quality: MeasurementQuality): M {
+  const out = { ...m, quality };
+  delete out.pulsatilityLowerBound;
+  return out;
+}
+
 export interface CaptureResult {
   hepatic: ObservedHepatic;
   portal: ObservedPortal;
@@ -63,12 +71,16 @@ export function captureProtocolVessel<K extends ProtocolVessel>(
   const columns = captureColumns(source.columns, t0);
   const measure = kind === 'hepatic' ? measureObservedHepatic : kind === 'portal' ? measureObservedPortal : measureObservedRenal;
   const m = measure(columns, beats, opts) as CaptureResult[K] | null;
-  if (!m || !m.measuredBeats.length) return m;
-  // la identidad se juzga en los latidos medidos, no en los 7 s: la puerta pudo estar antes en otro vaso
+  if (!m) return null;
+  // la identidad se juzga en los latidos medidos, no en los 7 s: la puerta pudo estar antes en otro vaso. Sin ninguno (la
+  // porta sin traza), en los adquiridos: otro vaso en la puerta manda antes que «no hay flujo» o «aliasing»
+  const judged = m.measuredBeats.length ? m.measuredBeats : acquiredBeats(columns, beats);
+  const end = judged.at(-1);
+  const found = end ? wrongGateVessel(kind, gateTrack, judged[0].tR, end.tR + end.rr) : null;
+  if (found !== null) return rejected(m, { ...m.quality, issue: 'wrong-vessel', wrongVessel: { kind, found } });
+  if (!m.measuredBeats.length) return m;
   const effective = m.measuredBeats;
   const last = effective.at(-1)!;
-  const found = wrongGateVessel(kind, gateTrack, effective[0].tR, last.tR + last.rr);
-  if (found !== null) return { ...m, quality: { ...m.quality, issue: 'wrong-vessel', wrongVessel: { kind, found } } };
   // The automatic renal estimator assumes the dominant signal belongs to the
   // vein. When anatomy says the artery dominates, a continuous arterial trace
   // must not be accepted as venous continuity. This is an estimator limitation,
@@ -88,8 +100,8 @@ export function captureProtocolVessel<K extends ProtocolVessel>(
       opts.fftSize / columns.at(-1)!.prfHz,
     )
   )
-    return { ...m, quality: { ...m.quality, issue: 'intermittent' } };
+    return rejected(m, { ...m.quality, issue: 'intermittent' });
   if (kind === 'portal' && m.quality.issue === null && portalBranchShift(gateTrack, effective[0].tR, last.tR + last.rr))
-    return { ...m, quality: { ...m.quality, issue: 'inconsistent' } };
+    return rejected(m, { ...m.quality, issue: 'inconsistent' });
   return m;
 }

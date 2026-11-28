@@ -1,4 +1,5 @@
 import type { UltrasoundRenderer } from '../ultrasound/renderer';
+import { cssScale, labelFont } from './canvasText';
 import { ecgT, ecgX } from './sweep';
 
 /** Punto de un calibre del modo M: instante y profundidad a lo largo de la línea M (mm). */
@@ -49,10 +50,13 @@ export class MModeView {
     }
     ctx.drawImage(this.off, 0, 0);
     this.view = { tRight, secondsVisible, depthMm };
-    // escala de profundidad cada 5 cm en el borde derecho, como la del sector
+    // escala de profundidad cada 5 cm en el borde derecho, como la del sector (la raya toca el borde)
+    const k = cssScale(this.canvas);
     ctx.fillStyle = '#9aa7b4';
-    ctx.font = '10px sans-serif';
-    for (let cm = 5; cm < depthMm / 10; cm += 5) ctx.fillText(`${cm} cm —`, W - 40, (cm * 10 * H) / depthMm + 4);
+    ctx.font = labelFont(k);
+    ctx.textAlign = 'right';
+    for (let cm = 5; cm < depthMm / 10; cm += 5) ctx.fillText(`${cm} cm —`, W, (cm * 10 * H) / depthMm + 4 * k);
+    ctx.textAlign = 'start';
     // calibres: una cruz por punto y la vertical de cada par
     ctx.strokeStyle = '#ffc857';
     ctx.lineWidth = 1;
@@ -60,14 +64,14 @@ export class MModeView {
       const x = ecgX(m.t, tRight, secondsVisible, W);
       const y = (m.r / depthMm) * H;
       ctx.beginPath();
-      ctx.moveTo(x - 6, y);
-      ctx.lineTo(x + 6, y);
-      ctx.moveTo(x, y - 6);
-      ctx.lineTo(x, y + 6);
+      ctx.moveTo(x - 6 * k, y);
+      ctx.lineTo(x + 6 * k, y);
+      ctx.moveTo(x, y - 6 * k);
+      ctx.lineTo(x, y + 6 * k);
       if (i % 2) ctx.lineTo(x, (marks[i - 1].r / depthMm) * H);
       ctx.stroke();
     });
-    if (cursorT !== null) drawCursor(ctx, ecgX(cursorT, tRight, secondsVisible, W), H);
+    if (cursorT !== null) drawCursor(ctx, ecgX(cursorT, tRight, secondsVisible, W), H, k);
   }
 
   /** Instante y profundidad del punto (clientX, clientY), o null fuera de la franja. */
@@ -86,8 +90,8 @@ export class MModeView {
   }
 }
 
-/** Cursor del cuadro del cine (decisión 80) en una franja: línea vertical con una marca arriba. */
-export function drawCursor(ctx: CanvasRenderingContext2D, x: number, H: number): void {
+/** Cursor del cuadro del cine (decisión 80) en una franja: línea vertical con una marca arriba (en px CSS, k = cssScale). */
+export function drawCursor(ctx: CanvasRenderingContext2D, x: number, H: number, k: number): void {
   ctx.strokeStyle = ctx.fillStyle = '#5cc8ff';
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -95,8 +99,8 @@ export function drawCursor(ctx: CanvasRenderingContext2D, x: number, H: number):
   ctx.lineTo(x, H);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(x - 5, 0);
-  ctx.lineTo(x + 5, 0);
-  ctx.lineTo(x, 6);
+  ctx.moveTo(x - 5 * k, 0);
+  ctx.lineTo(x + 5 * k, 0);
+  ctx.lineTo(x, 6 * k);
   ctx.fill();
 }

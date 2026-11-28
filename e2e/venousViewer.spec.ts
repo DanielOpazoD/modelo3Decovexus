@@ -195,7 +195,10 @@ test('PW comparado: potencia espectral real, ECG, marcas opcionales y escala ind
   await expect(canvases.first()).toHaveAttribute('data-marks', /A/);
   await expect(dialog.locator('.venous-row figcaption span').first()).toContainText(/S -[\d.]+.*D -[\d.]+.*cm\/s · mediana 4 lat\./);
   await expect(dialog.locator('.venous-row figcaption span').nth(1)).toContainText(/Vmáx \+[\d.]+.*Vmín \+[\d.]+/);
-  await expect(dialog.locator('.venous-row figcaption span').nth(1)).toContainText(/PF [\d.]+ % · rango entre 4 latidos [\d.]+–[\d.]+ %/);
+  // La PF de los latidos conserva un decimal con coma y no cruza un umbral por redondeo (decisión 272), como en Medir.
+  await expect(dialog.locator('.venous-row figcaption span').nth(1)).toContainText(
+    /PF (≥ )?\d+,\d % · rango entre 4 latidos \d+,\d–\d+,\d %/,
+  );
   await page.setViewportSize({ width: 1280, height: 1380 });
   await withinFrames(
     page,

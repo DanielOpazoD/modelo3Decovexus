@@ -174,6 +174,43 @@ it('reuses projection work for a new acquired map, while changing its pixels and
   cached.view.dispose();
 });
 
+it('la regla y los rótulos del corte no bajan de 12 px CSS en un carril estrecho (misión, objetivo 6)', () => {
+  const cached = fixture();
+  const ctx = cached.canvas.getContext() as unknown as Record<'fillText' | 'strokeText', (...args: unknown[]) => void> & { font: string };
+  const fonts: string[] = [];
+  for (const name of ['fillText', 'strokeText'] as const) {
+    const draw = ctx[name];
+    ctx[name] = (...args) => (fonts.push(ctx.font), draw(...args));
+  }
+  for (const width of [initial.width, 248]) {
+    const projection = { ...initial, width, height: 240 };
+    fonts.length = 0;
+    cached.paint(projection, mapFor(projection), true);
+    expect(fonts.length, `${width} px`).toBeGreaterThan(3);
+    for (const font of fonts) expect(parseFloat(font.replace(/^bold /, '')), font).toBeGreaterThanOrEqual(12);
+  }
+  cached.view.dispose();
+});
+
+it('las cifras de la regla del corte acaban antes del borde del sector aunque la letra crezca con el carril', () => {
+  const cached = fixture();
+  const ctx = cached.canvas.getContext() as unknown as { font: string };
+  for (const width of [248, 600, 900]) {
+    const projection = { ...initial, width, height: 240 };
+    const { text } = cached.paint(projection, mapFor(projection), false);
+    const px = parseFloat(ctx.font);
+    const tr = { ...CONVEX_C35, curvatureRadius: projection.radius, halfSector: projection.halfSector };
+    const layout = sector.sectorLayout(width, projection.height, tr, projection.depth, 6);
+    expect(text.map(([, label]) => label)).toEqual(['5', '10', '15']);
+    for (const [, label, x] of text as [string, string, number][]) {
+      // ancho holgado de 0,6 em por cifra; el borde izquierdo del sector a esa profundidad
+      const edge = sector.beamToPixel(layout, tr, tr.halfSector, Number(label) * 10).x;
+      expect(x + 0.6 * px * label.length, `${width} px: «${label}»`).toBeLessThanOrEqual(edge);
+    }
+  }
+  cached.view.dispose();
+});
+
 /** Small islands and a hole exercise topology and projection without a multi-MB float fixture. */
 function contourMap(p: Projection): CutMapResponse {
   const map = mapFor(p);

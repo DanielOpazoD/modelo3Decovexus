@@ -16,7 +16,7 @@ import { buildProbePositionCopy } from './probePosition';
 export function buildAcquireTab(ctx: PanelContext, p: HTMLElement): HTMLElement {
   const s = ctx.sim;
   const m = ctx.section(p, 'Modo M', {
-    info: 'Arrastra la línea M sobre la imagen o haz clic donde la quieras: cada cuadro copia esa línea, con los grises de la imagen, a la franja de abajo. La colapsabilidad de la VCI se mide en Medir.',
+    info: 'Arrastra la línea M sobre la imagen, haz clic donde la quieras o, con la imagen enfocada (Tab), muévela con ← →: cada cuadro copia esa línea, con los grises de la imagen, a la franja de abajo. La colapsabilidad de la VCI se mide en Medir.',
   });
   sweepRow(ctx, m);
   buildImageBasics(ctx, ctx.section(p, 'Imagen', { info: 'También con el teclado: [ ] profundidad · − + ganancia.' }));

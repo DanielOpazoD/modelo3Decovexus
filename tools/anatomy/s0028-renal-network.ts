@@ -10,16 +10,20 @@
 import { writeFileSync } from 'node:fs';
 import { Tissue } from '../../src/anatomy/tissues';
 import type { Vec3 } from '../../src/core/vec3';
+import { encodeS0028Nodes } from './s0028Base62';
 
 const DATA = 'src/anatomy/s0028RenalNetworkData.ts';
 const write = (rows: string) =>
   writeFileSync(
     DATA,
     `// Generado por tools/anatomy/s0028-renal-network.ts (decisión 402). No editar a mano.
+import { s0028Nodes } from './people/s0028/base62';
+
+const hundredths = (s: string) => s0028Nodes(s, 100);
 /**
  * Red interlobar del riñón derecho de s0028: [madre (1–3), es la madre (1) o una rama (0), arteria, vena], cada vaso como nodos
- * [x, y, z, r] en mm del mundo en el sentido del flujo (la arteria del seno a la arcuata; la vena, al revés). La vena de una madre
- * conserva sus nodos originales al final. [EXTRAPOLACIÓN PROPIA: la disposición.]
+ * [x, y, z, r] en mm del mundo en el sentido del flujo (la arteria del seno a la arcuata; la vena, al revés), en centésimas de mm.
+ * La vena de una madre conserva sus nodos originales al final, tal cual. [EXTRAPOLACIÓN PROPIA: la disposición.]
  */
 export const S0028_RENAL_NETWORK: readonly (readonly [number, number, readonly (readonly number[])[], readonly (readonly number[])[]])[] = [
 ${rows}
@@ -219,6 +223,7 @@ while (chosen.length < MAX_PAIRS) {
 }
 
 const round = (n: Node4) => n.map((x) => +x.toFixed(2));
+const hundredths = (nodes: Node4[]) => `hundredths('${encodeS0028Nodes(nodes.map(round), 100)}')`;
 const out: string[] = [];
 for (const m of mothers) {
   // la vena madre: sus nodos (del borde al seno) quedan al final; delante, la unión y la arcuata
@@ -228,12 +233,17 @@ for (const m of mothers) {
   const { artery, vein } = pair(path, m.ray.dir, 1, MOTHER_ARTERY_R, MOTHER_VEIN_R);
   // el tramo original de la vena, exacto: mismos nodos
   m.vein.tube.nodes.forEach((n, i) => (vein[3 + i] = [...n.p, vein[3 + i][3]] as Node4));
-  out.push(`  [${m.k}, 1, ${JSON.stringify(artery.map(round))}, ${JSON.stringify(vein.map((n, i) => (i >= 3 ? [...n] : round(n))))}],`);
+  out.push(
+    `  [${m.k}, 1, ${hundredths(artery)}, [...${hundredths(vein.slice(0, 3))}, ${vein
+      .slice(3)
+      .map((n) => JSON.stringify(n))
+      .join(', ')}]],`,
+  );
   console.log(`madre ${m.k}: parénquima ${m.s.rp.toFixed(1)}–${m.s.rc.toFixed(1)} mm, médula ${(100 * m.s.medulla).toFixed(0)} %`);
 }
 for (const c of chosen) {
   const { artery, vein } = pair(branchPath(c.ray, c.s, c.side), c.ray.dir, 0.5, ARTERY_R, VEIN_R);
-  out.push(`  [${c.k}, 0, ${JSON.stringify(artery.map(round))}, ${JSON.stringify(vein.map(round))}],`);
+  out.push(`  [${c.k}, 0, ${hundredths(artery)}, ${hundredths(vein)}],`);
   console.log(
     `par ${c.k} dir ${c.ray.dir.map((x) => x.toFixed(2)).join(',')} parénquima ${c.s.rp.toFixed(1)}–${c.s.rc.toFixed(1)} mm, médula ${(100 * c.s.medulla).toFixed(0)} %`,
   );

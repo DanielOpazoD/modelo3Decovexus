@@ -6,13 +6,15 @@ documento.
 ## Arquitectura git
 
 ```
-main ──●──●──●──●──●──●──►   siempre verde; solo recibe merges de PR con CI en verde
+main ──●──●──●──●──●──●──►   solo recibe merges de PR con CI en verde
         \      /   \    /
          ●──●──     ●──●      ramas cortas: feat/…, fix/…, docs/…, chore/…
 ```
 
-- **`main`** es la única rama larga. Cada commit de `main` pasa `npm run check` y la e2e (CI en
-  `.github/workflows/ci.yml`). No se empuja directamente a `main`.
+- **`main`** es la única rama larga. Solo recibe PR cuyo último commit pasó `npm run check` y la e2e (CI en
+  `.github/workflows/ci.yml`). Cada push a `main` vuelve a lanzar esa CI, pero un push posterior cancela la ejecución en
+  curso (`concurrency`): un commit de `main` sin ejecución propia en verde no está acreditado, y la release la exige
+  (decisión 428). No se empuja directamente a `main`.
 - **Ramas de trabajo** cortas (uno o pocos días) con prefijo por intención: `feat/`, `fix/`,
   `docs/`, `chore/`, `perf/`, `test/`. Ejemplo: `feat/rinon-izquierdo-interlobares`.
 - **Pull request** por cada rama, con la plantilla (`.github/pull_request_template.md`): qué
@@ -140,9 +142,13 @@ cuando son términos técnicos de programación; comentarios en español.
 
 1. Mueve lo de «Sin publicar» del `CHANGELOG.md` a `## [X.Y.Z] — fecha — resumen` y sube `version`
    en `package.json` (PR `chore(release): X.Y.Z`).
-2. Tras el merge: `git tag -a vX.Y.Z -m "…" && git push origin vX.Y.Z`.
-3. `release.yml` comprueba que el tag coincide con `package.json`, construye, adjunta el `dist` en
-   zip y usa la sección del CHANGELOG como notas. La app muestra `vX.Y.Z · commit`.
+2. Con `ci.yml` ya en verde en el commit que la PR dejó en `main` (no en la punta de la rama):
+   `git fetch origin && git tag -a vX.Y.Z -m "…" <ese commit> && git push origin vX.Y.Z`. Si esa CI se canceló
+   (concurrency), `gh workflow run ci.yml --ref vX.Y.Z` y, en verde, se vuelve a ejecutar Release.
+3. `release.yml` exige que el commit etiquetado esté en la historia de primer padre de `main` con una ejecución propia de
+   `ci.yml` en verde (la de la PR no cuenta), comprueba que el tag coincide con `package.json`, construye, adjunta el `dist`
+   en zip y usa la sección del CHANGELOG como notas. Solo el job que crea la release puede escribir, y no ejecuta código
+   del repositorio ni de npm. La app muestra `vX.Y.Z · commit`.
 
 ## Herramientas locales
 

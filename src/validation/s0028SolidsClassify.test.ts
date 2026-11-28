@@ -63,21 +63,42 @@ function fatLook(p: Vec3): Tissue {
 }
 /**
  * Oráculo del interior renal (decisión 341), independiente del lector de la aplicación: expande por su cuenta los tramos
- * del exportador offline, con su propio alfabeto. 0 U, 1 corteza, 2 médula, 3 seno graso, 4 colector, 5 seno sin subclasificar.
- * La primera cifra de un tramo lleva la etiqueta (resto de 6) y la longitud: hasta 47, de 1 a 8 vóxeles; de 48 a 53, 9 más la
- * cifra siguiente; desde 54, 71 más las dos siguientes.
+ * del exportador offline, con su propio alfabeto y su propia tabla de transiciones. 0 U, 1 corteza, 2 médula, 3 seno graso,
+ * 4 colector, 5 seno sin subclasificar. La primera cifra de un tramo da su etiqueta por su orden entre las que siguen a la del
+ * tramo anterior (`AFTER`; la última fila, al empezar la caja) y su longitud: hasta 40, la primera de 1 a 41 vóxeles; de 41 a
+ * 51, la segunda de 1 a 11; de 52 a 56, la de orden cifra − 52 con 1 a 62 vóxeles más que su forma corta (la cifra siguiente),
+ * y desde 57, la de orden cifra − 57 con 63 o más (las tres siguientes).
  */
 const RUN_DIGITS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-const RENAL_LABELS = R.boxes.map((_, i) => {
+const AFTER = [
+  [1, 3, 5, 4, 2],
+  [0, 2, 5, 4, 3],
+  [1, 5, 4, 3, 0],
+  [5, 4, 1, 2, 0],
+  [3, 5, 2, 1, 0],
+  [3, 1, 2, 4, 0],
+  [0, 1, 2, 3, 4],
+];
+function oracleLabels(runs: string): number[] {
   const out: number[] = [],
-    digits = [...RUNS[i]].map((c) => RUN_DIGITS.indexOf(c));
+    digits = [...runs].map((c) => RUN_DIGITS.indexOf(c));
+  let label = 6;
   for (let at = 0; at < digits.length;) {
-    const head = digits[at++],
-      length = head < 48 ? Math.floor(head / 6) + 1 : head < 54 ? 9 + digits[at++] : 71 + 62 * digits[at++] + digits[at++];
-    for (let n = length; n > 0; n--) out.push(head % 6);
+    const head = digits[at++];
+    let rank: number, length: number;
+    if (head < 41) [rank, length] = [0, head + 1];
+    else if (head < 52) [rank, length] = [1, head - 40];
+    else {
+      rank = (head - 52) % 5;
+      const short = [41, 11, 0, 0, 0][rank];
+      length = head < 57 ? short + 1 + digits[at++] : short + 63 + 3844 * digits[at++] + 62 * digits[at++] + digits[at++];
+    }
+    label = AFTER[label][rank];
+    for (let n = length; n > 0; n--) out.push(label);
   }
   return out;
-});
+}
+const RENAL_LABELS = R.boxes.map((_, i) => oracleLabels(RUNS[i]));
 function renalLabel(p: Vec3): number {
   const side = p[0] < 10 ? 0 : 1,
     b = R.boxes[side],
@@ -111,9 +132,9 @@ function brick(name: string, step: number, visit: (p: Vec3, d: number) => void):
       }
 }
 
-it('tramos del interior renal en base 62: los mismos rótulos vóxel a vóxel que con el formato anterior, y los que escribe la herramienta', () => {
+it('tramos del interior renal por orden de transición: los mismos rótulos vóxel a vóxel que con los formatos anteriores, y los que escribe la herramienta', () => {
   // SHA-256 de los rótulos de cada caja expandidos del formato anterior (letra y longitud en base 36, main 7ed9cee): compactar
-  // los tramos no cambió ningún vóxel.
+  // los tramos (base 62 en 6a39c5f; la etiqueta por su orden tras la anterior desde la clausura de 1.148.598 B) no cambió ningún vóxel.
   const before = [
     'ad62d713a0bf327f970f57c261d99d15842b3d40d3551650b4452aeb38d64017',
     '16761886b537405c1c31f12666d06a302018edb2a34f1e2466fc779a252c1a38',
@@ -129,11 +150,41 @@ it('tramos del interior renal en base 62: los mismos rótulos vóxel a vóxel qu
     // Solo cifras y letras: una cadena con otros signos reservaría nombres cortos del GLSL en el build.
     expect(RUNS[i]).toMatch(/^[0-9A-Za-z]+$/);
   });
-  // Longitudes en el límite de cada forma (1 y 8, 9 y 70, 71 y 3914) y tramos que se parten.
-  const edges = [1, 8, 9, 70, 71, 3914, 3915, 9000].flatMap((n, k) => Array<number>(n).fill(S0028_RENAL_CODES[k % 6]));
-  expect(Array.from(s0028RenalRunCodes(encodeS0028RenalRuns(edges), edges.length))).toEqual(edges);
+  // Longitudes en el límite de cada forma (corta, una cifra más, tres más) para la primera etiqueta, la segunda y las demás, tras
+  // cada etiqueta.
+  const edges = (
+    [
+      [0, 41],
+      [1, 42],
+      [0, 103],
+      [1, 104],
+      [2, 11],
+      [1, 1],
+      [2, 12],
+      [1, 1],
+      [2, 73],
+      [1, 1],
+      [2, 74],
+      [3, 1],
+      [5, 1],
+      [0, 1],
+      [5, 62],
+      [0, 63],
+      [4, 1],
+      [0, 5000],
+      [5, 1],
+    ] as const
+  ).flatMap(([label, n]) => Array<number>(n).fill(label));
+  const encoded = encodeS0028RenalRuns(edges.map((label) => S0028_RENAL_CODES[label]));
+  // Cada tramo en su forma: 6 de una cifra, 9 de dos y 4 de cuatro.
+  expect(encoded).toHaveLength(6 + 2 * 9 + 4 * 4);
+  expect(oracleLabels(encoded)).toEqual(edges);
+  expect(Array.from(s0028RenalRunCodes(encoded, edges.length))).toEqual(edges.map((label) => S0028_RENAL_CODES[label]));
   expect(() => s0028RenalRunCodes(RUNS[0].slice(0, -1), RENAL_LABELS[0].length)).toThrow('Interior renal s0028 truncado');
   expect(() => encodeS0028RenalRuns([0, 9, 7])).toThrow('Código de interior renal inválido: 7');
+  // Ninguna caja empieza en el seno sin subclasificar, y un tramo cabe en tres cifras más.
+  expect(() => encodeS0028RenalRuns([S0028_RENAL_CODES[5]])).toThrow('sin código');
+  expect(() => encodeS0028RenalRuns(new Uint8Array(41 + 63 + 62 ** 3))).toThrow(RangeError);
 });
 
 it('riñón s0028: dueño propio con borde D; corteza y médula sólo donde lo dice el rótulo del propio TAC, sin cápsula; dentro, sólo sus vasos renales', () => {
@@ -523,7 +574,8 @@ it('Worker real del corte: el riñón lleva su rótulo (corteza o médula, o «i
   const caliber = query.caliberFor(sample);
   const dirs = cutMapDirections(frame, CONVEX_C35, 64);
   let kidney = 0,
-    labelled = 0;
+    labelled = 0,
+    interlobar = 0;
   for (let v = 0; v < 96; v++)
     for (let u = 0; u < 64; u++) {
       const m = query.deformation.toMaterial(
@@ -536,6 +588,11 @@ it('Worker real del corte: el riñón lleva su rótulo (corteza o médula, o «i
         c.tissue,
         structureIdentity(m, c.tissue, c.interface, scene, c.solids),
       ]);
+      // El canal Int8 nombra el vaso de la CPU: las ramas interlobares (al final de la lista, índices > 127) no se desbordan.
+      if (c.vessel) {
+        expect(scene.vessels[map.vessel[i]]?.id, `${u},${v}`).toBe(c.vessel);
+        if (c.vessel.startsWith('interlobar')) interlobar++;
+      }
       // Oráculo fuente: dentro de la máscara renal derecha y de ninguna otra, el tejido de su rótulo con identidad de riñón.
       if (SOURCES.every((f) => s0028SourceValue(m, f.name).d < 0 === (f.name === 'kidneyRight'))) {
         kidney++;
@@ -555,6 +612,7 @@ it('Worker real del corte: el riñón lleva su rótulo (corteza o médula, o «i
     }
   expect(kidney).toBeGreaterThan(100);
   expect(labelled).toBeGreaterThan(80);
+  expect(interlobar).toBeGreaterThan(0);
 });
 
 it('grasa compatible D: nunca dentro de la lámina subvóxel de aorta, VCI o porta/esplénica (revisión r2)', () => {
@@ -562,18 +620,32 @@ it('grasa compatible D: nunca dentro de la lámina subvóxel de aorta, VCI o por
   const c = at([-16.56, 6.28, -184.82]);
   expect(ids(c)).not.toContain('compatible_fat');
   expect(FATS).not.toContain(c.tissue);
-  let checked = 0;
-  for (const name of ['aorta', 'inferior_vena_cava', 'portal_vein_and_splenic_vein'])
+  // Las dos ramas de la grasa D: la P3 de 1,5 mm de las cajas renales y, fuera de ellas, la del abdomen en celdas de 3 mm.
+  const FAT = {
+    p3: (x: Vec3) => s0028CompatibleFat(x) === true,
+    wide: (x: Vec3) => s0028CompatibleFat(x) === null && wideFatOracle(x),
+  };
+  // Lámina subvóxel: el nodo de grasa y sus 26 vecinos a 0,6 mm. Ningún nodo P3 cae dentro de un vaso (rejillas alineadas) y por
+  // un eje el cero de la trilineal queda a medio vóxel: entran las diagonales. Una celda de 3 mm sí alcanza nodos del vaso.
+  const AROUND: Vec3[] = [];
+  for (const x of [-0.6, 0, 0.6]) for (const y of [-0.6, 0, 0.6]) for (const z of [-0.6, 0, 0.6]) AROUND.push([x, y, z]);
+  for (const name of ['aorta', 'inferior_vena_cava', 'portal_vein_and_splenic_vein']) {
+    const checked = { p3: 0, wide: 0 };
     brick(name, 1, (p, d) => {
-      if (!(d < 0) || s0028CompatibleFat(p) !== true) return;
-      // Nodo de la máscara del vaso con bit de grasa: la grasa no puede ser dueño; a 0,4 vóxel del nodo, tampoco si sigue dentro.
-      for (const q of [p, [p[0] + 0.6, p[1], p[2]], [p[0], p[1] - 0.6, p[2] + 0.6]] as Vec3[]) {
-        if (!(s0028SourceValue(q, name).d < 0)) continue;
-        checked++;
-        expect(ids(at(q)), `${name} ${q.join(',')}`).not.toContain('compatible_fat');
-      }
+      if (!(d < 1.5)) return;
+      for (const kind of ['p3', 'wide'] as const)
+        if (FAT[kind](p))
+          for (const o of AROUND) {
+            const q: Vec3 = [p[0] + o[0], p[1] + o[1], p[2] + o[2]];
+            if (!(s0028SourceValue(q, name).d < 0) || !FAT[kind](q)) continue;
+            checked[kind]++;
+            expect(ids(at(q)), `${name} ${kind} ${q.join(',')}`).not.toContain('compatible_fat');
+          }
     });
-  expect(checked).toBeGreaterThanOrEqual(0);
+    // Medido el 26-11-2026: P3 aorta 109, VCI 278, porta/esplénica 76; 3 mm 698, 237 y 2 (la porta apenas toca esas celdas).
+    expect(checked.p3, name).toBeGreaterThan(50);
+    if (name !== 'portal_vein_and_splenic_vein') expect(checked.wide, name).toBeGreaterThan(100);
+  }
 });
 
 it('quiste renal izquierdo: líquido con dueño E en todos sus nodos; identidades 17/18/19 por literal', () => {
@@ -584,6 +656,8 @@ it('quiste renal izquierdo: líquido con dueño E en todos sus nodos; identidade
     const c = at(p);
     expect(c.tissue, p.join(',')).toBe(Tissue.Fluid);
     expect(c.solids?.owners[0], p.join(',')).toEqual({ id: 'kidney_cyst_left', d, certainty: 'E' });
+    // su líquido es E, no el interior U del riñón
+    expect(STRUCTURE_LABELS[structureIdentity(p, c.tissue, c.interface, scene, c.solids)], p.join(',')).toBe('Riñón izquierdo · quiste');
   });
   expect(nodes).toBeGreaterThan(20);
   // El Worker compara contra esta misma función: aquí los rótulos van contra literales.
@@ -836,6 +910,33 @@ it('el duodeno y el intestino delgado de s0028 llevan contenido, no líquido ane
   expect(seen['delgado GastricContents']).toBeGreaterThan(3000);
   expect(seen['estómago GastricContents']).toBeGreaterThan(2200);
   expect(seen['colon ColonicContents']).toBeGreaterThan(1300);
+});
+
+it('el corte rotula el tubo digestivo de s0028 con los rótulos de su TAC, sin los segmentos de la otra persona', () => {
+  // Oráculo propio: la etiqueta de la fuente (1 estómago, 2 duodeno, 3 intestino delgado y 4 colon). Yeyuno, íleon y los
+  // segmentos del colon son la subclase U de s0028: ninguna muestra los lleva.
+  const own = ['', 'Estómago', 'Duodeno', 'Intestino delgado', 'Colon'];
+  const digestive = new Set<string>([...STRUCTURE_LABELS.slice(8, 17), ...own.slice(1)]);
+  const seen = [0, 0, 0, 0, 0];
+  brick('digestiveTract', 3, (p, d) => {
+    if (!(d < -1)) return;
+    const label = s0028SourceValue(p, 'digestiveTract').label % 128,
+      c = at(p),
+      name = STRUCTURE_LABELS[structureIdentity(p, c.tissue, c.interface, scene, c.solids)];
+    if (c.tissue === Tissue.ColonicContents) expect(name, p.join(',')).toBe('Colon');
+    if (!digestive.has(name)) return;
+    expect(name, `${p.join(',')} rótulo ${label}`).toBe(own[label]);
+    seen[label]++;
+  });
+  // Medido el 26-11-2026 en un nodo de cada tres: 5.655 de estómago, 465 de duodeno, 7.451 de delgado y 3.657 de colon. Antes,
+  // el delgado salía «Yeyuno» y el colon, «Íleon».
+  for (const [label, floor] of [
+    [1, 3500],
+    [2, 300],
+    [3, 5000],
+    [4, 2400],
+  ])
+    expect(seen[label], own[label]).toBeGreaterThan(floor);
 });
 
 it('el programa de s0028 da a la luz del intestino el tejido del estómago; el común conserva el líquido (decisión 384)', () => {

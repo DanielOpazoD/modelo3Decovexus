@@ -283,14 +283,6 @@ bool classifyWall(vec3 m,out Cls c,out float depth,out vec3 tn){
     changed = replace(changed, 'float', 'lungCurtainEdgeMm', 'float lungCurtainEdgeMm(vec3 m){return -1000.0;}');
   if (/bool\s+inLungRecess\s*\(/.test(changed))
     changed = replace(changed, 'bool', 'inLungRecess', 'bool inLungRecess(vec3 m,float insideWall){return s28PT(m,2)<0.0;}');
-  // Reverberación tras gas: pow con base negativa (r < k·gasHit) no está definido en GLSL ES y Metal devuelve NaN desde
-  // el gas hasta el final de la línea. El pulmón y el gas fuente de s0028 lo disparan en casi todas las ventanas; el
-  // cuadrado explícito es la misma gaussiana. El default no se toca (sus programas siguen idénticos a main).
-  changed = changed.replace(
-    /exp\(\s*-0\.5\s*\*\s*pow\(\s*\(r\s*-\s*rk\)\s*\/\s*1\.2\s*,\s*2\.0\s*\)\s*\)/g,
-    'exp(-0.5*((r-rk)/1.2)*((r-rk)/1.2))',
-  );
-  if (/pow\(\s*\(r\s*-\s*rk\)/.test(changed)) throw new Error('Reverberación s0028 con pow de base negativa');
   changed = changed.replace(/if\s*\(\s*c\.tissue\s*==\s*T_LUNG\s*&&\s*\w+\s*<\s*0\.0\s*\)\s*\{/g, (guard) => S0028_PLEURA_GLSL + guard);
   // Fascias continuas (decisión 366): sin la variación de reflectividad a lo largo de la cara, que las dibujaba a trazos sueltos.
   // La función se localiza por su firma y su primera guarda, sin nombrarla (el build renombra el GLSL).

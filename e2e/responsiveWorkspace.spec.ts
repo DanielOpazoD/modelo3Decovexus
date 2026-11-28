@@ -135,9 +135,11 @@ test('el espacio claro conserva mandos, lienzos y adquisición congelada de 320 
         await cases.focus();
         await expect(cases).toBeFocused();
         await expect(cases).toBeInViewport();
-        // El DOM sigue el flujo móvil: cabecera → imagen/cine → modos → consola → anatomía.
+        // El DOM sigue el flujo móvil: cabecera → imagen → cine → modos → consola → anatomía.
         // Tab real detecta saltos al carril del fondo que focus() directo no ve.
         await cases.press('Tab');
+        await expect(page.locator('#overlay')).toBeFocused();
+        await page.locator('#overlay').press('Tab');
         await expect(page.locator('#cine')).toBeFocused();
         await page.locator('#cine').press('Tab');
         await expect(page.locator('#mode-b')).toBeFocused();

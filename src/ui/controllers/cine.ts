@@ -1,5 +1,6 @@
 import type { Simulator } from '../../app/simulator';
 import type { Store } from '../../app/store';
+import { appKey } from '../keyRouting';
 
 /**
  * Cine (decisión 80): con la imagen congelada, el deslizador bajo la imagen, ← → (Inicio y Fin) y la rueda sobre
@@ -61,8 +62,7 @@ export function bindCine(opts: {
   });
   slider.addEventListener('input', () => go(Number(slider.value)));
   window.addEventListener('keydown', (e) => {
-    const tag = (e.target as HTMLElement | null)?.tagName;
-    if (!store.get().frozen || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if (!store.get().frozen || !appKey(e)) return;
     const n = count();
     const next = e.key === 'ArrowLeft' ? pos - 1 : e.key === 'ArrowRight' ? pos + 1 : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : null;
     if (next === null) return;

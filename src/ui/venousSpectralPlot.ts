@@ -28,6 +28,9 @@ export function drawVenousSpectrum(
   const xOf = (t: number) => ((t - start) / span) * plotW;
   const bitmap = ctx.createImageData(plotW, plotH);
   for (let i = 3; i < bitmap.data.length; i += 4) bitmap.data[i] = 255;
+  // Fila → bin una vez por tamaño FFT y gris por bin una vez por columna: los mismos bytes que calcularlos en cada píxel.
+  let rowBin = new Int32Array(0),
+    grey = new Uint8Array(0);
   for (let c = 0; c < columns.length; c++) {
     const col = columns[c];
     if (col.t < start || col.t > end) continue;
@@ -36,9 +39,13 @@ export function drawVenousSpectrum(
     const x1 = Math.min(plotW, Math.ceil(xOf(col.t + hopS / 2)));
     const power = presentationPower(columns, c);
     const n = power.length;
+    if (grey.length !== n) {
+      grey = new Uint8Array(n);
+      rowBin = Int32Array.from({ length: plotH }, (_, y) => spectralBinAt((y + 0.5) / plotH, n, baselineShift, invert));
+    }
+    for (let k = 0; k < n; k++) grey[k] = spectralGrey(power[k], presentation);
     for (let y = 0; y < plotH; y++) {
-      const k = spectralBinAt((y + 0.5) / plotH, n, baselineShift, invert);
-      const value = spectralGrey(power[k], presentation);
+      const value = grey[rowBin[y]];
       for (let x = x0; x < x1; x++) {
         const p = (y * plotW + x) * 4;
         bitmap.data[p] = value;

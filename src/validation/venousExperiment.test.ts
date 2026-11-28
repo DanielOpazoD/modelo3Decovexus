@@ -35,6 +35,7 @@ describe('parámetros de escenario hemodinámico', () => {
 });
 
 import { VenousExperiment } from '../app/venousExperiment';
+import type { PhysiologySample } from '../physiology/engine';
 import { classifyVexusC } from '../vexus/classification';
 import { measurePhysiologyTruth } from '../vexus/measurements';
 describe('ritmo independiente de la congestión', () => {
@@ -107,6 +108,28 @@ describe('escenarios estables derivados de la red', () => {
         expect(x.ready).toBe(true);
         for (const value of Object.values(x.engine.sample.velocities)) expect(Number.isFinite(value)).toBe(true);
       }
+  });
+  it('con la PIA por encima de la presión hepática, el territorio esplácnico-hepático hace cascada como la VCI', () => {
+    // antes, con PAD 5 y PIA 20–25, la presión esplácnica quedaba en 10 mmHg con transmurales de −10 a −18 mmHg
+    // (volúmenes de −320 a −590 mL sin cota) y el caudal portal no cambiaba
+    const run = (pia: number) => {
+      const x = new VenousExperiment({ ...congestionParameters(0), intraAbdominalPressureMmHg: pia }, fixtureInstalled());
+      for (let i = 0; i < 30; i++) x.advance(0);
+      const w = x.engine.samples.filter((s) => s.t >= 24);
+      for (const s of w) {
+        expect(s.pHepatic - s.pAbd, `PIA ${pia}`).toBeGreaterThan(-5);
+        expect(s.pSplanchnic - s.pAbd, `PIA ${pia}`).toBeGreaterThan(-2);
+      }
+      const mean = (get: (s: PhysiologySample) => number) => w.reduce((a, s) => a + get(s), 0) / w.length;
+      return { pSplanchnic: mean((s) => s.pSplanchnic), qPortal: mean((s) => s.qPortal) };
+    };
+    const base = run(5);
+    for (const pia of [20, 25]) {
+      const r = run(pia);
+      expect(r.pSplanchnic, `PIA ${pia}`).toBeGreaterThan(pia - 2);
+      // la presión esplácnica alta frena la entrada arterial: el caudal portal baja por sí solo
+      expect(r.qPortal, `PIA ${pia}`).toBeLessThan(0.95 * base.qPortal);
+    }
   });
 });
 

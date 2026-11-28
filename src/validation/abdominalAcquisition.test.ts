@@ -8,6 +8,7 @@ import { VenousSpectralAcquisition } from '../app/venousSpectral';
 import { NORMAL_ADULT, SEVERE_CONGESTION } from '../cases';
 import { prfFromNyquistCms } from '../core/units';
 import { DEFAULT_BMODE } from '../ultrasound/renderer';
+import { measurePhysiologyTruth } from '../vexus/measurements';
 import { setAbdominalAtlas } from './support/legacyPerson/abdominalAtlas';
 import { setAbdominalBody } from './support/legacyPerson/referenceBody';
 import { setThoracicAtlas } from './support/legacyPerson/thoracicAtlas';
@@ -60,6 +61,82 @@ describe('VExUS through the actual abdominal atlas', () => {
       // La puerta arterial es distinta; no convertir su energía en continuidad venosa.
       expect(Math.hypot(vein!.r - artery!.r, (vein!.theta - artery!.theta) * 130)).toBeGreaterThan(4);
     });
+  // Decisión 447. La interlobar monofásica del grave (verdad S/D 0,22) a ±50 y a ±40, la escala del preajuste: la S medida es la
+  // lectura del suelo de la banda o un bin más (3,1 cm/s) y, con D de 9,7–10,3 cm/s, S/D 0,30–0,32. Con estas semillas salía
+  // «bifásica» con la calidad aprobada (28 de 98 aceptadas a ±50 y 12 de 37 a ±40) y el grado bajaba de 3 a 2.
+  it('severe-congestion: a ±50 y ±40 una S en el suelo de la banda no hace bifásica la vena monofásica', () => {
+    const rows: string[] = [];
+    const patterns: Array<{ scale: number; pattern: string; issue: string | null }> = [];
+    for (const [scale, seed] of [
+      [50, 4],
+      [50, 5],
+      [50, 8],
+      [40, 8],
+      [40, 10],
+      [40, 11],
+    ] as const) {
+      const s = openSession(SEVERE_CONGESTION, 'apnea-expiratory', seed);
+      while (s.engine.clock.t < 30) s.engine.step();
+      const contact = probeAt(s, 'renal');
+      const vein = placeGate(s, contact, ['interlobarVein1', 'interlobarVein2', 'interlobarVein3']);
+      expect(vein, `semilla ${seed}`).not.toBeNull();
+      const m = acquire(s, contact, vein!, 'renal', {
+        prfHz: prfFromNyquistCms(scale, TR.f0Doppler),
+        wallFilterHz: 20,
+        focusMm: 90,
+        seconds: 8,
+      }).captures.at(-1)!.m!;
+      patterns.push({ scale, pattern: m.pattern, issue: m.quality.issue });
+      rows.push(`±${scale} s${seed}: S ${m.sPeak.toFixed(2)} D ${m.dPeak.toFixed(2)} ${m.pattern} ${m.quality.issue}`);
+    }
+    const tag = rows.join('; ');
+    expect(
+      patterns.every((p) => p.issue === null),
+      tag,
+    ).toBe(true);
+    expect(
+      patterns.filter((p) => p.pattern === 'biphasic'),
+      tag,
+    ).toEqual([]);
+    // a ±50 la S no sube del suelo: monofásica; a ±40 sube un bin, y el patrón se decide o queda sin resolver
+    expect(
+      patterns.filter((p) => p.scale === 50).every((p) => p.pattern === 'monophasic'),
+      tag,
+    ).toBe(true);
+    expect(
+      patterns.every((p) => ['monophasic', 'indeterminate'].includes(p.pattern)),
+      tag,
+    ).toBe(true);
+  });
+  // Decisión 447. Tras un diurético la interlobar del grave es bifásica (verdad S/D 0,36 y 0,31), pero a ±80 (bin 1,25 cm/s, suelo
+  // 2,5) la S se lee en el suelo + 1 bin, 3,75 cm/s, con D 10: la misma lectura que la monofásica del grave (semilla 53, 0,22). Con
+  // el intervalo de la S hasta el suelo (0,3·D = 3 > 2,5) las tres salían «monophasic»; hasta el suelo + ½ bin (3,125), sin resolver.
+  it('severe-congestion tras un diurético: a ±80 la bifásica con la S en el suelo + 1 bin no sale monofásica', () => {
+    for (const [ml, seed] of [
+      [300, 0],
+      [200, 14],
+    ] as const) {
+      const s = openSession(SEVERE_CONGESTION, 'apnea-expiratory', seed);
+      s.engine.intervene({ kind: 'diuresis', volumeMl: ml });
+      while (s.engine.clock.t < 30) s.engine.step();
+      const contact = probeAt(s, 'renal');
+      const vein = placeGate(s, contact, ['interlobarVein1', 'interlobarVein2', 'interlobarVein3']);
+      expect(vein, `semilla ${seed}`).not.toBeNull();
+      const m = acquire(s, contact, vein!, 'renal', {
+        prfHz: prfFromNyquistCms(80, TR.f0Doppler),
+        wallFilterHz: 20,
+        focusMm: 90,
+        seconds: 8,
+      }).captures.at(-1)!.m!;
+      const tNow = s.engine.clock.t;
+      const truth = measurePhysiologyTruth(s.engine, { fromT: tNow - 7, toT: tNow });
+      const tag = `${ml} mL, semilla ${seed}: S ${m.sPeak} D ${m.dPeak} ${m.pattern} ${m.quality.issue}; verdad ${truth.renalPattern} ${(truth.rvS / truth.rvD).toFixed(3)}`;
+      expect(truth.renalPattern, tag).toBe('biphasic');
+      expect(m.quality.issue, tag).toBeNull();
+      expect(m.pattern, tag).not.toBe('monophasic');
+      expect(['biphasic', 'indeterminate'], tag).toContain(m.pattern);
+    }
+  });
   for (const patient of [NORMAL_ADULT, SEVERE_CONGESTION])
     it(`${patient.id}: real hepatic, main portal and interlobar venous acoustic gates`, () => {
       const s = openSession(patient, 'apnea-expiratory');

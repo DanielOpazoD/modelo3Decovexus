@@ -31,6 +31,10 @@ export interface PanelContext {
   /** Publica el espectro anotado en el mismo evento que el resultado, sin esperar otra pasada GPU. */
   onCapture?: () => void;
   onAcquisitionConditionsChanged?: (reason: 'respiration' | 'intervention') => boolean;
+  /** La imagen enfocable: Medir le pasa el foco al armar el calibrador, que se mide con el teclado sobre ella. */
+  measureImage?: HTMLElement;
+  /** Suelta el punto pendiente del calibrador (`bindImageClick`). */
+  cancelCaliper?: () => void;
   /** Sección plegable con título dentro de una pestaña; devuelve el cuerpo donde van sus controles. */
   section(parent: HTMLElement, title: string, opts?: SectionOptions): HTMLElement;
   /** Botonera segmentada (una opción activa); devuelve su contenedor. */

@@ -147,7 +147,9 @@ const logit = (y: number): number => Math.log(y / (1 - y));
 /**
  * Compartimento sinusoidal con rigidización: dV/dP = C0·exp(−(P−Pref)/k), es
  * decir V(P) = V0 + C0·k·(1 − exp(−(P−Pref)/k)). Un hígado congestivo distendido
- * transmite más la presión (D.7, «amortiguación portal»); no es un ajuste por caso.
+ * transmite más la presión (D.7, «amortiguación portal»); no es un ajuste por caso. El estado guarda V − V0 referido a
+ * P_ref (V0 = 0), no el volumen total: por debajo de P_ref es negativo y la ley no lo acota; lo acota la cascada de la
+ * salida (P_el > −4 mmHg).
  */
 export function hepaticVolumeFromPressure(pEl: number, k: NetworkParams): number {
   return k.v0Hepatic + k.cHepatic * k.kHepatic * (1 - Math.exp(-(pEl - k.pRefHepatic) / k.kHepatic));
@@ -158,7 +160,6 @@ export function hepaticPressureFromVolume(v: number, k: NetworkParams): number {
   return k.pRefHepatic - k.kHepatic * Math.log(Math.max(1e-6, 1 - x));
 }
 
-/** Diámetro equivalente de la VCI en función de la presión transmural (ley de tubo). */
 /**
  * Escala de radio de las suprahepáticas con la presión hepática (misma ley que usa la
  * anatomía): A ∝ 1 + 0,12·(P − 7), con suelo 0,5.
@@ -178,11 +179,20 @@ export const IVC_CRITICAL_DIAMETER_MM = 8;
 /** Diámetro del lumen residual de una VCI totalmente colapsada (mm). */
 export const IVC_RESIDUAL_LUMEN_MM = 3;
 export const HV_CRITICAL_RADIUS_SCALE = 0.8;
+/**
+ * Cascada abdominal de la salida hepática: con la PIA por encima de la presión hepática, la salida intraabdominal colapsa
+ * como la VCI, desde la transmural de su calibre crítico (8 mm ↔ −3 mmHg), con el área relativa lineal hasta cerrarse
+ * `HV_COLLAPSE_WIDTH_MMHG` más abajo. La presión hepática sigue entonces a la PIA (≈ PIA − 3,6) y la esplácnica con ella
+ * [EXTRAPOLACIÓN PROPIA].
+ */
+export const HV_COLLAPSE_TRANSMURAL_MMHG = -3;
+const HV_COLLAPSE_WIDTH_MMHG = 1;
 export function collapseResistanceFactor(caliberRatio: number): number {
   const r = Math.max(1e-3, caliberRatio);
   return r >= 1 ? 1 : 1 / (r * r * r * r);
 }
 
+/** Diámetro equivalente de la VCI en función de la presión transmural (ley de tubo). */
 export function ivcDiameterFromPtm(ptm: number, k: NetworkParams): number {
   const s = sigmoid((ptm - k.ivcP0) / k.ivcW);
   const residual = k.ivcResidual * Math.max(0, ptm - k.ivcP0);
@@ -204,6 +214,14 @@ export function ivcPtmFromDiameter(d: number, k: NetworkParams): number {
     if (Math.abs(step) < 1e-6) break;
   }
   return ptm;
+}
+
+/**
+ * Factor de un caudal arterial pulsátil, (1 + g·p) / (1 + g·p̄), con p̄ la media móvil causal del pulso (motor,
+ * `PULSE_MEAN_TAU_S`): media 1 a cualquier FC, y p̄ cambia tan despacio frente al latido que conserva el IR.
+ */
+export function pulseGain(gain: number, pulse: number, pulseMean: number): number {
+  return (1 + gain * pulse) / (1 + gain * pulseMean);
 }
 
 export class VenousNetwork {
@@ -241,9 +259,10 @@ export class VenousNetwork {
 
   /**
    * Evalúa presiones y caudales para el estado actual. `pArtMean`: presión arterial media (mmHg); por omisión la
-   * del modelo, y la del lazo cerrado cuando una intervención cambia el gasto (decisión 79).
+   * del modelo, y la del lazo cerrado cuando una intervención cambia el gasto (decisión 79). `pArtPulseMean`: media
+   * móvil causal del pulso; el pulso entra centrado en ella, así que la media de la red no depende de la FC.
    */
-  evaluate(pArtPulseFactor: number, pRa: number, pAbd: number, pArtMean = this.k.pArtMean): NetworkOutputs {
+  evaluate(pArtPulseFactor: number, pRa: number, pAbd: number, pArtMean = this.k.pArtMean, pArtPulseMean = 0): NetworkOutputs {
     const k = this.k;
     const s = this.state;
     const pSplanchnic = (s.vSplanchnic - k.v0Splanchnic) / k.cSplanchnic;
@@ -255,7 +274,7 @@ export class VenousNetwork {
     // Arteria hepática: el caudal arterial es mucho más pulsátil que la
     // presión media (lecho de alta resistencia con distensibilidad aguas
     // arriba); factor 1,1 → IR 0,63 medido sobre la verdad en los tres casos [EXTRAPOLACIÓN PROPIA].
-    const qHepaticArtery = Math.max(0, (pArtMean - pHepatic) / k.rHepaticArtery) * (1 + 1.1 * pArtPulseFactor);
+    const qHepaticArtery = Math.max(0, (pArtMean - pHepatic) / k.rHepaticArtery) * pulseGain(1.1, pArtPulseFactor, pArtPulseMean);
     // El cuerpo inferior está fuera del abdomen: su presión externa es ~0, por lo
     // que una presión abdominal alta reduce su retorno hacia la VCI.
     const qLowerBody = (pLowerBody - pIvc) / k.rLowerBody;
@@ -264,7 +283,7 @@ export class VenousNetwork {
     // un lecho de baja resistencia (factor 0,8 sobre el pulso → IR 0,53 medido; el mismo en los tres
     // casos porque el pulso es multiplicativo y fijo, `fixed-arterial-resistive-index`).
     const pRenal = pAbd + (s.vRenal - k.v0Renal) / k.cRenal;
-    const qRenalArtery = Math.max(0, (pArtMean - pRenal) / k.rRenalArtery) * (1 + 0.8 * pArtPulseFactor);
+    const qRenalArtery = Math.max(0, (pArtMean - pRenal) / k.rRenalArtery) * pulseGain(0.8, pArtPulseFactor, pArtPulseMean);
     return {
       pSplanchnic: pSplanchnic + pAbd,
       pHepatic,
@@ -312,22 +331,27 @@ export class VenousNetwork {
   }
 
   /**
-   * Integra un paso `dt` (s) con Euler semi-implícito y subpasos. `pRa`, `pAbd` y
-   * `pArtMean` son condiciones de contorno del paso; `pArtPulseFactor` ∈ [−0,5, 1].
+   * Integra un paso `dt` (s) con Euler semi-implícito y subpasos. `pRa`, `pAbd`, `pArtMean` y
+   * `pArtPulseMean` son condiciones de contorno del paso; `pArtPulseFactor` ∈ [−0,5, 1].
    */
-  step(dt: number, pArtPulseFactor: number, pRa: number, pAbd: number, pArtMean = this.k.pArtMean): NetworkOutputs {
+  step(dt: number, pArtPulseFactor: number, pRa: number, pAbd: number, pArtMean = this.k.pArtMean, pArtPulseMean = 0): NetworkOutputs {
     const k = this.k;
     const sub = 4;
     const h = dt / sub;
     for (let i = 0; i < sub; i++) {
-      const o = this.evaluate(pArtPulseFactor, pRa, pAbd, pArtMean);
+      const o = this.evaluate(pArtPulseFactor, pRa, pAbd, pArtMean, pArtPulseMean);
       const s = this.state;
-      const pArtIn = pArtMean + k.pArtPulse * pArtPulseFactor;
+      const pArtIn = pArtMean + k.pArtPulse * (pArtPulseFactor - pArtPulseMean);
       const qArtSp = (pArtIn - o.pSplanchnic) / k.rArtSplanchnic;
       const qArtLb = (pArtIn - o.pLowerBody) / k.rArtLowerBody;
       // Ramas con inercia
-      // Resistores de Starling: suprahepáticas y VCI colapsadas limitan su propio caudal
-      const rHv = k.rHepaticVein * collapseResistanceFactor(hvRadiusScaleFromPressure(o.pHepatic) / HV_CRITICAL_RADIUS_SCALE);
+      // Resistores de Starling: suprahepáticas y VCI colapsadas limitan su propio caudal; la salida hepática, además,
+      // por su transmural (cascada abdominal)
+      const hvArea = Math.max(0, 1 + (o.pHepatic - pAbd - HV_COLLAPSE_TRANSMURAL_MMHG) / HV_COLLAPSE_WIDTH_MMHG);
+      const rHv =
+        k.rHepaticVein *
+        collapseResistanceFactor(hvRadiusScaleFromPressure(o.pHepatic) / HV_CRITICAL_RADIUS_SCALE) *
+        collapseResistanceFactor(Math.sqrt(hvArea));
       const rIvc = k.rIvcToRa * collapseResistanceFactor(o.ivcDiameterEqMm / IVC_CRITICAL_DIAMETER_MM);
       // Término resistivo implícito: estable aunque el colapso multiplique R por 10⁴
       // (explícito exigiría h·R/L < 2); para calibres normales difiere en O((h·R/L)²).
@@ -351,7 +375,7 @@ export class VenousNetwork {
       const vIvcMin = (Math.PI * (IVC_RESIDUAL_LUMEN_MM / 2) ** 2 * k.ivcLengthMm) / 1000;
       if (s.vIvc < vIvcMin) s.vIvc = vIvcMin;
     }
-    this.outputs = this.evaluate(pArtPulseFactor, pRa, pAbd, pArtMean);
+    this.outputs = this.evaluate(pArtPulseFactor, pRa, pAbd, pArtMean, pArtPulseMean);
     return this.outputs;
   }
 }

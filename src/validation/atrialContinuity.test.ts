@@ -3,11 +3,11 @@ import { CASES } from '../cases';
 import { RhythmGenerator } from '../physiology/rhythm';
 import { RightAtriumModel, atrialBaselineWeight } from '../physiology/rightAtrium';
 describe('continuidad de presión auricular en límites RR', () => {
-  it('el peso conserva el área RR con intervalos cortos y largos, sin valores negativos', () => {
+  it('el peso conserva el área RR con intervalos cortos y largos, sin valores negativos y sin adelantarse a ninguna R', () => {
     for (const rr of [0.3, 0.43, 0.8, 1.7, 2.5]) {
       const start = 3.127,
-        from = start - 0.02,
-        to = start + rr + 0.02,
+        from = start,
+        to = start + rr + 0.04,
         n = 4000,
         dt = (to - from) / n;
       let integral = 0,
@@ -22,8 +22,11 @@ describe('continuidad de presión auricular en límites RR', () => {
       expect(min).toBeGreaterThanOrEqual(0);
       expect(max).toBeLessThanOrEqual(1);
       expect(integral).toBeCloseTo(rr, 7);
-      expect(atrialBaselineWeight(start - 0.021, start, rr)).toBe(0);
-      expect(atrialBaselineWeight(start + rr + 0.021, start, rr)).toBe(0);
+      // las transiciones empiezan en cada R: antes de la suya el latido no pesa y hasta la siguiente pesa entero
+      // (antes empezaban 20 ms antes de la R siguiente, que en FA nada anuncia)
+      expect(atrialBaselineWeight(start - 1e-9, start, rr)).toBe(0);
+      expect(atrialBaselineWeight(start + rr, start, rr)).toBe(1);
+      expect(atrialBaselineWeight(start + rr + 0.041, start, rr)).toBe(0);
       expect(atrialBaselineWeight(start + rr / 2, start, rr)).toBe(1);
     }
   });
@@ -35,7 +38,7 @@ describe('continuidad de presión auricular en límites RR', () => {
       t += rr;
       return b;
     });
-    for (let x = 0.021; x < t - 0.021; x += 0.0037) {
+    for (let x = 0.041; x < t; x += 0.0037) {
       expect(beats.reduce((sum, b) => sum + atrialBaselineWeight(x, b.t, b.rr), 0)).toBeCloseTo(1, 12);
     }
   });
@@ -44,7 +47,7 @@ describe('continuidad de presión auricular en límites RR', () => {
       start = 1,
       rr = 0.8;
     const f = (t: number) => atrialBaselineWeight(t, start, rr);
-    for (const t of [start - 0.02, start + 0.02, start + rr - 0.02, start + rr + 0.02]) {
+    for (const t of [start, start + 0.04, start + rr, start + rr + 0.04]) {
       expect(Math.abs(f(t + h) - f(t - h))).toBeLessThan(1e-8);
       expect(Math.abs((f(t + h) - f(t)) / h - (f(t) - f(t - h)) / h)).toBeLessThan(0.001);
     }

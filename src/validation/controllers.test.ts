@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Simulator } from '../app/simulator';
 import type { Store } from '../app/store';
 import type { Transducer } from '../probe/probe';
 import { ErrorBudget } from '../app/errorBudget';
-import { HeartRateDisplay, hudText, type HudInput } from '../ui/controllers/hud';
+import { nyquistVelocityCms } from '../core/units';
+import { HeartRateDisplay, hudText, renderLines, type HudInput } from '../ui/controllers/hud';
+import { FakeElement, fakeDocument } from './support/fakeDom';
 
 describe('Presupuesto de errores del bucle', () => {
   it('pasa a degradado con más de 5 fallos en 2 s y se recupera cuando la ventana se vacía', () => {
@@ -30,8 +32,8 @@ describe('HUD', () => {
     speckleReduction: 0,
     harmonic: false,
     mode: 'B',
-    color: { prfHz: 2000, wallFilterHz: 60, frameHz: 8.2 },
-    pw: { prfHz: 2600, gateMm: 4, depthMm: 95, sweepMmS: 50 },
+    color: { enabled: false, prfHz: 2000, wallFilterHz: 60, frameHz: 8.2 },
+    pw: { nyquistCms: nyquistVelocityCms(2600, 2.5e6), gateMm: 4, depthMm: 95, sweepMmS: 50 },
     respVolume: 0.42,
   };
   it('esquinas y chip según el modo, con la frecuencia del transductor', () => {
@@ -39,7 +41,8 @@ describe('HUD', () => {
     expect(b.topRight).toEqual(['FC 70 lpm · Sinusal', '18 cm · 3,5 MHz · G 0 dB · RD 60']);
     expect(b.bottomRight).toEqual(['resp 0.42']);
     expect(b.chip).toBe('');
-    const c = hudText({ ...base, mode: 'color' });
+    const color = { ...base.color, enabled: true };
+    const c = hudText({ ...base, mode: 'color', color });
     expect(c.bottomRight[0]).toMatch(/^Color ±\d+ cm\/s · WF 60 Hz · 8 Hz$/);
     const p = hudText({ ...base, mode: 'pw', frozen: true, atrialFibrillation: true });
     expect(p.topLeft[0]).toBe('Adulto sano · congelada');
@@ -52,11 +55,29 @@ describe('HUD', () => {
     expect(hudText({ ...base, compound: true, speckleReduction: 1 }).topRight[1]).toMatch(/ · CX · RM 1$/);
   });
   it('tríplex (decisión 66): las líneas del color y del PW, y el chip con las dos', () => {
-    const t = hudText({ ...base, mode: 'triplex' });
+    const t = hudText({ ...base, mode: 'triplex', color: { ...base.color, enabled: true } });
     expect(t.bottomRight).toHaveLength(2);
     expect(t.bottomRight[0]).toMatch(/^Color ±\d+ cm\/s · WF 60 Hz · 8 Hz$/);
     expect(t.bottomRight[1]).toMatch(/^PW ±\d+ cm\/s · puerta 4\.0 mm$/);
     expect(t.chip).toMatch(/^±\d+ cm\/s · Puerta 9\.5 cm · 50 mm\/s$/);
+  });
+  it('PW con corrección angular: la cifra rotulada del pie y de la regla (`pwNyquistCms`), no la axial', () => {
+    const angled = { ...base.pw, nyquistCms: nyquistVelocityCms(2597, 2.5e6, Math.PI / 3) };
+    expect(hudText({ ...base, mode: 'pw', pw: angled }).bottomRight).toEqual(['PW ±80 cm/s · puerta 4.0 mm']);
+    // El color no lleva corrección angular: su línea sigue en la escala de la barra.
+    expect(hudText({ ...base, mode: 'triplex', color: { ...base.color, enabled: true }, pw: angled }).bottomRight).toEqual([
+      'Color ±31 cm/s · WF 60 Hz · 8 Hz',
+      'PW ±80 cm/s · puerta 4.0 mm',
+    ]);
+  });
+  it('la línea y la escala del color siguen al cuadro en pantalla, no al modo pedido (congelada, C no las cambia)', () => {
+    const shown = { ...base.color, enabled: true };
+    const bWithColor = hudText({ ...base, frozen: true, color: shown });
+    expect(bWithColor.bottomRight).toEqual(['Color ±31 cm/s · WF 60 Hz · 8 Hz']);
+    expect(bWithColor.chip).toBe('±31 cm/s');
+    const colorWithout = hudText({ ...base, frozen: true, mode: 'color' });
+    expect(colorWithout.bottomRight).toEqual(['resp 0.42']);
+    expect(colorWithout.chip).toBe('');
   });
   it('modo M (decisión 80): su barrido en la esquina y en el chip, sin las líneas del Doppler', () => {
     const m = hudText({ ...base, mode: 'M' });
@@ -73,10 +94,50 @@ describe('HUD', () => {
   });
   it('la FC mostrada se suaviza (media móvil) y arranca en el primer valor', () => {
     const hr = new HeartRateDisplay();
-    expect(hr.update(1, 0.016)).toBe(60);
-    const next = hr.update(0.5, 0.016); // salto a 120 lpm
+    expect(hr.update(0, 1, 0.016)).toBe(60);
+    const next = hr.update(0.5, 1, 0.016); // R a los 0,5 s: un RR vivido de 120 lpm
     expect(next).toBeGreaterThan(60);
     expect(next).toBeLessThan(62);
+  });
+  it('la FC solo usa RR ya vividos: la pausa del latido en curso no la mueve (decisión 442)', () => {
+    const hr = new HeartRateDisplay();
+    hr.update(0, 1, 0.016);
+    for (let i = 0; i < 50; i++) expect(hr.update(0, 0.4, 0.016)).toBe(60); // el RR siguiente aún no ha ocurrido
+    expect(hr.update(1, 0.4, 0.016)).toBe(60); // la R llega al segundo: el vivido es de 1 s
+    expect(hr.update(1.4, 0.4, 0.016)).toBeGreaterThan(60); // ahora sí: 0,4 s vividos
+    const other = hr.update(0.2, 1, 0.016); // otro caso: el reloj vuelve atrás y se conserva el valor
+    expect(other).toBeGreaterThan(60);
+    expect(hr.update(1.2, 1, 0.016)).toBeLessThan(other); // y sigue al primer RR vivido del caso nuevo
+  });
+});
+
+describe('HUD en el DOM: renderLines se llama en cada cuadro', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it('no toca el DOM si el texto no cambia y reescribe solo la línea que cambió', () => {
+    vi.stubGlobal('document', fakeDocument());
+    const host = new FakeElement('div');
+    const render = (lines: string[]) => renderLines(host as unknown as HTMLElement, lines);
+    render(['FC 72 lpm · Sinusal', '18 cm · 3,5 MHz']);
+    const [a, b] = host.children;
+    const [textA, textB] = [a.childNodes[0], b.childNodes[0]];
+    render(['FC 72 lpm · Sinusal', '18 cm · 3,5 MHz']);
+    expect(host.children[0]).toBe(a);
+    expect(host.children[1]).toBe(b);
+    expect(a.childNodes[0]).toBe(textA);
+    expect(b.childNodes[0]).toBe(textB);
+    render(['FC 73 lpm · Sinusal', '18 cm · 3,5 MHz']);
+    expect(host.children[0]).toBe(a);
+    expect(a.childNodes[0]).not.toBe(textA);
+    expect(b.childNodes[0]).toBe(textB);
+    expect(host.textContent).toBe('FC 73 lpm · Sinusal18 cm · 3,5 MHz');
+    render(['x', 'y', 'z']);
+    expect(host.children.map((s) => [s.tagName, s.textContent])).toEqual([
+      ['SPAN', 'x'],
+      ['SPAN', 'y'],
+      ['SPAN', 'z'],
+    ]);
+    render([]);
+    expect(host.children).toHaveLength(0);
   });
 });
 
@@ -93,6 +154,7 @@ describe('Diagnóstico exportable (Fase 3)', () => {
         gpu: { vendor: 'V', renderer: 'R' },
         viewport: { width: 800, height: 600, devicePixelRatio: 2 },
         caseId: 'normal-adult',
+        anatomy: { person: 's0028', frameId: 's0028-audit-las-v1', revision: 's0028-p0e-P0c-direct-v1' },
         simTimeS: 12.5,
         fps: 58,
         gpuMs: { frameMs: 5.7, perPass: { transmission: 1.5, rawField: 4.2 } },
@@ -106,6 +168,11 @@ describe('Diagnóstico exportable (Fase 3)', () => {
     expect(d.errors[0].count).toBe(2);
     expect(d.gpuMs?.perPass).toEqual({ transmission: 1.5, rawField: 4.2 });
     expect((JSON.parse(JSON.stringify(d)) as typeof d).equipment.bmode.depthMm).toBe(180);
+    expect((JSON.parse(JSON.stringify(d)) as typeof d).anatomy).toEqual({
+      person: 's0028',
+      frameId: 's0028-audit-las-v1',
+      revision: 's0028-p0e-P0c-direct-v1',
+    });
     expect(diagnosticsFileName(d)).toBe('vexus-diagnostico-0.4.0-abc1234-2026-09-22T10-11-12-345Z.json');
     expect(buildLabel('0.4.0', 'abc1234')).toBe('v0.4.0 · abc1234');
     // el lazo cerrado y las intervenciones docentes viajan en el diagnóstico (decisión 79)
@@ -153,9 +220,10 @@ describe('Línea M: arrastre sobre la imagen que se ve', () => {
     const placed: number[] = [];
     bindImageClick({
       host: host as unknown as HTMLElement,
+      keys: host as unknown as HTMLElement,
       canvas: canvas as unknown as HTMLCanvasElement,
       getSim: () => sim as unknown as Simulator,
-      store: { get: () => ({ tool: 'none', mode: 'M' }) } as unknown as Store,
+      store: { get: () => ({ tool: 'none', mode: 'M' }), subscribe: () => () => {} } as unknown as Store,
       setIvcCaliper: () => {},
       dispatch: (cmd) => {
         if (cmd.type === 'placeMLine') placed.push(cmd.theta);
@@ -179,5 +247,27 @@ describe('Línea M: arrastre sobre la imagen que se ve', () => {
     fire('pointermove', event(-0.11, 100));
     expect(placed).toHaveLength(1);
     expect(placed[0]).toBeCloseTo(-0.11, 6);
+  });
+});
+
+describe('Aviso sobre la imagen', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it('se anuncia (role=alert) al aparecer y al cambiar de texto; repetir el mismo texto no lo reescribe', async () => {
+    vi.stubGlobal('document', fakeDocument());
+    const { Banner } = await import('../ui/controllers/banner');
+    const host = new FakeElement('div');
+    const banner = new Banner(host as unknown as HTMLElement);
+    banner.show('Contexto GPU perdido: recuperando…');
+    const [el] = host.children;
+    expect(el.getAttribute('role')).toBe('alert');
+    const text = el.childNodes[0];
+    // el bucle degradado repite el mismo aviso cada segundo: no se vuelve a anunciar
+    banner.show('Contexto GPU perdido: recuperando…');
+    expect(el.childNodes[0]).toBe(text);
+    banner.show('No se pudo recuperar la GPU: x');
+    expect(host.children).toEqual([el]);
+    expect(el.textContent).toBe('No se pudo recuperar la GPU: x');
+    banner.hide();
+    expect(host.children).toEqual([]);
   });
 });

@@ -66,7 +66,10 @@ export function createCutMapWorker(post: (message: CutMapReply, transfer?: Trans
         person = installed;
         installing = null;
         query = new AnatomyQuery(scene);
-        vesselIndex = new Map(scene.vessels.map((v, i) => [v.id, i]));
+        // Primera aparición de cada id: la madre (invariante 3), antes que sus ramas; su índice cabe en el canal Int8.
+        vesselIndex = new Map();
+        for (const [i, v] of scene.vessels.entries()) if (!vesselIndex.has(v.id)) vesselIndex.set(v.id, i);
+        if (Math.max(...vesselIndex.values()) > 127) throw new Error('Índice de vaso fuera del canal Int8 del corte');
         initializing = false;
         post({ type: 'ready', id: msg.id, epoch, assetKey, identity: installed.identity });
         const latest = pending as CutMapRequest | null;

@@ -8,6 +8,7 @@ import { VESSEL_META, type VesselId, type VesselSystem } from '../physiology/ves
 import type { ProbeFrame, ProbePose, Transducer } from '../probe/probe';
 import { beamToPixel, pixelToBeam, sectorLayout } from '../ultrasound/sectorGeometry';
 import { maskContours } from './anatomyContour';
+import { cssScale, labelFont, MIN_TEXT_PX } from './canvasText';
 import type { CutMapError, CutMapInit, CutMapProgress, CutMapReady, CutMapRequest, CutMapResponse } from './cutMapWorker';
 import cutMapWorkerUrl from './cutMapWorkerUrl';
 import { RequestWatchdog } from './requestWatchdog';
@@ -291,10 +292,11 @@ export class CutMapView {
   };
 
   private onKey = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      this.clearSelection();
-    }
+    // Esc quita lo fijado o la guía a la vista y no sigue hasta los atajos, que cancelarían la herramienta armada
+    if (event.key !== 'Escape' || (!this.pinned && this.tooltip.hidden)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.clearSelection();
   };
 
   private identityUnderPointer(): { key: string; label: string } | null {
@@ -687,20 +689,23 @@ export class CutMapView {
       }
     }
     ctx.putImageData(this.img, 0, 0);
-    // regla de profundidad
+    // regla de profundidad: crece con el carril (W / k px CSS), nunca bajo 12 px CSS
+    const k = cssScale(this.canvas);
+    const rulerPx = Math.max(MIN_TEXT_PX, Math.round((10 * W) / (300 * k)));
     ctx.fillStyle = '#e0a33b';
-    ctx.font = `${Math.round(10 * (W / 300))}px sans-serif`;
+    ctx.font = labelFont(k, rulerPx);
     for (let cm = 5; cm <= depth / 10; cm += 5) {
       const rr = cm * 10;
       const { x, y } = beamToPixel(layout, tr, tr.halfSector, rr);
-      ctx.fillText(String(cm), Math.max(2, x - 16), y);
+      // la separación crece con la letra (16 px a 12 px): la cifra acaba antes del borde del sector
+      ctx.fillText(String(cm), Math.max(2, x - (16 * rulerPx * k) / MIN_TEXT_PX), y);
     }
     this.updateSelection(sim);
     this.paintContour(ctx, sim, false);
     this.setUnavailable(false);
     // rótulos (el alumno no los ve: identificar la estructura es parte del examen)
     if (!acc) return;
-    ctx.font = `bold ${Math.round(11 * (W / 300))}px sans-serif`;
+    ctx.font = `bold ${labelFont(k, Math.round((11 * W) / (300 * k)))}`;
     ctx.textAlign = 'center';
     ctx.lineWidth = 3;
     const minArea = W * H * 0.004;

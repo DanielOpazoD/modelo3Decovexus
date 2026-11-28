@@ -75,6 +75,14 @@ export const s0028Solids: MutantManifest = {
       tests: ['src/validation/s0028SolidsClassify.test.ts'],
     },
     {
+      name: 'grasa-amplia-en-vasos',
+      origin: 'revisión r3 (decisión 440)',
+      breaks: 'La grasa del abdomen a 3 mm reclama el interior de aorta, VCI y porta/esplénica (sale grasa dentro del vaso).',
+      from: 's0028WideFat(p) && !insideVessel(p)',
+      to: 's0028WideFat(p)',
+      tests: ['src/validation/s0028SolidsClassify.test.ts'],
+    },
+    {
       name: 'nearest-por-suelo',
       origin: 'revisión adversarial de #331, r2c (decisión 321)',
       breaks: 'La grasa lee el vóxel por suelo en vez del nearest: medio vóxel de desplazamiento en las mitades de celda.',

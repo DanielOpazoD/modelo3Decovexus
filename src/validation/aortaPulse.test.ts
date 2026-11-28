@@ -9,7 +9,7 @@ import { AnatomyScene } from './support/legacyPerson/scene';
 // centros mecánicos tras R, no fase de UI ni máximo futuro de cada latido.
 function pulseAt(t: number, beats: readonly Beat[]): number {
   return beats.reduce((p, b) => {
-    const s = Math.sqrt(b.rr / 0.8);
+    const s = b.systoleScale;
     return p + gauss(t - b.tR - 0.12 * s, 0.06 * s) + 0.4 * gauss(t - b.tR - 0.3 * s, 0.09 * s);
   }, -0.3);
 }
@@ -43,9 +43,9 @@ describe('calibre aórtico arterial, decisión 314', () => {
     for (const b of beats) {
       const inBeat = samples.filter((s) => s.t >= b.tR && s.t < b.tR + Math.min(b.rr, 0.4));
       const peak = inBeat.reduce((a, c) => (a.aortaRadiusScale > c.aortaRadiusScale ? a : c));
-      // Ventana mecánica histórica, ± un paso: excluye R y el retraso duplicado.
-      expect((peak.t - b.tR) / Math.sqrt(b.rr / 0.8)).toBeGreaterThan(0.115);
-      expect((peak.t - b.tR) / Math.sqrt(b.rr / 0.8)).toBeLessThan(0.14);
+      // Ventana mecánica histórica, ± un paso: excluye R y el retraso duplicado; la sístole escala con el RR previo.
+      expect((peak.t - b.tR) / b.systoleScale).toBeGreaterThan(0.115);
+      expect((peak.t - b.tR) / b.systoleScale).toBeLessThan(0.14);
     }
   });
 

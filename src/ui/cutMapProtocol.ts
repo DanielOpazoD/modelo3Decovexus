@@ -41,8 +41,8 @@ export interface CutMapResponse {
   /** Órgano del clasificador común, independiente del tejido y vaso. */
   structure: Uint8Array;
   /**
-   * Índice de vaso en `scene.vessels` o −1; en la sangre de una cavidad del corazón (decisión 85), −2 − su índice en
-   * `HEART_CHAMBER_IDS` (VI, VD, AD, AI).
+   * Índice del vaso madre en `scene.vessels` (primera aparición de su id) o −1; en la sangre de una cavidad del corazón
+   * (decisión 85), −2 − su índice en `HEART_CHAMBER_IDS` (VI, VD, AD, AI).
    */
   vessel: Int8Array;
 }

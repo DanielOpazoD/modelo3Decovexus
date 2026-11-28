@@ -5,9 +5,18 @@ import type { EquipmentSettings } from './simulator';
 
 /** Mandos actuales, no una exportación del cuadro de cine ni del historial fisiológico. */
 export interface ProbePositionInput {
-  source: { version: string; commit: string; buildTime: string; anatomy: 'atlas' | 'reference' | 'legacy'; transducer: string };
+  /** `atlas` es solo `?abdomen=atlas`; `revision`, la de la persona instalada. */
+  source: {
+    version: string;
+    commit: string;
+    buildTime: string;
+    anatomy: 's0028' | 'atlas' | 'reference' | 'legacy';
+    revision: string;
+    transducer: string;
+  };
   pose: ProbePose;
   equipment: EquipmentSettings;
+  /** Con `?alumno` y sin docente, `caseId` es el rótulo ciego («Paciente B»), no el id. */
   context: { caseId: string; seed: number; respiration: RespiratoryPattern; timeS: number; mode: ImagingMode; frozen: boolean };
 }
 
@@ -17,7 +26,7 @@ export function probePositionText(input: ProbePositionInput): string {
   const degrees = 180 / Math.PI;
   return JSON.stringify(
     {
-      format: 'vexus-probe-position/1',
+      format: 'vexus-probe-position/2',
       scope: 'current-probe-and-equipment',
       units: { poseAngles: 'rad', poseDistances: 'mm' },
       ...input,

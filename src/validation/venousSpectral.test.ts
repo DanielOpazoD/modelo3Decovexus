@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { loadS0028 } from '../../tools/anatomy/s0028Windows';
 import { AnatomyQuery } from '../anatomy/query';
 import { maxPrfForDepth } from '../app/equipment';
 import { VenousSpectralAcquisition } from '../app/venousSpectral';
@@ -140,6 +141,29 @@ describe('PW venoso virtual: IQ espacial y reloj compartido', () => {
     );
     expect(a.chains.map((c) => c.wallFilter.cutoffHz)).toEqual([25, 5, 15]);
     expect(a.chains[1].wallFilter.magnitude(10)).toBeGreaterThan(a.chains[0].wallFilter.magnitude(10));
+  });
+
+  it('la puerta virtual no depende de la profundidad B del alumno: la ventana acústica llega hasta su búsqueda', () => {
+    const person = loadS0028();
+    const gateAt = (window: number, depthMm: number) => {
+      const bmode = { ...DEFAULT_BMODE, depthMm }; // la del alumno, como `sim.bmode`
+      const a = new VenousSpectralAcquisition(
+        new AnatomyQuery(person.scene),
+        person.sample,
+        47,
+        NORMAL_ADULT,
+        bmode,
+        'venous',
+        'standard',
+        window,
+      );
+      return { r: a.gateDepthsMm[0], center: a.gate(0, person.sample).center, transmission: a.gateInfo[0].transmission };
+    };
+    // Con 100 mm la porta se iba a 136,5 mm (−3 dB) en lugar de 118,5: el peso repetía la transmisión de 102,5 mm.
+    for (const window of [0, 1, 2]) {
+      const reference = gateAt(window, DEFAULT_BMODE.depthMm);
+      for (const depthMm of [60, 100]) expect(gateAt(window, depthMm), `${window} · ${depthMm} mm`).toEqual(reference);
+    }
   });
 
   it('sitúa tres puertas reales en los vasos declarados sin cambiar la anatomía del alumno', () => {

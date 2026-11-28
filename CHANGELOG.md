@@ -5,6 +5,76 @@ detalles de cada decisión están en `docs/DECISIONS.md` (número entre parénte
 
 ## [Sin publicar]
 
+- Medición renal: una interlobar plegada entera por el Nyquist se informa como aliasing y no como medible con la D recortada (448)
+
+- Medición renal: una S en el suelo de la banda ya no hace «bifásica» una interlobar monofásica (el grave bajaba de VExUS 3 a 2 de ±40 a ±80 cm/s); si la lectura no resuelve la fase, lo dice (447)
+
+- Medición renal: la interlobar monofásica en apnea ya no sale «intermitente» por desvanecimientos del moteado más breves que la ventana de análisis (446)
+
+- HUD: la FC del monitor promedia los RR ya vividos, no el del latido en curso (442)
+
+- Imagen: con la sonda quieta y respiración profunda, s0028 rehace la rejilla de tubos ≤ 10 veces por respiración (antes hasta 31); la imagen no cambia (445)
+
+- HUD y Medir: la línea de color rotula también la cadencia del cuadro en pantalla, congelada y en cine; la cruz del calibrador mide 12 px CSS a cualquier DPR y el primer punto de ⌘/Ctrl+clic se ve (444)
+
+- Medición: una porta con el valle en la línea de base que sale de golpe ya no se acepta como PF exacta (era leve con verdad 100 %); el veredicto en el suelo + 1 bin no depende del redondeo; la cota dice «el valle cae en el filtro de pared» (443)
+
+- Fisiología: nada del latido depende de la pausa que viene: la R siguiente apaga el descenso y, la AD y el pulso arterial se centran sin el RR propio y los ventrículos se llenan según el ciclo previo (442)
+
+- Bundle: la clausura JS de s0028 recupera 8,6 KiB compactando sus datos generados, sin cambiar ningún resultado ni subir su techo (441)
+
+- Pruebas: cuatro pruebas que no comprobaban su título ahora lo comprueban (grasa D en los vasos, solapes arteria–vena, reverberación, caso cargado en las e2e de equivalencia) (440)
+
+- Medida de coste: `frameCostMs` compara con la misma pasada sin repetir y el tiempo de GPU solo suma las pasadas vigentes (439)
+
+- Imagen: la persistencia no mezcla el abanico de otra profundidad ni el negro de una historia recién creada (438); la TGC usa `TGC_BANDS` también en GLSL
+
+- Comparación venosa (PW): la puerta virtual y su ventana acústica ya no dependen de la profundidad B del alumno (437)
+
+- Doppler: pulsar «Escala» en el techo físico ya no deja pedido el tope del mando; al relajar el límite la escala no sube sola (436)
+
+- Medir y HUD: repetir la VCI y cancelar conserva la medida anterior, Esc suelta el punto a medio poner y, congelada o en cine, el HUD rotula el cuadro mostrado (435)
+
+- Fisiología: con la PIA por encima de la presión hepática la salida hepática hace cascada y ningún volumen se vuelve negativo sin cota (434)
+
+- Medición: la porta con el valle en la línea de base y la banda débil vuelve a ser cota inferior, no una PF exacta a 20 puntos (433)
+
+- Docente: pulsar la PEEP ya activa no archiva las mediciones; la verdad del modo M sigue al modo docente; el patrón leve se rotula «leve (S≤D)» y la subcostal de s0028 describe su propia pose
+
+- Documentación: estado de imagen y arquitectura (s0028 dibuja B y A0 por etapas en cualquier GPU, 406), caja portal del atlas, casilla Docente del build publicado (`?docente`), `prescribed-ra-contour` y lo que acredita la CI de main
+
+- Sonda: con la imagen congelada la animación hacia una ventana se pausa y sigue al descongelar, sin salto; el preajuste de cada ventana deja la TGC con sus 8 bandas (432)
+
+- Comparación venosa (PW): la IQ ya no se atrasa ni se reinicia en equipos lentos y la medición deja de decir «pocos latidos» por falta de CPU; el HUD y el abanico 3D dejan de rehacer trabajo por cuadro (431)
+
+- Medir y HUD: S y D de la VSH muestran una cifra más cuando la décima las iguala, la línea de color del HUD describe el cuadro en pantalla, los deslizadores rotulan el valor alcanzado y Esc sobre el corte no cancela la herramienta (430)
+
+- Medir: el calibrador de la VCI mide en un solo cuadro; «Capturar» antes del primer latido conserva la captura anterior y pide esperar; la porta con la puerta en otro vaso dice «vaso equivocado» aunque no haya traza (429)
+
+- Herramientas: la release solo se publica desde un commit de main con su CI en verde, y el único job con permiso de escritura no ejecuta código del repositorio ni de npm (428)
+
+- Anatomía s0028: la VCI lleva el radio de referencia hasta z = 5 (el alisado del eje borraba ese nodo y el sano medía 20,5 mm a 1,25 cm de la aurícula); el corte rotula su tubo digestivo con los rótulos de su TAC (427)
+
+- Modo alumno: «Copiar posición» no revela el caso y la posición copiada distingue la persona s0028 del atlas (426)
+
+- Textos: la nota de la trampa PIA sitúa la suprahepática bajo el diafragma, la viñeta del fallo derecho refractario ya no cita una ascitis que la imagen no tiene y las tarjetas portal, intercostal y renal de s0028 describen sus propias poses
+
+- Accesibilidad: el protocolo VExUS se completa con el teclado (Tab hasta la imagen, flechas e Intro mueven y fijan la cruz del calibrador, la puerta PW, la caja de color o la línea M); los atajos y la sonda ya no reaccionan a Ctrl/⌘ ni a campos de texto, y los avisos se anuncian (425)
+
+- Doppler: con corrección angular, el HUD, el mando «Escala», el pie y la regla muestran la misma escala PW (424)
+
+- Interfaz: el texto y las marcas de los lienzos se ven a 12 px CSS o más también en pantallas 2×; en móvil el pie PW se parte sin perder θ ni INV (423)
+
+- Sesión: congelar y cambiar de caso, o reiniciar al paciente, ya no deja medir la VCI sobre la imagen del paciente anterior; el navegador 3D se recupera tras perder su contexto WebGL y el fallo queda registrado (422)
+
+- Imagen: en inspiración profunda o apnea inspiratoria la GPU ya no descarta ramas portales que la CPU y la puerta PW ven (421)
+
+- Fisiología: en FA la sístole sigue al RR previo (ningún latido «adivina» la pausa siguiente), los ventrículos pierden la patada auricular y el pulso arterial entra centrado en la red: los caudales medios ya no cambian solo con la FC (420)
+
+- Medición: la VCI, la PF y las velocidades nunca se redondean a través de un umbral ni muestran «NaN»; la porta grave con el valle en el filtro de pared se informa como «PF ≥ X %» en vez de un «no medible» imposible de resolver (419)
+
+- Mapa de corte s0028: las interlobares del riñón derecho recuperan su identidad arterial o venosa (el índice de vaso ya no se desborda)
+
 - Anatomía s0028: la VCI tiene calibre regular donde se mide; en la imagen mide lo que la fisiología y el sano ya no pasa de 2 cm junto a la aurícula (396)
 
 - Anatomía s0028: sus interlobares van hacia el borde convexo y la ventana renal ofrece una a lo largo del haz; la cadena VExUS da la renal y el grado de la verdad en los ocho casos (395)

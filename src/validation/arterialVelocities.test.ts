@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { AnatomyQuery } from '../anatomy/query';
-import { NORMAL_ADULT, SEVERE_CONGESTION } from '../cases';
-import { PhysiologyEngine } from '../physiology/engine';
+import { AF_MODERATE_CONGESTION, NORMAL_ADULT, SEVERE_CONGESTION } from '../cases';
+import { AORTA_MECHANICS, arterialCaliberAt } from '../physiology/arterialCaliber';
+import { PhysiologyEngine, type PhysiologySample } from '../physiology/engine';
 import type { VesselId } from '../physiology/vessels';
 import { AnatomyScene } from './support/legacyPerson/scene';
 
@@ -102,7 +103,8 @@ describe('arterias del adulto sano frente a valores publicados', () => {
     }
   });
 
-  it.each([50, 120])('el Doppler renal conserva el caudal medio de la red a %i lpm, a ±2 %%', (heartRateBpm) => {
+  // con el pulso centrado en su media; antes, sin centrar, se separaba hasta un 1,5 % y la cota era ±2 %
+  it.each([50, 120])('el Doppler renal conserva el caudal medio de la red a %i lpm, a ±0,5 %%', (heartRateBpm) => {
     const e = new PhysiologyEngine({ ...patient, heartRateBpm }, areas);
     for (let i = 0; i < 2500; i++) e.step();
     let network = 0;
@@ -112,8 +114,111 @@ describe('arterias del adulto sano frente a valores publicados', () => {
       network += s.qRenalArtery / 2;
       shown += (s.velocities.renalArteryRight * areas.renalArteryRight) / 1000;
     }
-    expect(shown / network).toBeGreaterThan(0.98);
-    expect(shown / network).toBeLessThan(1.02);
+    expect(shown / network).toBeGreaterThan(0.995);
+    expect(shown / network).toBeLessThan(1.005);
+  });
+
+  it.each([
+    ['50 lpm', { ...NORMAL_ADULT, heartRateBpm: 50 }],
+    ['70 lpm', NORMAL_ADULT],
+    ['120 lpm', { ...NORMAL_ADULT, heartRateBpm: 120 }],
+    ['FA', AF_MODERATE_CONGESTION],
+  ] as const)('%s: la media causal que acompaña al pulso es la suya sobre latidos enteros', (_, base) => {
+    // antes, la media de cada latido sobre su RR, que exigía la R siguiente; ahora la media móvil causal del motor
+    const e = new PhysiologyEngine(base, areas);
+    const pulseMean = () => (e as unknown as { pulseMean: number }).pulseMean;
+    let index = -1;
+    let start = 0;
+    let pending = 0;
+    let pendingN = 0;
+    let sum = 0;
+    let n = 0;
+    while (e.clock.t < 65) {
+      const s = e.step();
+      if (s.beatIndex !== index) {
+        if (start > 5) {
+          sum += pending;
+          n += pendingN;
+        }
+        [index, start, pending, pendingN] = [s.beatIndex, s.t, 0, 0];
+      }
+      pending += arterialCaliberAt({ t: s.t, beats: e.rhythm.beatsAround(s.t), mechanics: AORTA_MECHANICS }).pulse - pulseMean();
+      pendingN++;
+    }
+    // el pulso crudo no tiene media cero fuera de ≈ 75 lpm (−0,054 a 50 lpm, +0,080 a 120); lo que entra en la red es p − p̄
+    expect(n).toBeGreaterThan(10000);
+    expect(Math.abs(sum / n)).toBeLessThan(1e-3);
+  });
+
+  it('la FC sola no mueve los caudales medios de la red: el pulso entra en ella centrado en su media', () => {
+    const run = (heartRateBpm: number) => {
+      const e = new PhysiologyEngine({ ...patient, heartRateBpm, rrVariability: 0 }, areas, { historySeconds: 40 });
+      while (e.clock.t < 40) e.step();
+      const beats = e.rhythm.beatsBetween(10, 40);
+      const t0 = beats[0].tR;
+      const t1 = beats.at(-1)!.tR + beats.at(-1)!.rr;
+      const w = e.samples.filter((s) => s.t >= t0 && s.t < t1);
+      const mean = (get: (s: PhysiologySample) => number) => w.reduce((a, s) => a + get(s), 0) / w.length;
+      return {
+        hepaticArtery: mean((s) => s.qHepaticArtery),
+        renalArtery: mean((s) => s.qRenalArtery),
+        venousReturn: mean((s) => s.qHepaticVein + s.qIvcToRa) / e.circulation.state.cardiacOutputMlS,
+      };
+    };
+    const ref = run(70);
+    // antes: arteria hepática −5 % y +10 %, retorno venoso / gasto del lazo 0,999 y 1,054 frente a 1,017
+    for (const bpm of [50, 120]) {
+      const r = run(bpm);
+      expect(Math.abs(r.hepaticArtery / ref.hepaticArtery - 1), `${bpm} lpm`).toBeLessThan(0.01);
+      expect(Math.abs(r.renalArtery / ref.renalArtery - 1), `${bpm} lpm`).toBeLessThan(0.01);
+      expect(Math.abs(r.venousReturn - ref.venousReturn), `${bpm} lpm`).toBeLessThan(0.01);
+    }
+  });
+
+  it('FA: el pico sistólico de la hepática y de la renal no sigue a la pausa que viene', () => {
+    const p = { ...AF_MODERATE_CONGESTION, respiratoryPattern: 'apnea-expiratory' as const };
+    const e = new PhysiologyEngine(p, new AnatomyScene(p).vesselAreas());
+    const beats = new Map<number, { rr: number; hepatic: number; renal: number }>();
+    while (e.clock.t < 70) {
+      const s = e.step();
+      if (s.t < 10) continue;
+      const b = beats.get(s.beatIndex) ?? { rr: s.rr, hepatic: -Infinity, renal: -Infinity };
+      b.hepatic = Math.max(b.hepatic, s.velocities.hepaticArtery);
+      b.renal = Math.max(b.renal, s.velocities.renalArteryRight);
+      beats.set(s.beatIndex, b);
+    }
+    const rows = [...beats.values()].slice(1, -1);
+    const corr = (x: number[], y: number[]) => {
+      const mx = x.reduce((a, v) => a + v, 0) / x.length;
+      const my = y.reduce((a, v) => a + v, 0) / y.length;
+      let sxy = 0;
+      let sxx = 0;
+      let syy = 0;
+      for (let i = 0; i < x.length; i++) {
+        sxy += (x[i] - mx) * (y[i] - my);
+        sxx += (x[i] - mx) ** 2;
+        syy += (y[i] - my) ** 2;
+      }
+      return sxy / Math.sqrt(sxx * syy);
+    };
+    expect(rows.length).toBeGreaterThan(80);
+    // con la media de cada latido sobre su RR, 0,87: el latido que precedía a una pausa larga daba un 25–35 % más
+    expect(
+      Math.abs(
+        corr(
+          rows.map((r) => r.hepatic),
+          rows.map((r) => r.rr),
+        ),
+      ),
+    ).toBeLessThan(0.3);
+    expect(
+      Math.abs(
+        corr(
+          rows.map((r) => r.renal),
+          rows.map((r) => r.rr),
+        ),
+      ),
+    ).toBeLessThan(0.3);
   });
 
   it.each([NORMAL_ADULT, SEVERE_CONGESTION])('$id: el campo de velocidades da a las arterias el máximo de su perfil en el eje', (base) => {

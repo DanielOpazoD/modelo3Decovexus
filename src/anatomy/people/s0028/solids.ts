@@ -5,11 +5,12 @@ import type { PersonAssets } from '../../personAssets';
 import { S0028_RENAL_INTERIOR as R } from '../../s0028RenalInteriorData';
 import { S0028_RENAL_INTERIOR_RUNS } from '../../s0028RenalInteriorRuns';
 import { sourceDistance, sourceDistanceReader, sourceLabel } from '../../sourceVolume';
+import { base62Digit } from './base62';
 import { S0028_BUNDLE as B } from './descriptor';
 import { buildS0028FieldMask, s0028FieldsNear, type S0028FieldsNear } from './fieldMask';
 import { S0028_MASK_FIELDS } from './fieldMaskFields';
 import { S0028_GALLBLADDER } from './gallbladder';
-import { intHalf, s0028FatPages, s0028RenalPages, s0028WideFatPages } from './solidsData';
+import { intHalf, s0028FatPages, s0028PageUploads, s0028RenalPages, s0028WideFatPages } from './solidsData';
 import type { S0028WallSample } from './wall';
 /** O máscara fuente automática; D derivación reproducible; E hipótesis acotada; U desconocido (decisión 321). */
 export type S0028Certainty = 'O' | 'D' | 'E' | 'U';
@@ -64,24 +65,33 @@ export const S0028_RENAL_LABEL = { U: 0, cortex: 1, medulla: 2, sinusFat: 3, col
 /** Código por vóxel de cada etiqueta (U, corteza, médula, seno graso, colector, seno sin subclasificar): con el bit 3, hipótesis E. */
 export const S0028_RENAL_CODES: readonly number[] = [0, 9, 10, 3, 4, 13];
 /**
- * Código por vóxel (xyz, z rápida) de los tramos de una caja del interior renal. Cada tramo empieza por una cifra en base 62
- * (0–9, A–Z, a–z): su resto de 6 es la etiqueta y su cociente da la longitud (0–7: de 1 a 8 vóxeles; 8: 9 más la cifra siguiente;
- * 9: 71 más las dos siguientes, la primera por 62). Solo cifras y letras: el build reserva como nombre GLSL cada identificador de
- * una cadena, y una cadena alfanumérica es uno solo. Las escribe `tools/anatomy/s0028RenalRuns.ts`.
+ * Las cinco etiquetas que pueden seguir a cada una (U, corteza, médula, seno graso, colector, seno sin subclasificar), de más a
+ * menos frecuente en este TAC; las cinco últimas, al empezar una caja.
+ */
+export const S0028_RENAL_NEXT = '13542025431543054120352103124001234';
+/**
+ * Código por vóxel (xyz, z rápida) de los tramos de una caja del interior renal. La primera cifra en base 62 de un tramo da su
+ * etiqueta, por su orden en `S0028_RENAL_NEXT` tras la del tramo anterior, y su longitud: 0–40, la primera etiqueta de 1 a 41
+ * vóxeles; 41–51, la segunda de 1 a 11; 52–56, la de orden 0–4 con 1 a 62 vóxeles más que su forma corta (la cifra siguiente), y
+ * 57–61, con 63 o más (las tres siguientes). Las escribe `tools/anatomy/s0028RenalRuns.ts`.
  */
 export function s0028RenalRunCodes(runs: string, voxels: number): Uint8Array {
   const codes = new Uint8Array(voxels);
-  // Valor de la cifra i: en ASCII, '0' es 48; 'A', 65 (vale 10) y 'a', 97 (vale 36).
-  const digit = (i: number): number => {
-    const c = runs.charCodeAt(i);
-    return c - (c < 58 ? 48 : c < 91 ? 55 : 61);
+  let at = 0,
+    i = 0,
+    label = 6;
+  const read = (count: number) => {
+    let n = 0;
+    while (count--) n = 62 * n + base62Digit(runs, i++);
+    return n;
   };
-  let at = 0;
-  for (let i = 0; i < runs.length;) {
-    const head = digit(i++),
-      span = Math.floor(head / 6),
-      n = span < 8 ? span + 1 : span === 8 ? 9 + digit(i++) : 71 + 62 * digit(i++) + digit(i++);
-    codes.fill(S0028_RENAL_CODES[head % 6], at, at + n);
+  while (i < runs.length) {
+    const head = read(1),
+      rank = head < 41 ? 0 : head < 52 ? 1 : (head - 52) % 5,
+      short = rank === 0 ? 41 : rank === 1 ? 11 : 0,
+      n = head < 52 ? head + 1 - 41 * rank : head < 57 ? short + 1 + read(1) : short + 63 + read(3);
+    label = +S0028_RENAL_NEXT[5 * label + rank];
+    codes.fill(S0028_RENAL_CODES[label], at, at + n);
     at += n;
   }
   if (at !== voxels) throw new Error('Interior renal s0028 truncado');
@@ -183,11 +193,7 @@ export function createSolidsQueries(assets: PersonAssets) {
   /** Las páginas de grasa en sus colocaciones del atlas abdominal ya asignado: texSubImage, sin textura ni sampler nuevos. */
   function s0028SolidsUploads(): ReadonlyArray<{ offset: readonly number[]; size: readonly number[]; data: Uint16Array }> {
     if (!fat) throw new Error('Paquete P3 s0028 no cargado');
-    return [
-      ...s0028FatPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: fat!.subarray(2048 * i, 2048 * (i + 1)) })),
-      ...s0028RenalUploads(),
-      ...s0028WideFatPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: wideFat!.subarray(2048 * i, 2048 * (i + 1)) })),
-    ];
+    return [...s0028PageUploads(s0028FatPages(), fat), ...s0028RenalUploads(), ...s0028PageUploads(s0028WideFatPages(), wideFat!)];
   }
 
   /** Páginas del interior renal: dos vóxeles por byte (el par en el nibble bajo), un byte exacto por half, página nueva por caja. */
@@ -197,7 +203,7 @@ export function createSolidsQueries(assets: PersonAssets) {
       for (let v = 0; v < codes.length; v += 2)
         words[2048 * R.boxes[i].pageBase + (v >> 1)] = intHalf(codes[v] | ((codes[v + 1] ?? 0) << 4));
     });
-    return s0028RenalPages().map((offset, i) => ({ offset, size: [32, 32, 1], data: words.subarray(2048 * i, 2048 * (i + 1)) }));
+    return s0028PageUploads(s0028RenalPages(), words);
   }
 
   /**

@@ -6,6 +6,7 @@ import { colorMapRgb } from '../ultrasound/colorMap';
 import type { Simulator } from '../app/simulator';
 import type { SpectralColumn } from '../doppler/spectral';
 import { overlayOnSpectrum, spectrumRowOf, type CaptureOverlay } from './captureOverlay';
+import { cssScale, labelFont, wrapParts } from './canvasText';
 
 /**
  * Gráficos vectoriales sobre el sector. Regla y foco corresponden al cuadro adquirido; la caja es un control
@@ -21,35 +22,40 @@ export function drawOverlay(canvas: HTMLCanvasElement, sim: Simulator): void {
   const tr = sim.renderer.displayedFrame?.anatomy.transducer ?? sim.transducer;
   const shown = sim.displayed;
   const depth = shown.bmode.depthMm;
-  // Regla de profundidad (cada cm) en el borde derecho del sector
+  // Regla de profundidad (cada cm) en el borde derecho del sector; marcas, texto y longitudes en px CSS (los grosores no)
+  const k = cssScale(canvas);
   ctx.strokeStyle = '#9aa7b4';
   ctx.fillStyle = '#9aa7b4';
   ctx.lineWidth = 1;
-  ctx.font = '11px sans-serif';
+  ctx.font = labelFont(k);
   const edgeTheta = -tr.halfSector;
   for (let cm = 0; cm <= depth / 10; cm++) {
     const r = cm * 10;
     const p = sim.renderer.beamToPixel(edgeTheta, r, tr);
     const big = cm % 5 === 0;
     ctx.beginPath();
-    ctx.moveTo(p.x + 6, p.y);
-    ctx.lineTo(p.x + (big ? 14 : 10), p.y);
+    ctx.moveTo(p.x + 6 * k, p.y);
+    ctx.lineTo(p.x + (big ? 14 : 10) * k, p.y);
     ctx.stroke();
-    if (big) ctx.fillText(`${cm}`, p.x + 17, p.y + 4);
+    if (!big) continue;
+    // sector limitado por el ancho: la cifra que no cabe a la derecha se apoya en el borde del lienzo, sobre su marca
+    const w = ctx.measureText(`${cm}`).width;
+    if (p.x + 17 * k + w <= W) ctx.fillText(`${cm}`, p.x + 17 * k, p.y + 4 * k);
+    else ctx.fillText(`${cm}`, W - 2 * k - w, p.y - 4 * k);
   }
   // Marcador de orientación (izquierda de pantalla)
   const mk = sim.renderer.beamToPixel(tr.halfSector, 0, tr);
   ctx.fillStyle = '#3fb6a8';
   ctx.beginPath();
-  ctx.arc(mk.x - 10, mk.y - 6, 5, 0, Math.PI * 2);
+  ctx.arc(mk.x - 10 * k, mk.y - 6 * k, 5 * k, 0, Math.PI * 2);
   ctx.fill();
   // Foco
   const fp = sim.renderer.beamToPixel(edgeTheta, shown.bmode.focusMm, tr);
   ctx.fillStyle = '#e0a33b';
   ctx.beginPath();
-  ctx.moveTo(fp.x + 2, fp.y);
-  ctx.lineTo(fp.x - 5, fp.y - 4);
-  ctx.lineTo(fp.x - 5, fp.y + 4);
+  ctx.moveTo(fp.x + 2 * k, fp.y);
+  ctx.lineTo(fp.x - 5 * k, fp.y - 4 * k);
+  ctx.lineTo(fp.x - 5 * k, fp.y + 4 * k);
   ctx.closePath();
   ctx.fill();
   // El contorno responde al equipo sin esperar a la GPU; los píxeles y la escala siguen siendo los adquiridos.
@@ -73,21 +79,21 @@ export function drawOverlay(canvas: HTMLCanvasElement, sim: Simulator): void {
     ctx.closePath();
     ctx.stroke();
   }
-  if (shown.color.enabled) drawColorScale(ctx, W, sim);
+  if (shown.color.enabled) drawColorScale(ctx, k, sim);
   // Línea M (decisión 80): de la cara al fondo, con un asa arriba para arrastrarla
   if (sim.mmode.enabled) {
     const a = sim.renderer.beamToPixel(sim.mmode.theta, 0, tr);
     const b = sim.renderer.beamToPixel(sim.mmode.theta, depth, tr);
     ctx.strokeStyle = ctx.fillStyle = '#ffc857';
     ctx.lineWidth = 1.5;
-    ctx.setLineDash([6, 4]);
+    ctx.setLineDash([6 * k, 4 * k]);
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
     ctx.lineTo(b.x, b.y);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.beginPath();
-    ctx.arc(a.x + (b.x - a.x) * 0.04, a.y + (b.y - a.y) * 0.04, 4, 0, Math.PI * 2);
+    ctx.arc(a.x + (b.x - a.x) * 0.04, a.y + (b.y - a.y) * 0.04, 4 * k, 0, Math.PI * 2);
     ctx.fill();
   }
   // Cursor PW: línea Doppler, puerta y cursor angular
@@ -96,7 +102,7 @@ export function drawOverlay(canvas: HTMLCanvasElement, sim: Simulator): void {
     const a = sim.renderer.beamToPixel(pw.theta, 0, tr);
     const b = sim.renderer.beamToPixel(pw.theta, depth, tr);
     ctx.strokeStyle = 'rgba(120, 220, 200, 0.8)';
-    ctx.setLineDash([5, 5]);
+    ctx.setLineDash([5 * k, 5 * k]);
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
@@ -108,8 +114,8 @@ export function drawOverlay(canvas: HTMLCanvasElement, sim: Simulator): void {
     const nx = -(b.y - a.y);
     const ny = b.x - a.x;
     const nl = Math.hypot(nx, ny) || 1;
-    const ux = (nx / nl) * 7;
-    const uy = (ny / nl) * 7;
+    const ux = (nx / nl) * 7 * k;
+    const uy = (ny / nl) * 7 * k;
     ctx.strokeStyle = '#7ff0d8';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -125,8 +131,8 @@ export function drawOverlay(canvas: HTMLCanvasElement, sim: Simulator): void {
     ctx.strokeStyle = '#7ff0d8';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(gc.x - Math.cos(ang) * 22, gc.y - Math.sin(ang) * 22);
-    ctx.lineTo(gc.x + Math.cos(ang) * 22, gc.y + Math.sin(ang) * 22);
+    ctx.moveTo(gc.x - Math.cos(ang) * 22 * k, gc.y - Math.sin(ang) * 22 * k);
+    ctx.lineTo(gc.x + Math.cos(ang) * 22 * k, gc.y + Math.sin(ang) * 22 * k);
     ctx.stroke();
   }
 }
@@ -178,10 +184,11 @@ export function drawEcg(
     } else ctx.lineTo(x, y);
   }
   ctx.stroke();
+  const k = cssScale(canvas);
   ctx.fillStyle = '#6b7a88';
-  ctx.font = '10px sans-serif';
-  ctx.fillText('ECG · resp', 6, 11);
-  if (cursorT !== null) drawCursor(ctx, ecgX(cursorT, tRight, secondsVisible, W), H);
+  ctx.font = labelFont(k);
+  ctx.fillText('ECG · resp', 6 * k, 12 * k);
+  if (cursorT !== null) drawCursor(ctx, ecgX(cursorT, tRight, secondsVisible, W), H, k);
 }
 
 /** Estado de dibujo del espectrograma (bitmap desplazable). */
@@ -233,12 +240,15 @@ export class SpectrogramView {
       this.#presentation = presentation;
     }
     const pxPerSec = W / secondsVisible;
+    const k = cssScale(this.#canvas);
     if (!pw.enabled) {
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#6b7a88';
-      ctx.font = '11px sans-serif';
-      ctx.fillText('Doppler pulsado desactivado — pulse PW y coloque la puerta en un vaso', 8, 16);
+      ctx.font = labelFont(k);
+      // por palabras, con la raya pegada a la anterior: ninguna línea empieza por «—»
+      const off = 'Doppler pulsado desactivado — pulse PW y coloque la puerta en un vaso'.split(/ (?!—)/);
+      wrapParts(ctx, off, W - 16 * k, ' ').forEach((line, i) => ctx.fillText(line, 8 * k, (16 + 14 * i) * k));
       return;
     }
     // Eje temporal: desplazar el mapa de bits lo que avanzó el tiempo (píxeles enteros, con resto)
@@ -289,8 +299,8 @@ export class SpectrogramView {
     ctx.drawImage(this.#off, 0, 0);
     if (!columns.length) {
       ctx.fillStyle = '#9aa7b4';
-      ctx.font = '11px sans-serif';
-      ctx.fillText('Sin adquisición nueva', 8, 16);
+      ctx.font = labelFont(k);
+      ctx.fillText('Sin adquisición nueva', 8 * k, 16 * k);
     }
     // Línea de base y escala
     const baselineY = (() => {
@@ -305,25 +315,30 @@ export class SpectrogramView {
     ctx.lineTo(W, baselineY);
     ctx.stroke();
     ctx.fillStyle = '#9aa7b4';
-    ctx.font = '10px sans-serif';
+    ctx.font = labelFont(k);
     const nyq = sim.pwNyquistCms();
-    ctx.fillText(
-      `Nyquist ±${nyq.toFixed(0)} cm/s · PRF ${pw.prfHz.toFixed(0)} Hz · WF ${pw.wallFilterHz.toFixed(0)} Hz · ${pw.sweepMmS} mm/s · θ ${((pw.angleCorrection * 180) / Math.PI).toFixed(0)}°${pw.invert ? ' · INV' : ''}`,
-      6,
-      H - 4,
-    );
+    const footer = [
+      `Nyquist ±${nyq.toFixed(0)} cm/s`,
+      `PRF ${pw.prfHz.toFixed(0)} Hz`,
+      `WF ${pw.wallFilterHz.toFixed(0)} Hz`,
+      `${pw.sweepMmS} mm/s`,
+      `θ ${((pw.angleCorrection * 180) / Math.PI).toFixed(0)}°${pw.invert ? ' · INV' : ''}`,
+    ];
+    // Si no cabe (móvil), el pie crece hacia arriba desde el borde inferior: θ e INV nunca se recortan
+    const lines = wrapParts(ctx, footer, W - 12 * k);
+    lines.forEach((line, i) => ctx.fillText(line, 6 * k, H - (4 + 14 * (lines.length - 1 - i)) * k));
     // Escala de tiempo (1 s)
     ctx.strokeStyle = 'rgba(255,255,255,0.25)';
     for (let s = 0; s < secondsVisible; s++) {
       const x = W - s * pxPerSec;
       ctx.beginPath();
-      ctx.moveTo(x, H - 8);
+      ctx.moveTo(x, H - 8 * k);
       ctx.lineTo(x, H);
       ctx.stroke();
     }
     if (capture && capture.revision === sim.pwChain.revision && capture.prfHz === pw.prfHz && overlayOnSpectrum(capture, columns))
-      drawCaptureOverlay(ctx, capture, (t) => ecgX(t, this.#timeline.rightT, secondsVisible, W), H, pw);
-    if (cursorT !== null) drawCursor(ctx, ecgX(cursorT, this.#timeline.rightT, secondsVisible, W), H);
+      drawCaptureOverlay(ctx, capture, (t) => ecgX(t, this.#timeline.rightT, secondsVisible, W), H, pw, k);
+    if (cursorT !== null) drawCursor(ctx, ecgX(cursorT, this.#timeline.rightT, secondsVisible, W), H, k);
   }
 }
 
@@ -337,6 +352,7 @@ function drawCaptureOverlay(
   xOf: (t: number) => number,
   H: number,
   display: { baselineShift: number; invert: boolean },
+  k: number,
 ): void {
   const yOf = (f: number) => spectrumRowOf(f, o.prfHz, display, H);
   ctx.save();
@@ -346,10 +362,10 @@ function drawCaptureOverlay(
     const x0 = xOf(t0);
     const x1 = xOf(t1);
     ctx.beginPath();
-    ctx.moveTo(x0 + 1, 22);
-    ctx.lineTo(x0 + 1, 16);
-    ctx.lineTo(x1 - 1, 16);
-    ctx.lineTo(x1 - 1, 22);
+    ctx.moveTo(x0 + 1, 22 * k);
+    ctx.lineTo(x0 + 1, 16 * k);
+    ctx.lineTo(x1 - 1, 16 * k);
+    ctx.lineTo(x1 - 1, 22 * k);
     ctx.stroke();
   }
   ctx.strokeStyle = o.accepted ? '#ffd166' : '#ff8a8a';
@@ -372,16 +388,18 @@ function drawCaptureOverlay(
   }
   ctx.stroke();
   if (o.accepted) {
-    ctx.font = '10px sans-serif';
+    ctx.font = labelFont(k);
     for (const m of o.marks) {
       const x = xOf(m.t);
       const y = yOf(m.fHz);
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.arc(x, y, 3 * k, 0, 2 * Math.PI);
       ctx.fill();
       ctx.fillStyle = '#ffd166';
-      ctx.fillText(m.label, x + 4, y < 14 ? y + 12 : y - 4);
+      // junto al borde derecho el rótulo pasa a la izquierda del punto, entero
+      const w = ctx.measureText(m.label).width + 4 * k;
+      ctx.fillText(m.label, x + w > ctx.canvas.width ? x - w : x + 4 * k, y < 14 * k ? y + 13 * k : y - 4 * k);
     }
   }
   ctx.restore();
@@ -391,11 +409,10 @@ function drawCaptureOverlay(
  * Barra de escala del color (decisión 70), como en los equipos: arriba el flujo hacia la sonda, abajo el que se aleja,
  * negro en la línea de base y ±Nyquist en cm/s en los extremos (con «Invertir mapa» se intercambian los colores).
  */
-function drawColorScale(ctx: CanvasRenderingContext2D, W: number, sim: Simulator): void {
+function drawColorScale(ctx: CanvasRenderingContext2D, s: number, sim: Simulator): void {
   const tr = sim.renderer.displayedFrame?.anatomy.transducer ?? sim.transducer;
   const nyq = Math.round(nyquistVelocityCms(sim.displayed.color.prfHz, tr.f0Doppler));
-  // Píxeles CSS: activar PW reduce el sector, no el tamaño legible de la leyenda.
-  const s = W / (ctx.canvas.clientWidth || W);
+  // Píxeles CSS (s = cssScale): activar PW reduce el sector, no el tamaño legible de la leyenda.
   const x = Math.round(12 * s);
   const w = Math.round(12 * s);
   const y0 = Math.round(64 * s);
@@ -413,9 +430,9 @@ function drawColorScale(ctx: CanvasRenderingContext2D, W: number, sim: Simulator
   ctx.lineWidth = 1;
   ctx.strokeRect(x - 0.5, y0 - 0.5, w + 1, h + 1);
   ctx.fillStyle = '#c9d2dc';
-  ctx.font = `${12 * s}px sans-serif`;
-  ctx.fillText(`+${nyq}`, x + w + 4, y0 + Math.round(9 * s));
-  ctx.fillText(`−${nyq}`, x + w + 4, y0 + h);
-  ctx.fillText('0', x + w + 4, y0 + Math.round(h / 2 + 4 * s));
+  ctx.font = labelFont(s);
+  ctx.fillText(`+${nyq}`, x + w + 4 * s, y0 + Math.round(9 * s));
+  ctx.fillText(`−${nyq}`, x + w + 4 * s, y0 + h);
+  ctx.fillText('0', x + w + 4 * s, y0 + Math.round(h / 2 + 4 * s));
   ctx.fillText('cm/s', x, y0 - 8 * s);
 }

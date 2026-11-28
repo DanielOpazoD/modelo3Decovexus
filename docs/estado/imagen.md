@@ -1,6 +1,6 @@
 # Estado vigente: imagen
 
-Actualizado: 2026-11-18 sobre main `6eb1ad8`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
+Actualizado: 2026-11-26 sobre main `70e3691`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
 techos los limitan. La explicación de cada pasada está en `docs/ARCHITECTURE.md`; las decisiones, en `docs/DECISIONS.md`.
 
 ## A0 nativa current (339)
@@ -9,7 +9,7 @@ A0 usa dos draws: clasificación directa de centros y bucle original de impactos
 No cambia la pasada B nativa ni la resolución192×1024. Ocho imágenes idénticas al rediseño sin
 optimización;24 estados A0 bit a bit. Banco MetalM4:−46,91% GPU agregado frente a adaf672,
 mediana y p95 por cada una de ocho escenas≤base. No FPS ni garantía universal de hardware/poses.
-SwiftShader conserva su reparto; s0028 nativa conserva A0 original. Objetivos adicionales
+SwiftShader conserva su reparto, que s0028 usa en cualquier GPU (decisión 406). Objetivos adicionales
 1.004.544B nominales e índice vascular de 8 mm (también s0028, decisión 397), techo4MiB. No memoria total ni coste frío.
 Ver decisión339 y evidencia original; aceptación completa/CI se acreditan por separado.
 
@@ -18,25 +18,26 @@ Ver decisión339 y evidencia original; aceptación completa/CI se acreditan por 
 La tabla `FRAME_PASSES` de `src/ultrasound/passGraph.ts` es la fuente: declara qué lee y escribe cada pasada, y
 `passGraph.test.ts` la valida. Orden actual:
 
-| Pasada  | Qué hace                                                                                       | Decisiones     |
-| ------- | ---------------------------------------------------------------------------------------------- | -------------- |
-| A0      | marcha de cada línea: primer impacto, espejo y cruce de la pleura                              | 54, 61         |
-| A1      | segmentos de tejido de cada línea (camino de más en las luces)                                 | 54, 86         |
-| A2      | prefijo de atenuación por línea, mirada 0 y dirigida, y Ψ̃ de la refracción                     | 54, 58, 86     |
-| A       | transmisión con apertura (conos de emisión y recepción), refracción y especulares              | 54, 88, 91     |
-| B       | campo complejo: clasificación, moteado anclado por tejido, ecos de interfaz, pleura y texturas | 55–57, 61, 62  |
-| C, D    | PSF axial con el ruido del receptor y lateral con lóbulos y reverberación, por mirada          | 38, 76, 84, 89 |
-| K       | composición de las miradas válidas                                                             | 58             |
-| F, F1   | color: emulación del estimador de autocorrelación y su filtro                                  | 39, 70         |
-| R       | reducción de moteado de la presentación                                                        | 313            |
-| G, P, S | conversión de barrido con la TGC y los grises, persistencia y presentación                     | 10, 80         |
+| Pasada  | Qué hace                                                                                                           | Decisiones       |
+| ------- | ------------------------------------------------------------------------------------------------------------------ | ---------------- |
+| A0      | marcha de cada línea: primer impacto, espejo y cruce de la pleura                                                  | 54, 61           |
+| A1      | segmentos de tejido de cada línea (camino de más en las luces)                                                     | 54, 86           |
+| A2      | prefijo de atenuación por línea, mirada 0 y dirigida, y Ψ̃ de la refracción                                         | 54, 58, 86       |
+| A       | transmisión con apertura (conos de emisión y recepción), refracción y especulares                                  | 54, 88, 91       |
+| B       | campo complejo: clasificación, moteado anclado por tejido, ecos de interfaz, pleura y texturas                     | 55–57, 61, 62    |
+| C, D    | PSF axial con el ruido del receptor y lateral con lóbulos y reverberación, por mirada                              | 38, 76, 84, 89   |
+| K       | composición de las miradas válidas                                                                                 | 58               |
+| F, F1   | color: emulación del estimador de autocorrelación y su filtro                                                      | 39, 70           |
+| R       | reducción de moteado de la presentación                                                                            | 313              |
+| G, P, S | conversión de barrido con la TGC (`TGC_BANDS` = 8) y los grises, persistencia de la misma geometría y presentación | 10, 80, 432, 438 |
 
 Fuera del grafo: el cine y la línea M guardan y devuelven cuadros sin lecturas GPU → CPU (decisión 80); el cine guarda la
 envolvente en R16F y el color en RG32F (decisión 254). A0 y A1 se reutilizan mientras sus entradas no cambien
 (decisión 256).
 
-Con SwiftShader o un renderer no identificable, B se ejecuta en etapas (clasificación, elevación, gradiente y eco) para
-que el JIT de la CI compile cada una; Metal conserva B directa y el oráculo compara las dos (decisión 240).
+Con atlas, B y A0 se ejecutan en etapas (B: clasificación, elevación, gradiente y eco) con SwiftShader o un renderer no
+identificable, para que el JIT de la CI compile cada una, y con s0028 en cualquier GPU (decisión 406). Solo la otra persona
+conserva en Metal B directa (`FRAG_RAWFIELD`); el oráculo compila allí también el gradiente por etapas (decisión 240).
 
 ## Programas
 
@@ -49,7 +50,7 @@ samplers y ranuras de uniforms: decisión 317):
 
 <!-- programas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `6eb1ad8` el 2026-11-18 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/estado.ts`.
 
 | Programa                  | Samplers default / s0028 | Ranuras default / s0028 | Uso de tokens (peor persona) | Uso de ramas |
 | ------------------------- | -----------------------: | ----------------------: | ---------------------------: | -----------: |
@@ -112,3 +113,7 @@ ocho estados (M4, Metal, con carga ajena; antes 30–60). Dos causas, ninguna de
 con tres copias del clasificador (12 ms; por etapas, 3,6, decisión 406), y el ritmo del bucle, que perdía una RAF cuando la valla
 llegaba justo después del refresco (decisión 405). La ecografía cuesta 5–7 ms de GPU por cuadro (antes 15–19). Al mover la sonda,
 26–37 fps: el límite pasa a ser el contacto en la CPU (10 ms por pose, PR 63) y la carga ajena de la máquina.
+
+Con la sonda quieta, la lista de tubos deshace la respiración (421) y sigue a D a pasos de 10 mm (445): la rejilla de tubos se rehace
+4–6 veces por respiración tranquila y 8–10 en la profunda (antes hasta 16 y 31). Falta anotar los fps del bucle en profunda y en apnea
+inspiratoria.

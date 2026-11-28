@@ -31,9 +31,11 @@ test('PW diferido: no se descarga al arrancar y la captura preparada es síncron
   // La lectura y el resultado ocurren en el mismo turno del clic, sin await ni ventana
   // para capturar otro paciente/equipo. La cadena con flujo válido la cubre smoke.spec.
   // Sin señal PW elegible (antes del primer cuadro tras armar, que SwiftShader tarda en
-  // dibujar) el clic solo lo informa en ese mismo turno (decisión 292); se reintenta cuando
-  // avanza el reloj del estado. Cada intento vacía espera y resultado y exige la tarjeta a la
-  // vista: una captura que terminara fuera del clic no se aceptaría en el intento siguiente.
+  // dibujar) o sin un latido completo de señal nueva, el clic solo lo informa en ese mismo
+  // turno (decisión 292); se reintenta cuando avanza el reloj del estado. El plazo es de ese
+  // reloj (el primer latido cubierto llega a ≈ 1,5–1,8 s), no de intentos. Cada intento vacía
+  // espera y resultado y exige la tarjeta a la vista: una captura que terminara fuera del clic
+  // no se aceptaría en el intento siguiente.
   const click = () =>
     page.evaluate(() => {
       const button = [...document.querySelectorAll('button')].find((b) => b.textContent === 'Capturar')!;
@@ -47,12 +49,13 @@ test('PW diferido: no se descarga al arrancar y la captura preparada es síncron
       return { shown, completed: card.hidden, waiting: wait.textContent, result: result.textContent };
     });
   const clock = async () => Number(/ t (\d+\.\d) s/.exec(await page.locator('#status').innerText())?.[1]);
+  const t0 = await clock();
   let result = await click();
-  for (let attempt = 1; !result.completed; attempt++) {
+  while (!result.completed) {
     expect(result.shown, 'tarjeta a la vista antes del clic').toBe(true);
     expect(result.waiting).toMatch(/^(Adquiere|Estabilizando) señal nueva/);
-    expect(attempt, `sin señal PW elegible: ${result.waiting}`).toBeLessThan(8);
     const t = await clock();
+    expect(t - t0, `sin señal PW elegible: ${result.waiting}`).toBeLessThan(5);
     // Armar el PW compila sus programas: en SwiftShader el reloj puede pasar > 15 s sin moverse. Manda el plazo de la prueba (decisión 304)
     await expect.poll(clock, { timeout: 0 }).toBeGreaterThan(t);
     result = await click();

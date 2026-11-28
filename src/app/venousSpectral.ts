@@ -3,10 +3,12 @@ import { AnatomyScene } from '../anatomy/scene';
 import { C_RECONSTRUCTION_MM_S, nyquistVelocityCms, prfFromNyquistCms } from '../core/units';
 import type { Vec3 } from '../core/vec3';
 import { PwDopplerChain } from '../doppler/pwChain';
+import { SPECTRAL_CAPTURE_SECONDS } from '../doppler/spectral';
 import type { GateGeometry } from '../doppler/sampleVolume';
 import type { GateVesselSample } from '../doppler/vesselIdentity';
 import type { PhysiologySample } from '../physiology/engine';
 import type { PatientState } from '../physiology/patientState';
+import type { Beat } from '../physiology/rhythm';
 import type { VesselId } from '../physiology/vessels';
 import { probeContact, type ProbeContact } from '../probe/contact';
 import type { BModeSettings } from '../ultrasound/renderer';
@@ -29,6 +31,35 @@ const WINDOWS: readonly { window: StartPoint['id']; vessels: readonly VesselId[]
 ];
 
 export const VENOUS_GATE_LENGTHS_MM = WINDOWS.map((w) => w.gateMm);
+/** Profundidad máxima de la puerta virtual; su ventana acústica se mide hasta la misma, no hasta la profundidad B del alumno. */
+const GATE_SEARCH_MM = 175;
+/** Segundos de historial que muestra y procesa el visor comparativo. */
+export const VENOUS_HISTORY_S = 6;
+
+/**
+ * Muestras que un territorio procesa en una actualización del visor: las llegadas desde la anterior (reloj `previousT`)
+ * más un trozo de recuperación de 32. Así el atraso nunca crece, a ningún ritmo de cuadros, y baja 32 muestras por
+ * actualización sin procesar de golpe los seis segundos de historial (decisión 129). Una adquisición nueva
+ * (`processedT` = −∞) empieza en `startT`, el inicio del historial visible; una atrasada sigue donde iba mientras
+ * `samples` (los 12 s del motor) conserve sus muestras, sin el hueco que reiniciaría la IQ.
+ */
+export function venousCatchUpBatch(
+  samples: readonly PhysiologySample[],
+  startT: number,
+  processedT: number,
+  previousT: number,
+): readonly PhysiologySample[] {
+  const from = samples.findIndex((s) => s.t > processedT && (processedT > -Infinity || s.t >= startT));
+  if (from < 0) return [];
+  let arrived = 0;
+  while (arrived < samples.length && samples[samples.length - 1 - arrived].t > previousT) arrived++;
+  return samples.slice(from, from + arrived + 32);
+}
+
+/** Latidos para cualquier captura cuya ventana termine dentro del historial, aunque la IQ vaya atrasada respecto de `t`. */
+export function venousMeasurementBeats(rhythm: { beatsBetween(t0: number, t1: number): Beat[] }, t: number): Beat[] {
+  return rhythm.beatsBetween(Math.max(0, t - VENOUS_HISTORY_S - SPECTRAL_CAPTURE_SECONDS), t);
+}
 
 /** A missing anatomical window is an acquisition limitation, not a numerical engine failure. */
 export class AcousticWindowUnavailableError extends Error {
@@ -52,7 +83,7 @@ export class VenousSpectralAcquisition {
   readonly gateDepthsMm: readonly number[];
   readonly gateInfo: PwGateInfo[] = [];
   readonly #contexts: { anatomy: AnatomyQuery; contact: ProbeContact; best: GatePlacement; index: number }[];
-  readonly #settings: Pick<BModeSettings, 'depthMm' | 'focusMm'>;
+  readonly #settings: Pick<BModeSettings, 'focusMm'>;
   readonly #seed: number;
   #lastT: number | null = null;
   #steps = 0;
@@ -62,7 +93,7 @@ export class VenousSpectralAcquisition {
     sample: PhysiologySample,
     seed: number,
     patient: PatientState,
-    settings: Pick<BModeSettings, 'depthMm' | 'focusMm'>,
+    settings: Pick<BModeSettings, 'focusMm'>,
     renalWindow: RenalSpectralWindow = 'venous',
     hepaticWindow: HepaticSpectralWindow = 'standard',
     /** Restrict to one territory (0=hepatic, 1=portal, 2=renal); its public arrays then use index 0. */
@@ -76,7 +107,7 @@ export class VenousSpectralAcquisition {
     this.gateTracks = windows.map(() => []);
     this.#gateLengthsMm = windows.map(({ gateMm }) => gateMm);
     this.#seed = seed;
-    this.#settings = { depthMm: settings.depthMm, focusMm: settings.focusMm };
+    this.#settings = { focusMm: settings.focusMm };
     const profile = CONVEX_C35_PROFILE,
       tr = profile.geometry;
     this.#contexts = windows.map(({ window, vessels, index }) => {
@@ -117,14 +148,14 @@ export class VenousSpectralAcquisition {
         scene.torso,
       );
       query.setProbeCompression(contact);
-      const weight = acousticWindowWeight(query, contact.frame, tr, contact, sample, this.#settings.depthMm, profile.dopplerEffectiveMHz);
+      const weight = acousticWindowWeight(query, contact.frame, tr, contact, sample, GATE_SEARCH_MM, profile.dopplerEffectiveMHz);
       const best = bestGateOnVessel(
         query,
         contact.frame,
         tr,
         sample,
         paired ? ['interlobarArtery1', 'interlobarArtery2', 'interlobarArtery3'] : vessels,
-        175,
+        GATE_SEARCH_MM,
         paired ? 0.2 : 1.2,
         weight,
       );

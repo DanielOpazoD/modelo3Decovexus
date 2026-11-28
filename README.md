@@ -76,26 +76,30 @@ Torso 3D.
 - **Sonda (navegador 3D)**: arrastrar la piel desliza; arrastrar el marcador azul o la rueda rota;
   ⇧+arrastrar bascula; ⌥+arrastrar inclina; botón derecho orbita; ⌘/Ctrl+rueda hace zoom. También se
   puede arrastrar sobre la imagen y con el teclado (`W A S D` deslizar, `Q E` rotar, `← →` bascular,
-  `↑ ↓` inclinar, `R F` presión, `⇧` fino). La chuleta de gestos y teclado está detrás del «?» del
-  navegador. El arrastre iniciado en la piel continúa fuera de la silueta para rodear el tronco. Las tres
-  rotaciones permiten vueltas completas; al deslizar se conserva la orientación del haz y puede hacer falta
-  reorientar la cara para recuperar contacto.
+  `↑ ↓` inclinar, `R F` presión, `⇧` fino). Con la imagen enfocada (`Tab`), las flechas mueven la cruz del
+  calibrador (`Intro` fija cada punto) o, en vivo, la puerta PW, la caja de color o (`← →`) la línea M. La chuleta de
+  gestos y teclado está detrás del «?» del navegador. El arrastre iniciado en la piel continúa fuera de la silueta
+  para rodear el tronco. Las tres rotaciones permiten vueltas completas; al deslizar se conserva la orientación del
+  haz y puede hacer falta reorientar la cara para recuperar contacto.
 - **Consola**: _Adquirir_ (imagen: profundidad, ganancia y foco; sonda; respiración; y, plegado,
   lo avanzado: rango dinámico, persistencia, composición espacial y TGC de 8 bandas), _Doppler_
   (contextual: color o PW, con lo avanzado plegado), _Medir_ (protocolo VExUS: VCI con calibrador,
   suprahepática, porta y vena interlobar sobre el espectro adquirido, resultado y grado), _Docente_
-  (solo con la casilla activada: intervenciones —bolo, diurético y PEEP— sobre la aurícula de lazo cerrado,
+  (solo con la casilla «Docente» activada, que el build publicado ofrece solo con `?docente` en la dirección y `npm run dev`
+  siempre; reúne intervenciones —bolo, diurético y PEEP— sobre la aurícula de lazo cerrado,
   «Reiniciar paciente», verdad fisiológica y estado de la adquisición). Las explicaciones
   están detrás del ⓘ de cada sección.
 - **Modos**: `2` B, `M` modo M (clic en la imagen coloca la línea M, que también se arrastra; su franja
   profundidad × tiempo va debajo del ECG, con el barrido en la sección «Modo M» de Adquirir), `C` Color (clic en la
   imagen centra la caja), `P` PW (clic coloca la puerta), `Espacio` congela, `H` oculta el carril izquierdo, `[ ]`
-  profundidad, `− +` ganancia, `Esc` cancela una herramienta.
+  profundidad, `− +` ganancia, `Esc` cancela una herramienta y el calibre a medio poner (la medida anterior sigue).
 - **Cine** (`src/ui/controllers/cine.ts`): con la imagen congelada, el deslizador bajo la imagen, `← →` (Inicio y Fin)
-  y la rueda sobre la imagen recorren los últimos 6 s de cuadros; el cursor del ECG marca el cuadro mostrado y el
-  calibrador mide sobre él. En Medir, «VCI modo M»: con la franja congelada, dos calibres de pared a pared (diámetro
-  máximo y mínimo) dan la colapsabilidad. Cada control actúa en su etapa física: la corrección angular solo cambia el rótulo, la
-  línea de base solo la presentación, el filtro de pared elimina frecuencias bajas de la IQ.
+  y la rueda sobre la imagen recorren los últimos 6 s de cuadros; el cursor del ECG marca el cuadro mostrado, el HUD
+  rotula sus ajustes (profundidad, ganancia, RD, THI, CX, RM y color) y el calibrador mide sobre él: su primer punto
+  congela la imagen y, si el cuadro cambia antes del segundo, el calibre vuelve a empezar. En Medir, «VCI modo M»: con
+  la franja congelada, dos calibres de pared a pared (diámetro máximo y mínimo) dan la colapsabilidad. Cada control
+  actúa en su etapa física: la corrección angular solo cambia el rótulo, la línea de base solo la presentación, el
+  filtro de pared elimina frecuencias bajas de la IQ.
 
 ## Estructura
 

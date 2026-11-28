@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "date": "2026-11-18",
- "main": "6eb1ad8",
+ "date": "2026-11-26",
+ "main": "70e3691",
  "rows": [
   {
    "what": "`abdominal-atlas.gzip.bin`",
@@ -65,7 +65,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 256733
+   "actual": 263711
   },
   {
    "what": "`candidate-manifest.bin`",
@@ -81,7 +81,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 14410
+   "actual": 63797
   },
   {
    "what": "`cpu.js`",
@@ -89,7 +89,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 72581
+   "actual": 14410
   },
   {
    "what": "`cutMapView.js`",
@@ -97,7 +97,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 16838
+   "actual": 16942
   },
   {
    "what": "`cutMapWorker.js`",
@@ -105,7 +105,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 3721
+   "actual": 3844
   },
   {
    "what": "`deformation.js`",
@@ -137,7 +137,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 27376
+   "actual": 27255
   },
   {
    "what": "`index.css`",
@@ -169,7 +169,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 32167
+   "actual": 32525
   },
   {
    "what": "`personAssets.js`",
@@ -193,7 +193,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 15821
+   "actual": 17529
   },
   {
    "what": "`query.js`",
@@ -233,7 +233,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 26223
+   "actual": 25995
   },
   {
    "what": "`series.js`",
@@ -265,7 +265,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 11366
+   "actual": 12045
   },
   {
    "what": "`structureIdentity.js`",
@@ -273,7 +273,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 1609
+   "actual": 1775
   },
   {
    "what": "`surfaces.gzip.bin`",
@@ -305,7 +305,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 46743
+   "actual": 47333
   },
   {
    "what": "`testHooks.js`",
@@ -361,7 +361,7 @@
    "unit": "B",
    "decision": null,
    "source": "tools/ci/bundleBudgets.ts",
-   "actual": 388
+   "actual": 575
   },
   {
    "what": "`vesselTree.js`",
@@ -377,7 +377,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1052049
+   "actual": 1062821
   },
   {
    "what": "JS clausura s0028 (Workers y ganchos incluidos)",
@@ -385,7 +385,7 @@
    "unit": "B",
    "decision": 322,
    "source": "tools/ci/personBundles.ts",
-   "actual": 1140057
+   "actual": 1141817
   },
   {
    "what": "Descarga del paquete s0028 (gzip)",
@@ -624,10 +624,10 @@
  ],
  "s0028DescriptorSha256": "3201286d10bc1723cd95729be079cba3813a1376fc461b0a524716c3b0533f8c",
  "tests": {
-  "vitestFiles": 358,
+  "vitestFiles": 370,
   "slowFiles": 40,
-  "e2eSpecs": 91,
-  "e2eTestCalls": 150,
+  "e2eSpecs": 92,
+  "e2eTestCalls": 152,
   "e2eShards": 12,
   "pythonContracts": 20
  }

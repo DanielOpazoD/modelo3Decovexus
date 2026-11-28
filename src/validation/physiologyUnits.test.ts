@@ -107,6 +107,85 @@ describe('Fibrilación auricular', () => {
       ),
     ).toBe(true);
   });
+
+  it('la sístole sigue al RR previo, no al siguiente, y la R siguiente no cae sobre la T', () => {
+    const r = new RhythmGenerator(AF_MODERATE_CONGESTION, AF_MODERATE_CONGESTION.seed ^ 0x51a7);
+    const seen = new Map<number, Beat>();
+    for (let t = 0; t <= 120; t += 0.25) for (const b of r.beatsAround(t)) seen.set(b.index, b);
+    const bs = [...seen.values()].sort((a, b) => a.index - b.index);
+    const qt: number[] = [];
+    const prev: number[] = [];
+    const next: number[] = [];
+    for (let i = 1; i < bs.length; i++) {
+      const b = bs[i];
+      const rrPrev = b.tR - bs[i - 1].tR;
+      expect(b.systoleScale).toBeCloseTo(Math.sqrt(rrPrev / 0.8), 12);
+      expect(b.tTend - b.tR).toBeCloseTo(0.4 * b.systoleScale, 12);
+      qt.push(b.tTend - b.tR);
+      prev.push(rrPrev);
+      next.push(b.rr);
+    }
+    const corr = (x: number[], y: number[]) => {
+      const mx = x.reduce((a, v) => a + v, 0) / x.length;
+      const my = y.reduce((a, v) => a + v, 0) / y.length;
+      let sxy = 0;
+      let sxx = 0;
+      let syy = 0;
+      for (let i = 0; i < x.length; i++) {
+        sxy += (x[i] - mx) * (y[i] - my);
+        sxx += (x[i] - mx) ** 2;
+        syy += (y[i] - my) ** 2;
+      }
+      return sxy / Math.sqrt(sxx * syy);
+    };
+    // el QT y la eyección dependen del ciclo que precede a la R; antes, 0,06 con el previo y 0,997 con el siguiente
+    expect(corr(qt, prev)).toBeGreaterThan(0.99);
+    expect(Math.abs(corr(qt, next))).toBeLessThan(0.3);
+    // refractariedad tras la sístole en curso: la R siguiente llega al menos 50 ms después del fin de la T
+    for (const b of bs) {
+      expect(b.rr).toBeGreaterThanOrEqual(0.3);
+      expect(b.tR + b.rr).toBeGreaterThanOrEqual(b.tTend + 0.05 - 1e-12);
+    }
+    // tras una pausa, un ciclo corto recorta la D: la R siguiente interrumpe el descenso y y la ventana D termina antes
+    const cut = bs.filter((b) => b.tY > b.tR + b.rr);
+    expect(cut.length).toBeGreaterThan(0);
+    for (const b of cut) {
+      const w = beatWindows(b).dWindow;
+      expect(w[1]).toBeCloseTo(b.tR + b.rr - 0.02, 12);
+      expect(w[1]).toBeGreaterThan(w[0]);
+    }
+    // con RR regular el RR previo es el siguiente: la escala es la de siempre
+    const regular = new RhythmGenerator({ ...clonePatient(NORMAL_ADULT), rrVariability: 0 }, 5);
+    for (const b of regular.beatsAround(20)) expect(b.systoleScale).toBe(Math.sqrt(b.rr / 0.8));
+  });
+
+  it('la R siguiente interrumpe el descenso y: el latido que sigue a una D recortada no hereda su flujo', async () => {
+    const { PhysiologyEngine } = await import('../physiology/engine');
+    const { AnatomyScene } = await import('./support/legacyPerson/scene');
+    const p = { ...clonePatient(AF_MODERATE_CONGESTION), respiratoryPattern: 'apnea-expiratory' as const };
+    const e = new PhysiologyEngine(p, new AnatomyScene(p).vesselAreas(), { historySeconds: 130 });
+    const seen = new Map<number, Beat>();
+    while (e.clock.t < 124) seen.set(e.step().beatIndex, e.rhythm.currentBeat(e.clock.t));
+    const v = (s: { velocities: { hvRight: number } }) => s.velocities.hvRight / 10;
+    const beats = [...seen.values()].filter((b) => b.tR > 4 && b.tR + b.rr < 123.9);
+    const rows = beats.slice(1).map((b, i) => {
+      const w = beatWindows(b);
+      const d = e.samples.filter((s) => s.t >= w.dWindow[0] && s.t <= w.dWindow[1]).map(v);
+      return { s: systolicPeak(e.samples, w.sWindow, v), d: Math.max(...d), afterCut: beats[i].tY > beats[i].tR + beats[i].rr };
+    });
+    const median = (x: number[]) => [...x].sort((a, b) => a - b)[x.length >> 1];
+    const sMedian = median(rows.map((r) => r.s));
+    const afterCut = rows.filter((r) => r.afterCut);
+    expect(rows.length).toBeGreaterThan(150);
+    expect(afterCut.length).toBeGreaterThan(3);
+    // antes, 1,6–1,8 veces la mediana: el descenso y seguía en la sístole siguiente y su S era la D del latido anterior
+    for (const r of afterCut) expect(r.s).toBeLessThan(1.25 * sMedian);
+    // y ninguna captura de cuatro latidos seguidos da S > D en este caso de S amortiguada (antes, 6 de 185)
+    for (let i = 0; i + 4 <= rows.length; i++) {
+      const w = rows.slice(i, i + 4);
+      expect(median(w.map((r) => r.s)), `latidos ${i}–${i + 3}`).toBeLessThan(median(w.map((r) => r.d)));
+    }
+  });
 });
 
 describe('Respiración', () => {
@@ -201,6 +280,7 @@ describe('Ventanas de medida', () => {
       tV: tR + 0.35 * s,
       tY: tR + 0.46 * s,
       tTend: tR + 0.4 * s,
+      systoleScale: s,
       atrialAmplitude: 1,
     };
   };

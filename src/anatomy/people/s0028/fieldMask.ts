@@ -2,7 +2,7 @@ import type { Vec3 } from '../../../core/vec3';
 import { S0028_FIELD_MASK as M } from '../../s0028FieldMaskData';
 import { S0028_BUNDLE as B } from './descriptor';
 import { S0028_MASK_FIELDS } from './fieldMaskFields';
-import { intHalf, s0028Pages } from './solidsData';
+import { intHalf, s0028PageUploads, s0028Pages } from './solidsData';
 
 /** 16 mm en half float: el tope al que están recortados todos los campos fuente de s0028 (y lo que vale fuera de su caja). */
 const SIXTEEN = 0x4c00;
@@ -117,5 +117,5 @@ export function s0028FieldMaskUploads(
     words[2 * i] = intHalf(mask[i] & 2047);
     words[2 * i + 1] = intHalf(mask[i] >>> 11);
   }
-  return pages.map((offset, i) => ({ offset, size: [32, 32, 1], data: words.subarray(2048 * i, 2048 * (i + 1)) }));
+  return s0028PageUploads(pages, words);
 }

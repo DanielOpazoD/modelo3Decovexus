@@ -3,6 +3,7 @@ import type { PersonSurfaces } from '../anatomy/person';
 import { torsoSkinPoint } from '../anatomy/primitives';
 import { bodySection } from '../anatomy/referenceBody';
 import type { AnatomyScene, VesselCaliber } from '../anatomy/scene';
+import { errorLog } from '../app/errorLog';
 import type { ProbeFrame, ProbePose, Transducer } from '../probe/probe';
 import { translateProbe } from '../probe/translation';
 import { buildAnatomyGroups } from './navigator3d/anatomyGroups';
@@ -37,6 +38,8 @@ export interface Navigator3DOptions {
 
 /** Campo de visión vertical de la cámara (grados) en un lienzo apaisado o cuadrado. */
 const FOV_DEG = 35;
+/** Fondo del lienzo 3D. */
+const CLEAR_COLOR = 0x0f1319;
 
 export interface NavigatorLayers {
   skin: boolean;
@@ -174,7 +177,7 @@ export class Navigator3D {
   ) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-    this.renderer.setClearColor(0x0f1319);
+    this.renderer.setClearColor(CLEAR_COLOR);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.1;
     host.appendChild(this.renderer.domElement);
@@ -218,6 +221,9 @@ export class Navigator3D {
     el.addEventListener('wheel', this.onWheel, { passive: false });
     el.addEventListener('contextmenu', (e) => e.preventDefault());
     el.addEventListener('pointermove', this.onHover);
+    // después de los de three: al restaurarse, su estado ya es el del contexto nuevo
+    el.addEventListener('webglcontextlost', this.onContextLost);
+    el.addEventListener('webglcontextrestored', this.onContextRestored);
   }
 
   /**
@@ -252,6 +258,8 @@ export class Navigator3D {
     window.removeEventListener('pointermove', this.onMove);
     window.removeEventListener('pointerup', this.onUp);
     window.removeEventListener('pointercancel', this.onUp);
+    this.renderer.domElement.removeEventListener('webglcontextlost', this.onContextLost);
+    this.renderer.domElement.removeEventListener('webglcontextrestored', this.onContextRestored);
     this.respiratoryMotion?.release();
     this.respiratoryMotion = null;
     this.staticTarget?.depthTexture?.dispose();
@@ -400,6 +408,18 @@ export class Navigator3D {
     this.dragging = null;
   };
 
+  // --- contexto WebGL (three ya hace el preventDefault que permite restaurarlo) ---
+
+  private onContextLost = (): void => {
+    errorLog.report('navegador3d', 'contexto WebGL 3D perdido');
+  };
+
+  /** three rehace su estado (`initGLContext`): el fondo vuelve a negro y la escena estática no tiene recursos. */
+  private onContextRestored = (): void => {
+    this.renderer.setClearColor(CLEAR_COLOR);
+    this.dirty = true;
+  };
+
   private onWheel = (e: WheelEvent): void => {
     e.preventDefault();
     if (e.metaKey || e.ctrlKey) {
@@ -444,6 +464,8 @@ export class Navigator3D {
 
   draw(): void {
     if (this.disposed) return;
+    // sin contexto no se consume nada pendiente: la restauración lo redibuja todo (con el MSAA del contexto nuevo)
+    if (this.renderer.getContext().isContextLost()) return;
     this.fitSize();
     const fr = this.opts.getFrame();
     // Un cine anterior cambia el plano adquirido aunque los controles permanezcan quietos.

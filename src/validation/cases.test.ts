@@ -5,6 +5,7 @@ import { CASE_VIGNETTES } from '../cases/vignettes';
 import { validatePatient } from '../physiology/patientState';
 import { VESSEL_IDS, VESSEL_META } from '../physiology/vessels';
 import { contextWarnings } from '../vexus/classification';
+import { KNOWN_LIMITATIONS } from './limitations';
 
 describe('Registro de casos y metadatos de vasos (Fase 1)', () => {
   it('cada id del registro es el id de su paciente, sin duplicados, y todos validan', () => {
@@ -72,6 +73,20 @@ describe('Contexto clínico de los casos (decisión 82)', () => {
     }
     // cuatro trampas: presión intraabdominal, IT grave, ventilación y cirrosis
     expect(CASE_IDS.filter((id) => CASE_TEACHING[id].trap !== null)).toHaveLength(4);
+  });
+
+  it('las viñetas no citan hallazgos que la anatomía no tiene (`no-ascites`, `abdominal-liver-size-fixed`)', () => {
+    // ni líquido en el peritoneo ni hígado que crezca: la imagen contradiría la viñeta, y la ascitis haría marcar «Presión
+    // intraabdominal alta». Se admite la ascitis controlada del cirrótico, que la limitación ya cita.
+    for (const id of ['no-ascites', 'abdominal-liver-size-fixed']) expect(KNOWN_LIMITATIONS.has(id), id).toBe(true);
+    for (const id of CASE_IDS) expect(CASE_VIGNETTES[id], id).not.toMatch(/\bascitis\b(?! está controlada)|líquido libre|hepatomegalia/i);
+  });
+
+  it('la trampa de la PIA no saca la suprahepática del abdomen ni la declara inmune a la PIA fuera del simulador', () => {
+    // desemboca en la cava bajo el diafragma; que la PIA no cambie su Doppler es del modelo (traps.test.ts), no de la clínica
+    const { trap } = CASE_TEACHING['abdominal-hypertension'];
+    expect(trap).not.toMatch(/por encima del abdomen|la PIA no la toca/);
+    expect(trap).toMatch(/bajo el diafragma/);
   });
 
   it('los confusores del contexto son del clasificador, marcados con true, y cada uno da su aviso', () => {
