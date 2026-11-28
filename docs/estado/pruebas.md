@@ -27,6 +27,10 @@ Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/es
 | Contratos Python   | fuente y exportadores del TAC de la migración s0028                                                                         | local, al tocar `tools/anatomy`     |
 | Banco de fidelidad | textura e interfaces en GPU real                                                                                            | a mano en cada PR de imagen         |
 
+`hepaticReversalScale.test.ts` reproduce en la capa rápida cómo las medianas independientes invierten la relación S/D al
+variar los picos entre latidos (decisión 449). La matriz `examChain.test.ts` verifica la misma relación sobre la IQ de FA con
+respiración tranquila.
+
 ## Tiempos
 
 Medidos en el cierre serial de P3 r2 sobre este Mac (10 núcleos, carga ajena variable;

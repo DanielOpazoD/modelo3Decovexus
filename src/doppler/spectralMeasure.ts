@@ -86,6 +86,7 @@ export interface ObservedHepatic {
   kind: 'hepatic';
   /** Control de calidad de la captura: si hay problema, el patrón no debe entrar en el grado. */
   quality: MeasurementQuality;
+  /** Picos resumidos de los mismos latidos centrales cuando S y D son anterógradas. */
   sPeak: number;
   dPeak: number;
   aPeak: number;
@@ -332,15 +333,25 @@ export function measureObservedHepatic(columns: readonly SpectralColumn[], beats
     if (!Number.isNaN(a)) mark(marks, trace, w.aWindow, a, anterogradeSign, 'A');
   }
   if (!sList.length) return null;
-  const sPeak = median(sList);
-  const dPeak = median(dList);
+  let sPeak = median(sList);
+  let dPeak = median(dList);
   const quality = qualityOf(columns, beats, opts, 'both', { s: sList, d: dList });
+  let bandPeak = Math.max(Math.abs(sPeak), dPeak);
+  if (quality.issue === null && sList.every((s, i) => s > 0 && dList[i] > 0)) {
+    // Las medianas independientes pueden invertir S/D al mezclar latidos de distinta amplitud.
+    // La diferencia de este par es la mediana de S − D de cada latido.
+    const pairs = sList.map((s, i) => ({ s, d: dList[i] })).sort((a, b) => a.s - a.d - (b.s - b.d));
+    const lo = pairs[Math.floor((pairs.length - 1) / 2)];
+    const hi = pairs[Math.floor(pairs.length / 2)];
+    sPeak = (lo.s + hi.s) / 2;
+    dPeak = (lo.d + hi.d) / 2;
+    bandPeak = Math.max(bandPeak, sPeak, dPeak);
+  }
   // Exclusión prudente, no prueba de plegado: con una onda en el último 15 % de la banda el estimador no separa un pico real del plegado, que a escala
   // muy baja llena el espectro sin el hueco que lo delata. «Suba la escala» y se mide. Más lejos del borde, una S retrógrada real se mide (decisión 299)
   if (
     quality.issue === null &&
-    Math.max(Math.abs(sPeak), dPeak) >=
-      (PORTAL_CLIP_NYQUIST * velocityFromShiftMmS(columns[0].prfHz / 2, opts.f0Hz, opts.angleCorrectionRad)) / 10
+    bandPeak >= (PORTAL_CLIP_NYQUIST * velocityFromShiftMmS(columns[0].prfHz / 2, opts.f0Hz, opts.angleCorrectionRad)) / 10
   )
     quality.issue = 'aliasing';
   return {

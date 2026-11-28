@@ -12829,3 +12829,13 @@ tiene la onda en su borde a los dos lados. Ningún umbral se mueve.
 aliasing a ±10–20.
 **Verificación.** `measureQuality.test.ts` (onda entera plegada en su ventana de fase) y la e2e `venousViewer.spec.ts:384` fallan sin el
 cambio.
+
+## 449. La captura suprahepática conserva el par S y D de cada latido
+
+**Contexto.** En Linux x64, FA respirando a los 24 s: tres de cuatro latidos con S < D y 90–100 % de sangre en la puerta. Las dos
+medianas independientes daban S 6,88 y D 6,25 cm/s y la captura se aceptaba como normal.
+**Opciones.** Rechazar picos cercanos perdería una captura con ambos picos visibles. Se compara cada par antes de resumirlo.
+**Decisión.** Con calidad aprobada y S y D anterógradas, se promedian los pares centrales ordenados por S − D.
+**Consecuencias.** La diferencia publicada es la mediana por latido (−0,94 cm/s en el caso). La guarda de Nyquist comprueba
+también esos picos y la calidad recibe los signos por latido.
+**Verificación.** Dos espectros en `hepaticReversalScale` y la captura original de `examChain` en Node 24.22.3/Linux x64.

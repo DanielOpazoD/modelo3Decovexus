@@ -452,3 +452,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [446](DECISIONS.md#L12794) | Un hueco más breve que la ventana de análisis no hace intermitente la vena renal | vigente |
 | [447](DECISIONS.md#L12807) | Una S en el suelo de su banda no decide el patrón renal | vigente |
 | [448](DECISIONS.md#L12820) | Una vena renal plegada entera por el Nyquist es aliasing, no un hueco breve | vigente |
+| [449](DECISIONS.md#L12833) | La captura suprahepática conserva el par S y D de cada latido | vigente |
