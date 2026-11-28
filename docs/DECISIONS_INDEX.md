@@ -453,3 +453,4 @@ Generado por `npm run docs:index` — no editar a mano.
 | [447](DECISIONS.md#L12807) | Una S en el suelo de su banda no decide el patrón renal | vigente |
 | [448](DECISIONS.md#L12820) | Una vena renal plegada entera por el Nyquist es aliasing, no un hueco breve | vigente |
 | [449](DECISIONS.md#L12833) | La captura suprahepática conserva el par S y D de cada latido | vigente |
+| [450](DECISIONS.md#L12843) | Metal interpola los mismos nodos de pared que TypeScript | vigente |

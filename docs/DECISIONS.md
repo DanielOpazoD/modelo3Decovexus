@@ -12839,3 +12839,13 @@ medianas independientes daban S 6,88 y D 6,25 cm/s y la captura se aceptaba como
 **Consecuencias.** La diferencia publicada es la mediana por latido (−0,94 cm/s en el caso). La guarda de Nyquist comprueba
 también esos picos y la calidad recibe los signos por latido.
 **Verificación.** Dos espectros en `hepaticReversalScale` y la captura original de `examChain` en Node 24.22.3/Linux x64.
+
+## 450. Metal interpola los mismos nodos de pared que TypeScript
+
+**Contexto.** El filtrado de la EDT en Metal redondeaba los pesos. El gradiente proyectaba algunos puntos sobre otra celda de pared.
+**Opciones.** Consultar los ocho vértices por muestra corrigió la paridad y excedió el techo de lecturas.
+**Decisión.** Empaquetar cuartetos XY en la unidad del perfil e interpolar profundidad y diferencia central en el shader.
+**Consecuencias.** Textura adicional de 10.502.144 B. Se mantienen 17 lecturas (18 en la rampa U) y 910 B de margen JS de s0028.
+**Verificación.** En Metal, tres equivalencias y pared D/E pasan. Error máximo volumétrico del sano de 6,61 a 0,008 mm.
+**Coste.** Con la sonda quieta en 24 estados pareados, el M5 Max dio +0,24 ms de GPU (+5,2 %) y 287/288 lecturas a 60 fps.
+La caída inicial en apnea espiratoria no se reprodujo en dos cruces. Falta medir en el M4 de referencia.
