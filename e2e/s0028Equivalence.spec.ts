@@ -3,10 +3,10 @@ import { BOOT_MS, budget } from './support';
 
 /**
  * Gate de equivalencia TS ↔ GLSL de s0028, el de `equivalence.spec.ts` sobre la persona que va a quedar sola (decisión 340):
- * antes de retirar `legacy`, que hoy es la que vigila el invariante 1 en su conjunto, s0028 necesita el suyo. Las diez poses de
+ * antes de retirar `legacy`, que hoy es la que vigila el invariante 1 en su conjunto, s0028 necesita el suyo. Las doce poses de
  * cada caso (tejido lejos de bordes, vaso y velocidad), el volumen del tronco (exacto lejos de las caras, ≥ 1 mm) y la cáscara
- * de las caras. En GPU nativa la pared directa de s0028 se aparta de la CPU una fracción de milímetro (limitación
- * `s0028-wall-direct`); en SwiftShader, el de la CI, coinciden (decisión 344): aquí se exige lo mismo que a `legacy`.
+ * de las caras. La proyección de pared parte de los mismos nodos de profundidad en ambos backends. Aquí se exige
+ * lo mismo en Metal y en SwiftShader, y la misma cota que a `legacy`.
  */
 const CASES = ['normal-adult', 'severe-congestion', 'af-moderate-congestion'] as const;
 

@@ -1,6 +1,6 @@
 # Estado vigente: presupuestos
 
-Actualizado: 2026-11-26 sobre main `70e3691`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
+Actualizado: 2026-11-28 sobre main `a5aa92a`. Todos los techos que hoy aplica el código, con la decisión que los fijó y
 su valor actual. Los techos no se suben para obtener verde (decisión 322); subir uno es una decisión propia, declarada en
 la PR y en `docs/DECISIONS.md`.
 
@@ -22,7 +22,7 @@ la PR y en `docs/DECISIONS.md`.
 
 <!-- tabla generada por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/estado.ts`. No se copian a mano.
+Medido en el candidato basado en main `a5aa92a` el 2026-11-28 con `tools/docs/estado.ts`. No se copian a mano.
 
 | Techo                                               |      Límite |      Actual |     Margen | Unidad   | Decisión | Fuente                                 |
 | --------------------------------------------------- | ----------: | ----------: | ---------: | -------- | -------- | -------------------------------------- |
@@ -33,7 +33,7 @@ Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/es
 | `anatomy.glsl.js`                                   |     122.880 |      23.482 |     99.398 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `anatomyScene.js`                                   |     122.880 |      16.864 |    106.016 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `annotation-capacity.gzip.bin`                      |     856.999 |     334.410 |    522.589 | B        | 320      | `tools/ci/bundleBudgets.ts`            |
-| `bootstrap.js`                                      |     343.040 |     263.711 |     79.329 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `bootstrap.js`                                      |     343.040 |     264.057 |     78.983 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `candidate-manifest.bin`                            |      38.617 |      38.309 |        308 | B        | 321      | `tools/ci/bundleBudgets.ts`            |
 | `cpu.js`                                            |     122.880 |      63.797 |     59.083 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `cpu.js`                                            |     122.880 |      14.410 |    108.470 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -49,12 +49,12 @@ Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/es
 | `navigator3d.js`                                    |     122.880 |      32.525 |     90.355 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `personAssets.js`                                   |     122.880 |        4287 |    118.593 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `preload-helper.js`                                 |     122.880 |        1417 |    121.463 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `pwMeasurements.js`                                 |     122.880 |      17.529 |    105.351 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `pwMeasurements.js`                                 |     122.880 |      17.753 |    105.127 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `query.js`                                          |     122.880 |        3737 |    119.143 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `reference-body.bin`                                |        2080 |        2080 |          0 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `retroperitoneum.js`                                |     122.880 |        5328 |    117.552 | B        | —        | `tools/ci/bundleBudgets.ts`            |
+| `runtime.js`                                        |     122.880 |      27.530 |     95.350 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `runtime.js`                                        |     122.880 |        1631 |    121.249 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| `runtime.js`                                        |     122.880 |      25.995 |     96.885 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `series.js`                                         |     122.880 |        2204 |    120.676 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `skin-polar.gzip.bin`                               |     947.509 |     947.509 |          0 | B        | 317      | `tools/ci/bundleBudgets.ts`            |
 | `sourceVolume.js`                                   |     122.880 |        2366 |    120.514 | B        | —        | `tools/ci/bundleBudgets.ts`            |
@@ -72,8 +72,8 @@ Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/es
 | `three.js`                                          |     385.024 |     369.177 |     15.847 | B        | 307      | `tools/ci/bundleBudgets.ts`            |
 | `units.js`                                          |     122.880 |         575 |    122.305 | B        | —        | `tools/ci/bundleBudgets.ts`            |
 | `vesselTree.js`                                     |     122.880 |     111.319 |     11.561 | B        | —        | `tools/ci/bundleBudgets.ts`            |
-| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.062.821 |       7259 | B        | 322      | `tools/ci/personBundles.ts`            |
-| JS clausura s0028 (Workers y ganchos incluidos)     |   1.144.832 |   1.141.817 |       3015 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura default (Workers y ganchos incluidos)   |   1.070.080 |   1.063.391 |       6689 | B        | 322      | `tools/ci/personBundles.ts`            |
+| JS clausura s0028 (Workers y ganchos incluidos)     |   1.144.832 |   1.143.922 |        910 | B        | 322      | `tools/ci/personBundles.ts`            |
 | Descarga del paquete s0028 (gzip)                   |  25.000.000 |  21.199.547 |  3.800.453 | B        | 318      | `src/anatomy/people/s0028/surfaces.ts` |
 | Cada `.gzip` fijado del paquete s0028 (por archivo) |  19.510.002 |   9.048.961 | 10.461.041 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
 | Textura abdominal s0028 en memoria (RAW)            | 139.921.010 | 139.917.029 |       3981 | B        | 317      | `src/anatomy/people/s0028/runtime.ts`  |
@@ -89,14 +89,14 @@ Programas especializados (`shaderLimits.test.ts`, decisiones 309 y 320): tokens 
 
 | Programa                  |  Tokens default / s0028 / techo |    Uso | Ramas default / s0028 / techo |    Uso | Ranuras | Samplers |
 | ------------------------- | ------------------------------: | -----: | ----------------------------: | -----: | ------: | -------: |
-| `FRAG_RAWFIELD`           | 1.273.396 / 420.631 / 1.385.000 | 91,9 % |        10.195 / 3120 / 11.060 | 92,2 % |     136 |       10 |
-| `FRAG_RAWFIELD_ECHO`      |     530.414 / 170.475 / 577.000 | 91,9 % |            4263 / 1220 / 4640 | 91,9 % |     137 |       16 |
-| `FRAG_RAWFIELD_CLASS`     |     420.291 / 132.431 / 455.000 | 92,4 % |             3543 / 943 / 3830 | 92,5 % |     136 |       10 |
-| `FRAG_RAWFIELD_ELEVATION` |     419.082 / 131.222 / 455.000 | 92,1 % |             3528 / 928 / 3830 | 92,1 % |     137 |       15 |
-| `FRAG_RAWFIELD_GRADIENT`  |     321.839 / 103.552 / 351.000 | 91,7 % |             2510 / 641 / 2760 | 90,9 % |     138 |       15 |
-| `FRAG_TRANS_HITS`         |     470.815 / 177.602 / 513.000 | 91,8 % |            4132 / 1394 / 4470 | 92,4 % |     101 |        6 |
-| `FRAG_TRANS_HITS_GRID`    |      231.423 / 82.643 / 252.000 | 91,8 % |             2044 / 676 / 2210 | 92,5 % |     102 |       11 |
-| `FRAG_COLOR`              |      227.909 / 77.426 / 248.000 | 91,9 % |             2001 / 633 / 2160 | 92,6 % |     110 |        7 |
+| `FRAG_RAWFIELD`           | 1.273.396 / 432.808 / 1.385.000 | 91,9 % |        10.195 / 3120 / 11.060 | 92,2 % |     136 |       10 |
+| `FRAG_RAWFIELD_ECHO`      |     530.414 / 175.638 / 577.000 | 91,9 % |            4263 / 1220 / 4640 | 91,9 % |     137 |       16 |
+| `FRAG_RAWFIELD_CLASS`     |     420.291 / 137.316 / 455.000 | 92,4 % |             3543 / 943 / 3830 | 92,5 % |     136 |       10 |
+| `FRAG_RAWFIELD_ELEVATION` |     419.082 / 136.107 / 455.000 | 92,1 % |             3528 / 928 / 3830 | 92,1 % |     137 |       15 |
+| `FRAG_RAWFIELD_GRADIENT`  |     321.839 / 107.755 / 351.000 | 91,7 % |             2510 / 641 / 2760 | 90,9 % |     138 |       15 |
+| `FRAG_TRANS_HITS`         |     470.815 / 182.900 / 513.000 | 91,8 % |            4132 / 1394 / 4470 | 92,4 % |     101 |        6 |
+| `FRAG_TRANS_HITS_GRID`    |      231.423 / 84.875 / 252.000 | 91,8 % |             2044 / 676 / 2210 | 92,5 % |     102 |       11 |
+| `FRAG_COLOR`              |      227.909 / 79.241 / 248.000 | 91,9 % |             2001 / 633 / 2160 | 92,6 % |     110 |        7 |
 
 <!-- fin de la tabla generada -->
 

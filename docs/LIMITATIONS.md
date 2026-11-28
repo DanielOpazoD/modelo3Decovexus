@@ -743,28 +743,21 @@ Lo que se midió buscando deuda de imagen y se dejó como está, con la cifra qu
 
 ## Candidato experimental s0028 (317/318)
 
-`s0028-wall-direct`: P2 r2b integra la pared regional en CPU, Worker del corte, 3D y GPU con la regla directa; se
-usa logical-surface-v2, cobertura offline 90,98 %, aceptada por el propietario el 04-11-2026 (decisión 320); no es pared ni
-adquisición aprobada. Los 267 huecos cerrados de la carta (hasta 200 nodos) se rellenan al cargarla por interpolación,
-rotulados como estimación, y ceden ante un órgano medido (decisión 376); el U abierto del dorso y los flancos queda como
-tejido no segmentado U, sin cara interna para la clasificación. Para la
-sonda (r2b-U), un nodo U toma la cara E estimada del nodo conocido más cercano a ≤12 mm o acopla sólo por la piel, sin
-compresión; la respiración U es una rampa por fila (p10/p90 de la cara interna conocida), no la cara local, y salta en
-la frontera con la celda D/E. Desde la decisión 374 acopla todo elemento que toca la piel: donde la pared se dobla bajo la
-cara, la tabla de compresión interpolada puede deformarla algo.
-La fracción U de celdas, los pliegues
-y las proyecciones sin prueba se registran por ventana en la [migración](anatomia/migracion-s0028.md). Intercostal
-sigue bloqueada/P8; posterior U/P3. En GPU nativa (Metal) el filtro del hardware aparta la cara de la pared de la que mide
-la CPU 0,06 mm (p95) y hasta 0,23 mm, menos de un píxel, y a 45–60 mm de la piel 9 de 3.264 puntos respiran con otra celda de
-la carta; en SwiftShader coinciden (decisión 344). Medido el 12-11-2026 en un M4: la GPU lee la profundidad bajo la piel con
-hasta 0,008 mm de error y a 40–50 mm la proyección cae hasta 0,3 mm al lado; en los planos de imagen de tres ventanas anteriores
-(172.800 puntos cada uno, a 0,3 mm) el 0,05–0,12 % da otro tejido que la CPU, todos a una muestra de un borde. No se corrige: la
-lectura exacta sube la consulta de pared de 17 a 30 lecturas sin cambio visible. No es validación clínica.
+`s0028-wall-direct`: P2 r2b integra la pared regional en CPU, Worker del corte, 3D y GPU con la regla directa. Usa
+logical-surface-v2, cobertura offline 90,98 %, aceptada por el propietario el 04-11-2026 (decisión 320). La aprobación de la pared
+y la adquisición sigue pendiente. Los 267 huecos cerrados de la carta (hasta 200 nodos) se rellenan al cargarla por interpolación,
+rotulados como estimación, y ceden ante un órgano medido (decisión 376). El U abierto del dorso y los flancos queda como
+tejido no segmentado U, sin cara interna para la clasificación. Para la sonda (r2b-U), un nodo U toma la cara E estimada del nodo
+conocido más cercano a ≤ 12 mm o acopla sólo por la piel, sin compresión. La respiración U sigue una rampa por fila (p10/p90 de
+la cara interna conocida), con un salto en la frontera con la celda D/E. Desde la decisión 374 acopla todo elemento que toca la
+piel. Donde la pared se dobla bajo la cara, la tabla de compresión interpolada puede deformarla algo. La fracción U de celdas,
+los pliegues y las proyecciones sin prueba se registran por ventana en la [migración](anatomia/migracion-s0028.md). Intercostal
+sigue bloqueada/P8 y posterior U/P3. La GPU interpola los mismos nodos de profundidad de la pared que la CPU. Los cuartetos XY
+ocupan 10.502.144 B en la unidad del perfil corporal. La equivalencia de los tres casos pasa en Metal con sus cotas originales.
 
 `s0028-solids-p3` (321, pendiente): P3 clasifica sólidos y compartimento posterior con la misma política en CPU, Worker
-del corte y GPU (r3); la GPU coincide con la CPU salvo bordes subpíxel (empates nearest Float32/double y la carta P2 a
-50–72 mm de profundidad en Metal). El interior renal, Gerota, el cuadrado lumbar aislado, el diafragma posterior y los
-compartimentos perirrenal/pararrenal son U. El contorno renal es una cara acústica estimada en el borde O de la máscara,
+del corte y GPU (r3). Los empates subpíxel de `nearest` entre Float32 y double pueden distinguirse. El interior renal,
+Gerota, el cuadrado lumbar aislado, el diafragma posterior y los compartimentos perirrenal/pararrenal son U. El contorno renal es una cara acústica estimada en el borde O de la máscara,
 también con U a ambos lados; en la eco sólo se ve como línea donde la incidencia es casi normal. Se conservan sin
 resolver los conflictos de dos dueños (693 puntos a 1,5 mm, casi todos grasa compatible D dentro de la banda P2 conocida
 y hueso+cartílago) y el solape real hígado/bazo con la banda P2 (4 y 2 vóxeles fuente). La compresión rígida por dueño

@@ -38,10 +38,8 @@ test('la GPU s0028 conserva la banda D/E con identidad U y el panículo regional
     JSON.stringify(solids),
   ).toEqual([]);
   // Normales analíticas de las caras de pared: GPU frente a CPU con el contrato del banco de pared (smoke.spec).
-  // La proyección a la piel deriva la EDT de 3 mm con siete lecturas filtradas por el hardware. SwiftShader filtra en
-  // coma flotante y da la cara de la CPU (0 puntos distintos, cara a 0,0001 mm, norma 9e-6). Metal filtra con pesos de
-  // 8 bits: en un M4 la cara se aparta 0,06 mm (p95) y hasta 0,23 mm a 30 mm de profundidad, y la epigástrica da
-  // 1,2 % de puntos distintos y 0,014 de norma. Menos de un píxel de la imagen (decisión 344): cada backend lleva su cota.
+  // La proyección interpola explícitamente los nodos de la EDT en ambos motores. Se conservan las cotas originales
+  // del banco por backend para las normales y las distancias, incluidas las otras interpolaciones de la carta.
   const renderer = await page.evaluate(() => {
     const gl = window.__vexusTest!.sim().renderer.gl;
     const ext = gl.getExtension('WEBGL_debug_renderer_info');
@@ -75,9 +73,8 @@ test('la GPU s0028 conserva la banda D/E con identidad U y el panículo regional
     expect(resp.maxWeightDiffKnown, respTag).toBeLessThan(0.05);
     expect(resp.maxGradientDiff, respTag).toBeLessThan(0.01);
   } else {
-    // Metal (M4): a 45–60 mm de la piel el mismo filtro lleva la proyección de 9 de 3.264 puntos a otra celda de la carta
-    // (peso hasta 0,92 distinto); el resto: p99 del peso 0,006 y del gradiente 0,059/mm. Un máximo no mide eso: se acota
-    // la fracción de puntos aislados y los percentiles.
+    // La rampa respiratoria U sigue usando una lectura filtrada por fila. Conservamos los límites que cubren los
+    // percentiles y la fracción de discrepancias aisladas en Metal (decisión 344).
     expect(resp.weightOutliers / resp.points, respTag).toBeLessThan(0.01);
     expect(resp.p99WeightDiffU, respTag).toBeLessThan(0.02);
     expect(resp.p99GradientDiff, respTag).toBeLessThan(0.1);

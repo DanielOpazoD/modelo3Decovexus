@@ -1,6 +1,6 @@
 # Estado vigente: imagen
 
-Actualizado: 2026-11-26 sobre main `70e3691`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
+Actualizado: 2026-11-28 sobre main `a5aa92a`. Cómo se forma hoy la imagen en la GPU, qué programas la componen y qué
 techos los limitan. La explicación de cada pasada está en `docs/ARCHITECTURE.md`; las decisiones, en `docs/DECISIONS.md`.
 
 ## A0 nativa current (339)
@@ -50,7 +50,7 @@ samplers y ranuras de uniforms: decisión 317):
 
 <!-- programas: generado por tools/docs/estado.ts -->
 
-Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/estado.ts`.
+Medido en el candidato basado en main `a5aa92a` el 2026-11-28 con `tools/docs/estado.ts`.
 
 | Programa                  | Samplers default / s0028 | Ranuras default / s0028 | Uso de tokens (peor persona) | Uso de ramas |
 | ------------------------- | -----------------------: | ----------------------: | ---------------------------: | -----------: |
@@ -114,6 +114,7 @@ con tres copias del clasificador (12 ms; por etapas, 3,6, decisión 406), y el r
 llegaba justo después del refresco (decisión 405). La ecografía cuesta 5–7 ms de GPU por cuadro (antes 15–19). Al mover la sonda,
 26–37 fps: el límite pasa a ser el contacto en la CPU (10 ms por pose, PR 63) y la carga ajena de la máquina.
 
-Con la sonda quieta, la lista de tubos deshace la respiración (421) y sigue a D a pasos de 10 mm (445): la rejilla de tubos se rehace
-4–6 veces por respiración tranquila y 8–10 en la profunda (antes hasta 16 y 31). Falta anotar los fps del bucle en profunda y en apnea
-inspiratoria.
+La lista de tubos deshace la respiración (421) y sigue D cada 10 mm (445). La rejilla se rehace 4–6 veces en tranquila y 8–10
+en profunda (antes hasta 16 y 31). En el M5 Max, la EDT de pared (450) dio 60 fps en 287/288 lecturas de 24 estados pareados.
+Profunda y apnea inspiratoria dieron 60 fps en todas sus lecturas. Una lectura inicial de 4 fps en apnea espiratoria no se reprodujo
+en dos cruces. Mediana pareada de GPU +0,24 ms (+5,2 %). Falta la medida en el M4 de referencia.

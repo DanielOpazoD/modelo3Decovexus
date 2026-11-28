@@ -9,7 +9,7 @@ const offsets = (rows: readonly (readonly number[])[]) => rows.map((v) => `ivec3
  * Regla directa P2 (par GLSL de `s0028Wall.ts`, @twin s0028-pared): proyección EDT `p − τ·∇τ/|∇τ|²`, semilla polar y carta bilineal en la
  * reserva P1; identidad nearest independiente de la geometría D/E. La carta y los centros se leen con texelFetch y se
  * interpolan aquí, en el orden de la CPU: los huecos U son NaN y el filtro del hardware mezcla el corte z vecino (otra
- * tesela) aun con peso 0 (NaN·0 = NaN). Consulta: 7 EDT + 2 centros + 8 esquinas = 17 lecturas; el gradiente analítico
+ * tesela) aun con peso 0 (NaN·0 = NaN). Consulta: 7 EDT en cuartetos XY + 2 centros + 8 esquinas = 17 lecturas; el gradiente analítico
  * usa las mismas esquinas. Sin bucles: el Newton S−dN queda offline. El peso respiratorio de una celda U lee además la
  * rampa de su fila (bloque derivado E, una lectura filtrada: 18); el mapa E del contacto sólo vive en la CPU.
  */
@@ -20,7 +20,7 @@ export const S0028_WALL_GLSL = /* glsl */ `
 #define MAX_TUBE_SEGMENTS ${S0028_TUBE_SEGMENTS}
 const ivec3 S28_WALL_OFF[16]=ivec3[](${offsets(B.wall.placements)});
 vec2 s28Project(vec3 p,out float depth,out vec3 g,out vec3 s,out vec2 xy){
-  depth=torsoDepth(p);g=s28DepthGradient(p);
+  depth=s28DepthAndGradient(p,g);
   s=p-depth*g/max(dot(g,g),0.000001);
   float row=clamp((s.z+210.0)/1.5,0.0,180.0),t=row-floor(row);
   int lo=int(floor(row)),hi=min(180,lo+1);

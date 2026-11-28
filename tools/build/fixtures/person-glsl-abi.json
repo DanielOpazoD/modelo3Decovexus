@@ -683,7 +683,13 @@
     ["elevationShare", "rV"],
     ["share", "rY"],
     ["countTubes", "rW"],
-    ["tubeNearbyGap", "rX"]
+    ["tubeNearbyGap", "rX"],
+    ["s28DepthAndGradient", "_ed"],
+    ["s28DepthQuad", "_eq"],
+    ["crossZ", "_ez"],
+    ["innerSpan", "_ei"],
+    ["outerSpan", "_eo"],
+    ["rest", "_er"]
   ],
   "afterDot": [
     "COMP_NODES",

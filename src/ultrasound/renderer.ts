@@ -701,7 +701,17 @@ export class UltrasoundRenderer {
     this.couplingTex = createTexture(gl, LINES, 1, gl.R32F, gl.RED, gl.FLOAT, gl.LINEAR);
     this.tubeGridTex = createTexture(gl, 1, 1, gl.RG32F, gl.RG, gl.FLOAT, gl.NEAREST);
     this.sceneTex = createTexture(gl, SCENE_TEX_W, SCENE_TEX_H, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);
-    this.bodyTex = createTexture(gl, 1, 1, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);
+    const depth = this.gpu?.bodyDepthTexture?.();
+    if (depth) {
+      this.bodyTex = createTexture(gl, depth.width, depth.height, gl.RGBA16F, gl.RGBA, gl.HALF_FLOAT, gl.NEAREST);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, depth.width, depth.height, gl.RGBA, gl.HALF_FLOAT, depth.data);
+      if (gl.getError() !== gl.NO_ERROR) {
+        gl.deleteTexture(this.bodyTex);
+        throw new Error('No se pudo subir la EDT de la pared');
+      }
+    } else {
+      this.bodyTex = createTexture(gl, 1, 1, gl.RGBA32F, gl.RGBA, gl.FLOAT, gl.NEAREST);
+    }
     this.abdominalTex = createAbdominalTexture(gl, this.currentScene.hasAbdominalAtlas, false, this.currentScene.person, this.gpu);
     this.thoracicTex = createAbdominalTexture(gl, this.currentScene.hasAbdominalAtlas, true, this.currentScene.person, this.gpu);
     this.uploadSceneStatic();
@@ -906,13 +916,15 @@ export class UltrasoundRenderer {
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, SCENE_TEX_W, SCENE_TEX_H, gl.RGBA, gl.FLOAT, this.sceneData);
     // La escena conserva su textura de diez filas y el perfil fuente inspeccionable.
     // Solo esta tabla estática reconstruida crece; se sube una vez por paciente (216).
-    const coefficients = s.torso.profile ? bodyCoefficients(s.torso.profile) : new Float32Array(4);
-    const width = s.torso.profile ? SCENE_TEX_W : 1,
-      height = Math.ceil(coefficients.length / (width * 4));
-    const bodyData = new Float32Array(width * height * 4);
-    bodyData.set(coefficients);
-    gl.bindTexture(gl.TEXTURE_2D, this.bodyTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, bodyData);
+    if (!this.gpu?.bodyDepthTexture) {
+      const coefficients = s.torso.profile ? bodyCoefficients(s.torso.profile) : new Float32Array(4);
+      const width = s.torso.profile ? SCENE_TEX_W : 1,
+        height = Math.ceil(coefficients.length / (width * 4));
+      const bodyData = new Float32Array(width * height * 4);
+      bodyData.set(coefficients);
+      gl.bindTexture(gl.TEXTURE_2D, this.bodyTex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, bodyData);
+    }
     for (let i = 0; i < TISSUE_COUNT; i++) {
       // Frecuencia efectiva de penetración del perfil (banda baja por atenuación)
       const look = this.gpu?.tissueLook?.[i];
