@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { bootWithoutErrors, budget, withinFrames } from './support';
+import { bootWithoutErrors, budget, withinFrames, withinSimSeconds } from './support';
 
 async function pointAt(page: Page, rgb: number[]) {
   const p = await page.locator('#cutmap').evaluate((el, color) => {
@@ -23,7 +23,7 @@ test('Atlas: identifica y demarca hígado/porta sin alterar señal; sale, cambia
   budget(180_000);
   const errors = await bootWithoutErrors(page, '?e2e=app&abdomen=atlas');
   await page.locator('[data-window="portal"]').click();
-  await withinFrames(page, 100, 'pose portal completa', async () => {
+  await withinSimSeconds(page, 3, 'pose portal completa', async () => {
     const p = await page.evaluate(() => window.__vexusTest!.sim().pose);
     return (
       (Math.abs(p.phi - (173 * Math.PI) / 180) < 1e-8 &&

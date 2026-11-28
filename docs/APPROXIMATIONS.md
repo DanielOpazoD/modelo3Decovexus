@@ -26,6 +26,14 @@ citadas) es la referencia.
 | Casos trampa (`src/cases`)               | Cada trampa es un caso de referencia con solo el confusor (decisión 82): PIA 16 y PAD 14; IT 0,9, PAD 8 y VD 0,7; presión positiva con PEEP 10, FR 16 y PAD 7; resistencia intrahepática ×5 y distensibilidad 0,6. La cirrosis del modelo es esa resistencia (≥ 2 en `cases.test.ts`).                                                                                                                                                                                                                                                                                           | Discordancia robusta en respiración tranquila y en apnea; controles sin el confusor.                       | Casos publicados con PAD medida (PIA, IT, PEEP, gradiente portal).                                                              |
 | Porta invertida (`src/cases`)            | La congestión grave con IT 1,0 y PAD 22 (decisión 394): la onda v gigante invierte la porta en sístole (−15 a +27 cm/s, PF 130–155 %).                                                                                                                                                                                                                                                                                                                                                                                                                                           | Los tres territorios graves y la VCI dilatada salen del motor; control: el caso grave no la invierte.      | Casos publicados con PAD, IT y Doppler portal medidos en el mismo paciente.                                                     |
 
+### Ley transmural de las suprahepáticas (451)
+
+El área relativa es 1 a 2 mmHg transmurales, con área residual del 25 %. Crece 0,16 por mmHg con dos tramos de menor
+distensibilidad: 0,04 entre −1 y 1,7 mmHg por el sostén del parénquima y 0,09 por encima de 10 mmHg por distensión de la pared.
+El factor radial alimenta la anatomía, la velocidad Q/A y la resistencia de salida. La PIA aproxima la presión del
+tejido alrededor de la vena. El estrechamiento de la suprahepática media de 6,0 a 3,8 mm durante Valsalva respalda la
+dirección del efecto. La relación presión-área es una extrapolación. [Bang et al., 2015](https://doi.org/10.14366/usg.14029)
+
 ## Anatomía (`src/anatomy`)
 
 La decisión339 reorganiza el seno y las pirámides current y conecta seis raíces interlobares

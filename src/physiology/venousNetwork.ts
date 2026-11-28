@@ -161,11 +161,15 @@ export function hepaticPressureFromVolume(v: number, k: NetworkParams): number {
 }
 
 /**
- * Escala de radio de las suprahepáticas con la presión hepática (misma ley que usa la
- * anatomía): A ∝ 1 + 0,12·(P − 7), con suelo 0,5.
+ * Escala de radio de las suprahepáticas para la anatomía, Q/A y la resistencia de salida.
+ * La referencia es Ptm = 2 mmHg (P hepática 7 y PIA 5). Área residual del 25 %.
+ * El parénquima sostiene la luz entre −1 y 1,7 mmHg. Con mayor compresión cede el vaso;
+ * por encima de 10 mmHg la pared distendida vuelve a limitar el área [EXTRAPOLACIÓN PROPIA].
  */
-export function hvRadiusScaleFromPressure(pHepaticMmHg: number): number {
-  return Math.max(0.5, Math.sqrt(1 + 0.12 * (pHepaticMmHg - 7)));
+export function hvRadiusScaleFromPtm(transmuralMmHg: number): number {
+  const supportedMmHg = Math.min(2.7, Math.max(0, 1.7 - transmuralMmHg));
+  const distendedMmHg = Math.max(0, transmuralMmHg - 10);
+  return Math.sqrt(Math.max(0.25, 1 + 0.16 * (transmuralMmHg - 2) + 0.12 * supportedMmHg - 0.07 * distendedMmHg));
 }
 
 /**
@@ -347,10 +351,11 @@ export class VenousNetwork {
       // Ramas con inercia
       // Resistores de Starling: suprahepáticas y VCI colapsadas limitan su propio caudal; la salida hepática, además,
       // por su transmural (cascada abdominal)
-      const hvArea = Math.max(0, 1 + (o.pHepatic - pAbd - HV_COLLAPSE_TRANSMURAL_MMHG) / HV_COLLAPSE_WIDTH_MMHG);
+      const hvTransmural = o.pHepatic - pAbd;
+      const hvArea = Math.max(0, 1 + (hvTransmural - HV_COLLAPSE_TRANSMURAL_MMHG) / HV_COLLAPSE_WIDTH_MMHG);
       const rHv =
         k.rHepaticVein *
-        collapseResistanceFactor(hvRadiusScaleFromPressure(o.pHepatic) / HV_CRITICAL_RADIUS_SCALE) *
+        collapseResistanceFactor(hvRadiusScaleFromPtm(hvTransmural) / HV_CRITICAL_RADIUS_SCALE) *
         collapseResistanceFactor(Math.sqrt(hvArea));
       const rIvc = k.rIvcToRa * collapseResistanceFactor(o.ivcDiameterEqMm / IVC_CRITICAL_DIAMETER_MM);
       // Término resistivo implícito: estable aunque el colapso multiplique R por 10⁴

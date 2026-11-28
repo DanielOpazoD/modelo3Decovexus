@@ -453,3 +453,7 @@ Generado por `npm run docs:index` — no editar a mano.
 | [447](DECISIONS.md#L12807) | Una S en el suelo de su banda no decide el patrón renal | vigente |
 | [448](DECISIONS.md#L12820) | Una vena renal plegada entera por el Nyquist es aliasing, no un hueco breve | vigente |
 | [449](DECISIONS.md#L12833) | La captura suprahepática conserva el par S y D de cada latido | vigente |
+| [450](DECISIONS.md#L12843) | Las esperas siguen la adquisición y el banco mide las maniobras respiratorias | vigente |
+| [451](DECISIONS.md#L12853) | El calibre suprahepático responde a su presión transmural | vigente |
+| [452](DECISIONS.md#L12863) | El monitor de FC mide intervalos de un solo paciente | vigente |
+| [453](DECISIONS.md#L12872) | El bundle de pruebas carga los ganchos que usa el banco | vigente |

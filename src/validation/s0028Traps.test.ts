@@ -18,9 +18,10 @@ import { measurePhysiologyTruth } from '../vexus/measurements';
 import { acquire, openSession, placeGate, probeAt } from './support/studentChain';
 
 /**
- * Los casos trampa (decisión 82) por la cadena del alumno en s0028, desde las ventanas del menú y con la técnica de
- * `examChain` (VSH y porta a ±40 cm/s, renal hasta el límite de profundidad), en apnea: el grado de la otra persona. Hasta la
- * decisión 395 la cirrosis daba 2: la renal, tomada a 57° del vaso, salía bifásica con la verdad monofásica (S/D 0,23). Aquí la
+ * Los casos trampa (decisión 82) por la cadena del alumno en s0028, desde las ventanas del menú y en apnea. VSH y porta
+ * a ±40 cm/s, con ±80 en la VSH de la PIA alta por aliasing. La renal se toma hasta el límite de profundidad, con ±40
+ * en cirrosis para resolver la S pequeña. Hasta la decisión 395 la cirrosis daba 2: la renal, tomada a 57° del vaso,
+ * salía bifásica con la verdad monofásica (S/D 0,23). Aquí la
  * renal debe dar la clase exacta de la verdad, sin la tolerancia de clase vecina junto al umbral.
  */
 beforeAll(() => {
@@ -34,10 +35,10 @@ function examine(base: PatientState) {
     const contact = probeAt(session, window as never);
     const best = placeGate(session, contact, vessels, { acoustic: false, maxDepthMm: 170 });
     expect(best, `${kind} sin vaso en ${window}`).not.toBeNull();
-    const prfHz = Math.min(
-      kind === 'renal' ? 6000 : prfFromNyquistCms(40, CONVEX_C35.f0Doppler),
-      Math.floor((0.9 * 1_540_000) / (2 * best!.r)),
-    );
+    const nyquistCms = kind === 'hepatic' && base === ABDOMINAL_HYPERTENSION ? 80 : 40;
+    const requestedPrfHz =
+      kind === 'renal' && base !== CIRRHOSIS_PULMONARY_HYPERTENSION ? 6000 : prfFromNyquistCms(nyquistCms, CONVEX_C35.f0Doppler);
+    const prfHz = Math.min(requestedPrfHz, Math.floor((0.9 * 1_540_000) / (2 * best!.r)));
     const { captures } = acquire(session, contact, best!, kind, { prfHz, seconds: 8.5, gateMm: Math.min(4, 2 * best!.bd) });
     const m = captures.at(-1)?.m ?? null;
     expect(m, `${kind}: sin medida`).not.toBeNull();

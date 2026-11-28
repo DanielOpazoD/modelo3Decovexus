@@ -114,6 +114,6 @@ con tres copias del clasificador (12 ms; por etapas, 3,6, decisión 406), y el r
 llegaba justo después del refresco (decisión 405). La ecografía cuesta 5–7 ms de GPU por cuadro (antes 15–19). Al mover la sonda,
 26–37 fps: el límite pasa a ser el contacto en la CPU (10 ms por pose, PR 63) y la carga ajena de la máquina.
 
-Con la sonda quieta, la lista de tubos deshace la respiración (421) y sigue a D a pasos de 10 mm (445): la rejilla de tubos se rehace
-4–6 veces por respiración tranquila y 8–10 en la profunda (antes hasta 16 y 31). Falta anotar los fps del bucle en profunda y en apnea
-inspiratoria.
+Con la sonda quieta, la rejilla de tubos se rehace 4–6 veces por respiración tranquila y 8–10 en profunda (421 y 445).
+El banco `fidelity --loop-fps` (450) registró 60 fps en las 288 lecturas del HUD sobre `3d460e8`: ocho escenas y tres
+maniobras en el M5 Max con Metal. Queda la medición de profunda y apnea inspiratoria en el M4 de referencia.

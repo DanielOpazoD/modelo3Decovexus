@@ -65,7 +65,7 @@ export const KNOWN_LIMITATIONS: ReadonlySet<string> = new Set([
   'portal-trace-tuned-on-chain',
   'af-capture-beat-sampling',
   'af-waves-ignore-preceding-cycle',
-  'hv-caliber-absolute-pressure',
+  'hepatic-perivascular-pressure-proxy',
   'slow-portal-weak-band-exact',
   'aortic-pulse-mean-rate-dependent',
   'mmode-strip-calipers-pointer',

@@ -9,6 +9,7 @@
  *   npm run fidelity -- --compound false   # la imagen de una mirada (composición espacial apagada)
  *   npm run fidelity -- --harmonic false   # en fundamental (armónica tisular apagada)
  *   npm run fidelity -- --abdomen s0028    # otra persona del abdomen (`?abdomen=`); sin ella, la de la aplicación
+ *   npm run fidelity -- --loop-fps --out /tmp/fps.json   # cadencia del HUD en las tres maniobras, sonda quieta
  *
  * La composición espacial (decisión 58) está encendida por defecto, como en la aplicación: el banco llena
  * el anillo de miradas antes de medir y cada escena añade el bloque `compound` (por banda: SNR de la mirada
@@ -50,7 +51,8 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { chromium } from '@playwright/test';
+import { chromium, type Page } from '@playwright/test';
+import { median } from '../../src/core/series';
 import { contourStats, type ContourBin, type ContourStats } from '../../src/app/fidelity/contour';
 import { summarizeFaces, thinGatedBins, type FaceSummary, type WallBin } from '../../src/app/fidelity/faces';
 import type { FidelityStats } from '../../src/app/fidelity/planeStats';
@@ -65,7 +67,8 @@ for (let i = 2; i < process.argv.length; i++) {
   else args.set(key, process.argv[++i]);
 }
 const URL = args.get('url') ?? 'http://localhost:6600';
-const OUT = args.get('out') ?? 'docs/fidelity/baseline.json';
+const LOOP_FPS = args.get('loop-fps') === 'true';
+const OUT = args.get('out') ?? (LOOP_FPS ? '.cache/fidelity-loop-fps.json' : 'docs/fidelity/baseline.json');
 const SWEEP = args.get('sweep') === 'true';
 /** Composición espacial (decisión 58): encendida salvo `--compound false`. */
 const COMPOUND_ON = args.get('compound') !== 'false';
@@ -91,6 +94,32 @@ const CURTAIN_VIEWS: readonly string[] = ['intercostal', 'flank'];
 const SLIDING_MM = 2;
 /** Segundos de cuadros en tiempo real tras colocar la sonda (persistencia y lectura de cps). */
 const SETTLE_S = 3;
+const LOOP_PATTERNS = {
+  'apnea-expiratory': 'Apnea espiratoria',
+  deep: 'Profunda',
+  'apnea-inspiratory': 'Apnea inspiratoria',
+} as const;
+
+async function measureLoopFps(page: Page, pattern: keyof typeof LOOP_PATTERNS) {
+  await page.getByRole('button', { name: LOOP_PATTERNS[pattern], exact: true }).click();
+  const cycleMs = await page.evaluate((expected) => {
+    const patient = window.__vexusTest!.sim().patient;
+    if (patient.respiratoryPattern !== expected) throw new Error(`maniobra no adquirida: ${patient.respiratoryPattern}`);
+    return 60_000 / patient.respiratoryRateMin;
+  }, pattern);
+  await page.waitForTimeout(SETTLE_S * 1000);
+  const intervalMs = 500;
+  const count = Math.ceil(Math.max(6000, cycleMs) / intervalMs);
+  const samples: number[] = [];
+  const status = page.locator('#status');
+  for (let i = 0; i < count; i++) {
+    await page.waitForTimeout(intervalMs);
+    const fps = /(\d+) fps/.exec((await status.textContent()) ?? '')?.[1];
+    if (fps === undefined) throw new Error('el HUD no publicó la cadencia');
+    samples.push(Number(fps));
+  }
+  return { fps: median(samples), minFps: Math.min(...samples), maxFps: Math.max(...samples), samples };
+}
 
 const round = (x: number, d = 3): number | null => (Number.isFinite(x) ? Number(x.toFixed(d)) : null);
 const roundDeep = (v: unknown): unknown => {
@@ -105,6 +134,8 @@ const gpuArgs =
     ? ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist']
     : ['--enable-gpu', '--ignore-gpu-blocklist'];
 const browser = await chromium.launch({ headless: true, args: gpuArgs });
+const browserVersion = browser.version();
+const loopResults: Record<string, Partial<Record<keyof typeof LOOP_PATTERNS, Awaited<ReturnType<typeof measureLoopFps>>>>> = {};
 const results: Record<
   string,
   {
@@ -190,6 +221,19 @@ try {
       await page.evaluate((on) => window.__vexusTest!.setCompound(on), COMPOUND_ON);
       await page.evaluate((on) => window.__vexusTest!.setHarmonic(on), HARMONIC_ON);
       await page.evaluate((id) => window.__vexusTest!.goToStartPoint(id), view);
+      if (LOOP_FPS) {
+        const scene: (typeof loopResults)[string] = {};
+        for (const pattern of Object.keys(LOOP_PATTERNS) as (keyof typeof LOOP_PATTERNS)[]) {
+          const result = await measureLoopFps(page, pattern);
+          scene[pattern] = result;
+          console.log(`${cs}/${view} · ${pattern}: ${result.fps} fps (${result.minFps}–${result.maxFps})`);
+        }
+        errors.push(...(await page.evaluate(() => window.__vexusTest!.loggedErrors())));
+        if (errors.length) throw new Error(`${cs}/${view}: ${errors.join(' · ')}`);
+        loopResults[`${cs}/${view}`] = scene;
+        await page.close();
+        continue;
+      }
       await page.waitForTimeout(SETTLE_S * 1000);
       const fps = await page.evaluate(() =>
         Number(/(\d+) fps/.exec(document.querySelector('#status')?.textContent ?? '')?.[1] ?? Number.NaN),
@@ -370,6 +414,6 @@ const provenance = {
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(
   OUT,
-  `${JSON.stringify({ ...provenance, fecha: new Date().toISOString().slice(0, 10), gpu, url: URL, abdomen: ABDOMEN, compuesto: COMPOUND_ON, armonica: HARMONIC_ON, escenas: roundDeep(results) }, null, 1)}\n`,
+  `${JSON.stringify({ ...provenance, fecha: new Date().toISOString().slice(0, 10), gpu, browserVersion, url: URL, abdomen: ABDOMEN, compuesto: COMPOUND_ON, armonica: HARMONIC_ON, escenas: roundDeep(LOOP_FPS ? loopResults : results) }, null, 1)}\n`,
 );
 console.log(`línea base → ${OUT}`);

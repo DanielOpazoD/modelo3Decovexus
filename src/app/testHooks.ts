@@ -13,11 +13,9 @@ import { lineAngle, pointOnLine, type ProbePose } from '../probe/probe';
 import { refractionBeam, type ApertureGeometry } from '../ultrasound/aperture';
 import { focalGain } from '../ultrasound/beamEcho';
 import { compoundActive, lookTheta } from '../ultrasound/compound';
-import { levelOfGrey } from '../ultrasound/greyMap';
 import { FRAME_PASSES, type PassId } from '../ultrasound/passGraph';
 import { portalTriadGain, triadOfCell } from '../ultrasound/portalTriads';
 import { COARSE_DEPTH, COLOR_DISPLAY_THRESHOLD, type CompoundState } from '../ultrasound/renderer';
-import { pixelToBeam } from '../ultrasound/sectorGeometry';
 import { bmodeBeam, bmodeTxApertureMm } from '../ultrasound/transducerProfile';
 import { rayAttenuationDb } from '../ultrasound/transmission';
 import { gateInColorBox, type EquipmentCommand } from './equipment';
@@ -31,8 +29,7 @@ import {
 } from './equivalenceSweep';
 import { errorLog } from './errorLog';
 import { fidelityStats } from './fidelity';
-import { clearLiverGrid } from './fidelity/clearLiver';
-import type { CompoundStats, LookFrames } from './fidelity/compound';
+import type { LookFrames } from './fidelity/compound';
 import { curtainLines } from './fidelity/curtain';
 import { CURTAIN_LIVER_MAX_AIR, centralGradient, type TransmissionFrame } from './fidelity/grid';
 import type { FidelityStats } from './fidelity/planeStats';
@@ -299,26 +296,6 @@ export interface TestHooks {
   /** Estado del anillo de miradas tras el último cuadro (decisión 58). */
   compoundState: () => CompoundState;
   /**
-   * Correlación entre miradas y composición por banda en el hígado puro (decisión 58): llena el anillo en
-   * `startPoint` y devuelve la parte `compound` del banco (sin la imagen mostrada).
-   */
-  lookCorrelation: (opts: { startPoint: StartPoint['id'] }) => CompoundStats;
-  /**
-   * Estabilidad temporal del compuesto en escena quieta (decisión 58, K7): llena el anillo, asienta la
-   * persistencia y dibuja `frames` cuadros más; de la imagen mostrada en el hígado despejado da la
-   * correlación entre cuadros consecutivos y la modulación de periodo 3 (una mirada por cuadro) del nivel.
-   */
-  temporalStability: (opts: { startPoint: StartPoint['id']; frames: number }) => {
-    frames: number;
-    pixels: number;
-    corrMin: number;
-    corrMedian: number;
-    /** Nivel mostrado medio por cuadro (dB bajo el techo del rango dinámico). */
-    levelDb: number[];
-    /** Máximo menos mínimo de los niveles medios de las tres fases del anillo (dB). */
-    period3Db: number;
-  };
-  /**
    * La guarda de `readEnvelope` (decisión 58): con el compuesto, tras un cuadro de mirada dirigida, leer la
    * mirada 0 lanza; devuelve si lanzó, el mensaje y la mirada del último cuadro.
    */
@@ -375,7 +352,7 @@ export function frameMeasureOptions(opts: FrameCostOptions = {}): RenderMeasureO
 }
 
 export function createTestHooks(getSim: () => Simulator, dispatch: (cmd: EquipmentCommand) => void, loopFrames: () => number): TestHooks {
-  const hooks: TestHooks = {
+  return {
     corticalSamples: (points) => {
       const sim = getSim(),
         sample = sim.sample;
@@ -976,15 +953,6 @@ export function createTestHooks(getSim: () => Simulator, dispatch: (cmd: Equipme
       });
     },
     compoundState: () => getSim().renderer.compoundState(),
-    lookCorrelation: (opts) => {
-      const c = hooks.fidelity({ compound: true, startPoint: opts.startPoint }).compound;
-      if (!c) throw new Error('lookCorrelation: el banco no devolvió la composición');
-      return c;
-    },
-    temporalStability: (opts) => {
-      const sim = getSim();
-      return withCompound(sim, dispatch, true, () => temporalStability(sim, opts));
-    },
     envelopeGuard: (opts) => {
       const sim = getSim();
       return withCompound(sim, dispatch, true, () => {
@@ -1005,7 +973,6 @@ export function createTestHooks(getSim: () => Simulator, dispatch: (cmd: Equipme
     framesRendered: loopFrames,
     loggedErrors: () => errorLog.recent(Number.MAX_SAFE_INTEGER).map((e) => `${e.source}: ${e.message}`),
   };
-  return hooks;
 }
 
 /**
@@ -1079,80 +1046,6 @@ function steeredParity(sim: Simulator, look: number, every: number): ReturnType<
     every,
   );
   return { ...parity, truncatedLines: 0 };
-}
-
-/** Estabilidad temporal del compuesto en escena quieta (`TestHooks.temporalStability`). */
-function temporalStability(
-  sim: Simulator,
-  opts: { startPoint: StartPoint['id']; frames: number },
-): ReturnType<TestHooks['temporalStability']> {
-  if (!Number.isInteger(opts.frames) || opts.frames < 3) throw new RangeError(`temporalStability: frames ${opts.frames} (entero ≥ 3)`);
-  goTo(sim, opts.startPoint);
-  fillRing(sim);
-  const p = Math.min(0.95, Math.max(0, sim.bmode.persistence));
-  const settle = p > 0 ? Math.min(30, Math.ceil(Math.log(0.01) / Math.log(p))) : 1;
-  for (let i = 0; i < settle; i++) sim.render();
-  const tr = sim.transducer;
-  const depth = sim.bmode.depthMm;
-  const lines = tr.lines;
-  const clear = clearLiverGrid(sim, lines, 3);
-  const dTheta = (2 * tr.halfSector) / lines;
-  const grays: Uint8Array[] = [];
-  const phases: number[] = [];
-  let idx: number[] = [];
-  for (let f = 0; f < opts.frames; f++) {
-    sim.render();
-    phases.push(sim.renderer.compoundState().look);
-    const img = sim.renderer.readDisplay();
-    if (f === 0) {
-      // píxeles del hígado despejado (cada 2), una vez: la escena no se mueve
-      for (let y = 0; y < img.height; y += 2)
-        for (let x = 0; x < img.width; x += 2) {
-          const b = pixelToBeam(sim.renderer.display, tr, depth, x, y);
-          if (!b) continue;
-          const u = Math.round((b.theta + tr.halfSector) / dTheta - 0.5);
-          if (clear.at(u, b.r)) idx.push(y * img.width + x);
-        }
-      if (idx.length < 100) throw new Error(`temporalStability: ${idx.length} píxeles de hígado despejado`);
-    }
-    grays.push(img.gray);
-  }
-  idx = idx.filter((i) => grays.every((g) => i < g.length));
-  const dr = sim.bmode.dynamicRangeDb;
-  const levelDb = grays.map((g) => idx.reduce((s, i) => s + (levelOfGrey(g[i] / 255) - 1) * dr, 0) / idx.length);
-  const corr: number[] = [];
-  for (let f = 1; f < grays.length; f++) {
-    const a = idx.map((i) => grays[f - 1][i]);
-    const b = idx.map((i) => grays[f][i]);
-    corr.push(pearsonOf(a, b));
-  }
-  const byPhase = new Map<number, number[]>();
-  phases.forEach((ph, f) => byPhase.set(ph, [...(byPhase.get(ph) ?? []), levelDb[f]]));
-  const phaseMeans = [...byPhase.values()].map((v) => v.reduce((s, x) => s + x, 0) / v.length);
-  const sorted = [...corr].sort((x, y) => x - y);
-  return {
-    frames: grays.length,
-    pixels: idx.length,
-    corrMin: sorted[0],
-    corrMedian: sorted[sorted.length >> 1],
-    levelDb,
-    period3Db: Math.max(...phaseMeans) - Math.min(...phaseMeans),
-  };
-}
-
-function pearsonOf(a: readonly number[], b: readonly number[]): number {
-  const n = a.length;
-  const ma = a.reduce((s, v) => s + v, 0) / n;
-  const mb = b.reduce((s, v) => s + v, 0) / n;
-  let sab = 0;
-  let saa = 0;
-  let sbb = 0;
-  for (let i = 0; i < n; i++) {
-    sab += (a[i] - ma) * (b[i] - mb);
-    saa += (a[i] - ma) ** 2;
-    sbb += (b[i] - mb) ** 2;
-  }
-  return sab / Math.sqrt(saa * sbb);
 }
 
 /** Fundido del ancla (`TestHooks.speckleCrossfade`): un cuadro por paso de giro. */

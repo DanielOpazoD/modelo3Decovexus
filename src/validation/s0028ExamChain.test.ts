@@ -2,7 +2,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadS0028 } from '../../tools/anatomy/s0028Windows';
 import { buildVesselTree } from '../anatomy/vesselTree';
-import { AF_MODERATE_CONGESTION, NORMAL_ADULT, SEVERE_CONGESTION } from '../cases';
+import { ABDOMINAL_HYPERTENSION, AF_MODERATE_CONGESTION, NORMAL_ADULT, SEVERE_CONGESTION } from '../cases';
 import { prfFromNyquistCms } from '../core/units';
 import type { CaptureResult } from '../doppler/capture';
 import type { PatientState } from '../physiology/patientState';
@@ -117,6 +117,23 @@ describe('s0028: cadena completa del alumno desde sus ventanas (decisión 392)',
       expect(m?.quality.issue).toBeNull();
       expect(m?.pattern).toBe(truth.hepaticPattern);
     });
+
+  it('PIA alta: la D acelerada se pliega a ±40 y permite medir la S invertida a ±80 cm/s', () => {
+    for (const [scale, issue] of [
+      [40, 'aliasing'],
+      [80, null],
+    ] as const) {
+      const session = openSession(ABDOMINAL_HYPERTENSION, 'apnea-expiratory');
+      const contact = probeAt(session, 'intercostal');
+      const best = placeGate(session, contact, ['hvRight'], { acoustic: true, maxDepthMm: 170 });
+      expect(best).not.toBeNull();
+      const prfHz = Math.min(prfFromNyquistCms(scale, CONVEX_C35.f0Doppler), Math.floor((0.9 * 1_540_000) / (2 * best!.r)));
+      const { captures } = acquire(session, contact, best!, 'hepatic', { prfHz, seconds: 10, gateMm: Math.min(4, 2 * best!.bd) });
+      const m = captures.at(-1)?.m;
+      expect(m?.quality.issue).toBe(issue);
+      if (issue === null) expect(m?.pattern).toBe('severe');
+    }
+  });
 
   // La porta desde la ventana del menú que la enseña en eje largo (la subcostal, decisión 386): `portalTrunk` es un preset de
   // calibración fuera del menú. En apnea, la PF de la verdad en los tres casos (medido el 15-11-2026: 18/13, 70/76, 36/36).

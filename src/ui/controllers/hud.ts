@@ -87,12 +87,18 @@ export function hudText(v: HudInput): HudText {
 /** FC mostrada como un monitor: media móvil (en FA el RR latido a latido salta). */
 /**
  * FC del monitor: media móvil de los RR ya vividos (entre dos R), como un equipo real; el RR del latido en curso aún no ha
- * ocurrido (decisión 442). Solo el primer valor sale del RR programado; si el reloj vuelve atrás (otro caso), se conserva.
+ * ocurrido (decisión 442). La primera lectura sale del RR programado. Al cargar un caso se conserva la última lectura
+ * hasta observar un RR completo del nuevo reloj.
  */
 export class HeartRateDisplay {
   private value = 0;
   private lastR = NaN;
   private lived = NaN;
+  resetRrHistory(): void {
+    this.lastR = NaN;
+    this.lived = NaN;
+  }
+
   update(lastR: number, rrSeconds: number, dtSeconds: number): number {
     if (lastR !== this.lastR) {
       this.lived = lastR > this.lastR ? lastR - this.lastR : NaN;

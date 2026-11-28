@@ -12839,3 +12839,40 @@ medianas independientes daban S 6,88 y D 6,25 cm/s y la captura se aceptaba como
 **Consecuencias.** La diferencia publicada es la mediana por latido (−0,94 cm/s en el caso). La guarda de Nyquist comprueba
 también esos picos y la calidad recibe los signos por latido.
 **Verificación.** Dos espectros en `hepaticReversalScale` y la captura original de `examChain` en Node 24.22.3/Linux x64.
+
+## 450. Las esperas siguen la adquisición y el banco mide las maniobras respiratorias
+
+**Contexto.** Metal: 209/214 en 5 min 43 s. La espera del mapa vencía antes de la respuesta del Worker. Dos carreras previas de
+pose tenían un límite de cuadros para una animación temporal. Cuatro discrepancias de paridad siguen reproducibles.
+**Opciones.** Esperar más cuadros mantiene la dependencia de la GPU.
+**Decisión.** `withinSimSeconds` para la pose en hover y traslación. El mapa congelado espera `onMapReady`.
+`fidelity --loop-fps` lee el HUD de la aplicación durante cada maniobra.
+**Consecuencias.** El M5 Max/Metal registra 60 fps en 288 lecturas de ocho escenas, incluida profunda y apnea inspiratoria.
+**Verificación.** `anatomyHover`, `atlasAnatomyHover`, `probeRigidTranslation`, `cachedMapResize` y banco sobre `3d460e8`.
+
+## 451. El calibre suprahepático responde a su presión transmural
+
+**Contexto.** Con PAD 5 y PIA 20 mmHg, la luz se dilataba ×1,46 a transmural negativa. En Valsalva se estrecha la media.
+[Bang et al.](https://doi.org/10.14366/usg.14029)
+**Opciones.** Una pendiente alta cerca del equilibrio estrechó la ventana subcostal sana y elevó su S a 43 cm/s.
+**Decisión.** Área común a geometría, Q/A y resistencia. Suelo 25 %, referencia 2 mmHg y pendiente 0,16, con tramos de
+0,04 entre −1 y 1,7 mmHg y 0,09 por encima de 10 mmHg [EXTRAPOLACIÓN PROPIA].
+**Consecuencias.** En la trampa con PIA 16, radio medio ×1,45 → ×0,94, D 13 → 30 cm/s, VCI 15,4 mm y grado literal 0.
+**Verificación.** `hepaticFlowBudget`, `startPoints`, `examChain`, `s0028ExamChain` (±40 y ±80) y `s0028Traps`.
+
+## 452. El monitor de FC mide intervalos de un solo paciente
+
+**Contexto.** Al cargar otro caso para la comparación de PIA, dos R de relojes distintos casi coincidieron y el HUD mostró más de
+10¹⁷ lpm.
+**Opciones.** Limitar la cifra en pantalla ocultaría que el intervalo cruza de un paciente a otro.
+**Decisión.** `onSimulatorChanged` reinicia el historial RR de `HeartRateDisplay`.
+**Consecuencias.** El monitor conserva su última lectura durante la transición y vuelve a seguir el RR observado del caso nuevo.
+**Verificación.** `controllers.test.ts` usa dos primeras R separadas por un error de redondeo y comprueba el primer intervalo completo.
+
+## 453. El bundle de pruebas carga los ganchos que usa el banco
+
+**Contexto.** `lookCorrelation` y `temporalStability` se exportaban sin consumidores en pruebas ni herramientas.
+**Opciones.** El campo `compound` de `fidelity` ya devuelve la correlación entre miradas.
+**Decisión.** Se retiran los dos ganchos y sus utilidades exclusivas. La medida de estabilidad K7 queda en el registro histórico.
+**Consecuencias.** El chunk de pruebas pasa de 69,90 a 68,16 kB antes de gzip.
+**Verificación.** Inventario de llamadas, build y presupuesto.

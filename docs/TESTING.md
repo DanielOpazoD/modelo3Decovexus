@@ -193,9 +193,9 @@ un gancho que midiera «la envolvente» sin decir cuál cambiaría de significad
 - `readEnvelope()` lee la mirada 0 y lanza si no es la del último cuadro; el compuesto se pide con
   `{ source: 'compound' }` y cada mirada con `readLookEnvelope(ranura)`. `readTransmission({ look })` da la
   transmisión de una mirada dirigida solo tras el cuadro que la forma.
-- Nuevos: `setCompound`, `compoundState`, `lookCorrelation` (la parte `compound` del banco),
-  `temporalStability` (escena quieta: correlación entre cuadros y modulación de periodo 3) y
-  `envelopeGuard` (la guarda de `readEnvelope`). `transmissionParity({ compound: true, look })` compara la
+- El banco `fidelity({ compound: true })` devuelve la correlación entre miradas en `compound`.
+  Los ganchos `setCompound`, `compoundState` y `envelopeGuard` sirven a las e2e.
+  `transmissionParity({ compound: true, look })` compara la
   mirada dirigida de la GPU con sus gemelos de TS sobre los segmentos de A0/A1 de la propia GPU
   (`app/steeredParity.ts`): una muestra cuyo resultado cambia al desplazar los redondeos de los gemelos
   ±10⁻⁴ líneas (`STEERED_TIE_LINES`, el doble del error de float32 emulado) es un empate y se cuenta

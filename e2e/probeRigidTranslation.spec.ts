@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { bootWithoutErrors, budget, withinFrames } from './support';
+import { bootWithoutErrors, budget, withinFrames, withinSimSeconds } from './support';
 
 for (const model of ['legacy', 'reference', 'atlas'] as const)
   test(`deslizar conserva tres ejes y girar es explícito, modelo=${model}`, async ({ page }, info) => {
@@ -21,9 +21,9 @@ for (const model of ['legacy', 'reference', 'atlas'] as const)
       model === 'atlas'
         ? { phi: 2.8, z: -115, yaw: -0.12, rock: -0.163, tilt: -0.431 }
         : { phi: 3.2, z: -80, yaw: model === 'reference' ? 0 : -0.1, rock: model === 'reference' ? -0.2 : 0.1, tilt: -0.4 };
-    await withinFrames(
+    await withinSimSeconds(
       page,
-      100,
+      3,
       'pose completa',
       async () =>
         (await page.evaluate(

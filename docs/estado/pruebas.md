@@ -31,6 +31,9 @@ Medido en el candidato basado en main `70e3691` el 2026-11-26 con `tools/docs/es
 variar los picos entre latidos (decisión 449). La matriz `examChain.test.ts` verifica la misma relación sobre la IQ de FA con
 respiración tranquila.
 
+`s0028ExamChain.test.ts` reproduce el aliasing de la D suprahepática a ±40 cm/s en el caso de PIA alta y verifica que
+la S invertida se mide a ±80 cm/s (decisión 451). `examChain.test.ts` comprueba el examen completo con la escala suficiente.
+
 ## Tiempos
 
 Medidos en el cierre serial de P3 r2 sobre este Mac (10 núcleos, carga ajena variable;
